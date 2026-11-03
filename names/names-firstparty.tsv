@@ -1,0 +1,267 @@
+matchName	cat_en	name_en	cat_zh	name_zh	zh_source	review
+ADBE AUX CHANNEL EXTRACT	3D Channel	3D Channel Extract	3D 通道	3D 通道提取	helpx	ok
+ADBE DEPTH MATTE	3D Channel	Depth Matte	3D 通道	深度遮罩	helpx	ok
+ADBE DEPTH FIELD	3D Channel	Depth of Field	3D 通道	场深度	helpx	ok
+EXtractoR	3D Channel	EXtractoR	3D 通道	提取器	helpx	ok
+ADBE FOG_3D	3D Channel	Fog 3D	3D 通道	雾 3D	helpx	ok
+ADBE ID MATTE	3D Channel	ID Matte	3D 通道	ID 遮罩	helpx	ok
+IDentifier	3D Channel	IDentifier	3D 通道	标识符	helpx	ok
+ADBE Aud Reverse	Audio	Backwards	音频	倒放	helpx	ok
+ADBE Aud BT	Audio	Bass & Treble	音频	低音和高音	helpx	ok
+ADBE Aud Delay	Audio	Delay	音频	延迟	helpx	ok
+ADBE Aud_Flange	Audio	Flange & Chorus	音频	变调与合声	helpx	ok
+ADBE Aud HiLo	Audio	High-Low Pass	音频	高通/低通	helpx	ok
+ADBE Aud Modulator	Audio	Modulator	音频	调制器	helpx	ok
+ADBE Param EQ	Audio	Parametric EQ	音频	参数均衡	helpx	ok
+ADBE Aud Reverb	Audio	Reverb	音频	混响	helpx	ok
+ADBE Aud Stereo Mixer	Audio	Stereo Mixer	音频	立体声混合器	helpx	ok
+ADBE Aud Tone	Audio	Tone	音频	音调	helpx	ok
+ADBE Bilateral	Blur & Sharpen	Bilateral Blur	模糊和锐化	双向模糊	helpx	ok
+ADBE Camera Lens Blur	Blur & Sharpen	Camera Lens Blur	模糊和锐化	摄像机镜头模糊	helpx	ok
+ADBE CameraShakeDeblur	Blur & Sharpen	Camera-Shake Deblur	模糊和锐化	摄像机抖动去模糊	helpx	ok
+CS CrossBlur	Blur & Sharpen	CC Cross Blur	模糊和锐化	CC 交叉模糊	helpx	ok
+CC Radial Blur	Blur & Sharpen	CC Radial Blur	模糊和锐化	CC 径向模糊	helpx	ok
+CC Radial Fast Blur	Blur & Sharpen	CC Radial Fast Blur	模糊和锐化	CC 径向快速模糊	helpx	ok
+CC Vector Blur	Blur & Sharpen	CC Vector Blur	模糊和锐化	CC 矢量模糊	helpx	ok
+ADBE Channel Blur	Blur & Sharpen	Channel Blur	模糊和锐化	通道模糊	helpx	ok
+ADBE Compound Blur	Blur & Sharpen	Compound Blur	模糊和锐化	复合模糊	helpx	ok
+ADBE Motion Blur	Blur & Sharpen	Directional Blur	模糊和锐化	定向模糊	helpx	ok
+ADBE Box Blur2	Blur & Sharpen	Fast Box Blur	模糊和锐化	快速方框模糊	helpx	ok
+ADBE Gaussian Blur 2	Blur & Sharpen	Gaussian Blur	模糊和锐化	高斯模糊	helpx	ok
+ADBE Radial Blur	Blur & Sharpen	Radial Blur	模糊和锐化	径向模糊	helpx	ok
+ADBE Sharpen	Blur & Sharpen	Sharpen	模糊和锐化	锐化	helpx	ok
+ADBE Smart Blur	Blur & Sharpen	Smart Blur	模糊和锐化	智能模糊	helpx	ok
+ADBE Unsharp Mask2	Blur & Sharpen	Unsharp Mask	模糊和锐化	钝化蒙版	helpx	review
+ADBE Arithmetic	Channel	Arithmetic	声道	算术	helpx	ok
+ADBE Blend	Channel	Blend	声道	混合	helpx	ok
+ADBE Calculations	Channel	Calculations	声道	计算	helpx	ok
+CC Composite	Channel	CC Composite	声道	CC 合成	helpx	ok
+ADBE Channel Combiner	Channel	Channel Combiner	声道	通道合成器	helpx	ok
+ADBE Compound Arithmetic	Channel	Compound Arithmetic	声道	复合运算	helpx	ok
+ADBE Invert	Channel	Invert	声道	反转	helpx	ok
+ADBE Minimax	Channel	Minimax	声道	最小/最大	helpx	ok
+ADBE Remove Color Matting	Channel	Remove Color Matting	声道	移除颜色遮罩	helpx	ok
+ADBE Set Channels	Channel	Set Channels	声道	设置通道	helpx	ok
+ADBE Set Matte3	Channel	Set Matte	声道	设置遮罩	helpx	ok
+ADBE Shift Channels	Channel	Shift Channels	声道	转换通道	helpx	ok
+ADBE Solid Composite	Channel	Solid Composite	声道	固态层合成	helpx	ok
+CINEMA 4D Effect	CINEMA 4D	CINEWARE	CINEMA 4D	CINEWARE	helpx	ok
+ADBE AutoColor	Color Correction	Auto Color	颜色校正	自动颜色	helpx	ok
+ADBE AutoContrast	Color Correction	Auto Contrast	颜色校正	自动对比度	helpx	ok
+ADBE AutoLevels	Color Correction	Auto Levels	颜色校正	自动色阶	helpx	ok
+ADBE Black&White	Color Correction	Black & White	颜色校正	黑色和白色	helpx	ok
+ADBE Brightness & Contrast 2	Color Correction	Brightness & Contrast	颜色校正	亮度和对比度	helpx	ok
+ADBE Broadcast Colors	Color Correction	Broadcast Colors	颜色校正	广播颜色	helpx	ok
+CS Color Neutralizer	Color Correction	CC Color Neutralizer	颜色校正	CC 颜色中和剂	helpx	ok
+CC Color Offset	Color Correction	CC Color Offset	颜色校正	CC 色彩偏移	helpx	ok
+CS Kernel	Color Correction	CC Kernel	颜色校正	CC 内核	helpx	ok
+CC Toner	Color Correction	CC Toner	颜色校正	CC 调色器	helpx	ok
+ADBE Change Color	Color Correction	Change Color	颜色校正	更改颜色	helpx	ok
+ADBE Change To Color	Color Correction	Change to Color	颜色校正	更改为颜色	helpx	ok
+ADBE CHANNEL MIXER	Color Correction	Channel Mixer	颜色校正	通道混合器	helpx	ok
+ADBE Color Balance 2	Color Correction	Color Balance	颜色校正	颜色平衡	helpx	ok
+ADBE Color Balance (HLS)	Color Correction	Color Balance (HLS)	颜色校正	颜色平衡 (HLS)	helpx	ok
+ADBE Color Link	Color Correction	Color Link	颜色校正	颜色链接	helpx	ok
+ADBE Deflicker	Color Correction	Color Stabilizer	颜色校正	颜色稳定器	helpx	ok
+APC Colorama	Color Correction	Colorama	颜色校正	色光	helpx	review
+ADBE CurvesCustom	Color Correction	Curves	颜色校正	曲线	helpx	ok
+ADBE Equalize	Color Correction	Equalize	颜色校正	色调均化	helpx	ok
+ADBE Exposure2	Color Correction	Exposure	颜色校正	曝光度	helpx	ok
+ADBE Gamma/Pedestal/Gain2	Color Correction	Gamma/Pedestal/Gain	颜色校正	灰度系数/基值/增益	helpx	ok
+ADBE HUE SATURATION	Color Correction	Hue/Saturation	颜色校正	色相/饱和度	helpx	ok
+ADBE Leave Color	Color Correction	Leave Color	颜色校正	保留颜色	helpx	ok
+ADBE Easy Levels2	Color Correction	Levels	颜色校正	色阶	helpx	ok
+ADBE Pro Levels2	Color Correction	Levels (Individual Controls)	颜色校正	色阶（单独控件）	helpx	ok
+ADBE Lumetri	Color Correction	Lumetri Color	颜色校正	Lumetri 颜色	helpx	ok
+ADBE PhotoFilterPS	Color Correction	Photo Filter	颜色校正	照片滤镜	helpx	ok
+ADBE PS Arbitrary Map	Color Correction	PS Arbitrary Map	颜色校正	PS 任意映射	helpx	ok
+ADBE SelectiveColor	Color Correction	Selective Color	颜色校正	可选颜色	helpx	ok
+ADBE ShadowHighlight	Color Correction	Shadow/Highlight	颜色校正	阴影/高光	helpx	ok
+ADBE Tint	Color Correction	Tint	颜色校正	色调	helpx	ok
+ADBE Tritone	Color Correction	Tritone	颜色校正	三色调	helpx	ok
+ADBE Vibrance	Color Correction	Vibrance	颜色校正	自然饱和度	helpx	ok
+ADBE BEZMESH	Distort	Bezier Warp	扭曲	贝塞尔曲线变形	helpx	ok
+ADBE Bulge	Distort	Bulge	扭曲	凸出	helpx	ok
+CC Bend It	Distort	CC Bend It	扭曲	CC 区域弯曲	helpx	ok
+CC Bender	Distort	CC Bender	扭曲	CC 变调器	helpx	ok
+CC Blobbylize	Distort	CC Blobbylize	扭曲	CC 融化	helpx	ok
+CC Flo Motion	Distort	CC Flo Motion	扭曲	CC 折叠运动	helpx	ok
+CC Griddler	Distort	CC Griddler	扭曲	CC 网格变形	helpx	ok
+CC Lens	Distort	CC Lens	扭曲	CC 镜头	helpx	ok
+CC Page Turn	Distort	CC Page Turn	扭曲	CC 翻页	helpx	ok
+CC Power Pin	Distort	CC Power Pin	扭曲	CC 四角扯动	helpx	ok
+CC Ripple Pulse	Distort	CC Ripple Pulse	扭曲	CC 波纹脉冲	helpx	ok
+CC Slant	Distort	CC Slant	扭曲	CC 倾斜	helpx	ok
+CC Smear	Distort	CC Smear	扭曲	CC 旋涡条纹	helpx	ok
+CC Split	Distort	CC Split	扭曲	CC 拆分	helpx	ok
+CC Split 2	Distort	CC Split 2	扭曲	CC 拆分 2	helpx	ok
+CC Tiler	Distort	CC Tiler	扭曲	CC 拼贴	helpx	ok
+ADBE Corner Pin	Distort	Corner Pin	扭曲	边角定位	helpx	ok
+ADBE Upscale	Distort	Detail-preserving Upscale	扭曲	保留细节放大	helpx	ok
+ADBE Displacement Map	Distort	Displacement Map	扭曲	置换图	helpx	ok
+ADBE LIQUIFY	Distort	Liquify	扭曲	液化	helpx	ok
+ADBE Magnify	Distort	Magnify	扭曲	放大	helpx	ok
+ADBE MESH WARP	Distort	Mesh Warp	扭曲	网格变形	helpx	ok
+ADBE Mirror	Distort	Mirror	扭曲	镜像	helpx	ok
+ADBE Offset	Distort	Offset	扭曲	偏移	helpx	ok
+ADBE Optics Compensation	Distort	Optics Compensation	扭曲	光学补偿	helpx	ok
+ADBE Polar Coordinates	Distort	Polar Coordinates	扭曲	极坐标	helpx	ok
+ADBE RESHAPE	Distort	Reshape	扭曲	改变形状	helpx	ok
+ADBE Ripple	Distort	Ripple	扭曲	波纹	helpx	ok
+ADBE Rolling Shutter	Distort	Rolling Shutter Repair	扭曲	果冻效应修复	helpx	ok
+ADBE SCHMEAR	Distort	Smear	扭曲	涂抹	helpx	ok
+ADBE Spherize	Distort	Spherize	扭曲	球面化	helpx	ok
+ADBE Geometry2	Distort	Transform	扭曲	变换	helpx	ok
+ADBE Turbulent Displace	Distort	Turbulent Displace	扭曲	湍流置换	helpx	ok
+ADBE Twirl	Distort	Twirl	扭曲	旋转扭曲	helpx	ok
+ADBE WRPMESH	Distort	Warp	扭曲	变形	helpx	ok
+ADBE SubspaceStabilizer	Distort	Warp Stabilizer VFX	扭曲	变形稳定器	helpx	ok
+ADBE Wave Warp	Distort	Wave Warp	扭曲	波形变形	helpx	ok
+ADBE Point3D Control	Expression Controls	3D Point Control	表达式控制	3D 点控制	helpx	ok
+ADBE Angle Control	Expression Controls	Angle Control	表达式控制	角度控制	helpx	ok
+ADBE Checkbox Control	Expression Controls	Checkbox Control	表达式控制	复选框控制	helpx	ok
+ADBE Color Control	Expression Controls	Color Control	表达式控制	颜色控制	helpx	ok
+ADBE Dropdown Control	Expression Controls	Dropdown Control	表达式控制	下拉菜单控件	helpx	ok
+ADBE Layer Control	Expression Controls	Layer Control	表达式控制	图层控制	helpx	ok
+ADBE Point Control	Expression Controls	Point Control	表达式控制	点控制	helpx	ok
+ADBE Slider Control	Expression Controls	Slider Control	表达式控制	滑块控制	helpx	ok
+ADBE 4ColorGradient	Generate	4-Color Gradient	生成	四色渐变	helpx	ok
+ADBE Lightning 2	Generate	Advanced Lightning	生成	高级闪电	helpx	ok
+ADBE AudSpect	Generate	Audio Spectrum	生成	音频频谱	helpx	ok
+ADBE AudWave	Generate	Audio Waveform	生成	音频波形	helpx	ok
+ADBE Laser	Generate	Beam	生成	光束	helpx	ok
+CC Glue Gun	Generate	CC Glue Gun	生成	CC 喷胶枪	helpx	ok
+CC Light Burst 2.5	Generate	CC Light Burst 2.5	生成	CC 光线缩放 2.5	helpx	ok
+CC Light Rays	Generate	CC Light Rays	生成	CC 光束	helpx	ok
+CC Light Sweep	Generate	CC Light Sweep	生成	CC 光线扫描	helpx	ok
+CS Threads	Generate	CC Threads	生成	CC 线状穿梭	helpx	ok
+ADBE Cell Pattern	Generate	Cell Pattern	生成	单元格图案	helpx	ok
+ADBE Checkerboard	Generate	Checkerboard	生成	棋盘	helpx	ok
+ADBE Circle	Generate	Circle	生成	圆形	helpx	ok
+ADBE ELLIPSE	Generate	Ellipse	生成	椭圆	helpx	ok
+ADBE Eyedropper Fill	Generate	Eyedropper Fill	生成	吸管填充	helpx	ok
+ADBE Fill	Generate	Fill	生成	填充	helpx	ok
+ADBE Fractal	Generate	Fractal	生成	分形	helpx	ok
+ADBE Ramp	Generate	Gradient Ramp	生成	梯度渐变	helpx	ok
+ADBE Grid	Generate	Grid	生成	网格	helpx	ok
+ADBE Lens Flare	Generate	Lens Flare	生成	镜头光晕	helpx	ok
+ADBE Paint Bucket	Generate	Paint Bucket	生成	油漆桶	helpx	ok
+APC Radio Waves	Generate	Radio Waves	生成	无线电波	helpx	ok
+ADBE Scribble Fill	Generate	Scribble	生成	涂写	helpx	ok
+ADBE Stroke	Generate	Stroke	生成	描边	helpx	ok
+APC Vegas	Generate	Vegas	生成	勾画	helpx	review
+ADBE Write-on	Generate	Write-on	生成	写入	helpx	ok
+ADBE Spill2	Keying	Advanced Spill Suppressor	抠像	高级溢出抑制器	helpx	ok
+CC Simple Wire Removal	Keying	CC Simple Wire Removal	抠像	CC 简单去除钢丝	helpx	ok
+ADBE Color Difference Key	Keying	Color Difference Key	抠像	颜色差值键	helpx	ok
+ADBE Color Range	Keying	Color Range	抠像	颜色范围	helpx	ok
+ADBE Difference Matte2	Keying	Difference Matte	抠像	差值遮罩	helpx	ok
+ADBE Extract	Keying	Extract	抠像	提取	helpx	ok
+ADBE ATG Extract	Keying	Inner/Outer Key	抠像	内部/外部键	helpx	ok
+ADBE KeyCleaner	Keying	Key Cleaner	抠像	抠像清除器	helpx	ok
+Keylight 906	Keying	Keylight (1.2)	抠像	Keylight (1.2)	helpx	ok
+ADBE Linear Color Key2	Keying	Linear Color Key	抠像	线性颜色键	helpx	ok
+ADBE Matte Choker	Matte	Matte Choker	遮罩	遮罩阻塞工具	helpx	ok
+ISL MochaShapeImporter	Matte	mocha shape	遮罩	Mocha 形状	helpx	ok
+ADBE RefineRBMatte	Matte	Refine Hard Matte	遮罩	调整实边遮罩	helpx	ok
+ADBE RefineMatte2	Matte	Refine Soft Matte	遮罩	调整柔和遮罩	helpx	ok
+ADBE Simple Choker	Matte	Simple Choker	遮罩	简单阻塞工具	helpx	ok
+VISINF Grain Implant	Noise & Grain	Add Grain	杂色和颗粒	添加颗粒	helpx	ok
+ADBE Dust & Scratches	Noise & Grain	Dust & Scratches	杂色和颗粒	蒙尘与划痕	helpx	ok
+ADBE Fractal Noise	Noise & Grain	Fractal Noise	杂色和颗粒	分形杂色	helpx	ok
+VISINF Grain Duplication	Noise & Grain	Match Grain	杂色和颗粒	匹配颗粒	helpx	ok
+ADBE Median	Noise & Grain	Median	杂色和颗粒	中间值	helpx	ok
+ADBE Noise	Noise & Grain	Noise	杂色和颗粒	杂色	helpx	ok
+ADBE Noise Alpha2	Noise & Grain	Noise Alpha	杂色和颗粒	杂色 Alpha	helpx	ok
+ADBE Noise HLS2	Noise & Grain	Noise HLS	杂色和颗粒	杂色 HLS	helpx	ok
+ADBE Noise HLS Auto2	Noise & Grain	Noise HLS Auto	杂色和颗粒	杂色 HLS 自动	helpx	ok
+VISINF Grain Removal	Noise & Grain	Remove Grain	杂色和颗粒	移除颗粒	helpx	ok
+ADBE AIF Perlin Noise 3D	Noise & Grain	Turbulent Noise	杂色和颗粒	湍流杂色	helpx	ok
+ADBE 3D Tracker	Perspective	3D Camera Tracker	透视	3D 摄像机跟踪器	helpx	ok
+ADBE 3D Glasses2	Perspective	3D Glasses	透视	3D 眼镜	helpx	ok
+ADBE Bevel Alpha	Perspective	Bevel Alpha	透视	斜面 Alpha	helpx	ok
+ADBE Bevel Edges	Perspective	Bevel Edges	透视	边缘斜面	helpx	ok
+CC Cylinder	Perspective	CC Cylinder	透视	CC 圆柱体	helpx	ok
+CC Environment	Perspective	CC Environment	透视	CC 环境	helpx	ok
+CC Sphere	Perspective	CC Sphere	透视	CC 球体	helpx	ok
+CC Spotlight	Perspective	CC Spotlight	透视	CC 聚光灯	helpx	ok
+ADBE Drop Shadow	Perspective	Drop Shadow	透视	投影	helpx	ok
+ADBE Radial Shadow	Perspective	Radial Shadow	透视	径向阴影	helpx	ok
+APC CardDanceCam	Simulation	Card Dance	模拟	卡片动画	helpx	ok
+APC Caustics	Simulation	Caustics	模拟	焦散	helpx	ok
+CC Ball Action	Simulation	CC Ball Action	模拟	CC 滚珠操作	helpx	ok
+CC Bubbles	Simulation	CC Bubbles	模拟	CC 气泡	helpx	ok
+CC Drizzle	Simulation	CC Drizzle	模拟	CC 细雨	helpx	ok
+CC Hair	Simulation	CC Hair	模拟	CC 毛发	helpx	ok
+CC Mr. Mercury	Simulation	CC Mr. Mercury	模拟	CC 水银滴落	helpx	ok
+CC Particle Systems II	Simulation	CC Particle Systems II	模拟	CC 粒子系统 Ⅱ	helpx	ok
+CC Particle World	Simulation	CC Particle World	模拟	CC 粒子仿真环境	helpx	ok
+CC Pixel Polly	Simulation	CC Pixel Polly	模拟	CC 像素多边形	helpx	ok
+CSRainfall	Simulation	CC Rainfall	模拟	CC 下雨	helpx	ok
+CC Scatterize	Simulation	CC Scatterize	模拟	CC 散射	helpx	ok
+CSSnowfall	Simulation	CC Snowfall	模拟	CC 下雪	helpx	ok
+CC Star Burst	Simulation	CC Star Burst	模拟	CC 星爆	helpx	ok
+APC Foam	Simulation	Foam	模拟	泡沫	helpx	ok
+ADBE Playgnd	Simulation	Particle Playground	模拟	粒子运动场	helpx	ok
+APC Shatter	Simulation	Shatter	模拟	碎片	helpx	ok
+APC Wave World	Simulation	Wave World	模拟	波形环境	helpx	ok
+ADBE Brush Strokes	Stylize	Brush Strokes	风格化	画笔描边	helpx	ok
+ADBE Cartoonify	Stylize	Cartoon	风格化	卡通	helpx	ok
+CS BlockLoad	Stylize	CC Block Load	风格化	CC 块状载入	helpx	ok
+CC Burn Film	Stylize	CC Burn Film	风格化	CC 胶片灼烧	helpx	ok
+CC Glass	Stylize	CC Glass	风格化	CC 玻璃	helpx	ok
+CS HexTile	Stylize	CC HexTile	风格化	CC 六边形拼贴	helpx	ok
+CC Kaleida	Stylize	CC Kaleida	风格化	CC 万花筒	helpx	ok
+CC Mr. Smoothie	Stylize	CC Mr. Smoothie	风格化	CC 像素溶解	helpx	review
+CC Plastic	Stylize	CC Plastic	风格化	CC 塑料	helpx	ok
+CC RepeTile	Stylize	CC RepeTile	风格化	CC 边缘拼贴	helpx	ok
+CC Threshold	Stylize	CC Threshold	风格化	CC 阈值	helpx	ok
+CC Threshold RGB	Stylize	CC Threshold RGB	风格化	CC 阈值 RGB	helpx	ok
+CS Vignette	Stylize	CC Vignette	风格化	CC 晕影	helpx	ok
+ADBE Color Emboss	Stylize	Color Emboss	风格化	彩色浮雕	helpx	ok
+ADBE Emboss	Stylize	Emboss	风格化	浮雕	helpx	ok
+ADBE Find Edges	Stylize	Find Edges	风格化	查找边缘	helpx	ok
+ADBE Glo2	Stylize	Glow	风格化	发光	helpx	ok
+ADBE Mosaic	Stylize	Mosaic	风格化	马赛克	helpx	ok
+ADBE Tile	Stylize	Motion Tile	风格化	动态拼贴	helpx	ok
+ADBE Posterize	Stylize	Posterize	风格化	色调分离	helpx	ok
+ADBE Roughen Edges	Stylize	Roughen Edges	风格化	毛边	helpx	ok
+ADBE Scatter	Stylize	Scatter	风格化	散布	helpx	ok
+ADBE Strobe	Stylize	Strobe Light	风格化	闪光灯	helpx	ok
+ADBE Texturize	Stylize	Texturize	风格化	纹理化	helpx	ok
+ADBE Threshold2	Stylize	Threshold	风格化	阈值	helpx	ok
+SYNTHAP CF Color Finesse 2	Synthetic Aperture	SA Color Finesse 3	Synthetic Aperture	SA Color Finesse 3	none	review
+ADBE Numbers2	Text	Numbers	文本	编号	helpx	ok
+ADBE Timecode	Text	Timecode	文本	时间码	helpx	ok
+CC Force Motion Blur	Time	CC Force Motion Blur	时间	CC 强制运动模糊	helpx	ok
+CC Wide Time	Time	CC Wide Time	时间	CC 宽泛时间	helpx	ok
+ADBE Echo	Time	Echo	时间	残影	helpx	ok
+ADBE OFMotionBlur	Time	Pixel Motion Blur	时间	像素运动模糊	helpx	ok
+ADBE Posterize Time	Time	Posterize Time	时间	抽帧	helpx	ok
+ADBE Difference	Time	Time Difference	时间	时差	helpx	ok
+ADBE Time Displacement	Time	Time Displacement	时间	时间置换	helpx	ok
+ADBE Timewarp	Time	Timewarp	时间	时间扭曲	helpx	ok
+ADBE Block Dissolve	Transition	Block Dissolve	过渡	块溶解	helpx	ok
+APC CardWipeCam	Transition	Card Wipe	过渡	卡片擦除	helpx	ok
+CC Glass Wipe	Transition	CC Glass Wipe	过渡	CC 玻璃擦除	helpx	ok
+CC Grid Wipe	Transition	CC Grid Wipe	过渡	CC 网格擦除	helpx	ok
+CC Image Wipe	Transition	CC Image Wipe	过渡	CC 图像擦除	helpx	ok
+CC Jaws	Transition	CC Jaws	过渡	CC 锯齿	helpx	ok
+CC Light Wipe	Transition	CC Light Wipe	过渡	CC 照明式擦除	helpx	ok
+CS LineSweep	Transition	CC Line Sweep	过渡	CC 行扫描	helpx	ok
+CC Radial ScaleWipe	Transition	CC Radial ScaleWipe	过渡	CC 径向缩放擦除	helpx	ok
+CC Scale Wipe	Transition	CC Scale Wipe	过渡	CC 缩放擦除	helpx	ok
+CC Twister	Transition	CC Twister	过渡	CC 扭曲	helpx	ok
+CC WarpoMatic	Transition	CC WarpoMatic	过渡	CC 溶解	helpx	review
+ADBE Gradient Wipe	Transition	Gradient Wipe	过渡	渐变擦除	helpx	ok
+ADBE IRIS_WIPE	Transition	Iris Wipe	过渡	光圈擦除	helpx	ok
+ADBE Linear Wipe	Transition	Linear Wipe	过渡	线性擦除	helpx	ok
+ADBE Radial Wipe	Transition	Radial Wipe	过渡	径向擦除	helpx	ok
+ADBE Venetian Blinds	Transition	Venetian Blinds	过渡	百叶窗	helpx	ok
+ADBE Apply Color LUT2	Utility	Apply Color LUT	实用工具	应用颜色 LUT	helpx	ok
+CC Overbrights	Utility	CC Overbrights	实用工具	CC 过亮	helpx	ok
+ADBE Cineon Converter2	Utility	Cineon Converter	实用工具	Cineon 转换器	helpx	ok
+ADBE ProfileToProfile	Utility	Color Profile Converter	实用工具	颜色配置文件转换器	helpx	ok
+ADBE GROW BOUNDS	Utility	Grow Bounds	实用工具	范围扩散	helpx	ok
+ADBE Compander	Utility	HDR Compander	实用工具	HDR 压缩扩展器	helpx	ok
+ADBE HDR ToneMap	Utility	HDR Highlight Compression	实用工具	HDR 高光压缩	helpx	ok

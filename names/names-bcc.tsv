@@ -1,0 +1,330 @@
+name_en	name_zh	cat_en	cat_zh	zh_source	sources	review
+BCC Extruded EPS	BCC 挤出 EPS 矢量	BCC 3D Objects	BCC 3D 对象	community	1	conflict
+BCC Extruded Spline	BCC 挤压样条线	BCC 3D Objects	BCC 3D 对象	community	1	conflict
+BCC Extruded Text	BCC 挤压文本	BCC 3D Objects	BCC 3D 对象	community	2	ok
+BCC Layer Deformer	BCC 层变形器	BCC 3D Objects	BCC 3D 对象	community	1	conflict
+BCC Title Studio	BCC 标题工作室	BCC 3D Objects	BCC 3D 对象	community	1	conflict
+BCC Type On Text	BCC 键入文本	BCC 3D Objects	BCC 3D 对象	community	1	conflict
+BCC+Borders	BCC+边框	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC+Color Infrared	BCC+红外着色	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC+Color Shadow	BCC+颜色阴影	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC+Harris Shutter	BCC+哈里斯快门	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC+Infrared	BCC+红外线	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC+Night Vision	BCC+夜视镜	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC+X-Ray	BCC+X 射线	BCC Art Looks	BCC 艺术外观	community	1	ok
+BCC Artist's Poster	BCC 艺术家海报	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC Bump Map	BCC 凹凸贴图	BCC Art Looks	BCC 艺术外观	community	2	ok
+BCC Cartoon Look	BCC 卡通外观	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC Cartooner	BCC 卡通	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC Charcoal Sketch	BCC 炭笔素描	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC Halftone	BCC 中间色	BCC Art Looks	BCC 艺术外观	community	2	ok
+BCC Median	BCC 中值	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC Pencil Sketch	BCC 素描	BCC Art Looks	BCC 艺术外观	community	2	ok
+BCC Posterize	BCC 色调分离	BCC Art Looks	BCC 艺术外观	community	2	ok
+BCC Spray Paint Noise	BCC 飞散噪点效果	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC Tile Mosaic	BCC 瓷砖马赛克	BCC Art Looks	BCC 艺术外观	community	2	ok
+BCC Water Color	BCC 水彩	BCC Art Looks	BCC 艺术外观	community	1	conflict
+BCC+Blur	BCC+模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC+Channel Blur	BCC+通道模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC+Channel Blur YUV	BCC+通道模糊 YUV	BCC Blur	BCC 模糊	community	1	ok
+BCC+Detail	BCC+细节	BCC Blur	BCC 模糊	community	1	ok
+BCC+Directional Blur	BCC+方向模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC+Lens Blur	BCC+镜头模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC+Motion Blur ML	BCC+运动模糊 ML	BCC Blur	BCC 模糊	community	1	ok
+BCC+Radial Blur	BCC+径向模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC+Smear Blur	BCC+涂抹模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC Lens Shape	BCC 镜头形状	BCC Blur	BCC 模糊	community	1	conflict
+BCC Unsharp Mask	BCC 锐化蒙版	BCC Blur	BCC 模糊	community	1	conflict
+BCC Z-Blur	BCC Z-模糊	BCC Blur	BCC 模糊	community	1	ok
+BCC Browser	BCC 浏览器	BCC Browser	BCC 浏览器	community	1	ok
+BCC FX Browser	BCC FX 浏览器	BCC Browser	BCC 浏览器	community	1	ok
+BCC+Black and White	BCC+黑白	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Color Link	BCC+颜色链接	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+DeFog	BCC+除雾	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Develop	BCC+冲洗	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Enhancing	BCC+增强	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+F-Stop	BCC+F 光圈	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Fluorescent	BCC+日光灯	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Grade	BCC+调色	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Haze	BCC+雾霭	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+High Contrast	BCC+高对比度	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Kelvin	BCC+色温	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Low Contrast	BCC+低对比度	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Polarizer	BCC+偏光片	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Selective Saturation	BCC+选择性饱和度	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC+Shadows/Highlights	BCC+阴影/高光	BCC Color & Tone	BCC 颜色与色调	community	1	ok
+BCC 3 Way Color Grade	BCC 3 路颜色校正	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Brightness-Contrast	BCC 亮度-对比度	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Color Balance	BCC 色彩平衡	BCC Color & Tone	BCC 颜色与色调	community	2	ok
+BCC Color Correction	BCC 色彩校正	BCC Color & Tone	BCC 颜色与色调	community	2	ok
+BCC Color Match	BCC 颜色匹配	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Colorize	BCC 着色	BCC Color & Tone	BCC 颜色与色调	community	2	ok
+BCC Correct Selected Color	BCC 修改指定颜色	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Hue-Sat-Lightness	BCC 色相-饱和度-明度	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Invert Solarize	BCC 负片效果	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Levels Gamma	BCC 色阶伽玛值	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC MultiTone Mix	BCC 多色调混合	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC Tritone	BCC 三色调	BCC Color & Tone	BCC 颜色与色调	community	2	ok
+BCC Videoscope	BCC 视频示波器	BCC Color & Tone	BCC 颜色与色调	community	1	conflict
+BCC+Atmospheric Glow	BCC+大气辉光	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Bleach Bypass	BCC+漂白旁路	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Cross Processing	BCC+交叉冲洗	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Day for Night	BCC+日景转夜	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Film Glow	BCC+胶片辉光	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Film Grunge	BCC+胶片脏痕	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Film Stocks	BCC+胶片风格	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Flashing	BCC+频闪	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Grain	BCC+颗粒	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Light Flicker	BCC+灯光闪烁	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Looks	BCC+外观	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Orbs	BCC+球体	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Smoke and Fog	BCC+烟雾与雾	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Three Strip	BCC+三带法	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Two Strip	BCC+双带法	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC+Vignette	BCC+暗角	BCC Film Style	BCC 胶片风格	community	1	ok
+BCC Match Grain	BCC 匹配颗粒	BCC Film Style	BCC 胶片风格	community	1	conflict
+BCC+Color Gradient	BCC+颜色渐变	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Color Spot	BCC+聚光色斑	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Colorize Gradient	BCC+着色颜色	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Dual Gradient	BCC+双渐变	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Gels	BCC+色片	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+ND Gradient	BCC+ND 渐变	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Photographic	BCC+摄影风格	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Radial Tint	BCC+径向着色	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Sepia	BCC+棕褐色调	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Skin Tone	BCC+肤色	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Split Tone	BCC+分割色调	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Sunset	BCC+日落	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Tint	BCC+色调	BCC Grads & Tints	BCC 渐变与着色	community	1	ok
+BCC+Beauty Studio	BCC+美颜工作室	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC+DeBand	BCC+去色带	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC+DeBlock	BCC+去块	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC+Deinterlace ML	BCC+隔行扫描 ML	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC+DeNoise ML	BCC+降噪 ML	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC+Frame Fixer ML	BCC+帧修正器 ML	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC+Magic Sharp	BCC+神奇锐化	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC+UpRes ML	BCC+超分辨率 ML	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC Broadcast Safe	BCC 广播安全	BCC Image Restoration	BCC 图像修复	community	1	ok
+BCC Dropout Fixer	BCC 脱落修复	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Dust and Scratches	BCC 灰尘和划痕	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Flicker Fixer	BCC 闪烁修复	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Lens Correction	BCC 镜头校正	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Optical Stabilizer	BCC 光学稳定器	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Pixel Fixer	BCC 像素修复	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Reframer	BCC 重新定义	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Remover	BCC 移除	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC Wire Remover	BCC 电线移除	BCC Image Restoration	BCC 图像修复	community	1	conflict
+BCC+Color Paste	BCC+颜色粘贴	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Composite	BCC+合成	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Depth Map ML	BCC+深度贴图 ML	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Edge Cleaner	BCC+边缘清理	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Edge Composite	BCC+边缘合成	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Face ML	BCC+面部 ML	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Holdout Composite	BCC+保留区合成	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Light Wrap	BCC+边缘光	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC+Linear Color Key	BCC+线性色度键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC+Linear Luma Key	BCC+线性亮度键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC+Math Composite	BCC+数学合成	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Matte Refine ML	BCC+遮罩精细化 ML	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Non-Additive Mix	BCC+非加性混合	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Optical Dissolve	BCC+光学溶解	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Pixel Chooser	BCC+像素选择器	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC+Primatte Studio	BCC+Primatte 工作室	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Spill Remover	BCC+溢色移除	BCC Key & Blend	BCC 键控与混合	community	1	ok
+BCC+Two Way Key	BCC+双向键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Alpha Process	BCC Alpha 处理	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Chroma Key	BCC 色度键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Chroma Key Studio	BCC 色度键控工作室	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Composite	BCC 合成	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Composite Choker	BCC 合成收边	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Make Alpha Key	BCC 生成 Alpha 键	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Matte Choker	BCC 遮罩收边	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Matte Cleanup	BCC 遮罩边缘修复	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC Premult	BCC 预乘	BCC Key & Blend	BCC 键控与混合	community	2	ok
+BCC RGB Blend	BCC RGB 混合	BCC Key & Blend	BCC 键控与混合	community	1	conflict
+BCC+Camera Shake	BCC+摄像机抖动	BCC Lens	BCC 镜头	community	1	ok
+BCC+Chromatic Aberration	BCC+色差	BCC Lens	BCC 镜头	community	1	ok
+BCC+DeFringe	BCC+去边	BCC Lens	BCC 镜头	community	1	ok
+BCC+Lens Distortion	BCC+镜头畸变	BCC Lens	BCC 镜头	community	1	ok
+BCC+Radial Exposure	BCC+径向曝光	BCC Lens	BCC 镜头	community	1	ok
+BCC+Wide Angle Lens	BCC+广角镜头	BCC Lens	BCC 镜头	community	1	ok
+BCC+Ambient Light	BCC+环境光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Chroma Bands	BCC+色度带	BCC Lights	BCC 灯光	community	1	ok
+BCC+Eye Light	BCC+眼神光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Glow	BCC+辉光	BCC Lights	BCC 灯光	community	1	conflict
+BCC+Glow Darks	BCC+暗部辉光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Glow Edges	BCC+边缘辉光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Ice Halos	BCC+冰晕	BCC Lights	BCC 灯光	community	1	ok
+BCC+Key Light	BCC+主光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Lens Flare	BCC+镜头光晕	BCC Lights	BCC 灯光	community	1	conflict
+BCC+Light	BCC+灯光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Light Leaks	BCC+漏光	BCC Lights	BCC 灯光	community	1	conflict
+BCC+Multi-Star	BCC+多星	BCC Lights	BCC 灯光	community	1	ok
+BCC+Overexpose	BCC+过曝	BCC Lights	BCC 灯光	community	1	ok
+BCC+Rays	BCC+光线	BCC Lights	BCC 灯光	community	1	conflict
+BCC+Reflector	BCC+反射器	BCC Lights	BCC 灯光	community	1	ok
+BCC+ReLight	BCC+重打光	BCC Lights	BCC 灯光	community	1	ok
+BCC+Streaks	BCC+条纹	BCC Lights	BCC 灯光	community	1	ok
+BCC Edge Lighting	BCC 边缘照明	BCC Lights	BCC 灯光	community	1	conflict
+BCC Laser Beam	BCC 激光束	BCC Lights	BCC 灯光	community	2	ok
+BCC Lens Flare 3D	BCC 镜头光晕 3D	BCC Lights	BCC 灯光	community	1	conflict
+BCC Light Sweep	BCC 扫光	BCC Lights	BCC 灯光	community	2	ok
+BCC Lightning	BCC 闪电	BCC Lights	BCC 灯光	community	2	ok
+BCC Rays Puffy	BCC 片状放射光	BCC Lights	BCC 灯光	community	1	conflict
+BCC Rays Radiant Edges	BCC 光线辐射边缘	BCC Lights	BCC 灯光	community	1	conflict
+BCC Reverse Spotlight	BCC 反向聚光灯	BCC Lights	BCC 灯光	community	1	conflict
+BCC Spotlight	BCC 聚光灯	BCC Lights	BCC 灯光	community	2	ok
+BCC Stage Light	BCC 舞台灯	BCC Lights	BCC 灯光	community	1	conflict
+BCC+License Plate ML	BCC+车牌ML	BCC Match Move	BCC 匹配移动	community	1	ok
+BCC+Witness Protection ML	BCC+面部遮罩ML	BCC Match Move	BCC 匹配移动	community	1	conflict
+BCC Corner Pin Studio	BCC 边角固定	BCC Match Move	BCC 匹配移动	community	1	ok
+BCC Match Move	BCC 匹配移动	BCC Match Move	BCC 匹配移动	community	2	ok
+BCC+Center Spot	BCC+中心光斑	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Depth of Field	BCC+景深	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Diffusion	BCC+扩散	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Double Fog	BCC+双层雾	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Fog	BCC+雾	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Frost	BCC+霜冻	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Halo	BCC+光晕	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Mist	BCC+薄雾	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Net	BCC+网状	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Rack Focus	BCC+移焦	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Silk	BCC+丝绸	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC+Split Field	BCC+分场	BCC Optical Diffusion	BCC 光学扩散	community	1	ok
+BCC 2D Particles	BCC 2D 粒子	BCC Particles	BCC 粒子	community	2	ok
+BCC Organic Strands	BCC 有机链	BCC Particles	BCC 粒子	community	2	ok
+BCC Particle Array 3D	BCC 粒子阵列 3D	BCC Particles	BCC 粒子	community	2	ok
+BCC Particle Emitter 3D	BCC 粒子发射器 3D	BCC Particles	BCC 粒子	community	2	ok
+BCC Particle Illusion	BCC 幻影粒子	BCC Particles	BCC 粒子	community	1	ok
+BCC Pin Art 3D	BCC 插针艺术 3D	BCC Particles	BCC 粒子	community	1	conflict
+BCC Rain	BCC 降雨	BCC Particles	BCC 粒子	community	1	conflict
+BCC Snow	BCC 降雪	BCC Particles	BCC 粒子	community	1	conflict
+BCC Wild Cards	BCC 卡片	BCC Particles	BCC 粒子	community	1	conflict
+BCC+Transform	BCC+变换	BCC Perspective	BCC 透视	community	1	ok
+BCC 3D Extruded Image Shatter	BCC 3D 挤压图像破碎	BCC Perspective	BCC 透视	community	1	conflict
+BCC 3D Image Shatter	BCC 3D 图像破碎	BCC Perspective	BCC 透视	community	1	conflict
+BCC Cube	BCC 魔方	BCC Perspective	BCC 透视	community	1	conflict
+BCC Cylinder	BCC 圆柱状	BCC Perspective	BCC 透视	community	1	conflict
+BCC Fast Flipper	BCC快速翻转	BCC Perspective	BCC 透视	community	1	conflict
+BCC Page Turn	BCC 翻转卷页	BCC Perspective	BCC 透视	community	2	ok
+BCC Pan and Zoom	BCC 平移和缩放	BCC Perspective	BCC 透视	community	1	conflict
+BCC Sphere	BCC 球体	BCC Perspective	BCC 透视	community	2	ok
+BCC Sphere Transition	BCC 球面转场效果	BCC Perspective	BCC 透视	community	1	conflict
+BCC+Mosaic	BCC+马赛克	BCC Stylize	BCC 风格化	community	1	ok
+BCC+Prism	BCC+棱镜	BCC Stylize	BCC 风格化	community	1	ok
+BCC+Scanline	BCC+扫描线	BCC Stylize	BCC 风格化	community	1	ok
+BCC+Super LED	BCC+超级 LED	BCC Stylize	BCC 风格化	community	1	ok
+BCC+Video Glitch	BCC+视频故障	BCC Stylize	BCC 风格化	community	1	ok
+BCC Cast Shadow	BCC 投射阴影	BCC Stylize	BCC 风格化	community	1	ok
+BCC Color Choker	BCC 颜色收缩	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Colorize Glow	BCC 着色辉光	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Damaged TV	BCC 故障电视	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Drop Shadow	BCC 投影阴影	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Edge Grunge	BCC 边缘脏痕	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Emboss	BCC 浮雕	BCC Stylize	BCC 风格化	community	2	ok
+BCC Glow Alpha Edges	BCC 辉光 Alpha 边缘	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Grunge	BCC 脏痕	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Misalignment	BCC 偏差	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Multi Shadow	BCC 多重阴影效果	BCC Stylize	BCC 风格化	community	2	ok
+BCC Reflection	BCC 反射	BCC Stylize	BCC 风格化	community	1	ok
+BCC RGB Edges	BCC RGB 边缘	BCC Stylize	BCC 风格化	community	1	conflict
+BCC RGB Pixel Noise	BCC RGB 像素噪波	BCC Stylize	BCC 风格化	community	1	conflict
+BCC Scatterize	BCC 散射	BCC Stylize	BCC 风格化	community	1	conflict
+BCC+Textures	BCC+纹理	BCC Textures	BCC 纹理	community	1	ok
+BCC Caustics	BCC 焦散	BCC Textures	BCC 纹理	community	1	conflict
+BCC Mixed Colors	BCC 混合颜色	BCC Textures	BCC 纹理	community	1	conflict
+BCC Noise Map 2	BCC 噪波贴图 2	BCC Textures	BCC 纹理	community	1	conflict
+BCC+Audio Visualizer	BCC+音频可视化	BCC Time	BCC 时间	community	1	ok
+BCC+Retimer ML	BCC+重定时 ML	BCC Time	BCC 时间	community	1	ok
+BCC Beat Reactor	BCC 节拍反应器	BCC Time	BCC 时间	community	2	ok
+BCC Jitter	BCC 抖动	BCC Time	BCC 时间	community	2	ok
+BCC Jitter Basic	BCC 基本抖动	BCC Time	BCC 时间	community	1	conflict
+BCC Looper	BCC 循环	BCC Time	BCC 时间	community	1	conflict
+BCC Posterize Time	BCC 色调分离时间	BCC Time	BCC 时间	community	1	conflict
+BCC Temporal Blur	BCC 时间模糊	BCC Time	BCC 时间	community	2	ok
+BCC Time Displacement	BCC 时间位移	BCC Time	BCC 时间	community	2	ok
+BCC Trails	BCC 轨迹	BCC Time	BCC 时间	community	1	conflict
+BCC Trails Basic	BCC 基本轨迹	BCC Time	BCC 时间	community	1	conflict
+BCC VR Blur	BCC VR 模糊	BCC VR	BCC VR	community	1	ok
+BCC VR Flicker Fixer	BCC VR 闪烁修正器	BCC VR	BCC VR	community	1	ok
+BCC VR Insert	BCC VR 插入	BCC VR	BCC VR	community	1	ok
+BCC VR Reorient	BCC VR 重新定向	BCC VR	BCC VR	community	1	ok
+BCC VR Sharpen	BCC VR 锐化	BCC VR	BCC VR	community	1	ok
+BCC+Displacement Map	BCC+位移贴图	BCC Warp	BCC 弯曲	community	1	conflict
+BCC+Polar Displacement	BCC+极坐标位移	BCC Warp	BCC 弯曲	community	1	conflict
+BCC+Polar Warp	BCC+极坐标扭曲	BCC Warp	BCC 弯曲	community	1	ok
+BCC+Ripple	BCC+波纹	BCC Warp	BCC 弯曲	community	1	conflict
+BCC+ST Map	BCC+ST 贴图	BCC Warp	BCC 弯曲	community	1	ok
+BCC+Vector Displacement	BCC+矢量位移	BCC Warp	BCC 弯曲	community	1	conflict
+BCC Bulge	BCC 膨胀	BCC Warp	BCC 弯曲	community	1	conflict
+BCC Curl	BCC 卷曲	BCC Warp	BCC 弯曲	community	1	ok
+BCC Morph	BCC 变形	BCC Warp	BCC 弯曲	community	1	conflict
+BCC Turbulence	BCC 湍流	BCC Warp	BCC 弯曲	community	2	ok
+BCC Twirl	BCC 旋转	BCC Warp	BCC 弯曲	community	2	ok
+BCC Video Morph	BCC 视频变形	BCC Warp	BCC 弯曲	community	2	ok
+BCC Warp	BCC 弯曲	BCC Warp	BCC 弯曲	community	2	ok
+BCC Wave	BCC 波形	BCC Warp	BCC 弯曲	community	1	conflict
+BCC+Atmospheric Glow Dissolve	BCC+大气辉光溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Blur Dissolve	BCC+模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Camera Shake Dissolve	BCC+摄像机抖动溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Channel Blur Dissolve	BCC+通道模糊溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Crash Zoom Dissolve	BCC+碰撞缩放溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Cross Zoom Dissolve	BCC+交叉缩放溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Depth Wipe ML	BCC+深度擦除 ML	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Directional Blur Dissolve	BCC+方向模糊溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Displacement Dissolve	BCC+位移溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Dissolve	BCC+溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Film Glow Dissolve	BCC+胶片辉光溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Film Roll	BCC+胶片滚动	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Flutter Cut	BCC+颠振切割	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Jump Cut Fixer ML	BCC+跳切修复 ML	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Lens Flare Dissolve	BCC+镜头光晕溶解	BCC Transitions	BCC 过渡	community	2	ok
+BCC+Light Leaks Dissolve	BCC+漏光溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Linear Wipe	BCC+线性擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Mosaic Dissolve	BCC+马赛克溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Multi-Star Dissolve	BCC+多星溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Orbs Dissolve	BCC+光球溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Prism Dissolve	BCC+棱镜溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Rack Focus Dissolve	BCC+移焦溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Radial Wipe	BCC+径向擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Rays Dissolve	BCC+光线溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Rectangular Wipe	BCC+矩形擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Ripple Dissolve	BCC+波纹溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Smoke and Fog Dissolve	BCC+烟雾溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Smoke Wipe	BCC+烟雾擦除	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Spin Blur Dissolve	BCC+旋转模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Swish Glow	BCC+快速辉光	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Swish Pan	BCC+快速平移	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Swish Prism	BCC+快速棱镜	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Swish Warp	BCC+快速扭曲	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Texture Wipe	BCC+纹理擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC+Video Glitch Dissolve	BCC+视频故障溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC+Vignette Wipe	BCC+暗角擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Blobs Wipe	BCC 斑点擦除	BCC Transitions	BCC 过渡	community	1	ok
+BCC Burnt Film	BCC 胶片燃烧	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Checker Wipe	BCC 方格擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Colorize Glow Dissolve	BCC 着色发光溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC Composite Dissolve	BCC 合成溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Criss-Cross Wipe	BCC 交叉擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Cross Melt	BCC 交叉溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Curl Dissolve	BCC 卷曲溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC Damaged TV Dissolve	BCC 受损 TV 溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Grid Wipe	BCC 网格擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Kaleida Dissolve	BCC 万花筒溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC Lens Blur Dissolve	BCC 镜头模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Lens Distortion Wipe	BCC 镜头变形擦拭	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Lens Flare Round	BCC 镜头光晕圆	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Lens Flare Spiked	BCC 透镜光斑尖峰	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Lens Flash	BCC 镜头闪光灯	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Light Wipe	BCC 扫光擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Multi Stretch Wipe	BCC 拉伸擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Multi Stripe Wipe	BCC 多条纹擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Particle Illusion Dissolve	BCC 幻影粒子溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC RGB Displacement Dissolve	BCC RGB 位移溶解	BCC Transitions	BCC 过渡	community	1	ok
+BCC Ribbon Wipe	BCC 色带擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Rings Wipe	BCC 环形擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Tile Wipe	BCC 拼贴擦除	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Tritone Dissolve	BCC 三色调溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Twister	BCC 扭曲器	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Vector Blur Dissolve	BCC 矢量模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict
+BCC Water Waves Dissolve	BCC 水波溶解	BCC Transitions	BCC 过渡	community	1	conflict

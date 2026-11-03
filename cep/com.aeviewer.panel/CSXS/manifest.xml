@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0"
+                   ExtensionBundleId="com.aeviewer.panel"
+                   ExtensionBundleVersion="0.1.0"
+                   ExtensionBundleName="com.aeviewer.panel"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <ExtensionList>
+    <Extension Id="com.aeviewer.panel.main" Version="0.1.0"/>
+  </ExtensionList>
+
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- AEFT = After Effects。范围覆盖 CC2022(22.x) 到 2026(26.x)。
+           若你的 AE 版本在范围外导致面板不出现，把区间放宽为 "[22.0,99.0]" 再试。 -->
+      <Host Name="AEFT" Version="[22.0,99.0]"/>
+    </HostList>
+
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+
+    <RequiredRuntimeList>
+      <!-- 新版 AE 使用 CEP 12；若面板不出现，可依次试 11.0 / 12.0 / 13.0 -->
+      <RequiredRuntime Name="CSXS" Version="12.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+
+  <DispatchInfoList>
+    <Extension Id="com.aeviewer.panel.main">
+      <DispatchInfo>
+        <Resources>
+          <MainFile>index.html</MainFile>
+        </Resources>
+
+        <Lifecycle>
+          <AutoStart>false</AutoStart>
+        </Lifecycle>
+
+        <UI>
+          <Type>Panel</Type>
+          <Menu>AE Viewer 骨架(探针)</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>920</Width>
+            </Size>
+            <Max>
+              <Height>1400</Height>
+              <Width>2000</Width>
+            </Max>
+            <Min>
+              <Height>360</Height>
+              <Width>520</Width>
+            </Min>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>
