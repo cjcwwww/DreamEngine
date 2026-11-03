@@ -10,15 +10,21 @@
 // ============================================================
 
 (function probeEffectIsolate() {
+    // 2026-11-03 面板点「生成缺失预览」时整批报
+    //   Line 1849: var center = cs.convertPoint([0.5, 0.5]) / cs is not defined
+    // 整网一损俱损，队列里 64 条被写了同一条 reason，无法定位。
+    // 下面这批就是当时入队的前 8 个，末尾两个是已知可渲染的对照。
     var TARGETS = [
-        "CS CrossBlur",
-        "CS Color Neutralizer",
+        "CC Radial Blur",
+        "CC Color Offset",
         "CC Bender",
-        "CS BlockLoad",
+        "CC Burn Film",
         "CC Glue Gun",
         "VISINF Grain Implant",
         "CC Cylinder",
-        "CC Glass Wipe"
+        "CC Glass Wipe",
+        "CC Lens",
+        "ADBE Gaussian Blur 2"
     ];
 
     var ext = new Folder(Folder.userData.fsName + "/Adobe/CEP/extensions/com.dreamengine.panel");

@@ -171,6 +171,7 @@ var AEV_PreviewGen = (function () {
 
         var scene = null;
         var cells = [];
+        var cellErrors = [];
         var grid = null;
         var queueItem = null;
         var started = new Date().getTime();
@@ -192,10 +193,26 @@ var AEV_PreviewGen = (function () {
                     cellSize, cellSize, 1, durationSeconds, CELL_FPS
                 );
                 var layer = cell.layers.add(scene);
-                var effectGroup = layer.property("ADBE Effect Parade").addProperty(matchName);
-                if (typeof AEV_Recipe !== "undefined") {
-                    AEV_Recipe.apply(effectGroup, matchName, cellSize);
+
+                // 逐格独立保护：addProperty 与配方各自捕获。
+                // 这样"效果加不上"或"参数设不上"能定位到具体 matchName，
+                // 而不是整批失败只回一条 AE 错误。
+                var effectGroup = null;
+                try {
+                    effectGroup = layer.property("ADBE Effect Parade").addProperty(matchName);
+                } catch (eAdd) {
+                    cellErrors.push(matchName + "|addProperty|" + eAdd);
+                    try { cell.remove(); } catch (eRm) {}
+                    continue;
                 }
+                try {
+                    if (typeof AEV_Recipe !== "undefined") {
+                        AEV_Recipe.apply(effectGroup, matchName, cellSize);
+                    }
+                } catch (eRecipe) {
+                    cellErrors.push(matchName + "|recipe|" + eRecipe);
+                }
+
                 var placedLayer = grid.layers.add(cell);
                 placedLayer.moveToEnd();
                 placeCell(grid, placedLayer, cellIndex, columns, cellSize);
@@ -244,12 +261,16 @@ var AEV_PreviewGen = (function () {
                 ["frames", String(files.length)],
                 ["seconds", String(Math.round(elapsed * 100) / 100)],
                 ["template", template],
+                ["cellErrors", cellErrors.join(" ;; ")],
                 ["files", files.join(",")]
             ];
             return result(files.length > 0 ? "ok" : "error", detail);
         } catch (e) {
             var message = e && e.message ? String(e.message) : String(e);
-            return result("error", [["reason", "render_failed:" + message]]);
+            return result("error", [
+                ["reason", "render_failed:" + message],
+                ["cellErrors", cellErrors.join(" ;; ")]
+            ]);
         } finally {
             try {
                 if (queueItem) queueItem.remove();

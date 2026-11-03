@@ -1,5 +1,6 @@
 var AEV_Library = (function () {
   var BATCH_LIMIT = 64;
+  var MAX_DEGRADE = 12;
   var state = {
     lang: "zh",
     query: "",
@@ -411,6 +412,8 @@ var AEV_Library = (function () {
 
     var totalAdded = 0;
     var guard = 0;
+    var degraded = false;
+    var failedNames = [];
     var nextSheet = 0;
     for (var e = 0; e < state.entries.length; e++) {
       if (state.entries[e].sheet >= nextSheet) nextSheet = state.entries[e].sheet + 1;
@@ -462,6 +465,20 @@ var AEV_Library = (function () {
           return;
         }
         if (data.status !== "ok") {
+          var retryNames = data.names || [];
+          // 整网渲染是一损俱损：只要有一个效果自身报错，整批 64 条全部失败，
+          // 而错误信息里不含条目名。此时降级为逐条渲染，把能出的挑出来。
+          if (!degraded && retryNames.length > 1) {
+            degraded = true;
+            setStatus(
+              "整批渲染失败（" +
+                (data.reason || "未知原因") +
+                "），改为逐条重试以隔离问题条目…",
+              false
+            );
+            retryEach(retryNames, 0);
+            return;
+          }
           finishGenerate("生成失败：" + (data.reason || data.batch || "未知原因"), true);
           return;
         }
@@ -491,6 +508,61 @@ var AEV_Library = (function () {
           }
           pump();
         });
+      });
+    }
+
+    /** 整网失败后的逐条重试：能渲的留下，坏的跳过（队列侧会把 attempts 用尽后标 failed）。
+     *  每条单独占一张网，避免互相覆盖；只有整批失败时才会走到这里。
+     *  单次最多试 MAX_DEGRADE 条——否则一次点击要等 64 次单渲，用户会以为卡死。
+     */
+    function retryEach(names, index) {
+      if (index >= names.length || index >= MAX_DEGRADE) {
+        var remaining = names.length - index;
+        var tail =
+          failedNames.length > 0
+            ? "；失败 " + failedNames.length + " 个（" + failedNames.slice(0, 3).join("、") +
+              (failedNames.length > 3 ? " 等" : "") + "），可点「重试失败」"
+            : "";
+        var rest = remaining > 0 ? "，另有 " + remaining + " 个留待下次" : "";
+        finishGenerate(
+          "生成完成（部分失败）：新增 " + totalAdded + " 个" + rest + tail,
+          failedNames.length > 0
+        );
+        return;
+      }
+
+      var sheetIndex = nextSheet++;
+      setStatus(
+        "逐条重试 " + (index + 1) + "/" + names.length + "…",
+        false
+      );
+
+      var expr =
+        "AEV_Queue.drain(" +
+        sheetIndex +
+        ',{limit:1,cellOffset:0,outputRoot:"extension",extensionPath:' +
+        JSON.stringify(state.extensionPath) +
+        "})";
+
+      engine(expr, function (result) {
+        var data = parseEngineResult(result);
+        var got = (data && data.names) || [];
+        if (data && data.status === "ok" && got.length === 1) {
+          state.entries.push({
+            matchName: got[0],
+            sheet: sheetIndex,
+            cell: 0,
+            frames: 6,
+            frameTemplate: "thumbs/batch_" + zeroPad(sheetIndex, 3) + "_%04d.png"
+          });
+          totalAdded += 1;
+          writeManifest(function () {
+            retryEach(names, index + 1);
+          });
+          return;
+        }
+        failedNames.push(names[index]);
+        retryEach(names, index + 1);
       });
     }
   }
