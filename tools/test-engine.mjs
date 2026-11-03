@@ -157,6 +157,20 @@ test("previewgen 的临时合成清理不依赖 undo", () => {
   assert.match(code, /queueItem\.remove\(\)/);
 });
 
+test("previewgen 用合成帧率换算渲染时长，不用面板播放帧率", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  // 6 帧按 12fps 算成 0.5 秒，在 30fps 合成上会渲出 15 帧（AE 2021 实测踩过）
+  assert.match(code, /var CELL_FPS = 30;/);
+  assert.match(code, /var durationSeconds = frames \/ CELL_FPS;/);
+  assert.match(code, /queueItem\.timeSpanDuration = durationSeconds;/);
+  assert.doesNotMatch(code, /timeSpanDuration = frames \/ fps/);
+});
+
+test("previewgen 渲染前清掉同名历史帧", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  assert.match(code, /getFiles\(baseName \+ "_\*\.png"\)/);
+});
+
 test("previewgen 的标准素材尺寸必须是整数（AE 2021 addSolid 硬要求）", () => {
   const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
   // addSolid(color, name, width, height, pixelAspect)：宽高不能是小数

@@ -147,8 +147,11 @@ var AEV_PreviewGen = (function () {
         var width = conf.contactSheet.width;
         var height = conf.contactSheet.height;
         var frames = conf.animatedPreview.frameCount;
-        var fps = conf.animatedPreview.fps;
-        var templateName = conf.render.pngOutputTemplate;
+
+        // 合成帧率固定 30，而 config 里的 fps(12) 只是面板播放帧率。
+        // 两者混用会把"6 帧"算成 0.5 秒 → 30fps 下实际渲出 15 帧（实测踩过）。
+        var CELL_FPS = 30;
+        var durationSeconds = frames / CELL_FPS;
 
         if (typeof AEV_Store !== "undefined") {
             var permission = AEV_Store.writePermission();
@@ -174,14 +177,14 @@ var AEV_PreviewGen = (function () {
 
             grid = app.project.items.addComp(
                 "DE_sheet_" + pad(sheetIndex, 3),
-                width, height, 1, frames / fps, 30
+                width, height, 1, durationSeconds, CELL_FPS
             );
 
             for (var i = 0; i < matchNames.length && i < columns * columns; i++) {
                 var matchName = matchNames[i];
                 var cell = app.project.items.addComp(
                     "DE_cell_" + pad(sheetIndex, 3) + "_" + pad(i, 2),
-                    cellSize, cellSize, 1, frames / fps, 30
+                    cellSize, cellSize, 1, durationSeconds, CELL_FPS
                 );
                 var layer = cell.layers.add(scene);
                 var effectGroup = layer.property("ADBE Effect Parade").addProperty(matchName);
@@ -203,11 +206,21 @@ var AEV_PreviewGen = (function () {
             outputModule.applyTemplate(template);
 
             var baseName = "batch_" + pad(sheetIndex, 3);
+
+            // 清掉同名历史帧：上一次渲染帧数与本次不同时（比如改过 frameCount），
+            // 残留的高位帧会被面板误当成有效帧轮播。
+            var stale = targetFolder.getFiles(baseName + "_*.png");
+            for (var s = 0; s < stale.length; s++) {
+                if (stale[s] instanceof File) {
+                    try { stale[s].remove(); } catch (eStale) {}
+                }
+            }
+
             outputModule.file = new File(targetFolder.fsName + "/" + baseName + "_[####].png");
 
             var requestedStart = options && options.startTime !== undefined ? options.startTime : 0;
             queueItem.timeSpanStart = requestedStart;
-            queueItem.timeSpanDuration = frames / fps;
+            queueItem.timeSpanDuration = durationSeconds;
 
             app.project.renderQueue.render();
 
