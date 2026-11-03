@@ -91,10 +91,8 @@ test("recipe 的启发式只处理语义明确的四类属性", () => {
   const color = recipe.heuristicValue("color");
   assert.equal(color.length, 3);
 
-  assert.deepEqual(
-    Array.from(recipe.heuristicValue("twoD", null, null, 256)),
-    [128, 128],
-  );
+  // TwoD 实测会触发 AE 内部脚本异常（CC 系列 Center 是 0–1 归一化坐标），必须跳过
+  assert.equal(recipe.heuristicValue("twoD", null, null, 256), undefined);
   assert.equal(recipe.heuristicValue("checkbox"), true);
   assert.equal(recipe.heuristicValue("oneD", 0, 100), 50);
   assert.equal(recipe.heuristicValue("oneD", null, 100), undefined);

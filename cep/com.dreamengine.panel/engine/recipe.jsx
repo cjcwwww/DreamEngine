@@ -79,12 +79,17 @@ var AEV_Recipe = (function () {
 
     /** 纯函数：给定属性类型与取值范围，返回启发式演示值。
      *  返回 undefined 表示"这个属性不动"，调用方必须跳过。
-     *  kind: "color" | "twoD" | "checkbox" | "oneD" | "other"
+     *  kind: "color" | "checkbox" | "oneD" | "other"
+     *
+     *  ⚠️ TwoD 一律不碰（设计文档 §4.3 原本要求给"中心+偏移"，已按实测推翻）：
+     *  AE 2021 上 CC 系列的 Center 等 Point 控件是 0–1 归一化坐标，赋像素值
+     *  [128,128] 会触发 AE 内部脚本异常
+     *    "After Effects错误: Line 1849: var center = cs.convertPoint([0.5, 0.5"
+     *  而整网批量渲染是一损俱损的——一个格子报错会让整张网失败。
+     *  位置类参数保持效果默认值，视觉上可能"看不出偏移"，但不会崩。
      */
     function heuristicValue(kind, minValue, maxValue, cellSize) {
-        var cell = cellSize || 256;
         if (kind === "color") return [0.9, 0.35, 0.2];
-        if (kind === "twoD") return [cell * 0.5, cell * 0.5];
         if (kind === "checkbox") return true;
         if (kind === "oneD") {
             if (minValue === null || minValue === undefined) return undefined;
@@ -105,8 +110,8 @@ var AEV_Recipe = (function () {
         // PropertyValueType 的字符串化结果在不同版本可能是数字或枚举名
         if (type === "COLOR" || type === String(PropertyValueType.COLOR)) return "color";
         if (type === "CHECKBOX" || type === String(PropertyValueType.CHECKBOX)) return "checkbox";
-        if (type === "TWO_D" || type === String(PropertyValueType.TWO_D)) return "twoD";
-        if (type === "TWO_D_SPATIAL" || type === String(PropertyValueType.TWO_D_SPATIAL)) return "twoD";
+        // TWO_D / TWO_D_SPATIAL 故意归为 other：位置类参数的单位在不同效果里
+        // 可能是像素也可能是 0–1 归一化，统一赋值会踩到 AE 内部脚本异常。
         if (type === "OneD" || type === "ONE_D" || type === String(PropertyValueType.OneD)) return "oneD";
         return "other";
     }
