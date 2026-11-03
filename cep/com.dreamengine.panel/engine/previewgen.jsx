@@ -134,7 +134,9 @@ var AEV_PreviewGen = (function () {
      * 批量渲染一张 contact sheet。
      * matchNames：本次要渲的 matchName 数组（不超过每网格数）
      * sheetIndex：第几张网，决定输出文件名
-     * options：{ extensionPath, outputRoot: "user"|"extension", startTime }
+     * options：{ extensionPath, outputRoot, startTime, cellOffset }
+     *   cellOffset —— 本批从网格第几格开始摆。整张新网传 0；
+     *   往已有网里补空位时才用得上（要与 manifest 里的 cell 编号一致）。
      */
     function renderBatch(matchNames, sheetIndex, options) {
         if (!matchNames || matchNames.length === 0) {
@@ -152,6 +154,7 @@ var AEV_PreviewGen = (function () {
         // 两者混用会把"6 帧"算成 0.5 秒 → 30fps 下实际渲出 15 帧（实测踩过）。
         var CELL_FPS = 30;
         var durationSeconds = frames / CELL_FPS;
+        var cellOffset = (options && options.cellOffset) || 0;
 
         if (typeof AEV_Store !== "undefined") {
             var permission = AEV_Store.writePermission();
@@ -180,10 +183,12 @@ var AEV_PreviewGen = (function () {
                 width, height, 1, durationSeconds, CELL_FPS
             );
 
-            for (var i = 0; i < matchNames.length && i < columns * columns; i++) {
+            for (var i = 0; i < matchNames.length; i++) {
+                var cellIndex = cellOffset + i;
+                if (cellIndex >= columns * columns) break;
                 var matchName = matchNames[i];
                 var cell = app.project.items.addComp(
-                    "DE_cell_" + pad(sheetIndex, 3) + "_" + pad(i, 2),
+                    "DE_cell_" + pad(sheetIndex, 3) + "_" + pad(cellIndex, 2),
                     cellSize, cellSize, 1, durationSeconds, CELL_FPS
                 );
                 var layer = cell.layers.add(scene);
@@ -193,7 +198,7 @@ var AEV_PreviewGen = (function () {
                 }
                 var placedLayer = grid.layers.add(cell);
                 placedLayer.moveToEnd();
-                placeCell(grid, placedLayer, i, columns, cellSize);
+                placeCell(grid, placedLayer, cellIndex, columns, cellSize);
                 cells.push(cell);
             }
 

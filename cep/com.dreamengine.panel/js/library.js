@@ -400,9 +400,12 @@ var AEV_Library = (function () {
     byId("btnGenerate").disabled = true;
     setStatus("正在排队 " + queueNames.length + " 个效果…", false);
 
-    var cursor = state.entries.length;
     var totalAdded = 0;
     var guard = 0;
+    var nextSheet = 0;
+    for (var e = 0; e < state.entries.length; e++) {
+      if (state.entries[e].sheet >= nextSheet) nextSheet = state.entries[e].sheet + 1;
+    }
 
     engine(
       "AEV_Queue.markCached(" + JSON.stringify(existingNames) + ")",
@@ -423,12 +426,14 @@ var AEV_Library = (function () {
         return;
       }
 
-      var sheetIndex = Math.floor(cursor / BATCH_LIMIT);
-      var cellStart = cursor % BATCH_LIMIT;
-      var limit = BATCH_LIMIT - cellStart;
+      // 每批单独成一张网。已有预览是 v1 的单文件整图（batch_000.png），
+      // 新生成的是帧序列（batch_001_%04d.png），两种图不能混在同一张 sheet 里，
+      // 否则取图路径会打架；宁可浪费旧网的空位，也不做格式混装。
+      var sheetIndex = nextSheet++;
+      var limit = BATCH_LIMIT;
 
       setStatus(
-        "正在生成：" + totalAdded + " 个已完成，本批 " + limit + " 个…",
+        "正在生成：" + totalAdded + " 个已完成，本批最多 " + limit + " 个…",
         false
       );
 
@@ -437,7 +442,7 @@ var AEV_Library = (function () {
         sheetIndex +
         ',{limit:' +
         limit +
-        ',outputRoot:"extension",extensionPath:' +
+        ',cellOffset:0,outputRoot:"extension",extensionPath:' +
         JSON.stringify(state.extensionPath) +
         "})";
 
@@ -462,13 +467,12 @@ var AEV_Library = (function () {
           state.entries.push({
             matchName: names[n],
             sheet: sheetIndex,
-            cell: cellStart + n,
+            cell: n,
             frames: 6,
             frameTemplate:
               "thumbs/batch_" + zeroPad(sheetIndex, 3) + "_%04d.png"
           });
         }
-        cursor += names.length;
         totalAdded += names.length;
 
         writeManifest(function (written) {
