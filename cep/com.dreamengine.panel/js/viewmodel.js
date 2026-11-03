@@ -1,4 +1,20 @@
 var AEV_ViewModel = (function () {
+  /* 表达式控件族与音频族不渲图，面板退化为文字条目（设计文档 §4.3） */
+  var NO_PREVIEW_CATEGORIES = [
+    "expression controls",
+    "表达式控制",
+    "audio",
+    "音频"
+  ];
+
+  function isNoPreview(category) {
+    var cat = String(category === undefined || category === null ? "" : category).toLowerCase();
+    for (var i = 0; i < NO_PREVIEW_CATEGORIES.length; i++) {
+      if (cat === NO_PREVIEW_CATEGORIES[i]) return true;
+    }
+    return false;
+  }
+
   function firstText() {
     for (var i = 0; i < arguments.length; i++) {
       var value = arguments[i];
@@ -67,7 +83,7 @@ var AEV_ViewModel = (function () {
       nameZh: nameRecord.nameZh,
       nameEn: nameRecord.nameEn,
       plugin: inferPlugin(effect),
-      hasPreview: !!(preview && preview.src),
+      hasPreview: !!(preview && (preview.src || preview.frameSrc)),
       preview: preview
     };
   }
@@ -99,6 +115,7 @@ var AEV_ViewModel = (function () {
   }
 
   return {
+    isNoPreview: isNoPreview,
     inferPlugin: inferPlugin,
     resolveName: resolveName,
     resolveCategory: resolveCategory,

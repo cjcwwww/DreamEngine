@@ -149,6 +149,32 @@ button {
   opacity: 0.5;
 }
 
+/* 生成队列的控制按钮：与 icon-button 同高度，但带文字 */
+.action-button {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.action-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.action-button[hidden] {
+  display: none;
+}
+
 .icon-button svg,
 .search-field svg {
   width: 15px;

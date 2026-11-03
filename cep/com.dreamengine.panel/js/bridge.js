@@ -85,6 +85,54 @@ var Bridge = (function () {
     }
   }
 
+  /** engine 目录下的模块，按依赖顺序加载。
+   *  render_config 必须最先（previewgen 读它的定版参数），
+   *  store 与 recipe 在 previewgen 之前（previewgen 依赖两者）。
+   */
+  var ENGINE_FILES = [
+    "engine/render_config.jsx",
+    "engine/store.jsx",
+    "engine/recipe.jsx",
+    "engine/previewgen.jsx",
+    "engine/queue.jsx",
+    "engine/catalog.jsx"
+  ];
+
+  /** 加载 engine 全部模块并求值一个表达式。
+   *  @param {string} extensionPath  扩展根目录（正斜杠）
+   *  @param {string} expr   ES3 表达式，例如 AEV_Queue.stats()
+   *  @param {function(string)} cb
+   */
+  function runEngine(extensionPath, expr, cb) {
+    if (!isCEP()) {
+      if (cb) cb("__NOT_CEP__");
+      return;
+    }
+    if (!extensionPath) {
+      if (cb) cb("ERR:no_extension_path");
+      return;
+    }
+
+    var paths = [];
+    for (var i = 0; i < ENGINE_FILES.length; i++) {
+      paths.push(JSON.stringify(extensionPath + "/" + ENGINE_FILES[i]));
+    }
+
+    var jsx =
+      "(function(){" +
+      "  try{" +
+      "    var files = [" + paths.join(",") + "];" +
+      "    for(var i=0;i<files.length;i++){" +
+      "      var f = new File(files[i]);" +
+      "      if(!f.exists) return 'ERR:missing_engine:' + files[i];" +
+      "      $.evalFile(f);" +
+      "    }" +
+      "    return String(" + expr + ");" +
+      "  }catch(e){return 'ERR:'+e.toString();}" +
+      "})()";
+    evalAE(jsx, cb);
+  }
+
   /** 打开目录（在资源管理器/Finder 里显示探针输出） */
   function revealDir(dirPath, cb) {
     var jsx = "(function(){try{return String(new Folder(" +
@@ -116,6 +164,8 @@ var Bridge = (function () {
     listFiles: listFiles,
     getDocsPath: getDocsPath,
     getExtensionPath: getExtensionPath,
+    runEngine: runEngine,
+    ENGINE_FILES: ENGINE_FILES,
     revealDir: revealDir,
     selfCheck: selfCheck
   };

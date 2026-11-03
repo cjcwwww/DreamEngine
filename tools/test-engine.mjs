@@ -1,0 +1,266 @@
+#!/usr/bin/env node
+/* ============================================================
+ * engine 层测试
+ *
+ * 覆盖范围：
+ *   · render_config 与仓库根 config/render_params.jsxinc 的数值一致性（防漂移）
+ *   · recipe 的启发式取值与 no-preview 判定（纯函数，可在 node 内实跑）
+ *   · previewgen 的容量规划与失败策略（源码契约 + 纯函数）
+ *   · store 的写权限自检必须走 app.preferences，不得再用不存在的 app.settings
+ *   · bridge 的 engine 加载顺序（依赖必须先于依赖方）
+ *   · queue 的状态机与持久化格式
+ *
+ * 这些都不是"跑一遍看有没有报错"，而是把 M0 的实测结论与设计约束固化成断言。
+ * ============================================================ */
+
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import vm from "node:vm";
+
+const ROOT = resolve(import.meta.dirname, "..");
+const ENGINE = "cep/com.dreamengine.panel/engine";
+
+function read(relativePath) {
+  return readFileSync(resolve(ROOT, relativePath), "utf8");
+}
+
+/** 剥掉注释后再做"代码里不得出现 X"类断言。
+ *  否则注释里提到 copyToComp / app.settings 这类词会造成误报。
+ */
+function stripComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
+/** 在同一 context 内按顺序求值多个 ES3 模块，返回该 context */
+function loadModules(relativePaths, extra) {
+  const context = vm.createContext(Object.assign({}, extra || {}));
+  for (const rel of relativePaths) {
+    vm.runInContext(read(rel), context, { filename: rel });
+  }
+  return context;
+}
+
+const tests = [];
+
+function test(name, fn) {
+  tests.push({ name, fn });
+}
+
+/* ---------- 1. 定版参数一致性 ---------- */
+
+function numericField(source, field) {
+  const match = source.match(new RegExp(field + ":\\s*(\\d+)"));
+  return match ? Number(match[1]) : null;
+}
+
+test("render_config 与 config/render_params.jsxinc 数值一致", () => {
+  const shipped = read("config/render_params.jsxinc");
+  const embedded = read(`${ENGINE}/render_config.jsx`);
+  const fields = [
+    "columns",
+    "cellSize",
+    "width",
+    "height",
+    "effectsPerSheet",
+    "frameCount",
+    "fps",
+    "totalEffects",
+    "staticEffects",
+    "animatedEffects",
+    "aerenderConcurrency",
+  ];
+  for (const field of fields) {
+    assert.equal(
+      numericField(embedded, field),
+      numericField(shipped, field),
+      `字段 ${field} 在扩展副本与仓库配置之间不一致`,
+    );
+  }
+  assert.match(embedded, /pngOutputTemplate: "DreamEngine PNG Sequence"/);
+});
+
+/* ---------- 2. recipe 纯函数 ---------- */
+
+test("recipe 的启发式只处理语义明确的四类属性", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+
+  const color = recipe.heuristicValue("color");
+  assert.equal(color.length, 3);
+
+  assert.deepEqual(
+    Array.from(recipe.heuristicValue("twoD", null, null, 256)),
+    [128, 128],
+  );
+  assert.equal(recipe.heuristicValue("checkbox"), true);
+  assert.equal(recipe.heuristicValue("oneD", 0, 100), 50);
+  assert.equal(recipe.heuristicValue("oneD", null, 100), undefined);
+  assert.equal(recipe.heuristicValue("other"), undefined);
+});
+
+test("recipe 把表达式控件族与音频族判为不渲图", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+  assert.equal(recipe.isNoPreview("Expression Controls"), true);
+  assert.equal(recipe.isNoPreview("表达式控制"), true);
+  assert.equal(recipe.isNoPreview("Audio"), true);
+  assert.equal(recipe.isNoPreview("音频"), true);
+  assert.equal(recipe.isNoPreview("Blur & Sharpen"), false);
+  assert.equal(recipe.isNoPreview("模糊和锐化"), false);
+});
+
+test("recipe 展示时点取合成中点", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  assert.equal(ctx.AEV_Recipe.presentationTime({ duration: 2 }), 1);
+});
+
+/* ---------- 3. previewgen ---------- */
+
+test("previewgen 的容量规划按 8x8 网格与 6 帧计算", () => {
+  const ctx = loadModules([
+    `${ENGINE}/render_config.jsx`,
+    `${ENGINE}/previewgen.jsx`,
+  ]);
+  const gen = ctx.AEV_PreviewGen;
+
+  const full = gen.plan(64);
+  assert.equal(full.sheets, 1);
+  assert.equal(full.totalRenders, 6);
+
+  const overshoot = gen.plan(80);
+  assert.equal(overshoot.sheets, 2);
+  assert.equal(overshoot.totalRenders, 12);
+
+  assert.equal(gen.plan(0).sheets, 0);
+});
+
+test("previewgen 只接受 PNG 模板，找不到就失败", () => {
+  const ctx = loadModules([`${ENGINE}/previewgen.jsx`]);
+  const gen = ctx.AEV_PreviewGen;
+  assert.equal(gen.pngTemplate({ templates: ["Lossless", "PNG Sequence"] }), "PNG Sequence");
+  assert.equal(gen.pngTemplate({ templates: ["无损", "高品质"] }), null);
+
+  const source = read(`${ENGINE}/previewgen.jsx`);
+  assert.match(source, /throw new Error\("no_png_template"\)/);
+  // 不允许回退到非 PNG 模板
+  assert.doesNotMatch(source, /return fallback/);
+});
+
+test("previewgen 的临时合成清理不依赖 undo", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  assert.doesNotMatch(code, /\.copyToComp\(/);
+  assert.match(code, /finally \{/);
+  assert.match(code, /cells\[c\]\.remove\(\)/);
+  assert.match(code, /queueItem\.remove\(\)/);
+});
+
+test("manifest v2 同时支持单文件与帧序列", () => {
+  const source = read(`${ENGINE}/previewgen.jsx`);
+  assert.match(source, /"version":2/);
+  assert.match(source, /"frameSrc":/);
+  assert.match(source, /"src":/);
+});
+
+/* ---------- 4. store ---------- */
+
+test("store 的写权限自检走 app.preferences，不再使用不存在的 app.settings", () => {
+  const code = stripComments(read(`${ENGINE}/store.jsx`));
+  assert.doesNotMatch(code, /app\.settings/);
+  assert.match(code, /app\.preferences\.getPrefAsLong/);
+  assert.match(code, /Pref_SCRIPTING_FILE_NETWORK_SECURITY/);
+});
+
+test("store 写权限三态：开启/关闭/读不到", () => {
+  for (const [raw, expected] of [
+    [1, 1],
+    [0, 0],
+    [-1, null],
+  ]) {
+    const ctx = loadModules([`${ENGINE}/store.jsx`], {
+      app: { preferences: { getPrefAsLong: () => raw } },
+    });
+    assert.equal(ctx.AEV_Store.writePermission(), expected, `返回值 ${raw} 应映射为 ${expected}`);
+  }
+});
+
+test("store 把所有数据写在 我的文档/DreamEngine 下", () => {
+  const source = read(`${ENGINE}/store.jsx`);
+  assert.match(source, /var ROOT_NAME = "DreamEngine";/);
+  assert.match(source, /Folder\.myDocuments\.fsName/);
+});
+
+/* ---------- 5. bridge 加载顺序 ---------- */
+
+test("bridge 的 engine 加载顺序满足依赖关系", () => {
+  const source = read("cep/com.dreamengine.panel/js/bridge.js");
+  const order = ["render_config", "store", "recipe", "previewgen", "queue", "catalog"].map(
+    (name) => source.indexOf(`engine/${name}.jsx`),
+  );
+  for (const index of order) assert.notEqual(index, -1, "加载清单缺少模块");
+  for (let i = 1; i < order.length; i++) {
+    assert.ok(order[i] > order[i - 1], "engine 模块顺序必须满足依赖（config → store → recipe → previewgen → queue）");
+  }
+});
+
+/* ---------- 6. queue ---------- */
+
+test("queue 用 TSV 持久化，避免 ExtendScript 解析 JSON", () => {
+  const code = stripComments(read(`${ENGINE}/queue.jsx`));
+  assert.match(code, /var QUEUE_FILE = "cache\/queue\.tsv";/);
+  assert.match(code, /var SEP = "\\t";/);
+  assert.doesNotMatch(code, /JSON\.parse/);
+});
+
+test("queue 的状态机符合 pending → rendering → cached/failed", () => {
+  const source = read(`${ENGINE}/queue.jsx`);
+  for (const status of ['"pending"', '"rendering"', '"cached"', '"failed"']) {
+    assert.ok(source.includes(status), `缺少状态 ${status}`);
+  }
+  assert.match(source, /var MAX_ATTEMPTS = 2;/);
+});
+
+test("queue 的 drain 一次只渲一张网并返回本批名单", () => {
+  const source = read(`${ENGINE}/queue.jsx`);
+  assert.match(source, /var limit = \(options && options\.limit\) \|\| perSheet;/);
+  assert.match(source, /namesJson\.join\(","\)/);
+  assert.match(source, /\\"names\\":\[/);
+  assert.match(source, /renderBatch\(batch, sheetIndex, options\)/);
+});
+
+/* ---------- 7. 面板侧 ---------- */
+
+test("viewmodel 的 no-preview 规则与 recipe 保持一致", () => {
+  const viewmodel = read("cep/com.dreamengine.panel/js/viewmodel.js");
+  const recipe = read(`${ENGINE}/recipe.jsx`);
+  for (const token of ["expression controls", "表达式控制", "audio", "音频"]) {
+    assert.ok(viewmodel.toLowerCase().includes(token.toLowerCase()), `viewmodel 缺少 ${token}`);
+    assert.ok(recipe.toLowerCase().includes(token.toLowerCase()), `recipe 缺少 ${token}`);
+  }
+});
+
+test("面板对多帧预览按帧序列取图，而不是依赖 sprite 的 sheet.src", () => {
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(library, /frameSrc/);
+  assert.match(library, /replace\("%04d", zeroPad\(index, 4\)\)/);
+  assert.match(library, /setInterval/);
+});
+
+/* ---------- 运行 ---------- */
+
+let failed = 0;
+for (const { name, fn } of tests) {
+  try {
+    fn();
+    console.log(`[PASS] ${name}`);
+  } catch (error) {
+    failed++;
+    console.error(`[FAIL] ${name}`);
+    console.error(String((error && error.stack) || error));
+  }
+}
+
+console.log(`\n${tests.length - failed}/${tests.length} passed`);
+process.exitCode = failed === 0 ? 0 : 1;
