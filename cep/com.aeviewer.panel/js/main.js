@@ -200,6 +200,7 @@ var App = (function () {
     on("btnRunT02", "click", function () { runProbe("T0_2_渲染耗时探针.jsx", "btnRunT02"); });
     on("btnRunT04", "click", function () { runProbe("T0_4_预设应用探针.jsx", "btnRunT04"); });
     on("btnRunT06", "click", function () { runProbe("T0_6_导入入口探针.jsx", "btnRunT06"); });
+    on("btnRunT08", "click", function () { runProbe("T0_8_全量dump探针.jsx", "btnRunT08"); });
     on("btnSaveAll", "click", saveAll);
     on("btnClear", "click", function () {
       document.getElementById("outBox").textContent = "（空）";
