@@ -337,8 +337,13 @@ var AEV_PreviewGen = (function () {
 
             if (!sheetsSeen[String(row.sheet)]) {
                 sheetsSeen[String(row.sheet)] = true;
+                // 帧序列网的实体文件是 batch_XXX_0000.png，不是 batch_XXX.png；
+                // sheets.src 必须指向真实存在的文件，否则按 sheet 取图会 404。
+                var sheetFile = row.frames > 1
+                    ? ("batch_" + pad(row.sheet, 3) + "_0000.png")
+                    : ("batch_" + pad(row.sheet, 3) + ".png");
                 sheets.push("{\"index\":" + row.sheet + ",\"src\":" +
-                            jsonText("thumbs/" + fileName) + ",\"width\":" + width +
+                            jsonText("thumbs/" + sheetFile) + ",\"width\":" + width +
                             ",\"height\":" + height + "}");
             }
         }

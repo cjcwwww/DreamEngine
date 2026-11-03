@@ -380,15 +380,25 @@ var AEV_Library = (function () {
       if (state.previews.hasOwnProperty(key)) existingNames.push(key);
     }
 
-    var queueNames = [];
-    // 一次点击最多补一张网（64 格）。宁可让用户多点几次，也不要把 AE 锁住几分钟。
-    var ceiling = BATCH_LIMIT;
-    for (var i = 0; i < state.catalog.length && queueNames.length < ceiling; i++) {
+    var candidates = [];
+    for (var i = 0; i < state.catalog.length; i++) {
       var effect = state.catalog[i];
       if (!isActiveEffect(effect)) continue;
       if (state.previews[effect.matchName]) continue;
       if (AEV_ViewModel.isNoPreview(effect.category)) continue;
-      queueNames.push(effect.matchName);
+      if (AEV_ViewModel.isPoorPreviewTarget(effect)) continue;
+      candidates.push(effect);
+    }
+    // 先渲"看得出差异"的常用分类；按 catalog 原始顺序取会先撞上 3D 跟踪这类无效效果。
+    candidates.sort(function (a, b) {
+      return AEV_ViewModel.previewRank(a) - AEV_ViewModel.previewRank(b);
+    });
+
+    var queueNames = [];
+    // 一次点击最多补一张网（64 格）。宁可让用户多点几次，也不要把 AE 锁住几分钟。
+    var ceiling = BATCH_LIMIT;
+    for (var c = 0; c < candidates.length && queueNames.length < ceiling; c++) {
+      queueNames.push(candidates[c].matchName);
     }
 
     if (queueNames.length === 0) {

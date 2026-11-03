@@ -320,6 +320,27 @@ test("queue 的 drain 一次只渲一张网并返回本批名单", () => {
 
 /* ---------- 7. 面板侧 ---------- */
 
+test("manifest 的 sheets.src 指向真实存在的帧文件", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  // 帧序列网的实体文件是 batch_XXX_0000.png，写 batch_XXX.png 会指向不存在的文件
+  assert.match(code, /_0000\.png/);
+});
+
+test("面板优先渲染看得出差异的分类，并跳过 3D 通道族", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE 3D Tracker", category: "3D Channel" }), true);
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE 3D Glasses", category: "透视" }), true);
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" }), false);
+
+  const blur = view.previewRank({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" });
+  const unknown = view.previewRank({ matchName: "XX Something", category: "未收录分类" });
+  const poor = view.previewRank({ matchName: "ADBE 3D Tracker", category: "3D Channel" });
+  assert.ok(blur < unknown, "常用分类应排在未知分类之前");
+  assert.ok(unknown < poor, "未知分类应排在已排除项之前");
+});
+
 test("viewmodel 的 no-preview 规则与 recipe 保持一致", () => {
   const viewmodel = read("cep/com.dreamengine.panel/js/viewmodel.js");
   const recipe = read(`${ENGINE}/recipe.jsx`);
