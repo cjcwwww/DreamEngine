@@ -18,6 +18,7 @@
     <button class="tab active" data-tab="env">环境自检</button>
     <button class="tab" data-tab="t03">T0.3 CEF 渲染探针</button>
     <button class="tab" data-tab="t06">T0.6b 拖拽取路径</button>
+    <button class="tab" data-tab="run">运行探针</button>
     <button class="tab" data-tab="out">输出</button>
   </nav>
 
@@ -73,6 +74,30 @@
       <div class="row">
         <button id="btnT06Write" class="primary">把拖拽结果写入 AEViewerProbe</button>
       </div>
+    </section>
+
+    <!-- 运行探针：点按钮让 AE 直接执行仓库里的 .jsx，免去菜单导航 -->
+    <section class="pane" id="pane-run">
+      <h2>运行 AE 侧探针</h2>
+      <p class="hint">
+        每个按钮让 AE 用 <code>$.evalFile</code> 直接执行仓库 <code>probes/</code> 下对应脚本，
+        与「文件 &gt; 脚本 &gt; 运行脚本文件」等价。输出落在 <code>Documents/AEViewerProbe/</code>。
+      </p>
+      <p class="hint"><b>硬规矩：</b>跑完不要按 Ctrl+Z（copyToComp 的 undo 崩溃警告）；
+        T0_2 跑完直接「关闭项目且不保存」；T0_2 首跑别改参数。
+        T0_4 会弹框选 .ffx，T0_6 会弹两次框，属正常流程。</p>
+      <div class="row">
+        <button id="btnRunT01">T0_1 效果枚举</button>
+        <button id="btnRunT05">T0_5 参数读取</button>
+      </div>
+      <div class="row">
+        <button id="btnRunT02">T0_2 渲染耗时（较长）</button>
+      </div>
+      <div class="row">
+        <button id="btnRunT04">T0_4 预设应用（弹框选 .ffx）</button>
+        <button id="btnRunT06">T0_6 导入入口（弹框）</button>
+      </div>
+      <pre class="box tall" id="runLog"></pre>
     </section>
 
     <!-- 输出 -->

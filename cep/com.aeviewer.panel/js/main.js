@@ -135,6 +135,39 @@ var App = (function () {
     })();
   }
 
+  /* ---------- 运行 AE 侧探针 ----------
+   * 路径为配置常量：面板经目录联接部署，无法从面板自身位置推导仓库路径。
+   * 换机器或换仓库位置时只改这一处。正斜杠，ExtendScript 可直接识别。 */
+  var REPO_PROBES = "D:/workqwen/DreamEngine-1/probes/";
+
+  function runLog(text) {
+    var el = document.getElementById("runLog");
+    if (!el) return;
+    el.textContent += (el.textContent ? "\n" : "") + text;
+    el.scrollTop = el.scrollHeight;
+    var out = document.getElementById("outBox");
+    if (out) {
+      if (out.textContent === "（空）") out.textContent = "";
+      out.textContent += "[run] " + text + "\n";
+    }
+  }
+
+  function runProbe(fileName, btnId) {
+    var btn = document.getElementById(btnId);
+    if (btn) btn.disabled = true;
+    runLog("▶ 开始执行 " + fileName + "（AE 主线程会阻塞，结束会弹提示框）");
+    // 用 $.evalFile 执行仓库里的探针，等价于「文件>脚本>运行脚本文件」
+    var jsx = "(function(){try{var f=new File(" +
+      JSON.stringify(REPO_PROBES + fileName) +
+      ");if(!f.exists)return 'NO_FILE:'+f.fsName;" +
+      "$.evalFile(f);return 'DONE:'+f.fsName;}" +
+      "catch(e){return 'ERR:'+e.toString();}})()";
+    Bridge.evalAE(jsx, function (res) {
+      runLog("◀ " + fileName + " → " + res);
+      if (btn) btn.disabled = false;
+    });
+  }
+
   /* ---------- 装配 ---------- */
   function boot() {
     initTabs();
@@ -162,6 +195,11 @@ var App = (function () {
       registerText("T0_6b_拖拽.txt", T06.flushText());
       emit("t06", "已缓存拖拽记录，点「输出」页签的「全部写入文件」落盘。");
     });
+    on("btnRunT01", "click", function () { runProbe("T0_1_效果枚举探针.jsx", "btnRunT01"); });
+    on("btnRunT05", "click", function () { runProbe("T0_5_参数读取探针.jsx", "btnRunT05"); });
+    on("btnRunT02", "click", function () { runProbe("T0_2_渲染耗时探针.jsx", "btnRunT02"); });
+    on("btnRunT04", "click", function () { runProbe("T0_4_预设应用探针.jsx", "btnRunT04"); });
+    on("btnRunT06", "click", function () { runProbe("T0_6_导入入口探针.jsx", "btnRunT06"); });
     on("btnSaveAll", "click", saveAll);
     on("btnClear", "click", function () {
       document.getElementById("outBox").textContent = "（空）";
