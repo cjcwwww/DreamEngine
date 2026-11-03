@@ -381,7 +381,8 @@ var AEV_Library = (function () {
     }
 
     var queueNames = [];
-    var ceiling = BATCH_LIMIT * 4;
+    // 一次点击最多补一张网（64 格）。宁可让用户多点几次，也不要把 AE 锁住几分钟。
+    var ceiling = BATCH_LIMIT;
     for (var i = 0; i < state.catalog.length && queueNames.length < ceiling; i++) {
       var effect = state.catalog[i];
       if (!isActiveEffect(effect)) continue;
