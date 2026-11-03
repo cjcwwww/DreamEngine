@@ -83,6 +83,48 @@ var AEV_ViewModel = (function () {
     return idx >= 0 ? idx : 500;
   }
 
+  /** 按分类轮转排列候选。
+   *  纯按 rank 排序会让首批 64 个全是"模糊和锐化"，预览墙看起来毫无多样性；
+   *  轮转后首批就能覆盖模糊/调色/扭曲/风格化等多个类别。
+   */
+  function interleaveByCategory(effects) {
+    var buckets = {};
+    var order = [];
+    for (var i = 0; i < effects.length; i++) {
+      var effect = effects[i];
+      var cat = normalize(effect && effect.category) || "未分类";
+      if (!buckets[cat]) {
+        buckets[cat] = [];
+        order.push(cat);
+      }
+      buckets[cat].push(effect);
+    }
+
+    order.sort(function (a, b) {
+      var rankA = previewRank(buckets[a][0]);
+      var rankB = previewRank(buckets[b][0]);
+      if (rankA !== rankB) return rankA - rankB;
+      return buckets[b].length - buckets[a].length;
+    });
+
+    var out = [];
+    var cursors = {};
+    var progressed = true;
+    while (progressed) {
+      progressed = false;
+      for (var k = 0; k < order.length; k++) {
+        var key = order[k];
+        var cursor = cursors[key] || 0;
+        if (cursor < buckets[key].length) {
+          out.push(buckets[key][cursor]);
+          cursors[key] = cursor + 1;
+          progressed = true;
+        }
+      }
+    }
+    return out;
+  }
+
   function firstText() {
     for (var i = 0; i < arguments.length; i++) {
       var value = arguments[i];
@@ -186,6 +228,7 @@ var AEV_ViewModel = (function () {
     isNoPreview: isNoPreview,
     isPoorPreviewTarget: isPoorPreviewTarget,
     previewRank: previewRank,
+    interleaveByCategory: interleaveByCategory,
     inferPlugin: inferPlugin,
     resolveName: resolveName,
     resolveCategory: resolveCategory,

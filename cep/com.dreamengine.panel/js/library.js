@@ -389,10 +389,9 @@ var AEV_Library = (function () {
       if (AEV_ViewModel.isPoorPreviewTarget(effect)) continue;
       candidates.push(effect);
     }
-    // 先渲"看得出差异"的常用分类；按 catalog 原始顺序取会先撞上 3D 跟踪这类无效效果。
-    candidates.sort(function (a, b) {
-      return AEV_ViewModel.previewRank(a) - AEV_ViewModel.previewRank(b);
-    });
+    // 先渲"看得出差异"的常用分类，并让首批覆盖多个分类；
+    // 按 catalog 原始顺序取会先撞上 3D 跟踪这类无效效果。
+    candidates = AEV_ViewModel.interleaveByCategory(candidates);
 
     var queueNames = [];
     // 一次点击最多补一张网（64 格）。宁可让用户多点几次，也不要把 AE 锁住几分钟。

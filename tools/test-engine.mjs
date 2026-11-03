@@ -341,6 +341,23 @@ test("面板优先渲染看得出差异的分类，并跳过 3D 通道族", () =
   assert.ok(unknown < poor, "未知分类应排在已排除项之前");
 });
 
+test("候选按分类轮转，首批覆盖多个类别", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const list = [
+    { matchName: "A1", category: "模糊和锐化" },
+    { matchName: "A2", category: "模糊和锐化" },
+    { matchName: "A3", category: "模糊和锐化" },
+    { matchName: "B1", category: "扭曲" },
+    { matchName: "C1", category: "颜色校正" },
+  ];
+  // Array.from 把 vm realm 的数组转成本 realm，否则 deepStrictEqual 会因原型不同而失败
+  const out = Array.from(view.interleaveByCategory(list), (item) => item.matchName);
+  assert.deepEqual(out.slice(0, 3), ["A1", "C1", "B1"], "首批应各分类各取一个");
+  assert.equal(out[3], "A2", "之后继续填第二轮的模糊类");
+  assert.equal(out.length, 5, "不得丢条目");
+});
+
 test("viewmodel 的 no-preview 规则与 recipe 保持一致", () => {
   const viewmodel = read("cep/com.dreamengine.panel/js/viewmodel.js");
   const recipe = read(`${ENGINE}/recipe.jsx`);
