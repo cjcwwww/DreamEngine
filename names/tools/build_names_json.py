@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FIRST_PARTY = ROOT / "names" / "names-firstparty.tsv"
 BCC = ROOT / "names" / "joined-names-bcc.tsv"
 OUTPUT = ROOT / "cep" / "com.dreamengine.panel" / "data" / "names.json"
+TSV_OUTPUT = ROOT / "cep" / "com.dreamengine.panel" / "data" / "names.tsv"
 
 
 def read_tsv(path):
@@ -73,6 +74,34 @@ def main():
         encoding="utf-8",
     )
     print(f"wrote {OUTPUT} ({len(items)} items)")
+
+    # 与 names.json 同源再产一份 TSV：ExtendScript 侧没有 JSON.parse，
+    # engine/names.jsx 直接读这份文件做三层解析。
+    write_tsv(items, TSV_OUTPUT)
+
+
+TSV_COLUMNS = [
+    "matchName",
+    "nameEn",
+    "nameZh",
+    "categoryEn",
+    "categoryZh",
+    "pluginHint",
+    "nameZhSource",
+]
+
+
+def write_tsv(items, path):
+    lines = ["\t".join(TSV_COLUMNS)]
+    for item in items:
+        cells = []
+        for column in TSV_COLUMNS:
+            value = item.get(column)
+            cells.append("" if value is None else str(value).replace("\t", " "))
+        lines.append("\t".join(cells))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"wrote {path} ({len(items)} rows)")
 
 
 if __name__ == "__main__":

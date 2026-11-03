@@ -169,16 +169,24 @@ var AEV_PreviewGen = (function () {
             return result("error", [["reason", "cannot_create_output_folder"]]);
         }
 
-        var scene = null;
+        var scenes = {};
         var cells = [];
         var cellErrors = [];
         var grid = null;
         var queueItem = null;
         var started = new Date().getTime();
 
-        try {
-            scene = buildScene(cellSize);
+        /** 按素材类型取（必要时生成）标准素材；同一批内复用同一个 comp */
+        function sceneOf(kind) {
+            if (!scenes[kind]) {
+                scenes[kind] = (typeof AEV_Assets !== "undefined")
+                    ? AEV_Assets.get(kind, cellSize)
+                    : buildScene(cellSize);
+            }
+            return scenes[kind];
+        }
 
+        try {
             grid = app.project.items.addComp(
                 "DE_sheet_" + pad(sheetIndex, 3),
                 width, height, 1, durationSeconds, CELL_FPS
@@ -192,7 +200,13 @@ var AEV_PreviewGen = (function () {
                     "DE_cell_" + pad(sheetIndex, 3) + "_" + pad(cellIndex, 2),
                     cellSize, cellSize, 1, durationSeconds, CELL_FPS
                 );
-                var layer = cell.layers.add(scene);
+
+                // 场景按效果类型选：文本类必须落在文本层，否则 applyPreset 与文本效果都会静默失效
+                var assetKind = "photo";
+                if (typeof AEV_Recipe !== "undefined") {
+                    assetKind = AEV_Recipe.assetKindFor(AEV_Recipe.sceneFor(matchName));
+                }
+                var layer = cell.layers.add(sceneOf(assetKind));
 
                 // 逐格独立保护：addProperty 与配方各自捕获。
                 // 这样"效果加不上"或"参数设不上"能定位到具体 matchName，
@@ -281,9 +295,8 @@ var AEV_PreviewGen = (function () {
             try {
                 if (grid) grid.remove();
             } catch (e3) {}
-            try {
-                if (scene) scene.remove();
-            } catch (e4) {}
+            // 标准素材（scenes）刻意不删：它们由 AEV_Assets 缓存，跨批次复用，
+            // 每批重建会让 64 格的批量生成慢上一个数量级。
         }
     }
 

@@ -92,6 +92,8 @@ var Bridge = (function () {
   var ENGINE_FILES = [
     "engine/render_config.jsx",
     "engine/store.jsx",
+    "engine/names.jsx",
+    "engine/assets.jsx",
     "engine/recipe.jsx",
     "engine/previewgen.jsx",
     "engine/queue.jsx",

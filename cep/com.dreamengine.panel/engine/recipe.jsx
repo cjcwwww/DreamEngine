@@ -17,6 +17,8 @@ var AEV_Recipe = (function () {
     var MAX_WRITES = 6;
     var MAX_DEPTH = 3;
     var PRESENTATION_TIME_RATIO = 0.5;
+    /** 配方版本：改配方语义时 +1，所有缓存随之失效 */
+    var RECIPE_VERSION = 3;
 
     /** 表达式控件族与音频族的分类名（中英文都要认，汉化版分类名是中文） */
     var NO_PREVIEW_CATEGORIES = [
@@ -66,6 +68,58 @@ var AEV_Recipe = (function () {
             if (cat === NO_PREVIEW_CATEGORIES[i]) return true;
         }
         return false;
+    }
+
+    /**
+     * 推断场景类型（设计文档 §4.3 的八类枚举）。
+     * 只靠 matchName 与可选 category 判断——previewgen 手里只有 matchName，
+     * 所以判断规则必须能在没有分类信息时也站得住。
+     */
+    function sceneFor(matchName, category) {
+        if (isNoPreview(category)) return "no-preview";
+        var cat = lower(category);
+        var mn = lower(matchName);
+
+        if (cat === "text" || cat === "文本") return "text";
+        if (/(^|\W)(text|numbers|typewriter|word)/.test(mn)) return "text";
+        if (cat === "3d channel" || cat === "3d 通道") return "3d-camera";
+        if (/stroke|trace|outline|wireframe/.test(mn)) return "shape-mask";
+        if (/solid|background|ramp|gradient/.test(mn)) return "solid-2d";
+        return "footage-2d";
+    }
+
+    /** 场景类型 → 标准素材类型（assets.jsx 的 kind） */
+    function assetKindFor(scene) {
+        if (scene === "text") return "text";
+        if (scene === "solid-2d") return "solid";
+        if (scene === "shape-mask") return "shape";
+        // footage-2d / adjustment / two-layer-input / 3d-camera 先用复合画面顶上
+        return "photo";
+    }
+
+    /** djb2 短哈希，用于缓存键 */
+    function hashString(text) {
+        var hash = 5381;
+        var value = String(text);
+        for (var i = 0; i < value.length; i++) {
+            hash = ((hash << 5) + hash + value.charCodeAt(i)) & 0x7fffffff;
+        }
+        return hash.toString(36);
+    }
+
+    /**
+     * 缓存指纹（设计文档 §4.5）：
+     *   hash(matchName + recipeVersion + assetFingerprint + tileSize + frameCount)
+     * AE 版本号刻意不参与——否则每次升级都会触发全量重渲。
+     */
+    function cacheKey(matchName, assetFingerprint, tileSize, frameCount) {
+        return hashString([
+            matchName,
+            RECIPE_VERSION,
+            assetFingerprint || "na",
+            tileSize || 0,
+            frameCount || 0
+        ].join("|"));
     }
 
     /** 展示时点：取合成中点，避开首帧尚未成形的效果 */
@@ -224,7 +278,12 @@ var AEV_Recipe = (function () {
     }
 
     return {
+        RECIPE_VERSION: RECIPE_VERSION,
         isNoPreview: isNoPreview,
+        sceneFor: sceneFor,
+        assetKindFor: assetKindFor,
+        cacheKey: cacheKey,
+        hashString: hashString,
         presentationTime: presentationTime,
         heuristicValue: heuristicValue,
         applyRecipe: applyRecipe,

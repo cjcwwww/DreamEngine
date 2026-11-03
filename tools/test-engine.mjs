@@ -282,13 +282,118 @@ test("store 把所有数据写在 我的文档/DreamEngine 下", () => {
 
 test("bridge 的 engine 加载顺序满足依赖关系", () => {
   const source = read("cep/com.dreamengine.panel/js/bridge.js");
-  const order = ["render_config", "store", "recipe", "previewgen", "queue", "catalog"].map(
+  const order = ["render_config", "store", "names", "assets", "recipe", "previewgen", "queue", "catalog"].map(
     (name) => source.indexOf(`engine/${name}.jsx`),
   );
   for (const index of order) assert.notEqual(index, -1, "加载清单缺少模块");
   for (let i = 1; i < order.length; i++) {
-    assert.ok(order[i] > order[i - 1], "engine 模块顺序必须满足依赖（config → store → recipe → previewgen → queue）");
+    assert.ok(order[i] > order[i - 1], "engine 模块顺序必须满足依赖（config → store → names → assets → recipe → previewgen → queue）");
   }
+});
+
+/* ---------- names.jsx ---------- */
+
+test("names 解析 TSV 并跳过表头", () => {
+  const ctx = loadModules([`${ENGINE}/names.jsx`]);
+  const names = ctx.AEV_Names;
+  const tsv = [
+    "matchName\tnameEn\tnameZh\tcategoryEn\tcategoryZh\tpluginHint\tnameZhSource",
+    "ADBE Gaussian Blur 2\tGaussian Blur\t高斯模糊\tBlur & Sharpen\t模糊和锐化\t内置\thelpx",
+    "S_Glow\tS_Glow\t\tSapphire\tSapphire\tSapphire\tcommunity",
+  ].join("\n");
+  const rows = names.parseTsv(tsv);
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].matchName, "ADBE Gaussian Blur 2");
+  assert.equal(rows[0].nameZh, "高斯模糊");
+  assert.equal(rows[1].nameZh, "");
+
+  const index = names.buildIndex(rows);
+  assert.equal(names.resolve(index, "ADBE Gaussian Blur 2", "x", "zh").name, "高斯模糊");
+  assert.equal(names.resolve(index, "ADBE Gaussian Blur 2", "x", "en").name, "Gaussian Blur");
+  // 第三方无中文时：中文模式回退英文，不机翻
+  assert.equal(names.resolve(index, "S_Glow", "x", "zh").name, "S_Glow");
+});
+
+test("names 对表外效果走 L-C 兜底，显示本机名", () => {
+  const ctx = loadModules([`${ENGINE}/names.jsx`]);
+  const names = ctx.AEV_Names;
+  const index = names.buildIndex([]);
+  const resolved = names.resolve(index, "XX Unknown", "本机显示名", "zh");
+  assert.equal(resolved.name, "本机显示名");
+  assert.equal(resolved.level, "fallback");
+  assert.equal(resolved.source, "local");
+});
+
+test("names 覆盖率统计命中与未命中", () => {
+  const ctx = loadModules([`${ENGINE}/names.jsx`]);
+  const names = ctx.AEV_Names;
+  const index = names.buildIndex([{ matchName: "A", nameEn: "A" }, { matchName: "B", nameEn: "B" }]);
+  const report = names.coverage(index, ["A", "B", "C", "D"]);
+  assert.equal(report.total, 4);
+  assert.equal(report.hit, 2);
+  assert.equal(report.miss, 2);
+  assert.equal(report.ratio, 50);
+  assert.deepEqual(Array.from(report.missSamples), ["C", "D"]);
+});
+
+/* ---------- recipe 场景与指纹 ---------- */
+
+test("recipe 按效果类型推断场景，文本类落 text", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+  assert.equal(recipe.sceneFor("ADBE Text Animator"), "text");
+  assert.equal(recipe.sceneFor("Anything", "文本"), "text");
+  assert.equal(recipe.sceneFor("ADBE 3D Tracker", "3D 通道"), "3d-camera");
+  assert.equal(recipe.sceneFor("ADBE Stroke"), "shape-mask");
+  assert.equal(recipe.sceneFor("CC Radial Blur", "模糊和锐化"), "footage-2d");
+  assert.equal(recipe.sceneFor("Anything", "音频"), "no-preview");
+  assert.equal(recipe.sceneFor("Anything", "表达式控制"), "no-preview");
+});
+
+test("recipe 场景到素材类型映射完整", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+  assert.equal(recipe.assetKindFor("text"), "text");
+  assert.equal(recipe.assetKindFor("solid-2d"), "solid");
+  assert.equal(recipe.assetKindFor("shape-mask"), "shape");
+  // 其余场景先用复合画面顶上
+  for (const scene of ["footage-2d", "adjustment", "two-layer-input", "3d-camera"]) {
+    assert.equal(recipe.assetKindFor(scene), "photo");
+  }
+});
+
+test("缓存指纹随配方版本与素材版本变化，且不包含 AE 版本", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+  const a = recipe.cacheKey("ADBE Glo2", "photo-v2", 256, 6);
+  const b = recipe.cacheKey("ADBE Glo2", "photo-v2", 256, 6);
+  const c = recipe.cacheKey("ADBE Glo2", "photo-v2", 256, 12);
+  const d = recipe.cacheKey("ADBE Glo2", "photo-v3", 256, 6);
+  assert.equal(a, b, "同输入必须同指纹");
+  assert.notEqual(a, c, "帧数变化要换指纹");
+  assert.notEqual(a, d, "素材版本变化要换指纹");
+  assert.match(a, /^[0-9a-z]+$/);
+});
+
+/* ---------- assets / catalog 静态契约 ---------- */
+
+test("assets 按类型生成四套素材并复用缓存", () => {
+  const code = stripComments(read(`${ENGINE}/assets.jsx`));
+  assert.match(code, /var VERSION = "photo-v2";/);
+  assert.match(code, /function buildPhoto/);
+  assert.match(code, /function buildText/);
+  assert.match(code, /function buildSolid/);
+  assert.match(code, /function buildShape/);
+  assert.match(code, /cache\[key\(kind, size\)\] = \{ item: comp \};/);
+});
+
+test("catalog 参数树带深度与数量上限，且用完即删", () => {
+  const code = stripComments(read(`${ENGINE}/catalog.jsx`));
+  assert.match(code, /var MAX_DEPTH = 3;/);
+  assert.match(code, /var MAX_PARAMS = 200;/);
+  assert.match(code, /comp\.remove\(\)/);
+  assert.match(code, /getParamTreeJson/);
+  assert.match(code, /canVaryOverTime/);
 });
 
 /* ---------- 6. queue ---------- */
