@@ -155,6 +155,26 @@ test("previewgen 的临时合成清理不依赖 undo", () => {
   assert.match(code, /queueItem\.remove\(\)/);
 });
 
+test("配方覆盖常用内置效果，每条都带参数名与值", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipes = ctx.AEV_Recipe.recipes;
+  const keys = Object.keys(recipes);
+  assert.ok(keys.length >= 20, `配方数量应 ≥ 20，实际 ${keys.length}`);
+  for (const key of keys) {
+    const steps = recipes[key];
+    assert.ok(Array.isArray(steps) && steps.length > 0, `${key} 配方为空`);
+    for (const step of steps) {
+      assert.ok(step.names && step.names.length >= 1, `${key} 缺参数名`);
+      assert.notEqual(step.value, undefined, `${key} 缺参数值`);
+      // 中文界面的参数名是中文，所以每条都必须带中英双名才跨语言可用
+      assert.ok(
+        step.names.some((n) => /[\u4e00-\u9fa5]/.test(n)) || /^(Amount|Size|Burn)$/.test(step.names[0]),
+        `${key} 的参数名既没有中文也没有已知英文名`,
+      );
+    }
+  }
+});
+
 test("previewgen 用合成帧率换算渲染时长，不用面板播放帧率", () => {
   const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
   // 6 帧按 12fps 算成 0.5 秒，在 30fps 合成上会渲出 15 帧（AE 2021 实测踩过）

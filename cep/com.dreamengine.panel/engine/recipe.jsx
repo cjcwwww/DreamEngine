@@ -18,7 +18,7 @@ var AEV_Recipe = (function () {
     var MAX_DEPTH = 3;
     var PRESENTATION_TIME_RATIO = 0.5;
     /** 配方版本：改配方语义时 +1，所有缓存随之失效 */
-    var RECIPE_VERSION = 3;
+    var RECIPE_VERSION = 4;
 
     /** 表达式控件族与音频族的分类名（中英文都要认，汉化版分类名是中文） */
     var NO_PREVIEW_CATEGORIES = [
@@ -26,35 +26,67 @@ var AEV_Recipe = (function () {
         "audio", "音频"
     ];
 
-    /** 显式配方：matchName -> [{names:[...], value:...}] */
+    /** 显式配方：matchName -> [{names:[...], value:...}]
+     *  参数名以 tools/dump_param_trees.jsx 从本机导出的真实名字为准（中文界面下是中文），
+     *  同时并列英文名以兼容英文版 AE。不是猜的。
+     */
     var RECIPES = {
-        "ADBE Gaussian Blur 2": [{ names: ["Blurriness", "模糊度"], value: 10 }],
-        "ADBE Motion Blur": [
-            { names: ["Direction", "方向"], value: 35 },
-            { names: ["Blur Length", "模糊长度"], value: 40 }
+        "ADBE Gaussian Blur 2": [{ names: ["模糊度", "Blurriness"], value: 12 }],
+        "ADBE Box Blur2": [
+            { names: ["模糊半径", "Blur Radius"], value: 12 },
+            { names: ["迭代", "Iterations"], value: 3 }
+        ],
+        "ADBE Radial Blur": [
+            { names: ["数量", "Amount"], value: 60 },
+            { names: ["类型", "Type"], value: 2 }
+        ],
+        "ADBE Sharpen": [{ names: ["锐化量", "Sharpen Amount"], value: 60 }],
+        "ADBE Unsharp Mask2": [
+            { names: ["数量", "Amount"], value: 150 },
+            { names: ["半径", "Radius"], value: 8 }
+        ],
+        "ADBE Brightness & Contrast 2": [
+            { names: ["亮度", "Brightness"], value: 10 },
+            { names: ["对比度", "Contrast"], value: 30 }
+        ],
+        "ADBE HUE SATURATION": [{ names: ["主饱和度", "Master Saturation"], value: 60 }],
+        "ADBE Tint": [{ names: ["着色数量", "Amount to Tint"], value: 100 }],
+        "ADBE Easy Levels2": [{ names: ["灰度系数", "Gamma"], value: 1.6 }],
+        "ADBE Mosaic": [
+            { names: ["水平块", "Horizontal Blocks"], value: 18 },
+            { names: ["垂直块", "Vertical Blocks"], value: 18 }
         ],
         "ADBE Glo2": [
-            { names: ["Glow Radius", "发光半径"], value: 24 },
-            { names: ["Glow Intensity", "发光强度"], value: 1.5 }
+            { names: ["发光半径", "Glow Radius"], value: 30 },
+            { names: ["发光强度", "Glow Intensity"], value: 1.5 }
         ],
-        "ADBE Mosaic": [
-            { names: ["Horizontal Blocks", "水平块"], value: 12 },
-            { names: ["Vertical Blocks", "垂直块"], value: 12 }
-        ],
-        "CC Radial Fast Blur": [{ names: ["Amount", "数量"], value: 35 }],
-        "CC Lens": [{ names: ["Size", "大小"], value: 145 }],
         "ADBE Turbulent Displace": [
-            { names: ["Amount", "数量"], value: 60 },
-            { names: ["Size", "大小"], value: 60 }
+            { names: ["数量", "Amount"], value: 60 },
+            { names: ["大小", "Size"], value: 40 }
         ],
         "ADBE Wave Warp": [
-            { names: ["Wave Height", "波形高度"], value: 30 },
-            { names: ["Wave Width", "波形宽度"], value: 60 }
+            { names: ["波形高度", "Wave Height"], value: 40 },
+            { names: ["波形宽度", "Wave Width"], value: 60 }
         ],
         "ADBE Ripple": [
-            { names: ["Radius", "半径"], value: 60 },
-            { names: ["Height", "高度"], value: 40 }
-        ]
+            { names: ["半径", "Radius"], value: 60 },
+            { names: ["波形高度", "Wave Height"], value: 30 }
+        ],
+        "ADBE Bulge": [{ names: ["凸出高度", "Bulge Height"], value: 1.5 }],
+        "ADBE Twirl": [{ names: ["角度", "Angle"], value: 90 }],
+        "ADBE Drop Shadow": [
+            { names: ["距离", "Distance"], value: 12 },
+            { names: ["柔和度", "Softness"], value: 20 },
+            { names: ["不透明度", "Opacity"], value: 200 }
+        ],
+        "ADBE Bevel Alpha": [
+            { names: ["边缘厚度", "Edge Thickness"], value: 8 },
+            { names: ["灯光强度", "Light Intensity"], value: 0.6 }
+        ],
+        "CC Radial Fast Blur": [{ names: ["Amount", "数量"], value: 60 }],
+        "CC Lens": [{ names: ["Size", "大小"], value: 145 }],
+        "CC Bender": [{ names: ["Amount", "数量"], value: 60 }],
+        "CC Burn Film": [{ names: ["Burn", "燃烧"], value: 50 }]
     };
 
     function lower(value) {
