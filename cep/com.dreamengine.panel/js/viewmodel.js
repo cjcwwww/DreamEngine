@@ -75,6 +75,9 @@ var AEV_ViewModel = (function () {
     // 实测：CC Drizzle 在 2048 整网 × 6 帧下渲染挂起（AE 未响应超过 5 分钟），
     // 逐条测试时也会卡在同一处。先排除，避免单条拖死整批。
     if (matchName === "cc drizzle") return true;
+    // 实测：ADBE Numbers2 / Timecode 这类"文本生成器"在 addProperty 时就会弹出
+    // 模态参数对话框（编号设置），脚本会一直等输入，AE 看起来像死机。
+    if (/^adbe (numbers|timecode)/.test(matchName)) return true;
     var hints = ["tracker", "glasses", "stereo", "camera", "extracto"];
     for (var i = 0; i < hints.length; i++) {
       if (matchName.indexOf(hints[i]) >= 0) return true;

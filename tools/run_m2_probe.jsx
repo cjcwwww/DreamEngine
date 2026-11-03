@@ -13,10 +13,13 @@
 // ============================================================
 
 (function runM2Probe() {
+    // 不测 ADBE Numbers2 / Timecode：这类文本生成器在 addProperty 时会弹模态对话框，
+    // 脚本会一直等输入，AE 看起来像死机（2026-11-03 实测）。文本场景的映射已验证，
+    // 这里只验证 texture 层面的三种素材。
     var RENDER_CASES = [
-        { matchName: "ADBE Numbers2", sheet: 20, note: "text 场景" },
-        { matchName: "ADBE Stroke", sheet: 21, note: "shape 场景" },
-        { matchName: "CC Radial Blur", sheet: 22, note: "photo 场景（带高频细线）" }
+        { matchName: "ADBE Stroke", sheet: 20, note: "shape 场景" },
+        { matchName: "CC Radial Blur", sheet: 21, note: "photo 场景（带高频细线）" },
+        { matchName: "ADBE Ramp", sheet: 22, note: "solid 场景" }
     ];
 
     var ext = new Folder(Folder.userData.fsName + "/Adobe/CEP/extensions/com.dreamengine.panel");
@@ -75,6 +78,8 @@
         var tree = AEV_Catalog.getParamTreeJson("ADBE Gaussian Blur 2");
         push("TREE_LEN=" + tree.length);
         push("TREE_HEAD=" + (tree.length > 400 ? tree.substring(0, 400) : tree));
+        // 渲染前的结论先落盘：万一下面的渲染卡住，这部分也能拿到
+        flush();
 
         // ---------- 4. 渲染三种素材 ----------
         var okCount = 0;

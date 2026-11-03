@@ -205,6 +205,8 @@
         if (/Obsolete|过时/i.test(category)) return true;
         if (matchName.indexOf("CS") === 0) return true;
         if (matchName === "CC Drizzle") return true;   // 实测渲染挂起
+        // 文本生成器：addProperty 时就弹模态对话框，脚本会卡在等输入
+        if (/^ADBE (Numbers|Timecode)/.test(matchName)) return true;
         if (category === "3D 通道" || category === "3D Channel") return true;
         if (category === "表达式控制" || category === "Expression Controls") return true;
         if (category === "音频" || category === "Audio") return true;
