@@ -2,6 +2,19 @@
 
 M0 里唯一不能在 AE 界面内完成的一项。目的是决定**离线批量生成缩略图走 `aerender` 子进程，还是退回 AE 内分批队列**。
 
+## 实测结论（AE 2021 / 18.4.1x4）
+
+**aerender 18.4.1 不支持 `-r`。** `aerender -help` 的完整参数表中没有 `-r`，
+因此离线生成不能依赖 aerender 执行 `.jsx` 业务脚本。可执行形态改为两段式：
+
+1. 在 AE 内运行脚本，建立预览合成并保存 `.aep`。
+2. 用 `aerender -project ... -comp ...` 只负责渲染已保存的合成。
+
+`aerender -help` 原始输出保存在 `probe-results/AE2021/T0_7_aerender-help.txt`。
+
+补充实测：`AfterFX.exe -r <probe.jsx>` 在本机启动后立即退出，未生成探针输出，
+也不作为可靠自动化入口。
+
 ## 一、找到可执行文件
 
 - Windows：`<安装目录>\Support Files\aerender.exe`（典型路径 `C:\Program Files\Adobe\Adobe After Effects <版本>\Support Files\aerender.exe`）
@@ -25,15 +38,8 @@ aerender -project "<project.aep>" -comp "<comp>" -closeProject
 
 观察输出里插件是否被正常加载、是否有 GPU / 许可相关提示。
 
-3. **确认能否跑指定的 jsx 脚本**（这是本项目离线生成器的关键假设）
-
-```
-aerender -r "<某个探针jsx>"
-```
-
-如果 `-r` 不被支持或脚本没执行（看 `~/Documents/AEViewerProbe/探针日志.txt` 有无新增行），说明离线生成器**不能**靠 aerender 跑业务脚本，只能退化为：
-`aerender -project xxx.aep -comp xxx -25`（只渲染已保存好的预览合成）
-也就是"在 AE 内把预览合成批量建好存盘 → aerender 只负责渲染"的两段式。**这是完全可行的替代方案，不算失败。**
+3. **不要执行 `aerender -r`。** AE 2021 已实测不支持该参数。
+   后续验证只检查 `aerender -project ... -comp ...` 能否加载项目、第三方效果和插件。
 
 ## 三、并发数与许可（必须自查，不要凭网上说法）
 
@@ -49,10 +55,10 @@ aerender -r "<某个探针jsx>"
 把下面三行结论写进回传内容（或直接把命令行输出全文贴给 AI）：
 
 ```
-aerender 是否支持 -r 执行脚本：是 / 否
+aerender 是否支持 -r 执行脚本：否（AE 2021 / 18.4.1x4 实测）
 aerender 是否成功加载第三方插件：是 / 否 / 有报错（贴原文）
 许可允许的并发数：____（引用官方条款原文）
-建议离线生成形态：单进程 -r / 两段式（AE 建合成 + aerender 渲染）
+建议离线生成形态：两段式（AE 建合成 + aerender 渲染）
 ```
 
 ---

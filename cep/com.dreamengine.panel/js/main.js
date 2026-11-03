@@ -6,7 +6,7 @@ var App = (function () {
 
   var pendingWrites = {};      // 文件名 -> 内容
   var docsPath = "";           // 「我的文档」绝对路径（由 AE 侧给出）
-  var probeDirName = "AEViewerProbe";
+  var probeDirName = "DreamEngineProbe";
 
   /* ---------- 输出通道 ---------- */
   function emit(section, text) {
@@ -120,8 +120,8 @@ var App = (function () {
         Bridge.writeFile(docsPath + "/" + probeDirName + "/探针日志.txt",
           "CEP壳探针输出：" + summary, function () {
             out.textContent += "\n[write] 完成：成功 " + ok + " 个，失败 " + bad + " 个\n";
-            alert("已写入 AEViewerProbe 目录：\n" + names.join("\n") +
-                  "\n\n请把整个 AEViewerProbe 文件夹打包回传。");
+            alert("已写入 DreamEngineProbe 目录：\n" + names.join("\n") +
+                  "\n\n请把整个 DreamEngineProbe 文件夹打包回传。");
           });
         return;
       }
@@ -198,6 +198,7 @@ var App = (function () {
     on("btnRunT01", "click", function () { runProbe("T0_1_效果枚举探针.jsx", "btnRunT01"); });
     on("btnRunT05", "click", function () { runProbe("T0_5_参数读取探针.jsx", "btnRunT05"); });
     on("btnRunT02", "click", function () { runProbe("T0_2_渲染耗时探针.jsx", "btnRunT02"); });
+    on("btnRunT02Prep", "click", function () { runProbe("T0_2_prepare_aerender.jsx", "btnRunT02Prep"); });
     on("btnRunT04", "click", function () { runProbe("T0_4_预设应用探针.jsx", "btnRunT04"); });
     on("btnRunT06", "click", function () { runProbe("T0_6_导入入口探针.jsx", "btnRunT06"); });
     on("btnRunT08", "click", function () { runProbe("T0_8_全量dump探针.jsx", "btnRunT08"); });

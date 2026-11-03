@@ -1,0 +1,5 @@
+PROBE=T0_2_PREPARE_AERENDER
+AE_VERSION=18.4.1x4
+EFFECT=ADBE Gaussian Blur 2|ADD=OK
+OUTPUT_FILE_SET=OK
+SAVE_PROJECT=OK|C:\Users\31371\Documents\DreamEngineProbe\T0_2_aerender_test.aep

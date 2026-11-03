@@ -1,0 +1,31 @@
+PROBE=T0_6
+AE_VERSION=18.4.1x4
+DIALOG_MS=54818ms
+MULTISELECT_RETURN_TYPE=Array
+PICKED_COUNT=30
+PICKED_0|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 按随机顺序振动进入.ffx|100254 bytes
+PICKED_1|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 词前滚.ffx|98203 bytes
+PICKED_2|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 词旋转退出.ffx|46300 bytes
+PICKED_3|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 从摄像机后下飞.ffx|87134 bytes
+PICKED_4|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 从右侧振动退出.ffx|82398 bytes
+PICKED_5|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 从左侧振动进入.ffx|77512 bytes
+PICKED_6|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 翻转进入旋转 X.ffx|38708 bytes
+PICKED_7|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 翻转退出旋转 X.ffx|36557 bytes
+PICKED_8|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 回落混杂和模糊.ffx|136003 bytes
+PICKED_9|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 回落缩放和倾斜.ffx|99619 bytes
+PICKED_10|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 基本位置 Z 层叠.ffx|46440 bytes
+PICKED_11|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 基本位置 Z 打字.ffx|35634 bytes
+PICKED_12|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 基础旋转 X 层叠.ffx|38039 bytes
+PICKED_13|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 基础旋转 Y 层叠.ffx|38120 bytes
+PICKED_14|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 居中反弹.ffx|42491 bytes
+PICKED_15|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 绕圆旋转.ffx|41533 bytes
+PICKED_16|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 随机固定翻滚.ffx|126256 bytes
+PICKED_17|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 随机下飞和旋转 Y.ffx|65426 bytes
+PICKED_18|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 位置解析.ffx|82613 bytes
+PICKED_19|C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 下飞和展开.ffx|94365 bytes
+CALC|平均每个ffx字节=70680 样本数=20
+VERDICT_MULTI=多选可用，返回数组
+FOLDER=C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets
+CALC|ffx文件数=622|扫描耗时ms=742|平均每文件ms=1|最大层级=3
+CALC|单层getFiles(*.ffx)数量=0|耗时ms=0
+VERDICT_SCAN=递归实现需在工程里用上面的耗时判断是否需要异步分批

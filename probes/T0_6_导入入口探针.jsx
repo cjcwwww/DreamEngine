@@ -6,7 +6,7 @@
 // ============================================================
 
 (function probeImportBasics() {
-    var outDir = new Folder(Folder.myDocuments.fsName + "/AEViewerProbe");
+    var outDir = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
     if (!outDir.exists) outDir.create();
     var L = [];
     function push(s) { L.push(s); }
@@ -83,6 +83,7 @@
     }
 
     var outFile = new File(outDir.fsName + "/T0_6_导入探针.txt");
+    outFile.encoding = "UTF-8";
     outFile.open("w");
     outFile.write(L.join("\r\n"));
     outFile.close();

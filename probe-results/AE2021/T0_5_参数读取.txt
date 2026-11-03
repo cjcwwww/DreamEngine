@@ -1,0 +1,763 @@
+PROBE=T0_5
+AE_VERSION=18.4.1x4
+PARAM|PEDG|About & Support|type=6412
+PARAM|PEDG|<error>|type=6419
+PARAM|PEDG|Deep Glow v1.5.4|type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|Deep Glow v1.5.4|type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|GPU Hardware|type=6412
+PARAM|PEDG|Version|type=6417|min=1|max=1
+PARAM|PEDG|Vendor|type=6417|min=1|max=1
+PARAM|PEDG|Renderer|type=6417|min=1|max=1
+PARAM|PEDG|Shader Version|type=6417|min=1|max=1
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|Unlicensed, click 'Register'|type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|to enter your serial key.|type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|Radius|type=6417|min=0|max=2000
+PARAM|PEDG|Exposure|type=6417|min=0|max=10
+PARAM|PEDG|Input|type=6412
+PARAM|PEDG|Threshold|type=6417|min=0|max=500|units=百分比
+PARAM|PEDG|Threshold Smooth|type=6417|min=0|max=100|units=百分比
+PARAM|PEDG|Mask|type=6412
+PARAM|PEDG|Layer|type=6421
+PARAM|PEDG|Mode|type=6417|min=1|max=2
+PARAM|PEDG|Invert|type=6417|min=0|max=1
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|Style|type=6412
+PARAM|PEDG|Blend Mode|type=6417|min=1|max=2
+PARAM|PEDG|Smooth Blending|type=6417|min=0|max=1
+PARAM|PEDG|Spread|type=6417|min=0.00999999977648|max=100|units=百分比
+PARAM|PEDG|Gamma Correction|type=6412
+PARAM|PEDG|Auto Detect Gamma|type=6417|min=0|max=1
+PARAM|PEDG|Gamma Correction|type=6417|min=0|max=1
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|Aspect Ratio|type=6412
+PARAM|PEDG|Aspect Ratio|type=6417|min=0|max=2
+PARAM|PEDG|Enable Angle|type=6417|min=0|max=1
+PARAM|PEDG|Aspect Angle|type=6417|units=度
+PARAM|PEDG|Aspect Angle|type=6412
+PARAM|PEDG|Chromatic Aberration|type=6412
+PARAM|PEDG|Enable|type=6417|min=0|max=1
+PARAM|PEDG|Channels|type=6417|min=1|max=3
+PARAM|PEDG|Amount|type=6417|min=-100|max=100|units=百分比
+PARAM|PEDG||type=6412
+PARAM|PEDG|Tint|type=6412
+PARAM|PEDG|Enable|type=6417|min=0|max=1
+PARAM|PEDG|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|PEDG|Mode|type=6417|min=1|max=3
+PARAM|PEDG|Mix|type=6417|min=0|max=100|units=百分比
+PARAM|PEDG||type=6412
+PARAM|PEDG|Steps|type=6412
+PARAM|PEDG|Fixed Steps|type=6417|min=0|max=1
+PARAM|PEDG|Number of Steps|type=6417|min=1|max=10000
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|Quality|type=6412
+PARAM|PEDG|Downsample|type=6417|min=50|max=100|units=百分比
+PARAM|PEDG|Steps Multiplier|type=6417|min=0.00999999977648|max=3
+PARAM|PEDG|Auto Iterations|type=6417|min=0|max=1
+PARAM|PEDG|Glow Iterations|type=6417|min=6|max=10
+PARAM|PEDG|Dither|type=6412
+PARAM|PEDG|Enable Dither|type=6417|min=0|max=1
+PARAM|PEDG|Monochromatic|type=6417|min=0|max=1
+PARAM|PEDG|Amount|type=6417|min=0|max=10000|units=百分比
+PARAM|PEDG||type=6412
+PARAM|PEDG||type=6412
+PARAM|PEDG|View|type=6417|min=1|max=2
+PARAM|PEDG|Source Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|PEDG|Unmult|type=6417|min=0|max=1
+PARAM|PEDG|Edge Behaviour|type=6417|min=1|max=4
+PARAM|PEDG|Debug|type=6412
+PARAM|PEDG|Show Buffers|type=6417|min=0|max=1
+PARAM|PEDG|Left|type=6417|min=-1000|max=1000
+PARAM|PEDG|Top|type=6417|min=-1000|max=1000
+PARAM|PEDG|Right|type=6417|min=-1000|max=1000
+PARAM|PEDG|Bottom|type=6417|min=-1000|max=1000
+PARAM|PEDG||type=6412
+PARAM|PEDG|合成选项|type=undefined
+PARAM|AESweetsGlitch7in1|Basic Blocks|type=6412
+PARAM|AESweetsGlitch7in1|Enable Basic Blocks|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number Of Blocks|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Maximum Horizontal Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Maximum Vertical Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Block Size|type=6412
+PARAM|AESweetsGlitch7in1|Minimum Width|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Width Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Width Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Minimum Height|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Height Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Height Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Pixel Sorter|type=6412
+PARAM|AESweetsGlitch7in1|Enable Pixel Sorter|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Sort Direction|type=6417|units=度
+PARAM|AESweetsGlitch7in1|Activation Function|type=6417|min=1|max=8
+PARAM|AESweetsGlitch7in1|Enable Inverse Activation|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Primary Sort Criteria|type=6417|min=1|max=8
+PARAM|AESweetsGlitch7in1|Secondary Sort Criteria|type=6417|min=1|max=8
+PARAM|AESweetsGlitch7in1|Sort Blocks|type=6412
+PARAM|AESweetsGlitch7in1|Block Size|type=6417|min=1|max=1000
+PARAM|AESweetsGlitch7in1|Minimum Sorted Blocks|type=6417|min=0|max=1000
+PARAM|AESweetsGlitch7in1|Use Maximum Sorted Blocks|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Maximum Sorted Blocks|type=6417|min=0|max=1000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Minimum Threshold|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Maximum Threshold|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Convolution Coefficient|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Inverse Direction|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Method|type=6417|min=1|max=2
+PARAM|AESweetsGlitch7in1|Output|type=6417|min=1|max=5
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Elements Scatter|type=6412
+PARAM|AESweetsGlitch7in1|Enable Elements Scatter|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Circle|type=6412
+PARAM|AESweetsGlitch7in1|Enable Circle|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number of Shapes|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Stroke Width|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Radius|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Random Radius|type=6412
+PARAM|AESweetsGlitch7in1|Enable Random Radius|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Radius Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Radius Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Color|type=6412
+PARAM|AESweetsGlitch7in1|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Override Blend Mode|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Square|type=6412
+PARAM|AESweetsGlitch7in1|Enable Square|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number of Shapes|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Stroke Width|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Random Size|type=6412
+PARAM|AESweetsGlitch7in1|Enable Random Size|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Size Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Color|type=6412
+PARAM|AESweetsGlitch7in1|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Override Blend Mode|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Plus|type=6412
+PARAM|AESweetsGlitch7in1|Enable Plus|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number of Shapes|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Stroke Width|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Random Size|type=6412
+PARAM|AESweetsGlitch7in1|Enable Random Size|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Size Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Color|type=6412
+PARAM|AESweetsGlitch7in1|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Override Blend Mode|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|X|type=6412
+PARAM|AESweetsGlitch7in1|Enable X|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number of Shapes|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Stroke Width|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Random Size|type=6412
+PARAM|AESweetsGlitch7in1|Enable Random Size|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Size Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Color|type=6412
+PARAM|AESweetsGlitch7in1|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Override Blend Mode|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|X-Square|type=6412
+PARAM|AESweetsGlitch7in1|Enable X-Square|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number of shapes|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Stroke Width|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Random Size|type=6412
+PARAM|AESweetsGlitch7in1|Enable Random Size|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Size Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Size Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Color|type=6412
+PARAM|AESweetsGlitch7in1|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Override Blend Mode|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Dotted Line|type=6412
+PARAM|AESweetsGlitch7in1|Enable Dotted Line|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Number of Shapes|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Dot Size|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Space Size|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Minimum Number of Dots|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Number of Dots Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Number of Dots Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Random Size|type=6412
+PARAM|AESweetsGlitch7in1|Enable Random Size|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Dot Size Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Space Size Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Dot Size Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Space Size Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Color|type=6412
+PARAM|AESweetsGlitch7in1|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Override Blend Mode|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Blend Mode|type=6417|min=1|max=39
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Blur Blocks|type=6412
+PARAM|AESweetsGlitch7in1|Enable Blur Blocks|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Blur Radius|type=6417|min=0|max=1000
+PARAM|AESweetsGlitch7in1|Number Of Blocks|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Position Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Block Size|type=6412
+PARAM|AESweetsGlitch7in1|Minimum Width|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Width Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Width Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1|Minimum Height|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Height Random Range|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Height Random Seed|type=6417|min=1|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Noise|type=6412
+PARAM|AESweetsGlitch7in1|Enable Noise|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Frequency|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Amplitude|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Octaves|type=6417|min=1|max=100
+PARAM|AESweetsGlitch7in1|Preserve Frequency|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Preserve Amplitude|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1|Tint|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|AESweetsGlitch7in1|Tint Contribution|type=6417|min=0|max=100|units=百分比
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Warp|type=6412
+PARAM|AESweetsGlitch7in1|Enable Warp|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Frequency|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Amplitude|type=6417|min=0|max=100000
+PARAM|AESweetsGlitch7in1|Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Split RGB|type=6412
+PARAM|AESweetsGlitch7in1|Enable Split RGB|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Red Channel|type=6412
+PARAM|AESweetsGlitch7in1|Horizontal Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Vertical Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Invert Channel|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Hide Channel|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Flip Horizontal|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Flip Vertical|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Green Channel|type=6412
+PARAM|AESweetsGlitch7in1|Horizontal Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Vertical Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Invert Channel|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Hide Channel|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Flip Horizontal|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Flip Vertical|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|Blue Channel|type=6412
+PARAM|AESweetsGlitch7in1|Horizontal Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Vertical Offset|type=6417|min=-100000|max=100000
+PARAM|AESweetsGlitch7in1|Invert Channel|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Hide Channel|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Flip Horizontal|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1|Flip Vertical|type=6417|min=0|max=1
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1||type=6412
+PARAM|AESweetsGlitch7in1|合成选项|type=undefined
+PARAM|Videocopilot Twitch|Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|speed|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Enable|type=6412
+PARAM|Videocopilot Twitch|Blur|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Color|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Light|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Scale|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Slide|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Time|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Behaviour|type=6412
+PARAM|Videocopilot Twitch|Ease In|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Ease Out|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Border|type=6417|min=1|max=4
+PARAM|Videocopilot Twitch|Show Twitch Only|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch|Randomize Minimum|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Operator Controls|type=6412
+PARAM|Videocopilot Twitch|Blur|type=6412
+PARAM|Videocopilot Twitch|Blur Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Blur Twitches [sec]|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Blur Tint|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|Videocopilot Twitch|Blur Holdout|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Blur Holdout Sharpness|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Blur Boost|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Blur Opacity|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Blur Transfer Mode|type=6417|min=1|max=6
+PARAM|Videocopilot Twitch|Blur Aspect|type=6417|min=-1|max=1
+PARAM|Videocopilot Twitch|Use Lens Blur|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Unique Blur Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Color|type=6412
+PARAM|Videocopilot Twitch|Color Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Color Twitches [sec]|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Colorize|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|Videocopilot Twitch|Color Randomize|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Unique Color Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Light|type=6412
+PARAM|Videocopilot Twitch|Light Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Light Twitches [sec]|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Light Behaviour|type=6417|min=1|max=3
+PARAM|Videocopilot Twitch|Unique Light Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Scale|type=6412
+PARAM|Videocopilot Twitch|Scale Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Scale Twitches [sec]|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Scale Origin|type=6415|units=像素
+PARAM|Videocopilot Twitch|Scale Origin Randomize|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Scale Motion Blur|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Unique Scale Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Slide|type=6412
+PARAM|Videocopilot Twitch|Slide Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Slide Twitches [sec]|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Slide Direction|type=6417|units=度
+PARAM|Videocopilot Twitch|Slide Spread|type=6417|min=0|max=1
+PARAM|Videocopilot Twitch|Slide Tendency|type=6417|min=-1|max=1
+PARAM|Videocopilot Twitch|Slide RGB Split|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Slide Motion Blur|type=6417|min=0|max=100
+PARAM|Videocopilot Twitch|Unique Slide Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|Time|type=6412
+PARAM|Videocopilot Twitch|Time Amount|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Time Twitches [sec]|type=6417|min=0|max=Infinity
+PARAM|Videocopilot Twitch|Time Direction|type=6417|min=1|max=3
+PARAM|Videocopilot Twitch|Unique Time Seed|type=6417|min=0|max=999
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch||type=6412
+PARAM|Videocopilot Twitch|合成选项|type=undefined
+PARAM|VIDEOCOPILOT VIBRANCE|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|VIDEOCOPILOT VIBRANCE|Vibrance|type=6417|min=0|max=2
+PARAM|VIDEOCOPILOT VIBRANCE|Preserve Luminance|type=6417|min=0|max=1
+PARAM|VIDEOCOPILOT VIBRANCE|Brightness|type=6417|min=0|max=2
+PARAM|VIDEOCOPILOT VIBRANCE|Gamma|type=6417|min=0.00999999977648|max=3
+PARAM|VIDEOCOPILOT VIBRANCE|Fill Empty BG|type=6417|min=0|max=1
+PARAM|VIDEOCOPILOT VIBRANCE|Invert|type=6417|min=0|max=1
+PARAM|VIDEOCOPILOT VIBRANCE|Matte Alpha|type=6417|min=1|max=3
+PARAM|VIDEOCOPILOT VIBRANCE|Alpha Boost|type=6417|min=0|max=1
+PARAM|VIDEOCOPILOT VIBRANCE|合成选项|type=undefined
+PARAM|Cryptomatte|Settings|type=6419
+PARAM|Cryptomatte|Output|type=6417|min=1|max=4
+PARAM|Cryptomatte|Selection Mode|type=6417|min=0|max=1
+PARAM|Cryptomatte|合成选项|type=undefined
+PARAM|EXtractoR|Channel Info|type=6419
+PARAM|EXtractoR|Process|type=6412
+PARAM|EXtractoR|Black Point|type=6417|min=-3.40282346638529e+38|max=3.40282346638529e+38
+PARAM|EXtractoR|White Point|type=6417|min=-3.40282346638529e+38|max=3.40282346638529e+38
+PARAM|EXtractoR|UnMult|type=6417|min=0|max=1
+PARAM|EXtractoR||type=6412
+PARAM|EXtractoR|合成选项|type=undefined
+PARAM|IDentifier|Channel Info|type=6419
+PARAM|IDentifier|Display|type=6417|min=1|max=4
+PARAM|IDentifier|ID|type=6417|min=0|max=2147483647
+PARAM|IDentifier|合成选项|type=undefined
+PARAM|CC Ball Action|Scatter|type=6417|min=-1024|max=1024
+PARAM|CC Ball Action|Rotation Axis|type=6417|min=1|max=9
+PARAM|CC Ball Action|Rotation|type=6417|units=度
+PARAM|CC Ball Action|Twist Property|type=6417|min=1|max=13
+PARAM|CC Ball Action|Twist Angle|type=6417|units=度
+PARAM|CC Ball Action|Grid Spacing|type=6417|min=0|max=50
+PARAM|CC Ball Action|Ball Size|type=6417|min=0|max=2000
+PARAM|CC Ball Action|Instability State|type=6417|units=度
+PARAM|CC Ball Action|合成选项|type=undefined
+PARAM|CC Bender|Amount|type=6417|min=-250|max=250|units=像素
+PARAM|CC Bender|Style|type=6417|min=1|max=4
+PARAM|CC Bender|Adjust To Distance|type=6417|min=0|max=1
+PARAM|CC Bender|Top|type=6415|units=像素
+PARAM|CC Bender|Base|type=6415|units=像素
+PARAM|CC Bender|合成选项|type=undefined
+PARAM|CC Bend It|Bend|type=6417|min=-250|max=250|units=像素
+PARAM|CC Bend It|Start|type=6415|units=像素
+PARAM|CC Bend It|End|type=6415|units=像素
+PARAM|CC Bend It|Render Prestart|type=6417|min=1|max=4
+PARAM|CC Bend It|Distort|type=6417|min=1|max=2
+PARAM|CC Bend It|合成选项|type=undefined
+PARAM|CC Blobbylize|Blobbiness|type=6412
+PARAM|CC Blobbylize|Blob Layer|type=6421
+PARAM|CC Blobbylize|Property|type=6417|min=1|max=6
+PARAM|CC Blobbylize|Softness|type=6417|min=0|max=500
+PARAM|CC Blobbylize|Cut Away|type=6417|min=0|max=100
+PARAM|CC Blobbylize||type=6412
+PARAM|CC Blobbylize|Light|type=6412
+PARAM|CC Blobbylize|Using|type=6417|min=1|max=2
+PARAM|CC Blobbylize|Light Intensity|type=6417|min=0|max=1000
+PARAM|CC Blobbylize|Light Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Blobbylize|Light Type|type=6417|min=1|max=2
+PARAM|CC Blobbylize|Light Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Blobbylize|Light Position|type=6415|units=像素
+PARAM|CC Blobbylize|Light Direction|type=6417|units=度
+PARAM|CC Blobbylize||type=6412
+PARAM|CC Blobbylize|Shading|type=6412
+PARAM|CC Blobbylize|Ambient|type=6417|min=0|max=200
+PARAM|CC Blobbylize|Diffuse|type=6417|min=0|max=100
+PARAM|CC Blobbylize|Specular|type=6417|min=0|max=100
+PARAM|CC Blobbylize|Roughness|type=6417|min=0.00099182128906|max=0.5
+PARAM|CC Blobbylize|Metal|type=6417|min=0|max=100
+PARAM|CC Blobbylize||type=6412
+PARAM|CC Blobbylize|合成选项|type=undefined
+PARAM|CS BlockLoad|Completion|type=6417|min=0|max=100
+PARAM|CS BlockLoad|Scans|type=6417|min=1|max=16
+PARAM|CS BlockLoad|Start Cleared|type=6417|min=0|max=1
+PARAM|CS BlockLoad|Bilinear|type=6417|min=0|max=1
+PARAM|CS BlockLoad|合成选项|type=undefined
+PARAM|CC Bubbles|Bubble Amount|type=6417|min=0|max=5000
+PARAM|CC Bubbles|Bubble Speed|type=6417|min=-30|max=30
+PARAM|CC Bubbles|Wobble Amplitude|type=6417|min=0|max=600
+PARAM|CC Bubbles|Wobble Frequency|type=6417|min=0|max=50
+PARAM|CC Bubbles|Bubble Size|type=6417|min=1|max=50|units=百分比
+PARAM|CC Bubbles|Reflection Type|type=6417|min=1|max=2
+PARAM|CC Bubbles|Shading Type|type=6417|min=1|max=5
+PARAM|CC Bubbles|合成选项|type=undefined
+PARAM|CC Burn Film|Burn|type=6417|min=0|max=100
+PARAM|CC Burn Film|Center|type=6415|units=像素
+PARAM|CC Burn Film|Random Seed|type=6417|min=0|max=5000
+PARAM|CC Burn Film|合成选项|type=undefined
+PARAM|CS Color Neutralizer|Shadows Unbalance|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CS Color Neutralizer|Shadows|type=6412
+PARAM|CS Color Neutralizer|Red - Shadows|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer|Green - Shadows|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer|Blue - Shadows|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer||type=6412
+PARAM|CS Color Neutralizer|Midtones Unbalance|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CS Color Neutralizer|Midtones|type=6412
+PARAM|CS Color Neutralizer|Red - Midtones|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer|Green - Midtones|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer|Blue - Midtones|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer||type=6412
+PARAM|CS Color Neutralizer|Highlights Unbalance|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CS Color Neutralizer|Highlights|type=6412
+PARAM|CS Color Neutralizer|Red - Highlights|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer|Green - Highlights|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer|Blue - Highlights|type=6417|min=-100|max=100
+PARAM|CS Color Neutralizer||type=6412
+PARAM|CS Color Neutralizer|Pinning|type=6417|min=0|max=100
+PARAM|CS Color Neutralizer|Blend w. Original|type=6417|min=0|max=100
+PARAM|CS Color Neutralizer|Special|type=6412
+PARAM|CS Color Neutralizer|View|type=6417|min=1|max=3
+PARAM|CS Color Neutralizer|Black Point|type=6417|min=0|max=49.9000015258789
+PARAM|CS Color Neutralizer|White Point|type=6417|min=50.0999984741211|max=100
+PARAM|CS Color Neutralizer||type=6412
+PARAM|CS Color Neutralizer|合成选项|type=undefined
+PARAM|CC Color Offset|Red Phase|type=6417|units=度
+PARAM|CC Color Offset|Green Phase|type=6417|units=度
+PARAM|CC Color Offset|Blue Phase|type=6417|units=度
+PARAM|CC Color Offset|Overflow|type=6417|min=1|max=3
+PARAM|CC Color Offset|合成选项|type=undefined
+PARAM|CC Composite|Opacity|type=6417|min=0|max=100|units=百分比
+PARAM|CC Composite|Composite Original|type=6417|min=1|max=41
+PARAM|CC Composite|RGB Only|type=6417|min=0|max=1
+PARAM|CC Composite|合成选项|type=undefined
+PARAM|CS CrossBlur|Radius X|type=6417|min=0|max=10000
+PARAM|CS CrossBlur|Radius Y|type=6417|min=0|max=10000
+PARAM|CS CrossBlur|Transfer Mode|type=6417|min=1|max=6
+PARAM|CS CrossBlur|Repeat Edge Pixels|type=6417|min=0|max=1
+PARAM|CS CrossBlur|合成选项|type=undefined
+PARAM|CC Cylinder|Radius (%)|type=6417|min=0|max=30000
+PARAM|CC Cylinder|Position|type=6412
+PARAM|CC Cylinder|Position X|type=6417|min=-30000|max=30000
+PARAM|CC Cylinder|Position Y|type=6417|min=-30000|max=30000
+PARAM|CC Cylinder|Position Z|type=6417|min=-30000|max=30000
+PARAM|CC Cylinder||type=6412
+PARAM|CC Cylinder|Rotation|type=6412
+PARAM|CC Cylinder|Rotation X|type=6417|units=度
+PARAM|CC Cylinder|Rotation Y|type=6417|units=度
+PARAM|CC Cylinder|Rotation Z|type=6417|units=度
+PARAM|CC Cylinder|Rotation Order|type=6417|min=1|max=6
+PARAM|CC Cylinder||type=6412
+PARAM|CC Cylinder|Render|type=6417|min=1|max=3
+PARAM|CC Cylinder|Light|type=6412
+PARAM|CC Cylinder|Light Intensity|type=6417|min=0|max=1000
+PARAM|CC Cylinder|Light Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Cylinder|Light Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Cylinder|Light Direction|type=6417|units=度
+PARAM|CC Cylinder||type=6412
+PARAM|CC Cylinder|Shading|type=6412
+PARAM|CC Cylinder|Ambient|type=6417|min=0|max=200
+PARAM|CC Cylinder|Diffuse|type=6417|min=0|max=100
+PARAM|CC Cylinder|Specular|type=6417|min=0|max=100
+PARAM|CC Cylinder|Roughness|type=6417|min=0.00099182128906|max=0.5
+PARAM|CC Cylinder|Metal|type=6417|min=0|max=100
+PARAM|CC Cylinder||type=6412
+PARAM|CC Cylinder|合成选项|type=undefined
+PARAM|CC Drizzle|Drip Rate|type=6417|min=0|max=100
+PARAM|CC Drizzle|Longevity (sec)|type=6417|min=0|max=100
+PARAM|CC Drizzle|Rippling|type=6417|units=度
+PARAM|CC Drizzle|Displacement|type=6417|min=-1024|max=1024
+PARAM|CC Drizzle|Ripple Height|type=6417|min=0|max=200
+PARAM|CC Drizzle|Spreading|type=6417|min=0|max=5000
+PARAM|CC Drizzle|Light|type=6412
+PARAM|CC Drizzle|Using|type=6417|min=1|max=2
+PARAM|CC Drizzle|Light Intensity|type=6417|min=0|max=1000
+PARAM|CC Drizzle|Light Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Drizzle|Light Type|type=6417|min=1|max=2
+PARAM|CC Drizzle|Light Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Drizzle|Light Position|type=6415|units=像素
+PARAM|CC Drizzle|Light Direction|type=6417|units=度
+PARAM|CC Drizzle||type=6412
+PARAM|CC Drizzle|Shading|type=6412
+PARAM|CC Drizzle|Ambient|type=6417|min=0|max=200
+PARAM|CC Drizzle|Diffuse|type=6417|min=0|max=100
+PARAM|CC Drizzle|Specular|type=6417|min=0|max=100
+PARAM|CC Drizzle|Roughness|type=6417|min=0.00099182128906|max=0.5
+PARAM|CC Drizzle|Metal|type=6417|min=0|max=100
+PARAM|CC Drizzle||type=6412
+PARAM|CC Drizzle|合成选项|type=undefined
+PARAM|CC Environment|Environment|type=6421
+PARAM|CC Environment|Mapping|type=6417|min=1|max=3
+PARAM|CC Environment|Horizontal Pan|type=6417|min=-10000|max=10000
+PARAM|CC Environment|Filter Environment|type=6417|min=0|max=1
+PARAM|CC Environment|Lens Distortion|type=6417|min=-1000|max=1000
+PARAM|CC Environment|合成选项|type=undefined
+PARAM|CC Flo Motion|Finer Controls|type=6417|min=0|max=1
+PARAM|CC Flo Motion|Knot 1|type=6415|units=像素
+PARAM|CC Flo Motion|Amount 1|type=6417|min=-1600|max=1600
+PARAM|CC Flo Motion|Knot 2|type=6415|units=像素
+PARAM|CC Flo Motion|Amount 2|type=6417|min=-1600|max=1600
+PARAM|CC Flo Motion|Tile Edges|type=6417|min=0|max=1
+PARAM|CC Flo Motion|Antialiasing|type=6417|min=1|max=3
+PARAM|CC Flo Motion|Falloff|type=6417|min=0|max=10
+PARAM|CC Flo Motion|合成选项|type=undefined
+PARAM|CC Force Motion Blur|Motion Blur Samples|type=6417|min=1|max=255
+PARAM|CC Force Motion Blur|Override Shutter Angle|type=6417|min=0|max=1
+PARAM|CC Force Motion Blur|Shutter Angle|type=6417|min=0|max=3600
+PARAM|CC Force Motion Blur|Native Motion Blur|type=6417|min=1|max=2
+PARAM|CC Force Motion Blur|合成选项|type=undefined
+PARAM|CC Glass|Surface|type=6412
+PARAM|CC Glass|Bump Map|type=6421
+PARAM|CC Glass|Property|type=6417|min=1|max=6
+PARAM|CC Glass|Softness|type=6417|min=0|max=500
+PARAM|CC Glass|Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Glass|Displacement|type=6417|min=-500|max=500|units=像素
+PARAM|CC Glass||type=6412
+PARAM|CC Glass|Light|type=6412
+PARAM|CC Glass|Using|type=6417|min=1|max=2
+PARAM|CC Glass|Light Intensity|type=6417|min=0|max=1000
+PARAM|CC Glass|Light Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Glass|Light Type|type=6417|min=1|max=2
+PARAM|CC Glass|Light Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Glass|Light Position|type=6415|units=像素
+PARAM|CC Glass|Light Direction|type=6417|units=度
+PARAM|CC Glass||type=6412
+PARAM|CC Glass|Shading|type=6412
+PARAM|CC Glass|Ambient|type=6417|min=0|max=200
+PARAM|CC Glass|Diffuse|type=6417|min=0|max=100
+PARAM|CC Glass|Specular|type=6417|min=0|max=100
+PARAM|CC Glass|Roughness|type=6417|min=0.00099182128906|max=0.5
+PARAM|CC Glass|Metal|type=6417|min=0|max=100
+PARAM|CC Glass||type=6412
+PARAM|CC Glass|合成选项|type=undefined
+PARAM|CC Glass Wipe|Completion|type=6417|min=0|max=100|units=百分比
+PARAM|CC Glass Wipe|Layer to Reveal|type=6421
+PARAM|CC Glass Wipe|Gradient Layer|type=6421
+PARAM|CC Glass Wipe|Softness|type=6417|min=5|max=100|units=百分比
+PARAM|CC Glass Wipe|Displacement Amount|type=6417|min=0|max=500
+PARAM|CC Glass Wipe|合成选项|type=undefined
+PARAM|CC Glue Gun|Brush Position|type=6415|units=像素
+PARAM|CC Glue Gun|Stroke Width|type=6417|min=0|max=1024
+PARAM|CC Glue Gun|Density|type=6417|min=0|max=200
+PARAM|CC Glue Gun|Time Span (sec)|type=6417|min=0|max=3000
+PARAM|CC Glue Gun|Reflection|type=6417|min=0|max=200
+PARAM|CC Glue Gun|Strength|type=6417|min=0|max=100|units=百分比
+PARAM|CC Glue Gun|Style|type=6412
+PARAM|CC Glue Gun|Paint Style|type=6417|min=1|max=2
+PARAM|CC Glue Gun|Wobble Width|type=6417|min=0|max=1024
+PARAM|CC Glue Gun|Wobble Height|type=6417|min=0|max=1024
+PARAM|CC Glue Gun|Wobble Speed|type=6417|min=0|max=30000
+PARAM|CC Glue Gun||type=6412
+PARAM|CC Glue Gun|Light|type=6412
+PARAM|CC Glue Gun|Using|type=6417|min=1|max=2
+PARAM|CC Glue Gun|Light Intensity|type=6417|min=0|max=1000
+PARAM|CC Glue Gun|Light Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Glue Gun|Light Type|type=6417|min=1|max=2
+PARAM|CC Glue Gun|Light Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Glue Gun|Light Position|type=6415|units=像素
+PARAM|CC Glue Gun|Light Direction|type=6417|units=度
+PARAM|CC Glue Gun||type=6412
+PARAM|CC Glue Gun|Shading|type=6412
+PARAM|CC Glue Gun|Ambient|type=6417|min=0|max=200
+PARAM|CC Glue Gun|Diffuse|type=6417|min=0|max=100
+PARAM|CC Glue Gun|Specular|type=6417|min=0|max=100
+PARAM|CC Glue Gun|Roughness|type=6417|min=0.00099182128906|max=0.5
+PARAM|CC Glue Gun|Metal|type=6417|min=0|max=100
+PARAM|CC Glue Gun||type=6412
+PARAM|CC Glue Gun|合成选项|type=undefined
+PARAM|CC Griddler|Horizontal Scale|type=6417|min=-2000|max=2000
+PARAM|CC Griddler|Vertical Scale|type=6417|min=-2000|max=2000
+PARAM|CC Griddler|Tile Size|type=6417|min=1|max=200|units=百分比
+PARAM|CC Griddler|Rotation|type=6417|units=度
+PARAM|CC Griddler|Cut Tiles|type=6417|min=0|max=1
+PARAM|CC Griddler|合成选项|type=undefined
+PARAM|CC Grid Wipe|Completion|type=6417|min=0|max=1|units=百分比
+PARAM|CC Grid Wipe|Center|type=6415|units=像素
+PARAM|CC Grid Wipe|Rotation|type=6417|units=度
+PARAM|CC Grid Wipe|Border|type=6417|min=30|max=200|units=像素
+PARAM|CC Grid Wipe|Tiles|type=6417|min=1|max=25|units=百分比
+PARAM|CC Grid Wipe|Shape|type=6417|min=1|max=3
+PARAM|CC Grid Wipe|Reverse Transition|type=6417|min=0|max=1
+PARAM|CC Grid Wipe|合成选项|type=undefined
+PARAM|CC Hair|Length|type=6417|min=0|max=500
+PARAM|CC Hair|Thickness|type=6417|min=0|max=4
+PARAM|CC Hair|Weight|type=6417|min=-10|max=10|units=像素
+PARAM|CC Hair|Constant Mass|type=6417|min=0|max=1
+PARAM|CC Hair|Density|type=6417|min=0|max=10000
+PARAM|CC Hair|Hairfall Map|type=6412
+PARAM|CC Hair|Map Strength|type=6417|min=-1000|max=1000
+PARAM|CC Hair|Map Layer|type=6421
+PARAM|CC Hair|Map Property|type=6417|min=1|max=8
+PARAM|CC Hair|Map Softness|type=6417|min=0|max=511
+PARAM|CC Hair|Add Noise|type=6417|min=0|max=1|units=百分比
+PARAM|CC Hair||type=6412
+PARAM|CC Hair|Hair Color|type=6412
+PARAM|CC Hair|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Hair|Color Inheritance|type=6417|min=0|max=1|units=百分比
+PARAM|CC Hair|Opacity|type=6417|min=0|max=1|units=百分比
+PARAM|CC Hair||type=6412
+PARAM|CC Hair|Light|type=6412
+PARAM|CC Hair|Light Height|type=6417|min=-100|max=100|units=像素
+PARAM|CC Hair|Light Direction|type=6417|units=度
+PARAM|CC Hair||type=6412
+PARAM|CC Hair|Shading|type=6412
+PARAM|CC Hair|Ambient|type=6417|min=0|max=200
+PARAM|CC Hair|Diffuse|type=6417|min=0|max=200
+PARAM|CC Hair|Specular|type=6417|min=0|max=200
+PARAM|CC Hair|Roughness|type=6417|min=0.00099182128906|max=0.5
+PARAM|CC Hair||type=6412
+PARAM|CC Hair|合成选项|type=undefined
+PARAM|CS HexTile|Render|type=6417|min=1|max=3
+PARAM|CS HexTile|Radius|type=6417|min=3|max=10000
+PARAM|CS HexTile|Center|type=6415|units=像素
+PARAM|CS HexTile|Lock Center Tile|type=6417|min=0|max=1
+PARAM|CS HexTile|Rotate|type=6417|units=度
+PARAM|CS HexTile|Smearing|type=6417|min=-100|max=100
+PARAM|CS HexTile|合成选项|type=undefined
+PARAM|CC Image Wipe|Completion|type=6417|min=0|max=1|units=百分比
+PARAM|CC Image Wipe|Border Softness|type=6417|min=0|max=1|units=百分比
+PARAM|CC Image Wipe|Auto Softness|type=6417|min=0|max=1
+PARAM|CC Image Wipe|Gradient|type=6412
+PARAM|CC Image Wipe|Layer|type=6421
+PARAM|CC Image Wipe|Property|type=6417|min=1|max=8
+PARAM|CC Image Wipe|Blur|type=6417|min=0|max=100
+PARAM|CC Image Wipe|Inverse Gradient|type=6417|min=0|max=1
+PARAM|CC Image Wipe||type=6412
+PARAM|CC Image Wipe|合成选项|type=undefined
+PARAM|CC Jaws|Completion|type=6417|min=0|max=1|units=百分比
+PARAM|CC Jaws|Center|type=6415|units=像素
+PARAM|CC Jaws|Direction|type=6417|units=度
+PARAM|CC Jaws|Height|type=6417|min=0|max=1|units=百分比
+PARAM|CC Jaws|Width|type=6417|min=2|max=25
+PARAM|CC Jaws|Shape|type=6417|min=1|max=4
+PARAM|CC Jaws|合成选项|type=undefined
+PARAM|CC Kaleida|Center|type=6415|units=像素
+PARAM|CC Kaleida|Size|type=6417|min=1|max=1000|units=百分比
+PARAM|CC Kaleida|Mirroring|type=6417|min=1|max=9
+PARAM|CC Kaleida|Rotation|type=6417|units=度
+PARAM|CC Kaleida|Floating Center|type=6417|min=0|max=1
+PARAM|CC Kaleida|合成选项|type=undefined
+PARAM|CS Kernel|Line 1|type=6412
+PARAM|CS Kernel|1 - L1|type=6417|min=-100|max=100
+PARAM|CS Kernel|2 - L1|type=6417|min=-100|max=100
+PARAM|CS Kernel|3 - L1|type=6417|min=-100|max=100
+PARAM|CS Kernel||type=6412
+PARAM|CS Kernel|Line 2|type=6412
+PARAM|CS Kernel|1 - L2|type=6417|min=-100|max=100
+PARAM|CS Kernel|2 - L2|type=6417|min=-100|max=100
+PARAM|CS Kernel|3 - L2|type=6417|min=-100|max=100
+PARAM|CS Kernel||type=6412
+PARAM|CS Kernel|Line 3|type=6412
+PARAM|CS Kernel|1 - L3|type=6417|min=-100|max=100
+PARAM|CS Kernel|2 - L3|type=6417|min=-100|max=100
+PARAM|CS Kernel|3 - L3|type=6417|min=-100|max=100
+PARAM|CS Kernel||type=6412
+PARAM|CS Kernel|Divider|type=6417|min=0.00999999977648|max=10000
+PARAM|CS Kernel|Absolute Values|type=6417|min=0|max=1
+PARAM|CS Kernel|Blend w. Original|type=6417|min=0|max=100
+PARAM|CS Kernel|合成选项|type=undefined
+PARAM|CC Lens|Center|type=6415|units=像素
+PARAM|CC Lens|Size|type=6417|min=0|max=500
+PARAM|CC Lens|Convergence|type=6417|min=-200|max=100
+PARAM|CC Lens|合成选项|type=undefined
+PARAM|CC Light Burst 2.5|Center|type=6415|units=像素
+PARAM|CC Light Burst 2.5|Intensity|type=6417|min=0|max=30000
+PARAM|CC Light Burst 2.5|Ray Length|type=6417|min=-1000|max=1000
+PARAM|CC Light Burst 2.5|Burst|type=6417|min=1|max=3
+PARAM|CC Light Burst 2.5|Halo Alpha|type=6417|min=0|max=1
+PARAM|CC Light Burst 2.5|Set Color|type=6417|min=0|max=1
+PARAM|CC Light Burst 2.5|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Light Burst 2.5|合成选项|type=undefined
+PARAM|CC Light Rays|Intensity|type=6417|min=0|max=10000
+PARAM|CC Light Rays|Center|type=6415|units=像素
+PARAM|CC Light Rays|Radius|type=6417|min=0|max=10000
+PARAM|CC Light Rays|Warp Softness|type=6417|min=0|max=400
+PARAM|CC Light Rays|Shape|type=6417|min=1|max=2
+PARAM|CC Light Rays|Direction|type=6417|units=度
+PARAM|CC Light Rays|Color from Source|type=6417|min=0|max=1
+PARAM|CC Light Rays|Allow Brightening|type=6417|min=0|max=1
+PARAM|CC Light Rays|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Light Rays|Transfer Mode|type=6417|min=1|max=4
+PARAM|CC Light Rays|合成选项|type=undefined
+PARAM|CC Light Sweep|Center|type=6415|units=像素
+PARAM|CC Light Sweep|Direction|type=6417|units=度
+PARAM|CC Light Sweep|Shape|type=6417|min=1|max=3
+PARAM|CC Light Sweep|Width|type=6417|min=0|max=4000
+PARAM|CC Light Sweep|Sweep Intensity|type=6417|min=0|max=500
+PARAM|CC Light Sweep|Edge Intensity|type=6417|min=0|max=500
+PARAM|CC Light Sweep|Edge Thickness|type=6417|min=0|max=20
+PARAM|CC Light Sweep|Light Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Light Sweep|Light Reception|type=6417|min=1|max=3
+PARAM|CC Light Sweep|合成选项|type=undefined
+PARAM|CC Light Wipe|Completion|type=6417|min=0|max=100|units=百分比
+PARAM|CC Light Wipe|Center|type=6415|units=像素
+PARAM|CC Light Wipe|Intensity|type=6417|min=0|max=400
+PARAM|CC Light Wipe|Shape|type=6417|min=1|max=3
+PARAM|CC Light Wipe|Direction|type=6417|units=度
+PARAM|CC Light Wipe|Color from Source|type=6417|min=0|max=1
+PARAM|CC Light Wipe|Color|type=6418|min=-3921568.62745098|max=3921568.62745098
+PARAM|CC Light Wipe|Reverse Transition|type=6417|min=0|max=1
+PARAM|CC Light Wipe|合成选项|type=undefined
+PARAM|CS LineSweep|Completion|type=6417|min=0|max=100
+PARAM|CS LineSweep|Direction|type=6417|units=度
+PARAM|CS LineSweep|Thickness|type=6417|min=1|max=1000
+PARAM|CS LineSweep|Slant|type=6417|min=0|max=99
+PARAM|CS LineSweep|Flip Direction|type=6417|min=0|max=1
+PARAM|CS LineSweep|合成选项|type=undefined
+SUMMARY|尝试=40|成功添加=40|含下拉候选读取=0|propertyParameters可用=0|valueText可用=0|minmax可用=484|units可用=100

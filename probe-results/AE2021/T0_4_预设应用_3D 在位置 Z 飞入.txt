@@ -1,0 +1,13 @@
+PROBE=T0_4
+AE_VERSION=18.4.1x4
+PRESET=C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Text\3D Text\3D 在位置 Z 飞入.ffx
+PRESET_EXISTS=true
+A_solid_selected|err=无|效果数 0->0|动画属性数 0->0|图层数=1
+A_GRP|效果|numProperties=0
+A_GRP|变换|numProperties=12
+B_no_selection|err=无|调用前图层数=1|调用后图层数=3|solidB效果数=0
+C_text_selected|err=无|效果数=0|动画属性数=3|图层数=4
+C_GRP|效果|numProperties=0
+C_GRP|变换|numProperties=12
+D_adjustment|err=无|效果数=0
+LAYER_NAMES_AFTER=adj / Hello 预设测试 / <空文本图层> / solidB / solidA

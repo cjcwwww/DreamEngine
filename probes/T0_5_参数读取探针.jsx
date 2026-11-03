@@ -6,7 +6,7 @@
 
 (function probeParamRead() {
     // 用 app.effects 里"带下拉可能性"的效果各取若干个来测，避免猜具体效果
-    var outDir = new Folder(Folder.myDocuments.fsName + "/AEViewerProbe");
+    var outDir = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
     if (!outDir.exists) outDir.create();
 
     var L = [];

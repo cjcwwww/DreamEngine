@@ -1,0 +1,330 @@
+name_en	name_zh	cat_en	cat_zh	zh_source	sources	review	matchName	join_status	zh_status
+BCC Extruded EPS	BCC 挤出 EPS 矢量	BCC 3D Objects	BCC 3D 对象	community	1	conflict	ScriptEP	matched_en	en_only
+BCC Extruded Spline	BCC 挤压样条线	BCC 3D Objects	BCC 3D 对象	community	1	conflict	ScriptSP	matched_en	en_only
+BCC Extruded Text	BCC 挤压文本	BCC 3D Objects	BCC 3D 对象	community	2	ok	ScriptET	matched_en	en_only
+BCC Layer Deformer	BCC 层变形器	BCC 3D Objects	BCC 3D 对象	community	1	conflict	ScriptLD	matched_en	en_only
+BCC Title Studio	BCC 标题工作室	BCC 3D Objects	BCC 3D 对象	community	1	conflict	BCCTS	matched_en	en_only
+BCC Type On Text	BCC 键入文本	BCC 3D Objects	BCC 3D 对象	community	1	conflict	ScriptTO	matched_en	en_only
+BCC+Borders	BCC+边框	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_BORDERS	matched_en	en_only
+BCC+Color Infrared	BCC+红外着色	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_COLORINFRARED	matched_en	en_only
+BCC+Color Shadow	BCC+颜色阴影	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_COLORSHADOW	matched_en	en_only
+BCC+Harris Shutter	BCC+哈里斯快门	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_HARRISSHUTTER	matched_en	en_only
+BCC+Infrared	BCC+红外线	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_INFRARED	matched_en	en_only
+BCC+Night Vision	BCC+夜视镜	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_NIGHTVISION	matched_en	en_only
+BCC+X-Ray	BCC+X 射线	BCC Art Looks	BCC 艺术外观	community	1	ok	BCC_XRAY	matched_en	en_only
+BCC Artist's Poster	BCC 艺术家海报	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC3Artists Poster	matched_en	en_only
+BCC Bump Map	BCC 凹凸贴图	BCC Art Looks	BCC 艺术外观	community	2	ok	BCC3Bump Map	matched_en	en_only
+BCC Cartoon Look	BCC 卡通外观	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC6Cartoon2Look	matched_en	en_only
+BCC Cartooner	BCC 卡通	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC3Cartooner	matched_en	en_only
+BCC Charcoal Sketch	BCC 炭笔素描	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC6Charcoal Sketch	matched_en	en_only
+BCC Halftone	BCC 中间色	BCC Art Looks	BCC 艺术外观	community	2	ok	BCC Halftone	matched_en	en_only
+BCC Median	BCC 中值	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC3Median	matched_en	en_only
+BCC Pencil Sketch	BCC 素描	BCC Art Looks	BCC 艺术外观	community	2	ok	BCC6Pencil Sketch	matched_en	en_only
+BCC Posterize	BCC 色调分离	BCC Art Looks	BCC 艺术外观	community	2	ok	BCC3Posterize	matched_en	en_only
+BCC Spray Paint Noise	BCC 飞散噪点效果	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC3Spray Paint Noise	matched_en	en_only
+BCC Tile Mosaic	BCC 瓷砖马赛克	BCC Art Looks	BCC 艺术外观	community	2	ok	BCC4Tile Mosaic	matched_en	en_only
+BCC Water Color	BCC 水彩	BCC Art Looks	BCC 艺术外观	community	1	conflict	BCC6Water Color	matched_en	en_only
+BCC+Blur	BCC+模糊	BCC Blur	BCC 模糊	community	1	ok	BCC_BLUR	matched_en	en_only
+BCC+Channel Blur	BCC+通道模糊	BCC Blur	BCC 模糊	community	1	ok	BCC_CHANNELBLUR	matched_en	en_only
+BCC+Channel Blur YUV	BCC+通道模糊 YUV	BCC Blur	BCC 模糊	community	1	ok	BCC_CHANNELYUVBLUR	matched_en	en_only
+BCC+Detail	BCC+细节	BCC Blur	BCC 模糊	community	1	ok	BCC_DETAIL	matched_en	en_only
+BCC+Directional Blur	BCC+方向模糊	BCC Blur	BCC 模糊	community	1	ok	BCC_DIRECTIONALBLUR	matched_en	en_only
+BCC+Lens Blur	BCC+镜头模糊	BCC Blur	BCC 模糊	community	1	ok	BCC_LENSBLUR	matched_en	en_only
+BCC+Motion Blur ML	BCC+运动模糊 ML	BCC Blur	BCC 模糊	community	1	ok	BCC_MOTIONBLURML	matched_en	en_only
+BCC+Radial Blur	BCC+径向模糊	BCC Blur	BCC 模糊	community	1	ok	BCC_RADIALBLUR	matched_en	en_only
+BCC+Smear Blur	BCC+涂抹模糊	BCC Blur	BCC 模糊	community	1	ok	BCC_SMEARBLUR	matched_en	en_only
+BCC Lens Shape	BCC 镜头形状	BCC Blur	BCC 模糊	community	1	conflict	BCC6LensShape	matched_en	en_only
+BCC Unsharp Mask	BCC 锐化蒙版	BCC Blur	BCC 模糊	community	1	conflict	BCC3Unsharp Mask	matched_en	en_only
+BCC Z-Blur	BCC Z-模糊	BCC Blur	BCC 模糊	community	1	ok	BCC3Z-Blur	matched_en	en_only
+BCC Browser	BCC 浏览器	BCC Browser	BCC 浏览器	community	1	ok		unmatched	no_host_match
+BCC FX Browser	BCC FX 浏览器	BCC Browser	BCC 浏览器	community	1	ok	BCCFXBrowser	matched_en	en_only
+BCC+Black and White	BCC+黑白	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_BLACKANDWHITE	matched_en	en_only
+BCC+Color Link	BCC+颜色链接	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_COLORLINK	matched_en	en_only
+BCC+DeFog	BCC+除雾	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_DEFOG	matched_en	en_only
+BCC+Develop	BCC+冲洗	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_DEVELOP	matched_en	en_only
+BCC+Enhancing	BCC+增强	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_ENHANCING	matched_en	en_only
+BCC+F-Stop	BCC+F 光圈	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_FSTOP	matched_en	en_only
+BCC+Fluorescent	BCC+日光灯	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_FLUORESCENT	matched_en	en_only
+BCC+Grade	BCC+调色	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_GRADE	matched_en	en_only
+BCC+Haze	BCC+雾霭	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_HAZE	matched_en	en_only
+BCC+High Contrast	BCC+高对比度	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_HIGHCONTRAST	matched_en	en_only
+BCC+Kelvin	BCC+色温	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_KELVIN	matched_en	en_only
+BCC+Low Contrast	BCC+低对比度	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_LOWCONTRAST	matched_en	en_only
+BCC+Polarizer	BCC+偏光片	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_POLARIZER	matched_en	en_only
+BCC+Selective Saturation	BCC+选择性饱和度	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_SELECTIVESATURATION	matched_en	en_only
+BCC+Shadows/Highlights	BCC+阴影/高光	BCC Color & Tone	BCC 颜色与色调	community	1	ok	BCC_SHADOWSHIGHLIGHTS	matched_en	en_only
+BCC 3 Way Color Grade	BCC 3 路颜色校正	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC6ThreeWayCC	matched_en	en_only
+BCC Brightness-Contrast	BCC 亮度-对比度	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3Brightness-Contrast	matched_en	en_only
+BCC Color Balance	BCC 色彩平衡	BCC Color & Tone	BCC 颜色与色调	community	2	ok	BCC3Color Balance	matched_en	en_only
+BCC Color Correction	BCC 色彩校正	BCC Color & Tone	BCC 颜色与色调	community	2	ok	BCC3Color Correction	matched_en	en_only
+BCC Color Match	BCC 颜色匹配	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3Color Match	matched_en	en_only
+BCC Colorize	BCC 着色	BCC Color & Tone	BCC 颜色与色调	community	2	ok	BCC3Colorize	matched_en	en_only
+BCC Correct Selected Color	BCC 修改指定颜色	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3Correct Selected Color	matched_en	en_only
+BCC Hue-Sat-Lightness	BCC 色相-饱和度-明度	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3Hue-Sat-Lightness	matched_en	en_only
+BCC Invert Solarize	BCC 负片效果	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3Invert Solarize	matched_en	en_only
+BCC Levels Gamma	BCC 色阶伽玛值	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3Levels Gamma	matched_en	en_only
+BCC MultiTone Mix	BCC 多色调混合	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC3MultiTone Mix	matched_en	en_only
+BCC Tritone	BCC 三色调	BCC Color & Tone	BCC 颜色与色调	community	2	ok	BCC3Tritone	matched_en	en_only
+BCC Videoscope	BCC 视频示波器	BCC Color & Tone	BCC 颜色与色调	community	1	conflict	BCC6Videoscope	matched_en	en_only
+BCC+Atmospheric Glow	BCC+大气辉光	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_ATMOSPHERICGLOW	matched_en	en_only
+BCC+Bleach Bypass	BCC+漂白旁路	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_BLEACHBYPASS	matched_en	en_only
+BCC+Cross Processing	BCC+交叉冲洗	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_CROSSPROCESSING	matched_en	en_only
+BCC+Day for Night	BCC+日景转夜	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_DAYFORNIGHT	matched_en	en_only
+BCC+Film Glow	BCC+胶片辉光	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_FILMGLOW	matched_en	en_only
+BCC+Film Grunge	BCC+胶片脏痕	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_FILMGRUNGE	matched_en	en_only
+BCC+Film Stocks	BCC+胶片风格	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_FILMSTOCKS	matched_en	en_only
+BCC+Flashing	BCC+频闪	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_FLASHING	matched_en	en_only
+BCC+Grain	BCC+颗粒	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_GRAIN	matched_en	en_only
+BCC+Light Flicker	BCC+灯光闪烁	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_LIGHTFLICKER	matched_en	en_only
+BCC+Looks	BCC+外观	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_LOOKS	matched_en	en_only
+BCC+Orbs	BCC+球体	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_ORBS	matched_en	en_only
+BCC+Smoke and Fog	BCC+烟雾与雾	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_SMOKEANDFOG	matched_en	en_only
+BCC+Three Strip	BCC+三带法	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_THREESTRIP	matched_en	en_only
+BCC+Two Strip	BCC+双带法	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_TWOSTRIP	matched_en	en_only
+BCC+Vignette	BCC+暗角	BCC Film Style	BCC 胶片风格	community	1	ok	BCC_VIGNETTE	matched_en	en_only
+BCC Match Grain	BCC 匹配颗粒	BCC Film Style	BCC 胶片风格	community	1	conflict	BCC3Match Grain	matched_en	en_only
+BCC+Color Gradient	BCC+颜色渐变	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_COLORGRADIENT	matched_en	en_only
+BCC+Color Spot	BCC+聚光色斑	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_COLORSPOT	matched_en	en_only
+BCC+Colorize Gradient	BCC+着色颜色	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_COLORIZEGRADIENT	matched_en	en_only
+BCC+Dual Gradient	BCC+双渐变	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_DUALGRADIENT	matched_en	en_only
+BCC+Gels	BCC+色片	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_GELS	matched_en	en_only
+BCC+ND Gradient	BCC+ND 渐变	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_NDGRADIENT	matched_en	en_only
+BCC+Photographic	BCC+摄影风格	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_PHOTOGRAPHIC	matched_en	en_only
+BCC+Radial Tint	BCC+径向着色	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_RADIALTINT	matched_en	en_only
+BCC+Sepia	BCC+棕褐色调	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_SEPIA	matched_en	en_only
+BCC+Skin Tone	BCC+肤色	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_SKINTONE	matched_en	en_only
+BCC+Split Tone	BCC+分割色调	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_SPLITTONE	matched_en	en_only
+BCC+Sunset	BCC+日落	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_SUNSET	matched_en	en_only
+BCC+Tint	BCC+色调	BCC Grads & Tints	BCC 渐变与着色	community	1	ok	BCC_TINT	matched_en	en_only
+BCC+Beauty Studio	BCC+美颜工作室	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_BEAUTYSTUDIO	matched_en	en_only
+BCC+DeBand	BCC+去色带	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_DEBAND	matched_en	en_only
+BCC+DeBlock	BCC+去块	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_DEBLOCK	matched_en	en_only
+BCC+Deinterlace ML	BCC+隔行扫描 ML	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_MLDEINTERLACE	matched_en	en_only
+BCC+DeNoise ML	BCC+降噪 ML	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_MLDENOISE	matched_en	en_only
+BCC+Frame Fixer ML	BCC+帧修正器 ML	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_MLFRAMEFIXER	matched_en	en_only
+BCC+Magic Sharp	BCC+神奇锐化	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC_MAGICSHARP	matched_en	en_only
+BCC+UpRes ML	BCC+超分辨率 ML	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC_UPRESML	matched_en	en_only
+BCC Broadcast Safe	BCC 广播安全	BCC Image Restoration	BCC 图像修复	community	1	ok	BCC Broadcast Safe	matched_en	en_only
+BCC Dropout Fixer	BCC 脱落修复	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC Dropout Fixer	matched_en	en_only
+BCC Dust and Scratches	BCC 灰尘和划痕	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC3Dust and Scratches	matched_en	en_only
+BCC Flicker Fixer	BCC 闪烁修复	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC3Flicker Fixer	matched_en	en_only
+BCC Lens Correction	BCC 镜头校正	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC Lens Correction	matched_en	en_only
+BCC Optical Stabilizer	BCC 光学稳定器	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC3Stabilizer	matched_en	en_only
+BCC Pixel Fixer	BCC 像素修复	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC6Pixel Fixer	matched_en	en_only
+BCC Reframer	BCC 重新定义	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC Reframer	matched_en	en_only
+BCC Remover	BCC 移除	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC Remover	matched_en	en_only
+BCC Wire Remover	BCC 电线移除	BCC Image Restoration	BCC 图像修复	community	1	conflict	BCC3Wire Remover	matched_en	en_only
+BCC+Color Paste	BCC+颜色粘贴	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_COLORPASTE	matched_en	en_only
+BCC+Composite	BCC+合成	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_COMPOSITE	matched_en	en_only
+BCC+Depth Map ML	BCC+深度贴图 ML	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_MLDEPTHESTIMATION	matched_en	en_only
+BCC+Edge Cleaner	BCC+边缘清理	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_EDGECLEANER	matched_en	en_only
+BCC+Edge Composite	BCC+边缘合成	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_EDGECOMPOSITE	matched_en	en_only
+BCC+Face ML	BCC+面部 ML	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_MLFACESEGMENTATION	matched_en	en_only
+BCC+Holdout Composite	BCC+保留区合成	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_HOLDOUTCOMPOSITE	matched_en	en_only
+BCC+Light Wrap	BCC+边缘光	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC_LIGHTWRAP	matched_en	en_only
+BCC+Linear Color Key	BCC+线性色度键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC_LINEARCOLORKEY	matched_en	en_only
+BCC+Linear Luma Key	BCC+线性亮度键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC_LINEARLUMAKEY	matched_en	en_only
+BCC+Math Composite	BCC+数学合成	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_MATHCOMPOSITE	matched_en	en_only
+BCC+Matte Refine ML	BCC+遮罩精细化 ML	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_MLMATTEREFINE	matched_en	en_only
+BCC+Non-Additive Mix	BCC+非加性混合	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_NONADDITIVEMIX	matched_en	en_only
+BCC+Optical Dissolve	BCC+光学溶解	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_OPTICALDISSOLVE	matched_en	en_only
+BCC+Pixel Chooser	BCC+像素选择器	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC_PIXELCHOOSER	matched_en	en_only
+BCC+Primatte Studio	BCC+Primatte 工作室	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_PRIMATTESTUDIO	matched_en	en_only
+BCC+Spill Remover	BCC+溢色移除	BCC Key & Blend	BCC 键控与混合	community	1	ok	BCC_SPILLREMOVER	matched_en	en_only
+BCC+Two Way Key	BCC+双向键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC_TWOWAYKEY	matched_en	en_only
+BCC Alpha Process	BCC Alpha 处理	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Alpha Process	matched_en	en_only
+BCC Chroma Key	BCC 色度键控	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Chroma Key	matched_en	en_only
+BCC Chroma Key Studio	BCC 色度键控工作室	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC Chroma Key Studio	matched_en	en_only
+BCC Composite	BCC 合成	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Composite	matched_en	en_only
+BCC Composite Choker	BCC 合成收边	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Composite Choker	matched_en	en_only
+BCC Make Alpha Key	BCC 生成 Alpha 键	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Make Alpha Key	matched_en	en_only
+BCC Matte Choker	BCC 遮罩收边	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Matte Choker	matched_en	en_only
+BCC Matte Cleanup	BCC 遮罩边缘修复	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3Matte Cleanup	matched_en	en_only
+BCC Premult	BCC 预乘	BCC Key & Blend	BCC 键控与混合	community	2	ok	BCC3Premult	matched_en	en_only
+BCC RGB Blend	BCC RGB 混合	BCC Key & Blend	BCC 键控与混合	community	1	conflict	BCC3RGB Blend	matched_en	en_only
+BCC+Camera Shake	BCC+摄像机抖动	BCC Lens	BCC 镜头	community	1	ok	BCC_CAMERASHAKE	matched_en	en_only
+BCC+Chromatic Aberration	BCC+色差	BCC Lens	BCC 镜头	community	1	ok	BCC_CHROMATICABERRATION	matched_en	en_only
+BCC+DeFringe	BCC+去边	BCC Lens	BCC 镜头	community	1	ok	BCC_DEFRINGE	matched_en	en_only
+BCC+Lens Distortion	BCC+镜头畸变	BCC Lens	BCC 镜头	community	1	ok	BCC_LENSDISTORTION	matched_en	en_only
+BCC+Radial Exposure	BCC+径向曝光	BCC Lens	BCC 镜头	community	1	ok	BCC_RADIALEXPOSURE	matched_en	en_only
+BCC+Wide Angle Lens	BCC+广角镜头	BCC Lens	BCC 镜头	community	1	ok	BCC_WIDEANGLELENS	matched_en	en_only
+BCC+Ambient Light	BCC+环境光	BCC Lights	BCC 灯光	community	1	ok	BCC_AMBIENTLIGHT	matched_en	en_only
+BCC+Chroma Bands	BCC+色度带	BCC Lights	BCC 灯光	community	1	ok	BCC_CHROMABANDS	matched_en	en_only
+BCC+Eye Light	BCC+眼神光	BCC Lights	BCC 灯光	community	1	ok	BCC_EYELIGHT	matched_en	en_only
+BCC+Glow	BCC+辉光	BCC Lights	BCC 灯光	community	1	conflict	BCC_GLOW	matched_en	en_only
+BCC+Glow Darks	BCC+暗部辉光	BCC Lights	BCC 灯光	community	1	ok	BCC_GLOWDARKS	matched_en	en_only
+BCC+Glow Edges	BCC+边缘辉光	BCC Lights	BCC 灯光	community	1	ok	BCC_GLOWEDGES	matched_en	en_only
+BCC+Ice Halos	BCC+冰晕	BCC Lights	BCC 灯光	community	1	ok	BCC_ICEHALOS	matched_en	en_only
+BCC+Key Light	BCC+主光	BCC Lights	BCC 灯光	community	1	ok	BCC_KEYLIGHT	matched_en	en_only
+BCC+Lens Flare	BCC+镜头光晕	BCC Lights	BCC 灯光	community	1	conflict	BCC_LENSFLARE	matched_en	en_only
+BCC+Light	BCC+灯光	BCC Lights	BCC 灯光	community	1	ok	BCC_LIGHT	matched_en	en_only
+BCC+Light Leaks	BCC+漏光	BCC Lights	BCC 灯光	community	1	conflict	BCC_LIGHTLEAKS	matched_en	en_only
+BCC+Multi-Star	BCC+多星	BCC Lights	BCC 灯光	community	1	ok	BCC_MULTISTAR	matched_en	en_only
+BCC+Overexpose	BCC+过曝	BCC Lights	BCC 灯光	community	1	ok	BCC_OVEREXPOSE	matched_en	en_only
+BCC+Rays	BCC+光线	BCC Lights	BCC 灯光	community	1	conflict	BCC_RAYS	matched_en	en_only
+BCC+Reflector	BCC+反射器	BCC Lights	BCC 灯光	community	1	ok	BCC_REFLECTOR	matched_en	en_only
+BCC+ReLight	BCC+重打光	BCC Lights	BCC 灯光	community	1	ok	BCC_RELIGHT	matched_en	en_only
+BCC+Streaks	BCC+条纹	BCC Lights	BCC 灯光	community	1	ok	BCC_STREAKS	matched_en	en_only
+BCC Edge Lighting	BCC 边缘照明	BCC Lights	BCC 灯光	community	1	conflict	BCC3Edge Lighting	matched_en	en_only
+BCC Laser Beam	BCC 激光束	BCC Lights	BCC 灯光	community	2	ok	BCC Laser Beam	matched_en	en_only
+BCC Lens Flare 3D	BCC 镜头光晕 3D	BCC Lights	BCC 灯光	community	1	conflict	BCC3Lens Flare 3D	matched_en	en_only
+BCC Light Sweep	BCC 扫光	BCC Lights	BCC 灯光	community	2	ok	BCC3Light Sweep	matched_en	en_only
+BCC Lightning	BCC 闪电	BCC Lights	BCC 灯光	community	2	ok	BCC3Lightning	matched_en	en_only
+BCC Rays Puffy	BCC 片状放射光	BCC Lights	BCC 灯光	community	1	conflict	BCC3Rays Puffy	matched_en	en_only
+BCC Rays Radiant Edges	BCC 光线辐射边缘	BCC Lights	BCC 灯光	community	1	conflict	BCC3Rays Radiant Edges	matched_en	en_only
+BCC Reverse Spotlight	BCC 反向聚光灯	BCC Lights	BCC 灯光	community	1	conflict	BCC3Reverse Spotlight	matched_en	en_only
+BCC Spotlight	BCC 聚光灯	BCC Lights	BCC 灯光	community	2	ok	BCC3Spotlight	matched_en	en_only
+BCC Stage Light	BCC 舞台灯	BCC Lights	BCC 灯光	community	1	conflict	BCC3Stage Light	matched_en	en_only
+BCC+License Plate ML	BCC+车牌ML	BCC Match Move	BCC 匹配移动	community	1	ok	BCC_LICENSEPLATEML	matched_en	en_only
+BCC+Witness Protection ML	BCC+面部遮罩ML	BCC Match Move	BCC 匹配移动	community	1	conflict	BCC_WITNESSPROTECTIONML	matched_en	en_only
+BCC Corner Pin Studio	BCC 边角固定	BCC Match Move	BCC 匹配移动	community	1	ok	BCC Corner Pin Studio	matched_en	en_only
+BCC Match Move	BCC 匹配移动	BCC Match Move	BCC 匹配移动	community	2	ok	BCC3MatchMove	matched_en	en_only
+BCC+Center Spot	BCC+中心光斑	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_CENTERSPOT	matched_en	en_only
+BCC+Depth of Field	BCC+景深	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_DEPTHOFFIELD	matched_en	en_only
+BCC+Diffusion	BCC+扩散	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_DIFFUSION	matched_en	en_only
+BCC+Double Fog	BCC+双层雾	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_DOUBLEFOG	matched_en	en_only
+BCC+Fog	BCC+雾	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_FOG	matched_en	en_only
+BCC+Frost	BCC+霜冻	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_FROST	matched_en	en_only
+BCC+Halo	BCC+光晕	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_HALO	matched_en	en_only
+BCC+Mist	BCC+薄雾	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_MIST	matched_en	en_only
+BCC+Net	BCC+网状	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_NET	matched_en	en_only
+BCC+Rack Focus	BCC+移焦	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_RACKFOCUS	matched_en	en_only
+BCC+Silk	BCC+丝绸	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_SILK	matched_en	en_only
+BCC+Split Field	BCC+分场	BCC Optical Diffusion	BCC 光学扩散	community	1	ok	BCC_SPLITFIELD	matched_en	en_only
+BCC 2D Particles	BCC 2D 粒子	BCC Particles	BCC 粒子	community	2	ok	BCC32D Particles	matched_en	en_only
+BCC Organic Strands	BCC 有机链	BCC Particles	BCC 粒子	community	2	ok	BCC Organic Strands	matched_en	en_only
+BCC Particle Array 3D	BCC 粒子阵列 3D	BCC Particles	BCC 粒子	community	2	ok	BCC Particle Array 3D	matched_en	en_only
+BCC Particle Emitter 3D	BCC 粒子发射器 3D	BCC Particles	BCC 粒子	community	2	ok	BCC Particle Emitter 3D	matched_en	en_only
+BCC Particle Illusion	BCC 幻影粒子	BCC Particles	BCC 粒子	community	1	ok	BCC Particle Illusion	matched_en	en_only
+BCC Pin Art 3D	BCC 插针艺术 3D	BCC Particles	BCC 粒子	community	1	conflict	BCC Pin Art 3D	matched_en	en_only
+BCC Rain	BCC 降雨	BCC Particles	BCC 粒子	community	1	conflict	BCC3Rain	matched_en	en_only
+BCC Snow	BCC 降雪	BCC Particles	BCC 粒子	community	1	conflict	BCC3Snow	matched_en	en_only
+BCC Wild Cards	BCC 卡片	BCC Particles	BCC 粒子	community	1	conflict	BCC Card Array	matched_en	en_only
+BCC+Transform	BCC+变换	BCC Perspective	BCC 透视	community	1	ok	BCC_TRANSFORM	matched_en	en_only
+BCC 3D Extruded Image Shatter	BCC 3D 挤压图像破碎	BCC Perspective	BCC 透视	community	1	conflict	BCC 3D Extruded Image Shatter	matched_en	en_only
+BCC 3D Image Shatter	BCC 3D 图像破碎	BCC Perspective	BCC 透视	community	1	conflict	BCC33D Image Shatter	matched_en	en_only
+BCC Cube	BCC 魔方	BCC Perspective	BCC 透视	community	1	conflict	BCC3Cube	matched_en	en_only
+BCC Cylinder	BCC 圆柱状	BCC Perspective	BCC 透视	community	1	conflict	BCC3Cylinder	matched_en	en_only
+BCC Fast Flipper	BCC快速翻转	BCC Perspective	BCC 透视	community	1	conflict	BCC3Fast Flipper	matched_en	en_only
+BCC Page Turn	BCC 翻转卷页	BCC Perspective	BCC 透视	community	2	ok	BCC3Page Turn	matched_en	en_only
+BCC Pan and Zoom	BCC 平移和缩放	BCC Perspective	BCC 透视	community	1	conflict	BCC Pan and Zoom	matched_en	en_only
+BCC Sphere	BCC 球体	BCC Perspective	BCC 透视	community	2	ok	BCC3Sphere	matched_en	en_only
+BCC Sphere Transition	BCC 球面转场效果	BCC Perspective	BCC 透视	community	1	conflict	BCC3Sphere Transition	matched_en	en_only
+BCC+Mosaic	BCC+马赛克	BCC Stylize	BCC 风格化	community	1	ok	BCC_MOSAIC	matched_en	en_only
+BCC+Prism	BCC+棱镜	BCC Stylize	BCC 风格化	community	1	ok	BCC_PRISMBLUR	matched_en	en_only
+BCC+Scanline	BCC+扫描线	BCC Stylize	BCC 风格化	community	1	ok	BCC_SCANLINE	matched_en	en_only
+BCC+Super LED	BCC+超级 LED	BCC Stylize	BCC 风格化	community	1	ok	BCC_SUPERLED	matched_en	en_only
+BCC+Video Glitch	BCC+视频故障	BCC Stylize	BCC 风格化	community	1	ok	BCC_VIDEOGLITCH	matched_en	en_only
+BCC Cast Shadow	BCC 投射阴影	BCC Stylize	BCC 风格化	community	1	ok	BCC Cast Shadow	matched_en	en_only
+BCC Color Choker	BCC 颜色收缩	BCC Stylize	BCC 风格化	community	1	conflict	BCC4Color Choker	matched_en	en_only
+BCC Colorize Glow	BCC 着色辉光	BCC Stylize	BCC 风格化	community	1	conflict	BCC3Colorize Glow	matched_en	en_only
+BCC Damaged TV	BCC 故障电视	BCC Stylize	BCC 风格化	community	1	conflict	BCC4Damaged TV	matched_en	en_only
+BCC Drop Shadow	BCC 投影阴影	BCC Stylize	BCC 风格化	community	1	conflict	BCC3Drop Shadow	matched_en	en_only
+BCC Edge Grunge	BCC 边缘脏痕	BCC Stylize	BCC 风格化	community	1	conflict	BCC Edge Grunge	matched_en	en_only
+BCC Emboss	BCC 浮雕	BCC Stylize	BCC 风格化	community	2	ok	BCC3Emboss	matched_en	en_only
+BCC Glow Alpha Edges	BCC 辉光 Alpha 边缘	BCC Stylize	BCC 风格化	community	1	conflict	BCC3Glow Alpha Edges	matched_en	en_only
+BCC Grunge	BCC 脏痕	BCC Stylize	BCC 风格化	community	1	conflict	BCC Grunge	matched_en	en_only
+BCC Misalignment	BCC 偏差	BCC Stylize	BCC 风格化	community	1	conflict	BCC3Misalignment	matched_en	en_only
+BCC Multi Shadow	BCC 多重阴影效果	BCC Stylize	BCC 风格化	community	2	ok	BCC3Multi Shadow	matched_en	en_only
+BCC Reflection	BCC 反射	BCC Stylize	BCC 风格化	community	1	ok	BCC Reflection	matched_en	en_only
+BCC RGB Edges	BCC RGB 边缘	BCC Stylize	BCC 风格化	community	1	conflict	BCC3RGB Edges	matched_en	en_only
+BCC RGB Pixel Noise	BCC RGB 像素噪波	BCC Stylize	BCC 风格化	community	1	conflict	BCC3RGB Pixel Noise	matched_en	en_only
+BCC Scatterize	BCC 散射	BCC Stylize	BCC 风格化	community	1	conflict	BCC3Scatterize	matched_en	en_only
+BCC+Textures	BCC+纹理	BCC Textures	BCC 纹理	community	1	ok	BCC_TEXTURES	matched_en	en_only
+BCC Caustics	BCC 焦散	BCC Textures	BCC 纹理	community	1	conflict	BCC3Caustics	matched_en	en_only
+BCC Mixed Colors	BCC 混合颜色	BCC Textures	BCC 纹理	community	1	conflict	BCC3Mixed Colors	matched_en	en_only
+BCC Noise Map 2	BCC 噪波贴图 2	BCC Textures	BCC 纹理	community	1	conflict	BCC4Noise Map 2	matched_en	en_only
+BCC+Audio Visualizer	BCC+音频可视化	BCC Time	BCC 时间	community	1	ok	BCC_AUDIOVISUALIZER	matched_en	en_only
+BCC+Retimer ML	BCC+重定时 ML	BCC Time	BCC 时间	community	1	ok	BCC_MLRETIMER	matched_en	en_only
+BCC Beat Reactor	BCC 节拍反应器	BCC Time	BCC 时间	community	2	ok	BCC Beat Reactor	matched_en	en_only
+BCC Jitter	BCC 抖动	BCC Time	BCC 时间	community	2	ok	BCC3Jitter	matched_en	en_only
+BCC Jitter Basic	BCC 基本抖动	BCC Time	BCC 时间	community	1	conflict	BCC3Jitter Basic	matched_en	en_only
+BCC Looper	BCC 循环	BCC Time	BCC 时间	community	1	conflict	BCC3Looper	matched_en	en_only
+BCC Posterize Time	BCC 色调分离时间	BCC Time	BCC 时间	community	1	conflict	BCC3Posterize Time	matched_en	en_only
+BCC Temporal Blur	BCC 时间模糊	BCC Time	BCC 时间	community	2	ok	BCC3Temporal Blur	matched_en	en_only
+BCC Time Displacement	BCC 时间位移	BCC Time	BCC 时间	community	2	ok	BCC3Time Displacement	matched_en	en_only
+BCC Trails	BCC 轨迹	BCC Time	BCC 时间	community	1	conflict	BCC3Trails	matched_en	en_only
+BCC Trails Basic	BCC 基本轨迹	BCC Time	BCC 时间	community	1	conflict	BCC3Trails Basic	matched_en	en_only
+BCC VR Blur	BCC VR 模糊	BCC VR	BCC VR	community	1	ok	BCC VR Blur	matched_en	en_only
+BCC VR Flicker Fixer	BCC VR 闪烁修正器	BCC VR	BCC VR	community	1	ok	BCC VR Flicker Fixer	matched_en	en_only
+BCC VR Insert	BCC VR 插入	BCC VR	BCC VR	community	1	ok	BCC VR Insert	matched_en	en_only
+BCC VR Reorient	BCC VR 重新定向	BCC VR	BCC VR	community	1	ok	BCC VR Reorient	matched_en	en_only
+BCC VR Sharpen	BCC VR 锐化	BCC VR	BCC VR	community	1	ok	BCC VR Sharpen	matched_en	en_only
+BCC+Displacement Map	BCC+位移贴图	BCC Warp	BCC 弯曲	community	1	conflict	BCC_DISPLACEMENT	matched_en	en_only
+BCC+Polar Displacement	BCC+极坐标位移	BCC Warp	BCC 弯曲	community	1	conflict	BCC_POLARDISPLACEMENT	matched_en	en_only
+BCC+Polar Warp	BCC+极坐标扭曲	BCC Warp	BCC 弯曲	community	1	ok	BCC_POLARWARP	matched_en	en_only
+BCC+Ripple	BCC+波纹	BCC Warp	BCC 弯曲	community	1	conflict	BCC_RIPPLE	matched_en	en_only
+BCC+ST Map	BCC+ST 贴图	BCC Warp	BCC 弯曲	community	1	ok	BCC_STMAP	matched_en	en_only
+BCC+Vector Displacement	BCC+矢量位移	BCC Warp	BCC 弯曲	community	1	conflict	BCC_VECTORDISPLACEMENT	matched_en	en_only
+BCC Bulge	BCC 膨胀	BCC Warp	BCC 弯曲	community	1	conflict	BCC3Bulge	matched_en	en_only
+BCC Curl	BCC 卷曲	BCC Warp	BCC 弯曲	community	1	ok	BCC Curl	matched_en	en_only
+BCC Morph	BCC 变形	BCC Warp	BCC 弯曲	community	1	conflict	BCC4Morph	matched_en	en_only
+BCC Turbulence	BCC 湍流	BCC Warp	BCC 弯曲	community	2	ok	BCC4Turbulence	matched_en	en_only
+BCC Twirl	BCC 旋转	BCC Warp	BCC 弯曲	community	2	ok	BCC3Twirl	matched_en	en_only
+BCC Video Morph	BCC 视频变形	BCC Warp	BCC 弯曲	community	2	ok	BCC4Video Morph	matched_en	en_only
+BCC Warp	BCC 弯曲	BCC Warp	BCC 弯曲	community	2	ok	BCC4Warp	matched_en	en_only
+BCC Wave	BCC 波形	BCC Warp	BCC 弯曲	community	1	conflict	BCC3Wave	matched_en	en_only
+BCC+Atmospheric Glow Dissolve	BCC+大气辉光溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_ATMOSPHERICGLOWDISSOLVE	matched_en	en_only
+BCC+Blur Dissolve	BCC+模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_BLURDISSOLVE	matched_en	en_only
+BCC+Camera Shake Dissolve	BCC+摄像机抖动溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_CAMERASHAKEDISSOLVE	matched_en	en_only
+BCC+Channel Blur Dissolve	BCC+通道模糊溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_CHANNELBLURDISSOLVE	matched_en	en_only
+BCC+Crash Zoom Dissolve	BCC+碰撞缩放溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_CRASHZOOMDISSOLVE	matched_en	en_only
+BCC+Cross Zoom Dissolve	BCC+交叉缩放溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_CROSSZOOMDISSOLVE	matched_en	en_only
+BCC+Depth Wipe ML	BCC+深度擦除 ML	BCC Transitions	BCC 过渡	community	1	ok	BCC_MLDEPTHWIPE	matched_en	en_only
+BCC+Directional Blur Dissolve	BCC+方向模糊溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_DIRECTIONALBLURDISSOLVE	matched_en	en_only
+BCC+Displacement Dissolve	BCC+位移溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_DISPLACEMENTDISSOLVE	matched_en	en_only
+BCC+Dissolve	BCC+溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_DISSOLVE	matched_en	en_only
+BCC+Film Glow Dissolve	BCC+胶片辉光溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_FILMGLOWDISSOLVE	matched_en	en_only
+BCC+Film Roll	BCC+胶片滚动	BCC Transitions	BCC 过渡	community	1	ok	BCC_FILMROLL	matched_en	en_only
+BCC+Flutter Cut	BCC+颠振切割	BCC Transitions	BCC 过渡	community	1	conflict	BCC_FLUTTERCUT	matched_en	en_only
+BCC+Jump Cut Fixer ML	BCC+跳切修复 ML	BCC Transitions	BCC 过渡	community	1	ok	BCC_MLJUMPCUT	matched_en	en_only
+BCC+Lens Flare Dissolve	BCC+镜头光晕溶解	BCC Transitions	BCC 过渡	community	2	ok	BCC_LENSFLAREDISSOLVE	matched_en	en_only
+BCC+Light Leaks Dissolve	BCC+漏光溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_LIGHTLEAKSDISSOLVE	matched_en	en_only
+BCC+Linear Wipe	BCC+线性擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC_LINEARWIPE	matched_en	en_only
+BCC+Mosaic Dissolve	BCC+马赛克溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_MOSAICDISSOLVE	matched_en	en_only
+BCC+Multi-Star Dissolve	BCC+多星溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_MULTISTARDISSOLVE	matched_en	en_only
+BCC+Orbs Dissolve	BCC+光球溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_ORBSDISSOLVE	matched_en	en_only
+BCC+Prism Dissolve	BCC+棱镜溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_PRISMDISSOLVE	matched_en	en_only
+BCC+Rack Focus Dissolve	BCC+移焦溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_RACKFOCUSDISSOLVE	matched_en	en_only
+BCC+Radial Wipe	BCC+径向擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC_RADIALWIPE	matched_en	en_only
+BCC+Rays Dissolve	BCC+光线溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_RAYSDISSOLVE	matched_en	en_only
+BCC+Rectangular Wipe	BCC+矩形擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC_RECTANGULARWIPE	matched_en	en_only
+BCC+Ripple Dissolve	BCC+波纹溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_RIPPLEDISSOLVE	matched_en	en_only
+BCC+Smoke and Fog Dissolve	BCC+烟雾溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_SMOKEANDFOGDISSOLVE	matched_en	en_only
+BCC+Smoke Wipe	BCC+烟雾擦除	BCC Transitions	BCC 过渡	community	1	ok	BCC_SMOKEWIPE	matched_en	en_only
+BCC+Spin Blur Dissolve	BCC+旋转模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC_SPINBLURDISSOLVE	matched_en	en_only
+BCC+Swish Glow	BCC+快速辉光	BCC Transitions	BCC 过渡	community	1	ok	BCC_SWISHGLOW	matched_en	en_only
+BCC+Swish Pan	BCC+快速平移	BCC Transitions	BCC 过渡	community	1	conflict	BCC_SWISH	matched_en	en_only
+BCC+Swish Prism	BCC+快速棱镜	BCC Transitions	BCC 过渡	community	1	ok	BCC_SWISHPRISM	matched_en	en_only
+BCC+Swish Warp	BCC+快速扭曲	BCC Transitions	BCC 过渡	community	1	ok	BCC_SWISHWARP	matched_en	en_only
+BCC+Texture Wipe	BCC+纹理擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC_TEXTUREWIPE	matched_en	en_only
+BCC+Video Glitch Dissolve	BCC+视频故障溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC_VIDEOGLITCHDISSOLVE	matched_en	en_only
+BCC+Vignette Wipe	BCC+暗角擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC_VIGNETTEWIPE	matched_en	en_only
+BCC Blobs Wipe	BCC 斑点擦除	BCC Transitions	BCC 过渡	community	1	ok	BCC Blobs Wipe|BCC Blobs WipePrTr	ambiguous	en_only
+BCC Burnt Film	BCC 胶片燃烧	BCC Transitions	BCC 过渡	community	1	conflict	BCC3Burnt Film|BCC Burnt FilmPrTr	ambiguous	en_only
+BCC Checker Wipe	BCC 方格擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCCChecker Wipe|BCCChecker WipePrTr	ambiguous	en_only
+BCC Colorize Glow Dissolve	BCC 着色发光溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC Colorize Glow Dissolve|BCC Colorize Glow DissolvePrTr	ambiguous	en_only
+BCC Composite Dissolve	BCC 合成溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Composite Dissolve|BCC Composite DissolvePrTr	ambiguous	en_only
+BCC Criss-Cross Wipe	BCC 交叉擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC3Criss-Cross Wipe|BCC Criss-Cross WipePrTr	ambiguous	en_only
+BCC Cross Melt	BCC 交叉溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Cross Melt|BCC Cross MeltPrTr	ambiguous	en_only
+BCC Curl Dissolve	BCC 卷曲溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC Curl Dissolve|BCC Curl DissolvePrTr	ambiguous	en_only
+BCC Damaged TV Dissolve	BCC 受损 TV 溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Damaged TV Dissolve|BCC Damaged TV DissolvePrTr	ambiguous	en_only
+BCC Grid Wipe	BCC 网格擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC Grid Wipe|BCC Grid WipePrTr	ambiguous	en_only
+BCC Kaleida Dissolve	BCC 万花筒溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC Kaleida Dissolve|BCC Kaleida DissolvePrTr	ambiguous	en_only
+BCC Lens Blur Dissolve	BCC 镜头模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Lens Blur Dissolve|BCC Lens Blur DissolvePrTr	ambiguous	en_only
+BCC Lens Distortion Wipe	BCC 镜头变形擦拭	BCC Transitions	BCC 过渡	community	1	conflict	BCC Lens Distortion Wipe|BCC Lens Distortion WipePrTr	ambiguous	en_only
+BCC Lens Flare Round	BCC 镜头光晕圆	BCC Transitions	BCC 过渡	community	1	conflict	BCC Lens Flare Round|BCC Lens Flare RoundPrTr	ambiguous	en_only
+BCC Lens Flare Spiked	BCC 透镜光斑尖峰	BCC Transitions	BCC 过渡	community	1	conflict	BCC Lens Flare Spiked|BCC Lens Flare SpikedPrTr	ambiguous	en_only
+BCC Lens Flash	BCC 镜头闪光灯	BCC Transitions	BCC 过渡	community	1	conflict	BCC Lens Flash|BCC Lens FlashPrTr	ambiguous	en_only
+BCC Light Wipe	BCC 扫光擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC Light Wipe|BCC Light WipePrTr	ambiguous	en_only
+BCC Multi Stretch Wipe	BCC 拉伸擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC3Multi Stretch Wipe|BCC Multi Stretch WipePrTr	ambiguous	en_only
+BCC Multi Stripe Wipe	BCC 多条纹擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC3Multi Stripe Wipe|BCC Multi Stripe WipePrTr	ambiguous	en_only
+BCC Particle Illusion Dissolve	BCC 幻影粒子溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC PI Dissolve|BCC PI DissolvePrTr	ambiguous	en_only
+BCC RGB Displacement Dissolve	BCC RGB 位移溶解	BCC Transitions	BCC 过渡	community	1	ok	BCC RGB Dspl Dissolve|BCC RGB Dspl DissolvePrTr	ambiguous	en_only
+BCC Ribbon Wipe	BCC 色带擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC Ribbon Wipe|BCC Ribbon WipePrTr	ambiguous	en_only
+BCC Rings Wipe	BCC 环形擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC Rings Wipe|BCC Rings WipePrTr	ambiguous	en_only
+BCC Tile Wipe	BCC 拼贴擦除	BCC Transitions	BCC 过渡	community	1	conflict	BCC Tile Wipe|BCC Tile WipePrTr	ambiguous	en_only
+BCC Tritone Dissolve	BCC 三色调溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Tritone Dissolve|BCC Tritone DissolvePrTr	ambiguous	en_only
+BCC Twister	BCC 扭曲器	BCC Transitions	BCC 过渡	community	1	conflict	BCC Twister|BCC TwisterPrTr	ambiguous	en_only
+BCC Vector Blur Dissolve	BCC 矢量模糊溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Vector Blur Dissolve|BCC Vector Blur DissolvePrTr	ambiguous	en_only
+BCC Water Waves Dissolve	BCC 水波溶解	BCC Transitions	BCC 过渡	community	1	conflict	BCC Water Waves Dissolve|BCC Water Waves DissolvePrTr	ambiguous	en_only

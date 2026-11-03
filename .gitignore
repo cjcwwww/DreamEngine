@@ -1,8 +1,8 @@
 # ---- 探针回传数据 ----
 # probe-results/ 内是用户本机 AE 实测回传的文本/JSON，**必须入库**（回滚分析结论需要原始数据）
 # 只忽略 AE 原始输出目录（体积大、含二进制渲染产物）
-AEViewerProbe/
-AEViewerProbe_*/
+DreamEngineProbe/
+DreamEngineProbe_*/
 
 # ---- 渲染产物与缓存（体积大，不入库）----
 cache/
@@ -20,6 +20,8 @@ logs/
 *.avi
 # 文档配图例外
 !docs/**/*.png
+!cep/com.dreamengine.panel/data/thumbs/
+!cep/com.dreamengine.panel/data/thumbs/*.png
 
 # ---- 用户数据（本机私有，不入库）----
 library/

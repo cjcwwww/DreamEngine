@@ -7,18 +7,23 @@
 (function probeRenderCost() {
     // ---------- 可调参数（首次跑就用默认值即可） ----------
     var SINGLE_LIST = ["ADBE Gaussian Blur 2", "ADBE CurvesCustom", "ADBE Drop Shadow",
-                       "ADBE CC Colorama", "ADBE Turbulent Displace"];
+                       "APC Colorama", "ADBE Turbulent Displace", "ADBE Tint",
+                       "ADBE Invert", "ADBE Brightness & Contrast 2", "ADBE HUE SATURATION",
+                       "ADBE Easy Levels2", "ADBE Glo2", "ADBE Motion Blur",
+                       "ADBE Ripple", "ADBE Wave Warp", "ADBE Mosaic", "ADBE Find Edges"];
     var SINGLE_SIZE = 256;      // 逐效果模式：每个合成的边长(px)
-    var GRID_COLS = 4;          // 整网模式：列数（默认 4x4=16 格，先小规模）
+    var GRID_COLS = 8;          // 目标规模：8x8=2048px 整网
     var GRID_CELL = 256;
     var GRID_FRAMES = 6;        // 整网模式：渲染帧数
 
-    var outDir = new Folder(Folder.myDocuments.fsName + "/AEViewerProbe");
+    var outDir = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
     if (!outDir.exists) outDir.create();
     var tmpDir = new Folder(outDir.fsName + "/render_tmp");
     if (!tmpDir.exists) tmpDir.create();
 
     var outFile = new File(outDir.fsName + "/T0_2_渲染耗时.txt");
+    outFile.encoding = "UTF-8";
+    var aerenderProject = new File(outDir.fsName + "/T0_2_aerender_test.aep");
     var logFile = new File(outDir.fsName + "/探针日志.txt");
     var L = [];
     function push(s) { L.push(s); }
@@ -32,17 +37,15 @@
     // 已知约束：OutputModule 的 Format 不可直接 setSettings，只能靠切模板
     function pickPngTemplate(om) {
         var names = om.templates;
-        var fallback = null;
         for (var i = 0; i < names.length; i++) {
             var n = String(names[i]);
-            if (!fallback) fallback = n;
             if (n.toLowerCase().indexOf("png") >= 0) return n;
         }
-        return fallback; // 没找到就报告里会标注用了兜底模板
+        return null;
     }
 
     function dirSizeKB(dir) {
-        var files = dir.getFiles("*");
+        var files = dir.getFiles("*.png");
         var bytes = 0, cnt = 0;
         for (var i = 0; i < files.length; i++) {
             if (files[i] instanceof File) {
@@ -69,6 +72,8 @@
     var prj = app.project;
     var createdItems = [];
 
+    clearTmp(tmpDir);
+
     // ---------- 模式 A：逐效果单帧（最朴素做法，用来算批量收益的分母） ----------
     var secA = 0, okA = 0, failA = 0;
     for (var a = 0; a < SINGLE_LIST.length; a++) {
@@ -86,7 +91,36 @@
         var rq = prj.renderQueue.items.add(comp);
         var om = rq.outputModule(1);
         var tpl = pickPngTemplate(om);
-        try { om.applyTemplate(tpl); } catch (eTpl) { push("TPLFAIL|" + tpl); }
+        if (!tpl) {
+            push("BLOCK_NO_PNG_TEMPLATE|templates=" + om.templates.join(" | "));
+            try {
+                om.file = new File(outDir.fsName + "/T0_2_aerender_preview.png");
+                push("AERENDER_OUTPUT_FILE_SET=OK");
+            } catch (eFilePrep) {
+                push("AERENDER_OUTPUT_FILE_SET=FAIL|" + eFilePrep.toString());
+            }
+            try {
+                prj.save(aerenderProject);
+                push("AERENDER_PROJECT_SAVED=OK|" + aerenderProject.fsName);
+            } catch (eSavePrep) {
+                push("AERENDER_PROJECT_SAVED=FAIL|" + eSavePrep.toString());
+            }
+            outFile.open("w");
+            outFile.write(L.join("\r\n"));
+            outFile.close();
+            alert("T0_2 已中止：当前 AE 没有可用的 PNG 输出模块模板。\n\n" +
+                  "已保存 aerender 测试工程：\n" + aerenderProject.fsName + "\n" +
+                  "诊断已写入：\n" + outFile.fsName);
+            return;
+        }
+        try { om.applyTemplate(tpl); } catch (eTpl) {
+            push("BLOCK_APPLY_PNG_TEMPLATE|" + tpl + "|" + eTpl.toString());
+            outFile.open("w");
+            outFile.write(L.join("\r\n"));
+            outFile.close();
+            alert("T0_2 已中止：PNG 模板应用失败。\n\n" + tpl + "\n" + eTpl.toString());
+            return;
+        }
         push("TPL_USED_A|index" + a + "|" + tpl);
         try {
             rq.timeSpanStart = 0;
@@ -121,13 +155,15 @@
                                  GRID_FRAMES / 30, 30);
     createdItems.push(grid);
     var placed = 0;
-    for (var gi = 0; gi < SINGLE_LIST.length && placed < GRID_COLS * GRID_COLS; gi++) {
-        var cell = prj.items.addComp("T0_2_B_cell_" + SINGLE_LIST[gi], GRID_CELL, GRID_CELL, 1.0,
+    var cellCount = GRID_COLS * GRID_COLS;
+    for (var gi = 0; gi < cellCount; gi++) {
+        var effectName = SINGLE_LIST[gi % SINGLE_LIST.length];
+        var cell = prj.items.addComp("T0_2_B_cell_" + effectName + "_" + gi, GRID_CELL, GRID_CELL, 1.0,
                                      GRID_FRAMES / 30, 30);
         createdItems.push(cell);
         var cs = cell.layers.addSolid([0.5, 0.5, 0.5], "s", GRID_CELL, GRID_CELL, 1.0);
-        try { cs.property("ADBE Effect Parade").addProperty(SINGLE_LIST[gi]); }
-        catch (e2) { push("CELL_ADDFAIL|" + SINGLE_LIST[gi]); }
+        try { cs.property("ADBE Effect Parade").addProperty(effectName); }
+        catch (e2) { push("CELL_ADDFAIL|" + effectName); }
         var gl = grid.layers.add(cell);
         var col = placed % GRID_COLS, row = Math.floor(placed / GRID_COLS);
         gl.moveToEnd();
@@ -142,7 +178,22 @@
     var rqB = prj.renderQueue.items.add(grid);
     var omB = rqB.outputModule(1);
     var tplB = pickPngTemplate(omB);
-    try { omB.applyTemplate(tplB); } catch (e3) {}
+    if (!tplB) {
+        push("BLOCK_NO_PNG_TEMPLATE_B|templates=" + omB.templates.join(" | "));
+        outFile.open("w");
+        outFile.write(L.join("\r\n"));
+        outFile.close();
+        alert("T0_2 已中止：整网模式找不到 PNG 输出模块模板。");
+        return;
+    }
+    try { omB.applyTemplate(tplB); } catch (e3) {
+        push("BLOCK_APPLY_PNG_TEMPLATE_B|" + tplB + "|" + e3.toString());
+        outFile.open("w");
+        outFile.write(L.join("\r\n"));
+        outFile.close();
+        alert("T0_2 已中止：整网模式 PNG 模板应用失败。\n\n" + tplB + "\n" + e3.toString());
+        return;
+    }
     push("TPL_USED_B|" + tplB);
     try {
         rqB.timeSpanStart = 0;

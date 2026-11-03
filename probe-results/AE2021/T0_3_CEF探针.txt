@@ -1,0 +1,34 @@
+PROBE=T0_3_CEF
+AE_VERSION=18.4.1x4
+ENV|CEP=true|AE=18.4.1x4|写权限=no_api|文档目录=C:/Users/31371/Documents
+== 1. WebGL 纹理/画布上限 ==
+WEBGL|maxTextureSize=16384|maxCubeMap=16384|maxViewport=32767x32767
+WEBGL|renderer=ANGLE (NVIDIA GeForce RTX 5060 Laptop GPU Direct3D11 vs_5_0 ps_5_0)
+== 2. 2D Canvas 实际尺寸可用性（真正决定 sprite 能不能画出来） ==
+CANVAS|1024x1024|角点回读=正常|ms=40
+CANVAS|2048x2048|角点回读=正常|ms=9
+CANVAS|3072x3072|角点回读=正常|ms=22
+CANVAS|4096x4096|角点回读=正常|ms=44
+CANVAS|6144x6144|角点回读=正常|ms=380
+CANVAS|8192x8192|角点回读=正常|ms=576
+== 3. 动图与视频编码可用性（决定预览动画走哪条路） ==
+IMGDECODE|webp|支持(解码成功 1x1)
+IMGDECODE|gif|支持(解码成功 1x1)
+IMGDECODE|png|支持(解码成功 1x1)
+IMGDECODE|bmp|不支持
+VIDEOCODEC|video/ogg;codecs='theora'|不可用
+VIDEOCODEC|video/mp4;codecs="avc1.42E01E"|很可能可用
+VIDEOCODEC|video/webm;codecs="vp8"|很可能可用
+VIDEOCODEC|video/webm;codecs="vp9"|很可能可用
+说明：APNG 是否支持无法用单帧 data URI 判定；若上面 gif/webp 都不理想，轮播帧序列是唯一稳妥路径。
+== 4. 真实 sprite 大图加载（需要 T0_2 先产出 PNG） ==
+目录内 PNG 数量=6
+BIGIMG|B_000.png|尺寸=2048x2048|KB=20|解码ms=2|每MP解码ms=0|跨源回读=允许
+BIGIMG|B_001.png|尺寸=2048x2048|KB=20|解码ms=2|每MP解码ms=0|跨源回读=允许
+BIGIMG|B_002.png|尺寸=2048x2048|KB=20|解码ms=5|每MP解码ms=1|跨源回读=允许
+BIGIMG|B_003.png|尺寸=2048x2048|KB=20|解码ms=4|每MP解码ms=1|跨源回读=允许
+BIGIMG|B_004.png|尺寸=2048x2048|KB=20|解码ms=3|每MP解码ms=1|跨源回读=允许
+BIGIMG|B_005.png|尺寸=2048x2048|KB=20|解码ms=7|每MP解码ms=2|跨源回读=允许
+== 5. 帧序列轮播（sprite 动画的真实手感） ==
+CAROUSEL|帧数=652|平均间隔ms=3.8|估算fps=260.6|最差间隔ms=5|超过25ms的次数=0|样本张数=6
+CAROUSEL|口径说明：本项为 rAF 间隔统计，非 AE 渲染性能；结论只用于定「一屏同时轮播几格」。

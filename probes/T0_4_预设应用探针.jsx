@@ -6,7 +6,7 @@
 // ============================================================
 
 (function probeApplyPreset() {
-    var outDir = new Folder(Folder.myDocuments.fsName + "/AEViewerProbe");
+    var outDir = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
     if (!outDir.exists) outDir.create();
 
     var preset = File.openDialog("选择要测试的 .ffx 预设文件", "After Effects 预设 (*.ffx)");
@@ -76,8 +76,9 @@
     for (var n = 1; n <= comp.numLayers; n++) names.push(comp.layer(n).name);
     push("LAYER_NAMES_AFTER=" + names.join(" / "));
 
-    var outFile = new File(outDir.fsName + "/T0_4_预设应用_" +
-                           preset.name.replace(/[^A-Za-z0-9_\-]/g, "") + ".txt");
+    var presetSafe = preset.name.replace(/\.ffx$/i, "").replace(/[\\\/:*?"<>|]/g, "_");
+    var outFile = new File(outDir.fsName + "/T0_4_预设应用_" + presetSafe + ".txt");
+    outFile.encoding = "UTF-8";
     outFile.open("w");
     outFile.write(L.join("\r\n"));
     outFile.close();

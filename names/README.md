@@ -74,6 +74,15 @@ python3 tools/validate_names.py names-firstparty.tsv
 | B4 | Red Giant 系（Trapcode / Magic Bullet / VFX / Universe）英文名目录 | 降级为可选——同上 |
 | B5 | Video Copilot、Element 3D、X-Particles、Re:Map、Toolchefs | **取消**——英文名运行时天然可得，无需预置 |
 
+### 本轮范围决策（2026-11-03）
+
+本轮产品范围锁定为 **第一方效果 + BCC**：
+
+- 第一方表 266 条已可用。
+- BCC 329 条已完成英文名对撞，中文名仍按“本机 displayName 验证后才显示”的规则处理。
+- Sapphire、Red Giant、RE:Vision、Video Copilot 等不继续扩充名字表，未命中项走 L-C。
+- 该决策不阻塞 M1 的 20 个效果预览墙；后续若要扩大内置覆盖，再按实际使用频率补包。
+
 ---
 
 ## 5. B2 出来的两个硬结论（影响设计）
@@ -107,6 +116,20 @@ python3 tools/join_matchnames.py <T0_1实测.tsv> names-bcc.tsv names-firstparty
 ```
 
 `join_matchnames.py` 已用 6 条合成样本自测通过：英文命中、**汉化包中文 displayName 反向命中**、未命中、同名多命中四条路径都跑通，并且成功抓出"钝化蒙版 / 反锐化蒙版"这类第一方译名不一致。自测产物已清理，不留在目录里。
+
+## 7. 面板数据导出
+
+```powershell
+python names/tools/build_names_json.py
+```
+
+输出：`cep/com.dreamengine.panel/data/names.json`。
+
+当前导出 566 个唯一 matchName：
+
+- 第一方 266 条；
+- BCC 英文名命中 300 条；
+- BCC 中文名只有被本机 displayName 验证时才启用，当前均为合法 `en_only`。
 
 
 ---

@@ -1,0 +1,6 @@
+PROBE=T0_6b_拖拽
+== 拖入事件 · 下午6:44:39 ==
+files.length=1
+ITEM_0|name=夜视.ffx|size=937595|type=(空)|path=C:\Program Files\Adobe\Adobe After Effects 2021\Support Files\Presets\Image - Special Effects\夜视.ffx|lastModified=Thu Jul 23 2026 18:33:05 GMT+0800 (中国标准时间)
+VERDICT|可取路径=1|不可取=0 → 拖拽入口可用，M3 保留拖拽
+提示：若拖的是单个 .ffx 且 size>0 但 path 拿不到，就是 CEF 屏蔽了该属性，这条结论对 M3 影响最大，务必记下来。

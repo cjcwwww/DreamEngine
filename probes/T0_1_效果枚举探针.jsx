@@ -2,12 +2,12 @@
 // T0_1 效果枚举探针
 // 回答 M0 未知数 #1：app.effects 实际条数、第三方插件是否全含、category 真实形态
 // 运行方式：AE 菜单 文件 > 脚本 > 运行脚本文件
-// 输出：~/Documents/AEViewerProbe/T0_1_效果枚举.txt（同时追加到 探针日志.txt）
+// 输出：~/Documents/DreamEngineProbe/T0_1_效果枚举.txt（同时追加到 探针日志.txt）
 // 注意：需先在 首选项 > 脚本和表达式 勾选「允许脚本写入文件和访问网络」
 // ============================================================
 
 (function probeEffectCatalog() {
-    var OUT_DIR_NAME = "AEViewerProbe";
+    var OUT_DIR_NAME = "DreamEngineProbe";
     var outDir = new Folder(Folder.myDocuments.fsName + "/" + OUT_DIR_NAME);
     if (!outDir.exists) outDir.create();
 

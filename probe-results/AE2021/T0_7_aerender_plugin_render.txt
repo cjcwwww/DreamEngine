@@ -1,0 +1,179 @@
+aerender version 18.4.1x4
+Using DXGI: Device: "NVIDIA GeForce RTX 5060 Laptop GPU" has dedicated video RAM (MB): 7899
+InitializeFileLogging failed
+    name                                    : NVIDIA GeForce RTX 5060 Laptop GPU
+    VendorId                                : 4318
+    DeviceId                                : 11609
+    SubSysId                                : 994644035
+    Revision                                : 161
+    DedicatedVideoMemory                    : 8282701824
+    DedicatedSystemMemory                   : 0
+    SharedSystemMemory                      : 9408891248
+    MemoryBudget                            : 7477395456
+    AdapterLuid.LowPart                     : 73398
+    AdapterLuid.HighPart                    : 0
+    Flags                                   : 0
+        DoublePrecisionFloatShaderOps           : yes
+        ConservativeRasterizationTier           : 3
+        CrossNodeSharingTier                    : 0
+        ResourceBindingTier                     : 3
+        ResourceHeapTier                        : 2
+        TiledResourcesTier                      : 4
+        NodeIndex                               : 0
+        TileBasedRenderer                       : no
+        UMA                                     : no
+        CacheCoherentUMA                        : no
+        feature level                           : 0x00009100
+        feature level                           : 0x00009200
+        feature level                           : 0x00009300
+        feature level                           : 0x0000a000
+        feature level                           : 0x0000a100
+        feature level                           : 0x0000b000
+        feature level                           : 0x0000b100
+        feature level                           : 0x0000c000
+        feature level                           : 0x0000c100
+        MaxSupportedFeatureLevel                : 0x0000c100
+        HighestShaderModel                      : 0x60
+        WaveOps                                 : yes
+        WaveLaneCountMin                        : 32
+        WaveLaneCountMax                        : 32
+        TotalLaneCount                          : 3328
+        ExpandedComputeResourceStates           : yes
+        Int64ShaderOps                          : yes
+        RootSignature.HighestVersion            : 0x2
+    name                                    : Intel(R) Graphics
+    VendorId                                : 32902
+    DeviceId                                : 32103
+    SubSysId                                : 994644035
+    Revision                                : 6
+    DedicatedVideoMemory                    : 134217728
+    DedicatedSystemMemory                   : 0
+    SharedSystemMemory                      : 9408891248
+    MemoryBudget                            : 8670011230
+    AdapterLuid.LowPart                     : 86436
+    AdapterLuid.HighPart                    : 0
+    Flags                                   : 0
+        DoublePrecisionFloatShaderOps           : yes
+        ConservativeRasterizationTier           : 3
+        CrossNodeSharingTier                    : 0
+        ResourceBindingTier                     : 3
+        ResourceHeapTier                        : 2
+        TiledResourcesTier                      : 4
+        NodeIndex                               : 0
+        TileBasedRenderer                       : no
+        UMA                                     : yes
+        CacheCoherentUMA                        : no
+        feature level                           : 0x00009100
+        feature level                           : 0x00009200
+        feature level                           : 0x00009300
+        feature level                           : 0x0000a000
+        feature level                           : 0x0000a100
+        feature level                           : 0x0000b000
+        feature level                           : 0x0000b100
+        feature level                           : 0x0000c000
+        feature level                           : 0x0000c100
+        MaxSupportedFeatureLevel                : 0x0000c100
+        HighestShaderModel                      : 0x60
+        WaveOps                                 : yes
+        WaveLaneCountMin                        : 8
+        WaveLaneCountMax                        : 32
+        TotalLaneCount                          : 1536
+        ExpandedComputeResourceStates           : yes
+        Int64ShaderOps                          : yes
+        RootSignature.HighestVersion            : 0x2
+    Intel-specific info:
+        Architecture                            : Unknown
+        EU Count                                : 48
+        Package TDP                             : 55
+        Max Fill Rate (pixels/clock)            : 12
+        Max Frequency                           : 1800
+        Min Frequency                           : 550
+    name                                    : NVIDIA GeForce RTX 5060 Laptop GPU
+    VendorId                                : 4318
+    DeviceId                                : 11609
+    SubSysId                                : 994644035
+    Revision                                : 161
+    DedicatedVideoMemory                    : 8282701824
+    DedicatedSystemMemory                   : 0
+    SharedSystemMemory                      : 9408891248
+    MemoryBudget                            : 7477395456
+    AdapterLuid.LowPart                     : 85153293
+    AdapterLuid.HighPart                    : 0
+    Flags                                   : 0
+        DoublePrecisionFloatShaderOps           : yes
+        ConservativeRasterizationTier           : 3
+        CrossNodeSharingTier                    : 0
+        ResourceBindingTier                     : 3
+        ResourceHeapTier                        : 2
+        TiledResourcesTier                      : 4
+        NodeIndex                               : 0
+        TileBasedRenderer                       : no
+        UMA                                     : no
+        CacheCoherentUMA                        : no
+        feature level                           : 0x00009100
+        feature level                           : 0x00009200
+        feature level                           : 0x00009300
+        feature level                           : 0x0000a000
+        feature level                           : 0x0000a100
+        feature level                           : 0x0000b000
+        feature level                           : 0x0000b100
+        feature level                           : 0x0000c000
+        feature level                           : 0x0000c100
+        MaxSupportedFeatureLevel                : 0x0000c100
+        HighestShaderModel                      : 0x60
+        WaveOps                                 : yes
+        WaveLaneCountMin                        : 32
+        WaveLaneCountMax                        : 32
+        TotalLaneCount                          : 3328
+        ExpandedComputeResourceStates           : yes
+        Int64ShaderOps                          : yes
+        RootSignature.HighestVersion            : 0x2
+Qt: Untested Windows version 10.0 detected!
+PROGRESS:  ��2026/11/3����18:52:35��: ��ʼ�ϳɡ�T0_7_plugin_test����
+
+PROGRESS:  ��Ⱦ����: �������
+PROGRESS:  Ʒ��: ���
+PROGRESS:  �ֱ���: ��ȫ
+PROGRESS:  ��С: 256 x 256
+PROGRESS:  ����ʹ��: ��ʹ�ô���
+PROGRESS:  Ч��: ��ǰ����
+PROGRESS:  ���̸��ٻ���: ֻ��
+PROGRESS:  ��ɫ���: ��ǰ����
+PROGRESS:  ֡���: ��ѡ��ͼ���
+PROGRESS:  ����Ⱦ: ��
+PROGRESS:  Pulldown: ��
+PROGRESS:  �˶�ģ��: ��ѡ��ͼ���
+PROGRESS:  ����: ��ǰ����
+PROGRESS:  ʱ����: �Զ���
+PROGRESS:  ��ʼ: 0:00:00:00
+PROGRESS:  ����: 0:00:00:00
+PROGRESS:  ����ʱ��: 0:00:00:01
+PROGRESS:  ֡����: 30.00 ���ϳɣ�
+PROGRESS:  ������: ȫ���ر�
+PROGRESS:  ���������ļ�: ��
+PROGRESS:  
+PROGRESS:  ���ģ��: DreamEngine PNG Sequence
+PROGRESS:  �����: C:\Users\31371\Documents\DreamEngineProbe\T0_7_plugin_render.png
+PROGRESS:  ��ʽ: PNG
+PROGRESS:  �����Ϣ: -
+PROGRESS:  ��ʼ֡: 0
+PROGRESS:  �����Ƶ: -
+PROGRESS:  ͨ��: RGB
+PROGRESS:  ���: ����������ɫ
+PROGRESS:  ��ɫ: Ԥ��
+PROGRESS:  ������С: -
+PROGRESS:  �ü�: -
+PROGRESS:  ���մ�С: 256 x 256
+PROGRESS:  �����ļ�: -
+PROGRESS:  ��Ⱦ����: ����
+PROGRESS:  
+PROGRESS:  0:00:00:00 (1): 16 ��
+PROGRESS:  ��2026/11/3����18:52:51��: ��ɵĺϳɡ�T0_7_plugin_test����
+
+
+PROGRESS:  ������ʱ��: 16 ��
+WARNING:After Effects����: ��¼��һ������ -��After Effects����: �޷������ļ���DreamEngineProbe������Ϊ�����ǿ�ʶ����ļ����͡� (39  ::  7)��
+aerender Error: After Effects����: �޷������ļ���DreamEngineProbe������Ϊ�����ǿ�ʶ����ļ����͡�
+Dx Device Shutdown: Intel(R) Graphics
+Dx Device Shutdown: NVIDIA GeForce RTX 5060 Laptop GPU
+Dx Device Shutdown: NVIDIA GeForce RTX 5060 Laptop GPU

@@ -21,11 +21,30 @@ T0_6b_拖拽.txt             （CEP 面板写入）
 T0_7_aerender输出.txt      （三条命令输出全文）
 ```
 
-数据来源目录：`C:\Users\31371\Documents\AEViewerProbe\`
+数据来源目录：`C:\Users\31371\Documents\DreamEngineProbe\`
+
+> 2026-11-03 全面改名时，历史文本中的探针目录名和输出模板名已做机械替换；测量数值与结论未改动。
+
+## 当前已归档
+
+- `T0_1_效果枚举.txt`（由本机 GBK 输出转 UTF-8）
+- `T0_1_full.tsv`
+- `T0_2_渲染耗时.txt`（目标规模：8×8、2048px、64 格、6 帧）
+- `T0_2_prepare_aerender.txt`
+- `T0_5_参数读取.txt`（由本机 GBK 输出转 UTF-8）
+- `T0_3_CEF探针.txt`
+- `T0_4_预设应用_*.txt`（3 个预设）
+- `T0_6_导入探针.txt`
+- `T0_6b_拖拽.txt`
+- `T0_7_aerender-help.txt`
+- `T0_7_aerender_plugin_render.txt`
+- `T0_7_aerender-结论.md`
+- `T0_9-参数定版.md`
+- `M0-阶段报告.md`
 
 ## 不入库的内容
 
-`AEViewerProbe/` 原始输出目录本身、以及 sprite sheet PNG 等渲染产物
+`DreamEngineProbe/` 原始输出目录本身、以及 sprite sheet PNG 等渲染产物
 均已在仓库根 `.gitignore` 中排除（体积大、属二进制产物）。
 本目录只收文本类实测记录。
 

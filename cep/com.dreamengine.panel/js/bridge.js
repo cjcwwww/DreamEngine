@@ -75,6 +75,16 @@ var Bridge = (function () {
     });
   }
 
+  /** 当前扩展根目录，用于让 AE 执行 engine/*.jsx。 */
+  function getExtensionPath(cb) {
+    try {
+      var path = window.__adobe_cep__.getSystemPath("extension");
+      cb(String(path).replace(/\\/g, "/"));
+    } catch (e) {
+      cb("");
+    }
+  }
+
   /** 打开目录（在资源管理器/Finder 里显示探针输出） */
   function revealDir(dirPath, cb) {
     var jsx = "(function(){try{return String(new Folder(" +
@@ -105,6 +115,7 @@ var Bridge = (function () {
     writeFile: writeFile,
     listFiles: listFiles,
     getDocsPath: getDocsPath,
+    getExtensionPath: getExtensionPath,
     revealDir: revealDir,
     selfCheck: selfCheck
   };

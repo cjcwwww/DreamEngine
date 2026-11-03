@@ -252,7 +252,7 @@ console.log("\n=== 汇总 ===");
 console.log("文件 " + files.length + " ｜ 干净 " + cleanCount +
             " ｜ ERROR " + errCount + " ｜ WARN " + warnCount);
 
-const jsxInJs = join(ROOT, "cep", "com.aeviewer.panel", "js", "bridge.js");
+const jsxInJs = join(ROOT, "cep", "com.dreamengine.panel", "js", "bridge.js");
 if (existsSync(jsxInJs)) {
   console.log("\n提示：cep/.../js/bridge.js 内嵌了会被 evalScript 送进 ExtendScript 的 jsx 字符串，");
   console.log("      这部分不受本工具检查，改动 bridge.js 时请人工确认其为 ES3 语法。");

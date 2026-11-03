@@ -4,7 +4,7 @@
  * 动机：T0_1 只输出前 60 条样本，不足以喂 join_matchnames.py 做对撞。
  *       T0.8 需要「全部」实测 (matchName, displayName, category)。
  *
- * 输出：Documents/AEViewerProbe/T0_1_full.tsv
+ * 输出：Documents/DreamEngineProbe/T0_1_full.tsv
  *       UTF-8，表头 matchName<TAB>displayName<TAB>category
  *       （join_matchnames.py load_detected() 的约定格式）
  *
@@ -13,7 +13,7 @@
  * ============================================================ */
 
 (function () {
-  var outDir = new Folder(Folder.myDocuments.fsName + "/AEViewerProbe");
+  var outDir = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
   if (!outDir.exists) outDir.create();
 
   var lines = [];

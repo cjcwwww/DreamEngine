@@ -1,0 +1,45 @@
+PROBE=T0_2
+AE_VERSION=18.4.1x4
+PARAM|singleSize=256|gridCols=8|cell=256|frames=6
+TPL_USED_A|index0|DreamEngine PNG Sequence
+RENDER|single_ADBE Gaussian Blur 2|wallSec=1.121|elapsedSeconds=1
+TPL_USED_A|index1|DreamEngine PNG Sequence
+RENDER|single_ADBE CurvesCustom|wallSec=0.96|elapsedSeconds=0
+TPL_USED_A|index2|DreamEngine PNG Sequence
+RENDER|single_ADBE Drop Shadow|wallSec=0.941|elapsedSeconds=0
+TPL_USED_A|index3|DreamEngine PNG Sequence
+RENDER|single_APC Colorama|wallSec=0.99|elapsedSeconds=0
+TPL_USED_A|index4|DreamEngine PNG Sequence
+RENDER|single_ADBE Turbulent Displace|wallSec=1.006|elapsedSeconds=0
+TPL_USED_A|index5|DreamEngine PNG Sequence
+RENDER|single_ADBE Tint|wallSec=1.022|elapsedSeconds=0
+TPL_USED_A|index6|DreamEngine PNG Sequence
+RENDER|single_ADBE Invert|wallSec=0.934|elapsedSeconds=0
+TPL_USED_A|index7|DreamEngine PNG Sequence
+RENDER|single_ADBE Brightness & Contrast 2|wallSec=1.082|elapsedSeconds=0
+TPL_USED_A|index8|DreamEngine PNG Sequence
+RENDER|single_ADBE HUE SATURATION|wallSec=1.034|elapsedSeconds=0
+TPL_USED_A|index9|DreamEngine PNG Sequence
+RENDER|single_ADBE Easy Levels2|wallSec=1.062|elapsedSeconds=0
+TPL_USED_A|index10|DreamEngine PNG Sequence
+RENDER|single_ADBE Glo2|wallSec=1.03|elapsedSeconds=0
+TPL_USED_A|index11|DreamEngine PNG Sequence
+RENDER|single_ADBE Motion Blur|wallSec=1.113|elapsedSeconds=0
+TPL_USED_A|index12|DreamEngine PNG Sequence
+RENDER|single_ADBE Ripple|wallSec=1.05|elapsedSeconds=0
+TPL_USED_A|index13|DreamEngine PNG Sequence
+RENDER|single_ADBE Wave Warp|wallSec=1.022|elapsedSeconds=0
+TPL_USED_A|index14|DreamEngine PNG Sequence
+RENDER|single_ADBE Mosaic|wallSec=1.082|elapsedSeconds=0
+TPL_USED_A|index15|DreamEngine PNG Sequence
+RENDER|single_ADBE Find Edges|wallSec=1.1|elapsedSeconds=0
+MODE_A_SUM|ok=16|fail=0|totalSec=16.55|files=16|totalKB=13
+CALC_A|平均单帧秒=1.03 公式=16.549/16
+CALC_A|平均单图KB=1 公式=13/16
+GRID_CELLS_PLACED=64
+TPL_USED_B|DreamEngine PNG Sequence
+RENDER|grid_8x8_f6|wallSec=2.237|elapsedSeconds=2
+MODE_B_SUM|frames=6|cells=64|totalSec=2.24|files=6|totalKB=119
+CALC_B|每格每帧秒=0.006 公式=2.237/(64*6)
+CALC_B|每张整网KB=20 公式=119/6
+CALC_批量收益|朴素渲染64效果x6帧=384 次；整网只渲染 6 次(本实现合并为1个队列项)

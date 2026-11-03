@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionManifest Version="7.0"
-                   ExtensionBundleId="com.aeviewer.panel"
-                   ExtensionBundleVersion="0.1.0"
-                   ExtensionBundleName="com.aeviewer.panel"
+                   ExtensionBundleId="com.dreamengine.panel"
+                   ExtensionBundleVersion="0.2.0"
+                   ExtensionBundleName="DreamEngine"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <ExtensionList>
-    <Extension Id="com.aeviewer.panel.main" Version="0.1.0"/>
+    <Extension Id="com.dreamengine.panel.main" Version="0.2.0"/>
   </ExtensionList>
 
   <ExecutionEnvironment>
@@ -34,7 +34,7 @@
   </ExecutionEnvironment>
 
   <DispatchInfoList>
-    <Extension Id="com.aeviewer.panel.main">
+    <Extension Id="com.dreamengine.panel.main">
       <DispatchInfo>
         <Resources>
           <!-- 标签名必须是 MainPath 而非 MainFile：本机 24 个可正常加载的扩展（AE 自带面板、Flow、Colorista、
@@ -49,7 +49,7 @@
 
         <UI>
           <Type>Panel</Type>
-          <Menu>AE Viewer 骨架(探针)</Menu>
+          <Menu>DreamEngine</Menu>
           <Geometry>
             <Size>
               <Height>620</Height>

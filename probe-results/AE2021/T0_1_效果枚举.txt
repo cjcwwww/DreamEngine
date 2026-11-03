@@ -1,0 +1,266 @@
+PROBE=T0_1
+AE_VERSION=18.4.1x4
+APP_NAME=undefined
+OS=Windows/64 10.0  
+LOCALEGuess=见 displayName 是否为中文，本探针不判断语言
+TOTAL_EFFECTS=1371
+EMPTY_CATEGORY_COUNT=100
+--- CATEGORY 分布 ---
+CAT|Plugin Everything|1
+CAT|AESweets|1
+CAT|Video Copilot|5
+CAT|3D 通道|8
+CAT|模拟|18
+CAT|扭曲|37
+CAT|风格化|25
+CAT|颜色校正|35
+CAT|通道|13
+CAT|模糊和锐化|16
+CAT|透视|10
+CAT|时间|8
+CAT|过渡|17
+CAT|生成|26
+CAT|实用工具|7
+CAT|_Obsolete|89
+CAT|抠像|9
+CAT|Keying|1
+CAT|Matte|1
+CAT|Boris FX Mocha|1
+CAT|CINEMA 4D|1
+CAT|RG Trapcode|12
+CAT|BCC Lights|27
+CAT|BCC Transitions|65
+CAT|BCC Film Style|17
+CAT|BCC Time|11
+CAT|BCC Perspective|10
+CAT|BCC Color & Tone|28
+CAT|BCC Key & Blend|28
+CAT|BCC Obsolete|117
+CAT|BCC Art Looks|19
+CAT|BCC VR|5
+CAT|BCC Image Restoration|18
+CAT|BCC Warp|14
+CAT|BCC Particles|9
+CAT|BCC Textures|4
+CAT|BCC Stylize|20
+CAT|BCC Match Move|4
+CAT|BCC 3D Objects|6
+CAT|BCC Browser|1
+CAT|BCC Blur|12
+CAT|BCC Lens|6
+CAT|BCC Optical Diffusion|12
+CAT|BCC Grads & Tints|13
+CAT|RE:Vision Plug-ins|65
+CAT|RG Magic Bullet|7
+CAT|RG Universe Blur|3
+CAT|RG Universe Legacy|1
+CAT|RG Universe Stylize|13
+CAT|RG Universe Utilities|4
+CAT|RG Universe Distort|4
+CAT|RG Universe Generators|5
+CAT|RG Universe Glow|6
+CAT|RG Universe Motion Graphics|3
+CAT|RG Universe Text|6
+CAT|RG Universe Transitions|31
+CAT|Sapphire Adjust|14
+CAT|Sapphire Blur+Sharpen|23
+CAT|Sapphire Builder|2
+CAT|Sapphire Composite|6
+CAT|Sapphire Distort|24
+CAT|Sapphire Lighting|25
+CAT|Sapphire Render|38
+CAT|Sapphire Stylize|55
+CAT|Sapphire Time|30
+CAT|Sapphire Transitions|62
+CAT|杂色和颗粒|12
+CAT|音频|10
+CAT|过时|9
+CAT|表达式控制|8
+CAT|遮罩|4
+CAT|文本|2
+CAT|沉浸式视频|12
+CAT|(空)|100
+--- MATCHNAME 前缀分布 ---
+PFX|(无分隔)|195
+PFX|Videocopilot|1
+PFX|VIDEOCOPILOT|4
+PFX|CC|65
+PFX|CS|8
+PFX|Keylight|1
+PFX|ISL|1
+PFX|CINEMA|1
+PFX|tc|10
+PFX|rg|1
+PFX|Red|1
+PFX|BCC_|174
+PFX|BCC33D|1
+PFX|BCC3Alpha|3
+PFX|BCC3Artists|1
+PFX|BCC|120
+PFX|BCC3Boost|1
+PFX|BCC3Bump|1
+PFX|BCC3Burnt|1
+PFX|BCC3Rays|9
+PFX|BCCChecker|2
+PFX|BCC3Chroma|1
+PFX|BCC3Color|4
+PFX|BCC4Color|1
+PFX|BCC3Colorize|1
+PFX|BCC3Correct|1
+PFX|BCC4Damaged|1
+PFX|BCC3Drop|1
+PFX|BCC3Dust|1
+PFX|BCC3DVE|1
+PFX|BCC6DV|1
+PFX|BCC3Edge|1
+PFX|BCC3Pyramid|1
+PFX|BCC3Fast|1
+PFX|BCC3Film|3
+PFX|BCC3Ultra|1
+PFX|BCC3Flicker|1
+PFX|BCC3Fractal|1
+PFX|BCC3Gaussian|1
+PFX|BCC3Glow|2
+PFX|BCC3Invert|1
+PFX|BCC3Jitter|1
+PFX|BCC3Lens|3
+PFX|BCC3Levels|1
+PFX|BCC3Light|4
+PFX|BCC3Linear|3
+PFX|BCC3Make|1
+PFX|BCC3Match|1
+PFX|BCC3Matte|2
+PFX|BCC3Mixed|1
+PFX|BCC3Motion|1
+PFX|BCC3Multi|3
+PFX|BCC3Noise|1
+PFX|BCC4Noise|1
+PFX|BCC6Noise|1
+PFX|BCC3Optical|1
+PFX|BCC3Page|1
+PFX|BCC3Particle|1
+PFX|BCC3Pixel|1
+PFX|BCC6Pixel|1
+PFX|BCC3Polar|1
+PFX|BCC3Radial|2
+PFX|BCC3Reverse|1
+PFX|BCC3RGB|3
+PFX|BCC3Rough|1
+PFX|BCC3Safe|1
+PFX|BCC6Pencil|1
+PFX|BCC6Smooth|1
+PFX|BCC3Sphere|1
+PFX|BCC3Spiral|1
+PFX|BCC3Spray|1
+PFX|BCC3Stage|1
+PFX|BCC3Star|1
+PFX|BCC3Steel|1
+PFX|BCC3Super|1
+PFX|BCC6Swish|1
+PFX|BCC3Temporal|1
+PFX|BCC3Textured|1
+PFX|BCC6Charcoal|1
+PFX|BCC4Tile|1
+PFX|BCC3Time|1
+PFX|BCC3Trails|1
+PFX|BCC32D|1
+PFX|BCC3Two|1
+PFX|BCC3Unsharp|1
+PFX|BCC3Vector|1
+PFX|BCC3Veined|1
+PFX|BCC3Velocity|1
+PFX|BCC4Video|1
+PFX|BCCVignette|2
+PFX|BCC6Water|1
+PFX|BCC3Wire|1
+PFX|BCC3Wood|1
+PFX|BCC3Wooden|1
+PFX|BCC3Z|3
+PFX|ReelSmart|6
+PFX|RG|3
+PFX|Magic_|3
+PFX|MB|1
+PFX|RFX|1
+PFX|REFill|1
+PFX|ReFill|1
+PFX|RE:Fill|3
+PFX|RE:FILL|2
+PFX|RE:Match|1
+PFX|RE:Lens|8
+PFX|RE:Map|4
+PFX|UV|2
+PFX|RS|2
+PFX|Smart|1
+PFX|S_|279
+PFX|Shade|1
+PFX|SHAdE|1
+PFX|SK|1
+PFX|Create|1
+PFX|Twixtor|3
+PFX|Video|2
+PFX|ADBE|320
+PFX|VISINF|3
+PFX|APC|9
+PFX|Mettle|12
+PFX|Pseudo/|3
+--- 样本(前60条) ---
+SAMPLE|PEDG|Deep Glow|Plugin Everything|1.5.4x1
+SAMPLE|AESweetsGlitch7in1|Glitch 7in1|AESweets|1.0.3x1
+SAMPLE|Videocopilot Twitch|Twitch|Video Copilot|1.1
+SAMPLE|VIDEOCOPILOT VIBRANCE|VC Color Vibrance|Video Copilot|1.0x7
+SAMPLE|Cryptomatte|Cryptomatte|3D 通道|2.6
+SAMPLE|EXtractoR|EXtractoR|3D 通道|2.6
+SAMPLE|IDentifier|IDentifier|3D 通道|2.6
+SAMPLE|CC Ball Action|CC Ball Action|模拟|2.2
+SAMPLE|CC Bender|CC Bender|扭曲|1.5
+SAMPLE|CC Bend It|CC Bend It|扭曲|1.5
+SAMPLE|CC Blobbylize|CC Blobbylize|扭曲|1.9
+SAMPLE|CS BlockLoad|CC Block Load|风格化|1.2
+SAMPLE|CC Bubbles|CC Bubbles|模拟|2.4
+SAMPLE|CC Burn Film|CC Burn Film|风格化|1.7
+SAMPLE|CS Color Neutralizer|CC Color Neutralizer|颜色校正|1.2
+SAMPLE|CC Color Offset|CC Color Offset|颜色校正|1.8
+SAMPLE|CC Composite|CC Composite|通道|1.8
+SAMPLE|CS CrossBlur|CC Cross Blur|模糊和锐化|1.3
+SAMPLE|CC Cylinder|CC Cylinder|透视|1.9
+SAMPLE|CC Drizzle|CC Drizzle|模拟|1.8
+SAMPLE|CC Environment|CC Environment|透视|1.5
+SAMPLE|CC Flo Motion|CC Flo Motion|扭曲|1.9
+SAMPLE|CC Force Motion Blur|CC Force Motion Blur|时间|1.9
+SAMPLE|CC Glass|CC Glass|风格化|1.8
+SAMPLE|CC Glass Wipe|CC Glass Wipe|过渡|1.10
+SAMPLE|CC Glue Gun|CC Glue Gun|生成|1.9
+SAMPLE|CC Griddler|CC Griddler|扭曲|2.2
+SAMPLE|CC Grid Wipe|CC Grid Wipe|过渡|1.6
+SAMPLE|CC Hair|CC Hair|模拟|1.6
+SAMPLE|CS HexTile|CC HexTile|风格化|1.1
+SAMPLE|CC Image Wipe|CC Image Wipe|过渡|1.7
+SAMPLE|CC Jaws|CC Jaws|过渡|1.6
+SAMPLE|CC Kaleida|CC Kaleida|风格化|1.9
+SAMPLE|CS Kernel|CC Kernel|颜色校正|1.1
+SAMPLE|CC Lens|CC Lens|扭曲|2.1
+SAMPLE|CC Light Burst 2.5|CC Light Burst 2.5|生成|3.4
+SAMPLE|CC Light Rays|CC Light Rays|生成|1.9
+SAMPLE|CC Light Sweep|CC Light Sweep|生成|1.8
+SAMPLE|CC Light Wipe|CC Light Wipe|过渡|1.6
+SAMPLE|CS LineSweep|CC Line Sweep|过渡|1.1
+SAMPLE|CC Mr. Mercury|CC Mr. Mercury|模拟|1.10
+SAMPLE|CC Mr. Smoothie|CC Mr. Smoothie|风格化|1.5
+SAMPLE|CC Overbrights|CC Overbrights|实用工具|1.2
+SAMPLE|CC Page Turn|CC Page Turn|扭曲|2.3
+SAMPLE|CC PS Classic|CC PS Classic (obsolete)|_Obsolete|1.6
+SAMPLE|CC Particle Systems II|CC Particle Systems II|模拟|2.1
+SAMPLE|CC PS LE Classic|CC PS LE Classic (obsolete)|_Obsolete|1.6
+SAMPLE|CC Pixel Polly|CC Pixel Polly|模拟|1.10
+SAMPLE|CC Plastic|CC Plastic|风格化|1.4
+SAMPLE|CC Power Pin|CC Power Pin|扭曲|1.10
+SAMPLE|CC Particle World|CC Particle World|模拟|1.12
+SAMPLE|CC Radial Blur|CC Radial Blur|模糊和锐化|1.6
+SAMPLE|CC Radial Fast Blur|CC Radial Fast Blur|模糊和锐化|1.6
+SAMPLE|CC Radial ScaleWipe|CC Radial ScaleWipe|过渡|1.9
+SAMPLE|CC Rain|CC Rain|_Obsolete|2.1
+SAMPLE|CSRainfall|CC Rainfall|模拟|1.2
+SAMPLE|CC RepeTile|CC RepeTile|风格化|1.9
+SAMPLE|CC Ripple Pulse|CC Ripple Pulse|扭曲|1.7
+SAMPLE|CC Scale Wipe|CC Scale Wipe|过渡|1.7
+SAMPLE|CC Scatterize|CC Scatterize|模拟|1.9
