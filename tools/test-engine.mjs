@@ -330,6 +330,8 @@ test("面板优先渲染看得出差异的分类，并跳过 3D 通道族", () =
 
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE 3D Tracker", category: "3D Channel" }), true);
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE 3D Glasses", category: "透视" }), true);
+  // CS 前缀实测渲染报「滤镜无效」，整批会随之失败
+  assert.equal(view.isPoorPreviewTarget({ matchName: "CS CrossBlur", category: "模糊和锐化" }), true);
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" }), false);
 
   const blur = view.previewRank({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" });

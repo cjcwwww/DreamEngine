@@ -68,7 +68,11 @@ var AEV_ViewModel = (function () {
     var cat = normalize(effect && effect.category);
     if (indexOfText(POOR_PREVIEW_CATEGORIES, cat) >= 0) return true;
     var matchName = normalize(effect && effect.matchName);
-    var hints = ["tracker", "glasses", "stereo", "camera", "dof", "extracto"];
+    // CS 前缀是本机 Cycore 旧命名残留（displayName 与 CC 系列重名）。
+    // 实测：CS CrossBlur 参与整网渲染时报「滤镜无效」，整批随之失败。
+    // 这 10 个先整体排除，等隔离探针逐个确认后再决定是否恢复。
+    if (matchName.indexOf("cs") === 0) return true;
+    var hints = ["tracker", "glasses", "stereo", "camera", "extracto"];
     for (var i = 0; i < hints.length; i++) {
       if (matchName.indexOf(hints[i]) >= 0) return true;
     }
