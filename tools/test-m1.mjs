@@ -32,18 +32,29 @@ test("M1 names data is a unique matchName map", () => {
   assert.ok(keys.includes("ScriptEP"));
 });
 
-test("M1 manifest contains 20 previews on a 2048 sheet", () => {
+test("M1 manifest 描述合法的 2048 网格与预览条目", () => {
   const manifest = readJson("cep/com.dreamengine.panel/data/manifest.json");
   assert.equal(manifest.cellSize, 256);
   assert.equal(manifest.columns, 8);
   assert.equal(manifest.width, 2048);
   assert.equal(manifest.height, 2048);
-  assert.equal(manifest.items.length, 20);
-  assert.ok(
-    existsSync(
-      resolve(PANEL, "data", manifest.sheets[0].src),
-    ),
-  );
+
+  // 条目会随生成持续增长，断言下界而不是固定值
+  assert.ok(manifest.items.length >= 20, "至少保留初始 20 条");
+  assert.ok(manifest.sheets.length >= 1);
+
+  const sheetIndexes = new Set(manifest.sheets.map((sheet) => sheet.index));
+  for (const item of manifest.items) {
+    assert.equal(item.width, 256, `${item.matchName} 格子宽度`);
+    assert.equal(item.height, 256, `${item.matchName} 格子高度`);
+    assert.ok(sheetIndexes.has(item.sheet), `sheet ${item.sheet} 必须在 sheets 里声明`);
+    assert.ok(item.src || item.frameSrc, `${item.matchName} 必须能取到图`);
+    assert.equal(item.x % 256, 0, `${item.matchName} x 必须对齐格位`);
+    assert.equal(item.y % 256, 0, `${item.matchName} y 必须对齐格位`);
+  }
+
+  // 首张单文件图必须真实存在
+  assert.ok(existsSync(resolve(PANEL, "data", manifest.sheets[0].src)));
 });
 
 function loadViewModel() {

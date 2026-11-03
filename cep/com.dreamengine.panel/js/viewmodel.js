@@ -72,6 +72,9 @@ var AEV_ViewModel = (function () {
     // 实测：CS CrossBlur 参与整网渲染时报「滤镜无效」，整批随之失败。
     // 这 10 个先整体排除，等隔离探针逐个确认后再决定是否恢复。
     if (matchName.indexOf("cs") === 0) return true;
+    // 实测：CC Drizzle 在 2048 整网 × 6 帧下渲染挂起（AE 未响应超过 5 分钟），
+    // 逐条测试时也会卡在同一处。先排除，避免单条拖死整批。
+    if (matchName === "cc drizzle") return true;
     var hints = ["tracker", "glasses", "stereo", "camera", "extracto"];
     for (var i = 0; i < hints.length; i++) {
       if (matchName.indexOf(hints[i]) >= 0) return true;

@@ -80,6 +80,7 @@
             batch.push(candidates[c]);
         }
         push("BATCH=" + batch.join(","));
+        flush();   // 先把批次名单落盘：万一某条卡死，事后也能知道卡在谁身上
 
         // ---------- 3. 逐条渲染 ----------
         var sheetCursor = (START_SHEET >= 0) ? START_SHEET : maxSheet + 1;
@@ -115,6 +116,8 @@
                 push("ITEM|" + name + "|FAIL|" + elapsed + "s|" + clip(raw));
                 failList.push(name);
             }
+            // 每条完成立刻落盘：整批卡死时不会丢掉前面已经跑完的结论
+            flush();
             sheetCursor++;
         }
 
@@ -201,6 +204,7 @@
         if (matchName.indexOf("Pseudo") === 0) return true;
         if (/Obsolete|过时/i.test(category)) return true;
         if (matchName.indexOf("CS") === 0) return true;
+        if (matchName === "CC Drizzle") return true;   // 实测渲染挂起
         if (category === "3D 通道" || category === "3D Channel") return true;
         if (category === "表达式控制" || category === "Expression Controls") return true;
         if (category === "音频" || category === "Audio") return true;
