@@ -17,7 +17,7 @@
 
 var AEV_Store = (function () {
     var ROOT_NAME = "DreamEngine";
-    var PREF_SECTION = "Main Pref Section";
+    var PREF_SECTIONS = ["Main Pref Section", "Main Pref Section v2", "Scripting"];
     var PREF_SCRIPTING = "Pref_SCRIPTING_FILE_NETWORK_SECURITY";
 
     function userRootFolder() {
@@ -135,18 +135,53 @@ var AEV_Store = (function () {
 
     /** 写权限自检。
      *  app.settings 在 AE 中并不存在（旧代码的误用），正确入口是 app.preferences。
-     *  返回 1 = 已开启，0 = 未开启，null = 读不到（版本差异，不代表失败）。
+     *  但首选项键名在不同版本之间会漂移（Main Pref Section / ... v2），
+     *  所以这里做两层判定：
+     *    1) 读首选项，明确读到 0 就直接判关闭
+     *    2) 实际写一个探测文件——这才是"能不能写"的唯一可靠证据
+     *  返回 1 = 可写，0 = 不可写，null = 两层都无法判定。
      */
-    function writePermission() {
+    function prefValue() {
         try {
-            if (app && app.preferences && app.preferences.getPrefAsLong) {
-                var value = app.preferences.getPrefAsLong(PREF_SECTION, PREF_SCRIPTING, -1);
-                if (value === 1) return 1;
-                if (value === 0) return 0;
-                return null;
+            if (!(app && app.preferences && app.preferences.getPrefAsLong)) return null;
+            for (var i = 0; i < PREF_SECTIONS.length; i++) {
+                var value = app.preferences.getPrefAsLong(PREF_SECTIONS[i], PREF_SCRIPTING, -1);
+                if (value === 1 || value === 0) return value;
             }
         } catch (e) {}
         return null;
+    }
+
+    /** 写一个探测文件再删掉；比读首选项更接近真相 */
+    function writeProbe() {
+        var root = ensureUserRoot();
+        if (!root) return 0;
+        var logs = new Folder(root.fsName + "/logs");
+        if (!logs.exists && !logs.create()) return 0;
+        var probe = new File(logs.fsName + "/.write_probe");
+        var ok = false;
+        try {
+            if (probe.open("w")) {
+                probe.write("1");
+                probe.close();
+                ok = true;
+            }
+        } catch (e) {
+            ok = false;
+        }
+        try {
+            if (probe.exists) probe.remove();
+        } catch (e2) {}
+        return ok ? 1 : 0;
+    }
+
+    function writePermission() {
+        var pref = prefValue();
+        if (pref === 0) return 0;
+        var probe = writeProbe();
+        if (probe === 1) return 1;
+        // 写不进去：首选项说开着或读不到，都按不可写处理
+        return pref === null ? null : 0;
     }
 
     /** 给面板自检用的可读状态字符串 */

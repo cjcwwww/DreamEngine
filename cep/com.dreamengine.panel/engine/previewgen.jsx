@@ -58,29 +58,35 @@ var AEV_PreviewGen = (function () {
         return null;
     }
 
-    /** 标准素材场景：深色底 + 青色块 + 暖色块 + 文字，能同时体现模糊、发光、变形、调色 */
+    /** 标准素材场景：深色底 + 青色块 + 暖色块 + 文字，能同时体现模糊、发光、变形、调色。
+     *  注意：addSolid 的 width/height 必须是整数，AE 2021 会以
+     *  "151.04 不是整数" 直接抛错，所以比例尺寸一律 Math.round。
+     */
     function buildScene(size) {
         var scene = app.project.items.addComp("DE_scene_" + size, size, size, 1, 1, 30);
 
         var bg = scene.layers.addSolid([0.055, 0.065, 0.075], "bg", size, size, 1);
         bg.moveToEnd();
 
-        var accent = scene.layers.addSolid([0.18, 0.68, 0.76], "accent", size * 0.59, size * 0.35, 1);
+        var accentW = Math.round(size * 0.59);
+        var accentH = Math.round(size * 0.35);
+        var accent = scene.layers.addSolid([0.18, 0.68, 0.76], "accent", accentW, accentH, 1);
         accent.property("ADBE Transform Group").property("ADBE Position")
-            .setValue([size * 0.5, size * 0.52]);
+            .setValue([Math.round(size * 0.5), Math.round(size * 0.52)]);
 
-        var warm = scene.layers.addSolid([0.86, 0.32, 0.18], "warm", size * 0.23, size * 0.23, 1);
+        var warmSide = Math.round(size * 0.23);
+        var warm = scene.layers.addSolid([0.86, 0.32, 0.18], "warm", warmSide, warmSide, 1);
         warm.property("ADBE Transform Group").property("ADBE Position")
-            .setValue([size * 0.28, size * 0.3]);
+            .setValue([Math.round(size * 0.28), Math.round(size * 0.3)]);
 
         var text = scene.layers.addText("AE");
         var textProp = text.property("ADBE Text Properties").property("ADBE Text Document");
         var doc = textProp.value;
-        doc.fontSize = size * 0.25;
+        doc.fontSize = Math.round(size * 0.25);
         doc.fillColor = [0.94, 0.94, 0.92];
         textProp.setValue(doc);
         text.property("ADBE Transform Group").property("ADBE Position")
-            .setValue([size * 0.5, size * 0.57]);
+            .setValue([Math.round(size * 0.5), Math.round(size * 0.57)]);
 
         return scene;
     }

@@ -90,7 +90,7 @@
         push("RENDER=" + raw);
 
         push("QUEUE_AFTER=" + AEV_Queue.stats());
-        push("RESULT=OK");
+        push("RESULT=" + (raw.indexOf("\"status\":\"ok\"") >= 0 ? "OK" : "RENDER_ERROR"));
     } catch (e) {
         push("EXCEPTION=" + e.toString());
         push("RESULT=EXCEPTION");

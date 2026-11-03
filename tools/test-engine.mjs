@@ -157,6 +157,18 @@ test("previewgen 的临时合成清理不依赖 undo", () => {
   assert.match(code, /queueItem\.remove\(\)/);
 });
 
+test("previewgen 的标准素材尺寸必须是整数（AE 2021 addSolid 硬要求）", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  // addSolid(color, name, width, height, pixelAspect)：宽高不能是小数
+  assert.doesNotMatch(
+    code,
+    /addSolid\([^)]*,\s*size \*/,
+    "addSolid 的尺寸参数不得直接乘以比例，必须先 Math.round",
+  );
+  assert.match(code, /Math\.round\(size \* 0\.59\)/);
+  assert.match(code, /Math\.round\(size \* 0\.23\)/);
+});
+
 test("manifest v2 同时支持单文件与帧序列", () => {
   const source = read(`${ENGINE}/previewgen.jsx`);
   assert.match(source, /"version":2/);
@@ -173,16 +185,78 @@ test("store 的写权限自检走 app.preferences，不再使用不存在的 app
   assert.match(code, /Pref_SCRIPTING_FILE_NETWORK_SECURITY/);
 });
 
-test("store 写权限三态：开启/关闭/读不到", () => {
-  for (const [raw, expected] of [
-    [1, 1],
-    [0, 0],
-    [-1, null],
-  ]) {
+/** 最小内存文件系统，用来在 node 里跑 store.jsx 的写探测 */
+function makeFsMock(allowWrite) {
+  const written = new Set();
+  class FileMock {
+    constructor(path) {
+      this.path = path;
+      this.exists = written.has(path);
+    }
+    get fsName() {
+      return this.path;
+    }
+    get parent() {
+      return new (class {
+        constructor(p) {
+          this.fsName = p;
+          this.exists = true;
+        }
+        create() {
+          return true;
+        }
+      })(this.path.replace(/\/[^/]*$/, ""));
+    }
+    open() {
+      if (!allowWrite) return false;
+      written.add(this.path);
+      this.exists = true;
+      return true;
+    }
+    write() {}
+    close() {}
+    remove() {
+      written.delete(this.path);
+      this.exists = false;
+      return true;
+    }
+  }
+  class FolderMock {
+    constructor(path) {
+      this.fsName = path;
+      this.exists = true;
+    }
+    create() {
+      return true;
+    }
+  }
+  FolderMock.myDocuments = { fsName: "C:/docs" };
+  return { File: FileMock, Folder: FolderMock, written };
+}
+
+test("store 写权限以实际写文件为准，首选项只做快速否决", () => {
+  const cases = [
+    { pref: -1, allowWrite: true, expected: 1, label: "首选项读不到但能写" },
+    { pref: 0, allowWrite: true, expected: 0, label: "首选项明确关闭" },
+    { pref: 1, allowWrite: false, expected: 0, label: "首选项开着但写不进去" },
+    { pref: null, allowWrite: false, expected: null, label: "两层都无法判定" },
+  ];
+  for (const item of cases) {
+    const fs = makeFsMock(item.allowWrite);
+    const app =
+      item.pref === null
+        ? {}
+        : { preferences: { getPrefAsLong: () => item.pref } };
     const ctx = loadModules([`${ENGINE}/store.jsx`], {
-      app: { preferences: { getPrefAsLong: () => raw } },
+      app,
+      File: fs.File,
+      Folder: fs.Folder,
     });
-    assert.equal(ctx.AEV_Store.writePermission(), expected, `返回值 ${raw} 应映射为 ${expected}`);
+    assert.equal(
+      ctx.AEV_Store.writePermission(),
+      item.expected,
+      `${item.label} 应返回 ${item.expected}`,
+    );
   }
 });
 
