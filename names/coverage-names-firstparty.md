@@ -30,7 +30,3 @@
 - Text：2
 - CINEMA 4D：1
 - Synthetic Aperture：1
-
----
-
-内容由 AI 生成

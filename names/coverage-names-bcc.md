@@ -37,7 +37,3 @@
 - BCC Match Move：4
 - BCC Textures：4
 - BCC Browser：2
-
----
-
-内容由 AI 生成
