@@ -138,7 +138,11 @@ var AEV_Library = (function () {
             showFrame(frameIndex);
           }, 83);
         };
-        thumb.style.backgroundSize = "100% 100%";
+        // 帧文件同样是 2048 整网，必须和 sprite 一样按坐标切片；
+        // 之前用 100% 100% 会把整张网压进卡片，结果只看到左上角一小块黑。
+        thumb.style.backgroundSize =
+          state.manifest.width + "px " + state.manifest.height + "px";
+        thumb.style.backgroundPosition = "-" + preview.x + "px -" + preview.y + "px";
         showFrame(0);
         card.addEventListener("mouseenter", play);
         card.addEventListener("mouseleave", stop);
