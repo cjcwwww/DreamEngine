@@ -18,6 +18,33 @@ var AEV_Catalog = (function () {
     var MAX_DEPTH = 3;
     var MAX_PARAMS = 200;
 
+    /** PropertyValueType 的数值 → 可读名。
+     *  直接 String(prop.propertyValueType) 拿到的是 6417 这类数字，
+     *  写配方时看不出它到底是颜色还是数值，所以这里建一张运行时映射表。
+     */
+    var TYPE_NAMES = null;
+
+    function typeMap() {
+        if (TYPE_NAMES) return TYPE_NAMES;
+        var map = {};
+        try {
+            map[String(PropertyValueType.OneD)] = "OneD";
+            map[String(PropertyValueType.TwoD)] = "TwoD";
+            map[String(PropertyValueType.TwoD_SPATIAL)] = "TwoD_Spatial";
+            map[String(PropertyValueType.ThreeD)] = "ThreeD";
+            map[String(PropertyValueType.ThreeD_SPATIAL)] = "ThreeD_Spatial";
+            map[String(PropertyValueType.COLOR)] = "Color";
+            map[String(PropertyValueType.CUSTOM_VALUE)] = "Custom";
+            map[String(PropertyValueType.MARKER)] = "Marker";
+            map[String(PropertyValueType.LAYER_INDEX)] = "LayerIndex";
+            map[String(PropertyValueType.MASK_INDEX)] = "MaskIndex";
+            map[String(PropertyValueType.SHAPE)] = "Shape";
+            map[String(PropertyValueType.TEXT_DOCUMENT)] = "TextDocument";
+        } catch (e) {}
+        TYPE_NAMES = map;
+        return map;
+    }
+
     function jsonString(value) {
         var out = String(value === undefined || value === null ? "" : value);
         out = out.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -29,7 +56,9 @@ var AEV_Catalog = (function () {
         try {
             var type = prop.propertyValueType;
             if (type === undefined || type === null) return "";
-            return String(type).replace(/^\[object /, "").replace(/\]$/, "");
+            var named = typeMap()[String(type)];
+            if (named) return named;
+            return String(type);
         } catch (e) {
             return "";
         }
