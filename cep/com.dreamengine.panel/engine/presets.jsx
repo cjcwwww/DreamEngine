@@ -438,7 +438,15 @@ var AEV_Presets = (function () {
             var before = snapshot(comp);
             trace("apply:before:" + before.effects + "/" + before.keyProps + "/" + before.layers);
             try {
-                comp.selectedLayers = [target];
+                // 用 layer.selected = true 选层，**不要**给 comp.selectedLayers 赋值：
+                // 实测 AE 2021 上 `comp.selectedLayers = [layer]` 会直接把 AE 弄崩
+                // （追踪日志停在 before 之后、selected 之前）。
+                for (var sl = 1; sl <= comp.numLayers; sl++) {
+                    try {
+                        comp.layer(sl).selected = false;
+                    } catch (eUn) {}
+                }
+                target.selected = true;
                 trace("apply:selected");
                 app.applyPreset(file);
                 trace("apply:called");
@@ -636,6 +644,16 @@ var AEV_Presets = (function () {
                     } catch (e2) {
                         layerIndex = 0;
                     }
+                } else {
+                    // 兜底：遍历找 selected === true 的图层
+                    try {
+                        for (var li = 1; li <= comp.numLayers; li++) {
+                            if (comp.layer(li).selected) {
+                                layerIndex = li;
+                                break;
+                            }
+                        }
+                    } catch (e3) {}
                 }
             }
         } catch (e3) {}
