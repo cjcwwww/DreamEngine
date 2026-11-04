@@ -304,6 +304,26 @@ var AEV_Queue = (function () {
         return '"' + out + '"';
     }
 
+    /**
+     * 队列条目列表（给面板的队列抽屉显示）。
+     * 已完成的（cached）不列 —— 面板上真正关心的是「还没渲成」和「失败」的。
+     */
+    function listJson(limit) {
+        var queue = load();
+        var max = limit > 0 ? limit : 60;
+        var items = [];
+        for (var i = 0; i < queue.rows.length && items.length < max; i++) {
+            var r = queue.rows[i];
+            if (r.status === "cached") continue;
+            items.push('{"matchName":' + jsonQuote(r.matchName) +
+                       ',"status":' + jsonQuote(r.status) +
+                       ',"reason":' + jsonQuote(r.reason || "") +
+                       ',"attempts":' + (parseInt(r.attempts, 10) || 0) +
+                       ',"updatedAt":' + jsonQuote(r.updatedAt || "") + "}");
+        }
+        return '{"total":' + queue.rows.length + ',"items":[' + items.join(",") + "]}";
+    }
+
     /** 清空队列（不动已生成的图片） */
     function reset() {
         var queue = { rows: [], byName: {} };
@@ -320,6 +340,7 @@ var AEV_Queue = (function () {
         reopen: reopen,
         countBy: countBy,
         stats: stats,
+        listJson: listJson,
         nextPending: nextPending,
         retryFailed: retryFailed,
         drain: drain,

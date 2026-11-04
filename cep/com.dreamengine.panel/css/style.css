@@ -540,6 +540,121 @@ main {
   text-align: right;
 }
 
+/* 生成队列：状态栏上一个入口 + 右侧抽屉。
+   以前队列只有状态栏里一行字，看不到「还剩多少、哪条失败」，
+   批量生成时只能干等。 */
+.queue-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.queue-toggle:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.queue-toggle #queueCounts {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(320px, 82vw);
+  padding: 12px 14px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: -12px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.queue-drawer[hidden] {
+  display: none;
+}
+
+.queue-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queue-head h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.queue-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-summary {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.queue-list {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.queue-item .queue-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-badge {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.queue-badge.failed {
+  color: var(--danger);
+}
+
+.queue-badge.rendering {
+  color: var(--accent);
+}
+
+.queue-empty {
+  padding: 18px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
 @media (max-width: 520px) {
   .topbar {
     padding-right: 10px;

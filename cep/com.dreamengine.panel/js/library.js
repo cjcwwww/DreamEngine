@@ -534,6 +534,7 @@ var AEV_Library = (function () {
                 }
                 setStatus(ready, false);
                 button.disabled = false;
+                refreshQueue();
                 if (done) done(null);
               });
             }, force);
@@ -800,6 +801,7 @@ var AEV_Library = (function () {
             finishGenerate("索引写入失败：" + (written.reason || ""), true);
             return;
           }
+          refreshQueue();
           pump();
         });
       });
@@ -866,6 +868,87 @@ var AEV_Library = (function () {
     engine("AEV_Queue.retryFailed()", function (result) {
       var data = parseEngineResult(result);
       setStatus("已重新排队 " + (data.reset || 0) + " 个", false);
+      refreshQueue();
+    });
+  }
+
+  /* ---------- 生成队列抽屉 ---------- */
+
+  function queueStatusText(status) {
+    if (state.lang === "en") {
+      if (status === "pending") return "pending";
+      if (status === "rendering") return "rendering";
+      if (status === "failed") return "failed";
+      if (status === "cached") return "done";
+      return status;
+    }
+    if (status === "pending") return "待渲染";
+    if (status === "rendering") return "渲染中";
+    if (status === "failed") return "失败";
+    if (status === "cached") return "已完成";
+    return status;
+  }
+
+  function queueLabel(matchName) {
+    var record = state.names[matchName] || {};
+    if (state.lang === "zh") {
+      return record.nameZh || record.nameEn || matchName;
+    }
+    return record.nameEn || record.nameZh || matchName;
+  }
+
+  function renderQueueList(items) {
+    var list = byId("queueList");
+    if (!list) return;
+    list.textContent = "";
+    if (!items.length) {
+      var empty = document.createElement("li");
+      empty.className = "queue-empty";
+      empty.textContent = state.lang === "zh" ? "队列是空的" : "Queue is empty";
+      list.appendChild(empty);
+      return;
+    }
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var li = document.createElement("li");
+      li.className = "queue-item";
+      li.title = item.reason || item.matchName;
+      var name = document.createElement("span");
+      name.className = "queue-name";
+      name.textContent = queueLabel(item.matchName);
+      var badge = document.createElement("span");
+      badge.className = "queue-badge " + (item.status || "");
+      badge.textContent = queueStatusText(item.status);
+      li.appendChild(name);
+      li.appendChild(badge);
+      list.appendChild(li);
+    }
+  }
+
+  /** 拉一次队列状态：状态栏计数 + 抽屉列表 */
+  function refreshQueue() {
+    if (!state.extensionPath) return;
+    engine("AEV_Queue.stats()", function (result) {
+      var data = parseEngineResult(result);
+      var counts = byId("queueCounts");
+      if (counts) {
+        if (data && data.pending !== undefined) {
+          counts.textContent = data.pending + " 待渲染 / " + data.failed + " 失败";
+        } else {
+          counts.textContent = "—";
+        }
+      }
+      var summary = byId("queueSummary");
+      if (summary) {
+        summary.textContent = data
+          ? "待渲染 " + data.pending + " · 渲染中 " + data.rendering +
+            " · 失败 " + data.failed + " · 共 " + data.total
+          : "";
+      }
+      engine("AEV_Queue.listJson(80)", function (listResult) {
+        var listData = parseEngineResult(listResult);
+        renderQueueList((listData && listData.items) || []);
+      });
     });
   }
 
@@ -893,6 +976,19 @@ var AEV_Library = (function () {
     });
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
+    byId("btnQueue").addEventListener("click", function () {
+      var drawer = byId("queueDrawer");
+      if (!drawer) return;
+      drawer.hidden = !drawer.hidden;
+      if (!drawer.hidden) refreshQueue();
+    });
+    byId("btnQueueClose").addEventListener("click", function () {
+      var drawer = byId("queueDrawer");
+      if (drawer) drawer.hidden = true;
+    });
+    byId("btnQueueRetry").addEventListener("click", function () {
+      retryFailed();
+    });
     byId("thumbSize").addEventListener("input", function () {
       setThumbSize(this.value);
     });
