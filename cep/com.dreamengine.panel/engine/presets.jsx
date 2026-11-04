@@ -118,6 +118,62 @@ var AEV_Presets = (function () {
                items.join(",") + "]}";
     }
 
+    /**
+     * 判断 item 是不是合成。
+     *
+     * 踩过的坑：AE 2021 的 `item.typeName` 是**本地化的**（中文 AE 返回「合成」，
+     * 不是 "Composition"），所以不能拿它做字符串比较。改成看有没有 numLayers。
+     */
+    function isComp(item) {
+        if (!item) return false;
+        try {
+            if (typeof CompItem !== "undefined" && item instanceof CompItem) return true;
+        } catch (e) {}
+        try {
+            return typeof item.numLayers === "number";
+        } catch (e2) {
+            return false;
+        }
+    }
+
+    /**
+     * 按名字找合成。
+     *
+     * 不能用 app.project.items.getItemByName() —— 实测 AE 2021 上它会抛异常，
+     * 甚至直接把 AE 进程带崩。改成遍历 items 自己找。
+     * 另外 item.name 可能是 URL 编码形式（中文预设名实测是 %E4%B8%8B 这种），
+     * 所以比较时两种都试。
+     */
+    function findComp(name) {
+        var items = null;
+        try {
+            items = app.project.items;
+        } catch (e) {
+            return null;
+        }
+        for (var i = 1; i <= items.length; i++) {
+            var item = null;
+            try {
+                item = items[i];
+            } catch (e2) {
+                continue;
+            }
+            if (!item) continue;
+            var itemName = "";
+            try {
+                itemName = String(item.name || "");
+            } catch (e3) {}
+            var decoded = itemName;
+            try {
+                decoded = decodeURI(itemName);
+            } catch (e4) {}
+            if (name && (itemName === name || decoded === name) && isComp(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     /** 合成当前状态快照：图层数 / 效果数 / 含关键帧的属性数 */
     function snapshot(comp) {
         var layers = 0, effects = 0, keyProps = 0;
@@ -252,18 +308,18 @@ var AEV_Presets = (function () {
      * 返回 {status, best:{kind,effects,keys}, attempts:[...]}
      */
     function applyJson(compName, presetPath, layerIndex) {
-        var comp = null;
-        var lookupError = "";
-        try {
-            comp = app.project.items.getItemByName(String(compName || ""));
-        } catch (e) {
-            lookupError = String(e);
+        var comp = findComp(String(compName || ""));
+        if (!comp) {
+            // 兜底：当前活动合成（面板的应用目标本来就是它）
+            try {
+                var active = app.project.activeItem;
+                if (isComp(active)) comp = active;
+            } catch (eActive) {}
         }
         if (!comp) {
             return result("error", [
                 ["reason", "no_comp"],
-                ["comp", String(compName || "")],
-                ["lookupError", lookupError]
+                ["comp", String(compName || "")]
             ]);
         }
         var file = new File(String(presetPath || ""));
@@ -333,10 +389,13 @@ var AEV_Presets = (function () {
      * 并标出本机没装的效果（插件缺失）。
      */
     function dependenciesJson(compName) {
-        var comp = null;
-        try {
-            comp = app.project.items.getItemByName(String(compName || ""));
-        } catch (e) {}
+        var comp = findComp(String(compName || ""));
+        if (!comp) {
+            try {
+                var active = app.project.activeItem;
+                if (isComp(active)) comp = active;
+            } catch (eActive) {}
+        }
         if (!comp) {
             return result("error", [["reason", "no_comp"]]);
         }
@@ -467,7 +526,8 @@ var AEV_Presets = (function () {
         var layerIndex = 0;
         try {
             var comp = app.project.activeItem;
-            if (comp && String(comp.typeName) === "Composition") {
+            // AE 2021 的 typeName 是本地化的（「合成」），不能做字符串比较
+            if (isComp(comp)) {
                 compName = String(comp.name);
                 var selected = null;
                 try {

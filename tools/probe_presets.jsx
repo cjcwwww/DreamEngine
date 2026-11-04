@@ -112,8 +112,14 @@
         log("ITEMS_ERR|" + eItems);
     }
     try {
-        var found = app.project.items.getItemByName("DE_preset_probe");
-        log("LOOKUP|" + (found ? "found:" + found.typeName : "null"));
+        /* 注意：不要用 app.project.items.getItemByName() —— 实测它会让 AE 崩 */
+        var items2 = app.project.items;
+        var foundName = "";
+        for (var k = 1; k <= items2.length; k++) {
+            var o = items2[k];
+            if (String(o.name) === "DE_preset_probe") foundName = String(o.typeName);
+        }
+        log("LOOKUP|found=" + (foundName || "none"));
     } catch (eLookup) {
         log("LOOKUP_ERR|" + eLookup);
     }
