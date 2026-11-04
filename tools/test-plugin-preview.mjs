@@ -238,10 +238,12 @@ test("插件按参数「作用」微调：强度类 15%、无强度类用内置�
   // 只动一个参数
   assert.match(code, /function pluginMainParam\(/);
   assert.match(code, /function tunePlugin\(/);
-  // 动画用同一个强度参数：0 → 目标
+  // 动画：强度参数打关键帧（0 → 目标）；内置不透明度不能打，改用线性形态参数
   assert.match(code, /function animatePlugin\(/);
-  assert.match(code, /main\.prop\.setValueAtTime\(0, start\)/);
-  assert.match(code, /main\.prop\.setValueAtTime\(end, target\)/);
+  assert.match(code, /main\.kind === "intensity"/);
+  assert.match(code, /function pluginAnimParam\(/);
+  assert.match(code, /prop\.setValueAtTime\(0, start\)/);
+  assert.match(code, /prop\.setValueAtTime\(end, target\)/);
   // 附属模块不碰
   assert.match(code, /isPluginAuxiliary\(name\)/);
 });
