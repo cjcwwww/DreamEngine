@@ -17,7 +17,9 @@
 (function () {
     var OUT_DIR = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
     var OUT_FILE = new File(OUT_DIR.fsName + "/m4_write_diag.txt");
-    var CURVE = new File("D:/workqwen/DreamEngine-1/cep/com.dreamengine.panel/engine/curvelib.jsx");
+    var ENGINE_DIR = "D:/workqwen/DreamEngine-1/cep/com.dreamengine.panel/engine";
+    var CURVE_MATH = new File(ENGINE_DIR + "/curve_math.js");
+    var CURVE = new File(ENGINE_DIR + "/curvelib.jsx");
     var L = [];
 
     function numField(text, key) {
@@ -47,7 +49,18 @@
 
     try {
         /* ---- 1. 自建场景 ---- */
+        var prevActive = null;
+        try { prevActive = app.project.activeItem; } catch (eP) {}
         comp = app.project.items.addComp("DE_WriteDiag", 640, 360, 1, 4, 25);
+        /* addComp 只是建出来，不一定成为 activeItem；引擎只认 activeItem，
+           不激活的话它读的是用户原来那个合成 —— 于是「选中 3 条属性」
+           却「props 0 条」。 */
+        try { comp.openInViewer(); } catch (eOpen) {
+            L.push("openInViewer 失败：" + eOpen.toString());
+        }
+        var activeName = "";
+        try { activeName = app.project.activeItem ? app.project.activeItem.name : "(none)"; } catch (eA) {}
+        L.push("activeItem=" + activeName);
         var layer = comp.layers.addSolid([0.2, 0.2, 0.2], "diag layer", 640, 360, 1);
         try { if (layer.source) solids.push(layer.source); } catch (eS) {}
 
@@ -88,9 +101,11 @@
         L.push("选中属性数=" + spCount + "（selected 可写=" + selOk + "）");
 
         /* ---- 3. 加载引擎并读快照 ---- */
-        if (!CURVE.exists) {
-            L.push("找不到 curvelib.jsx：" + CURVE.fsName);
+        if (!CURVE.exists || !CURVE_MATH.exists) {
+            L.push("找不到引擎文件：" + CURVE.fsName);
         } else {
+            // 与 bridge 的加载顺序一致：curve_math 必须先于 curvelib
+            $.evalFile(CURVE_MATH);
             $.evalFile(CURVE);
             L.push("typeof AEV_Curve=" + (typeof AEV_Curve));
 
