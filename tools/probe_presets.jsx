@@ -99,6 +99,9 @@
     log("COMPOSITE|" + comp.name + "|layers=" + comp.numLayers);
 
     var before = comp.numLayers;
+    /* 追踪：applyPreset 有可能把 AE 搞崩，崩了进程就没了，
+       只能靠崩之前写下的最后一步定位。 */
+    AEV_Presets.setTrace(OUT.fsName + "/preset_trace.txt");
     /* 诊断：各图层的 sourceType / 文本属性 / 调整层标记 */
     try {
         var diagLayers = [];
@@ -141,8 +144,7 @@
         log("LOOKUP_ERR|" + eLookup);
     }
     var applied = AEV_Presets.applyJson(comp.name, target.path, 0);
-    log("APPLY|" + applied);
-    var after = comp.numLayers;
+    log("APPLY|" + applied);    var after = comp.numLayers;
     log("LAYERS_BEFORE|" + before + "|LAYERS_AFTER|" + after);
     log("VERDICT_LAYERS|" + (after === before ? "CLEAN" : "LEFTOVER"));
 

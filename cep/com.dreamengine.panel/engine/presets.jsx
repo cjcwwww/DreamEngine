@@ -118,6 +118,27 @@ var AEV_Presets = (function () {
                items.join(",") + "]}";
     }
 
+    /* 追踪文件：applyPreset 有可能把 AE 搞崩，崩了进程就没了，
+       只能靠「崩之前写下的最后一步」定位。所以每步都追加写文件。 */
+    var TRACE_FILE = "";
+
+    function trace(text) {
+        if (!TRACE_FILE) return;
+        try {
+            var f = new File(TRACE_FILE);
+            f.encoding = "UTF-8";
+            if (f.open("a")) {
+                f.write(String(text) + "\r\n");
+                f.close();
+            }
+        } catch (e) {}
+    }
+
+    function setTrace(path) {
+        TRACE_FILE = String(path || "");
+        return TRACE_FILE;
+    }
+
     /**
      * 判断 item 是不是合成。
      *
@@ -305,6 +326,38 @@ var AEV_Presets = (function () {
         return false;
     }
 
+    /** 候选顺序：普通图层优先，文本层其次，调整层最后（稳定排序） */
+    function orderCandidates(layers) {
+        var scored = [];
+        for (var i = 0; i < layers.length; i++) {
+            var score = 0;
+            try {
+                if (layers[i].adjustmentLayer) score = 2;
+            } catch (e) {}
+            if (score === 0) {
+                try {
+                    if (layers[i].property("ADBE Text Properties")) score = 1;
+                } catch (e2) {}
+            }
+            scored.push({ layer: layers[i], score: score, index: i });
+        }
+        scored.sort(function (a, b) {
+            if (a.score !== b.score) return a.score - b.score;
+            return a.index - b.index;
+        });
+        var out = [];
+        for (var j = 0; j < scored.length; j++) out.push(scored[j].layer);
+        return out;
+    }
+
+    function layerName(layer) {
+        try {
+            return String(layer.name || "图层");
+        } catch (e) {
+            return "图层";
+        }
+    }
+
     /** 删掉调用期间自动新建的图层（从末尾往前删，避免索引错位） */
     function cleanupLayers(comp, beforeCount) {
         var total = 0;
@@ -349,44 +402,66 @@ var AEV_Presets = (function () {
 
         var attempts = [];
         var best = null;
-        var order = LAYER_ORDER;
-        if (layerIndex >= 1) {
-            order = ["index"];
-        }
 
-        for (var i = 0; i < order.length; i++) {
-            var kind = order[i];
-            var target = kind === "index"
-                ? findLayer(comp, "", layerIndex)
-                : findLayer(comp, kind, -1);
-            if (!target) {
-                attempts.push(kind + "|no_layer");
-                continue;
+        /**
+         * 候选图层：指定序号优先，否则遍历全部图层。
+         *
+         * 原来按「图层类型」筛（solid→text→footage→adjustment），实测在 AE 2021
+         * 上一个都找不到——纯色层的 sourceType 取不到（undefined），
+         * 枚举 SourceType 也不可用。改成逐层试，用「效果数 / 关键帧数有没有
+         * 增加」判断哪个层真的吃下了预设，这比猜类型可靠。
+         */
+        var candidates = [];
+        var total = 0;
+        try {
+            total = comp.numLayers;
+        } catch (eT) {
+            total = 0;
+        }
+        if (layerIndex >= 1 && layerIndex <= total) {
+            try {
+                candidates.push(comp.layer(layerIndex));
+            } catch (eL) {}
+        } else {
+            for (var ci = 1; ci <= total; ci++) {
+                try {
+                    candidates.push(comp.layer(ci));
+                } catch (eC) {}
             }
+        }
+        candidates = orderCandidates(candidates);
+
+        for (var i = 0; i < candidates.length; i++) {
+            var target = candidates[i];
+            var label = layerName(target);
+            trace("apply:try:" + label);
             var before = snapshot(comp);
-            var applied = false;
+            trace("apply:before:" + before.effects + "/" + before.keyProps + "/" + before.layers);
             try {
                 comp.selectedLayers = [target];
+                trace("apply:selected");
                 app.applyPreset(file);
-                applied = true;
+                trace("apply:called");
             } catch (e) {
-                attempts.push(kind + "|error|" + e);
+                trace("apply:error:" + e);
+                attempts.push(label + "|error|" + e);
                 cleanupLayers(comp, before.layers);
                 continue;
             }
             var after = snapshot(comp);
+            trace("apply:after:" + after.effects + "/" + after.keyProps + "/" + after.layers);
             var addedEffects = after.effects - before.effects;
             var addedKeys = after.keyProps - before.keyProps;
             var addedLayers = after.layers - before.layers;
             cleanupLayers(comp, before.layers);
             attempts.push(
-                kind + "|effects+" + addedEffects + "|keys+" + addedKeys + "|layers+" + addedLayers
+                label + "|effects+" + addedEffects + "|keys+" + addedKeys + "|layers+" + addedLayers
             );
-            if (applied && (addedEffects > 0 || addedKeys > 0)) {
+            if (addedEffects > 0 || addedKeys > 0) {
                 var score = addedEffects * 10 + addedKeys * 3;
                 if (!best || score > best.score) {
                     best = {
-                        kind: kind,
+                        kind: label,
                         score: score,
                         effects: addedEffects,
                         keys: addedKeys
@@ -575,6 +650,7 @@ var AEV_Presets = (function () {
         contextJson: contextJson,
         isPresetFile: isPresetFile,
         categoryOf: categoryOf,
+        setTrace: setTrace,
         MAX_FILES: MAX_FILES,
         LAYER_ORDER: LAYER_ORDER
     };
