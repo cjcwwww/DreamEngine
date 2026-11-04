@@ -33,7 +33,9 @@ test("M1 names data is a unique matchName map", () => {
 });
 
 test("M1 manifest 描述合法的 2048 网格与预览条目", () => {
-  const manifest = readJson("cep/com.dreamengine.panel/data/manifest.json");
+  // 预览索引不入库，入库的是可分发的 L1 包（dist/L1/）。
+  // 扩展数据目录里的那份由 install_l1 部署，属于运行时产物。
+  const manifest = readJson("dist/L1/manifest.json");
   assert.equal(manifest.cellSize, 256);
   assert.equal(manifest.columns, 8);
   assert.equal(manifest.width, 2048);
@@ -53,8 +55,13 @@ test("M1 manifest 描述合法的 2048 网格与预览条目", () => {
     assert.equal(item.y % 256, 0, `${item.matchName} y 必须对齐格位`);
   }
 
-  // 首张单文件图必须真实存在
-  assert.ok(existsSync(resolve(PANEL, "data", manifest.sheets[0].src)));
+  // 每张网对应的图必须真实存在
+  for (const sheet of manifest.sheets) {
+    assert.ok(
+      existsSync(resolve(ROOT, "dist/L1", sheet.src)),
+      `sheet ${sheet.index} 的图缺失：${sheet.src}`,
+    );
+  }
 });
 
 function loadViewModel() {
