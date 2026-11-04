@@ -416,9 +416,20 @@ var AEV_Presets = (function () {
             for (var i = 0; i < entries.length; i++) {
                 var entry = entries[i];
                 if (!(entry instanceof Folder)) continue;
-                if (String(entry.name).indexOf("Adobe After Effects") !== 0) continue;
-                var presets = new Folder(entry.fsName + "/Support Files/Presets");
-                if (presets.exists) found.push(presets.fsName);
+                // 目录名在 ExtendScript 里可能是 URL 编码形式
+                // （实测 "Adobe After Effects 2021" 返回 "Adobe%20After%20Effects%202021"），
+                // 所以不按名字挑，直接看有没有 Support Files/Presets —— 命中就是 AE 安装目录。
+                var paths = [entry.fsName];
+                try {
+                    paths.push(decodeURI(entry.fsName));
+                } catch (e2) {}
+                for (var p = 0; p < paths.length; p++) {
+                    var presets = new Folder(paths[p] + "/Support Files/Presets");
+                    if (presets.exists) {
+                        found.push(presets.fsName);
+                        break;
+                    }
+                }
             }
         }
         try {
