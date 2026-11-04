@@ -36,7 +36,6 @@
     }
 
     var TARGETS = [
-        "ADBE Lumetri",
         "APC Colorama",
         "ADBE Black&White",
         "ADBE PhotoFilterPS",
