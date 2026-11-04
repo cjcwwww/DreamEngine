@@ -76,8 +76,9 @@ test("不能依赖 AE 的几个不稳定 API", () => {
     .split("\n")
     .map((line) => line.replace(/^\s*\/\/.*$/, ""))
     .join("\n");
-  // app.path 在 AE 2021 是 undefined；typeName 是本地化的；getItemByName 会崩 AE
-  assert.doesNotMatch(code, /app\.path \+ "\/Presets"/);
+  // app.path 在 AE 2021 是 undefined（所以预设目录靠扫 Program Files 找到，
+  // app.path 只能当兜底）；typeName 是本地化的；getItemByName 会崩 AE
+  assert.match(code, /Support Files\/Presets/);
   assert.doesNotMatch(code, /typeName\) === "Composition"/);
   assert.doesNotMatch(code, /items\.getItemByName/);
   // 合成判定改成看有没有 numLayers
