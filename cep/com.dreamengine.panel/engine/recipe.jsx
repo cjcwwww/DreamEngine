@@ -945,80 +945,18 @@ var AEV_Recipe = (function () {
         walk(effectGroup, 0);
         return found;
     }
-
     /**
-     * 插件的动画：强度参数从 0 渐变到目标值；
-     * 强度参数不可用（AE 内置不透明度不能打关键帧）时，
-     * 退而用「细节层数 / 数量类」线性形态参数做动态。
+     * 插件动画：当前**不做**人为动画。
+     *
+     * 打关键帧同样属于「写参数」——实测在 AE 2021 上给插件效果写任何参数，
+     * 整条效果都会变成「在需要数字、数组或属性的位置找到类型为 Error 的对象」
+     * 直接渲不出来。所以插件预览保持默认参数；6 帧里若有变化，那来自效果
+     * 自带的动画（如 Saber 类），不是我们加的。
      */
     function animatePlugin(effectGroup, durationSeconds) {
         if (!TUNING_ENABLED) return false;
-        var end = Number(durationSeconds);
-        if (!end || end <= 0) return false;
-        var main = pluginMainParam(effectGroup);
-        if (!main) { trace("animate|no_main"); return false; }
-
-        var prop = null;
-        var target = null;
-        if (main.kind === "intensity") {
-            // 强度参数：0 → 目标值（从「还没生效」渐变到「轻微生效」）
-            prop = main.prop;
-            target = paramTarget(main.prop, main.ratio);
-            if (target === null || target === 0) return false;
-        } else {
-            // 没有强度参数：改用「细节层数 / 数量类」线性形态参数做动态
-            prop = pluginAnimParam(effectGroup);
-            if (!prop) return false;
-            var current = 0;
-            var minValue = 0;
-            var maxValue = 0;
-            try {
-                current = Number(prop.value);
-                if (prop.hasMin) minValue = Number(prop.minValue);
-                if (prop.hasMax) maxValue = Number(prop.maxValue);
-            } catch (e) {
-                return false;
-            }
-            if (typeof current !== "number" || isNaN(current)) return false;
-            // 从当前值走到另一个端点：动态幅度才看得见
-            target = (maxValue - current) >= (current - minValue) ? maxValue : minValue;
-            if (target === current) return false;
-        }
-
-        var start = 0;
-        var oldValue = null;
-        try {
-            oldValue = prop.value;
-            if (typeof oldValue !== "number" || isNaN(oldValue)) return false;
-            if (prop.hasMin) {
-                var minProp = Number(prop.minValue);
-                if (minProp > 0 && minProp < target) start = minProp;
-            }
-        } catch (e2) {
-            return false;
-        }
-        if (target === start) return false;
-
-        try {
-            prop.setValueAtTime(0, start);
-            prop.setValueAtTime(end, target);
-        } catch (e3) {
-            return false;
-        }
-        // 校验打完之后值还是不是数字（有些参数不接受关键帧会写坏）
-        try {
-            var check = prop.value;
-            if (typeof check !== "number" || isNaN(check)) {
-                try {
-                    prop.setValueAtTime(0, oldValue);
-                    prop.setValueAtTime(end, oldValue);
-                } catch (e4) {}
-                return false;
-            }
-        } catch (e5) {
-            return false;
-        }
-        return true;
+        trace("animate|skip_for_plugin");
+        return false;
     }
 
     /** 统一入口：有配方走配方，内置无配方走启发式，插件只微调一个强度参数 */
