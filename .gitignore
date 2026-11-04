@@ -63,3 +63,4 @@ invalidParam/
 cep/com.dreamengine.panel/data/plugin_*.json
 cep/com.dreamengine.panel/data/plugin_*.tsv
 cep/com.dreamengine.panel/data/animated.json
+cep/com.dreamengine.panel/data/preset_manifest.json

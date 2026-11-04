@@ -201,6 +201,85 @@ test("拖入 .ffx 也能入库；入库前过滤后缀并统一路径分隔符",
   assert.match(code, /\\\.ffx\$\/i\.test\(p\)/);
 });
 
+/* ---------- 预设预览生成（静态 / 关键帧区间 / 用户背景） ---------- */
+
+test("预设预览引擎已接入 bridge 的加载清单", () => {
+  const bridge = read("cep/com.dreamengine.panel/js/bridge.js");
+  assert.match(bridge, /engine\/preset_preview\.jsx/);
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(lib, /AEV_PresetPreview\.renderJson\(/);
+  assert.match(lib, /AEV_PresetPreview\.backgroundsJson\(/);
+});
+
+test("静态预设出 1 帧；含关键帧的覆盖首末关键帧再均匀抽帧", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  // 关键帧范围靠遍历属性树读 numKeys / keyTime，不读参数值（读值会崩 AE）
+  assert.match(src, /function walkKeys\(/);
+  assert.match(src, /p\.numKeys/);
+  assert.match(src, /p\.keyTime\(1\)/);
+  assert.doesNotMatch(src, /\.maxValue/);
+  // 无关键帧 → 静态 1 帧
+  assert.match(src, /var animated = range\.keys > 0/);
+  assert.match(src, /var span = 1 \/ FPS/);
+  // 有关键帧 → 渲染整个区间（timeSpanStart / Duration），再抽最多 6 帧
+  assert.match(src, /queueItem\.timeSpanStart = start/);
+  assert.match(src, /queueItem\.timeSpanDuration = span/);
+  assert.match(src, /Math\.min\(MAX_FRAMES, rawFiles\.length\)/);
+  assert.match(src, /var wanted = animated \?/);
+  // comp 时长必须覆盖到最后一个关键帧
+  assert.match(src, /comp\.duration = Math\.max/);
+});
+
+test("渲染在临时合成里做，插件预设跳过，临时对象全部回收", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  assert.match(src, /app\.project\.items\.addComp\(\s*"DE_preset_cell_/);
+  // AE 2021 上会崩的写法一个都不能用
+  assert.doesNotMatch(src, /app\.applyPreset\(/);
+  assert.doesNotMatch(src, /comp\.selectedLayers\s*=/);
+  assert.doesNotMatch(src, /getItemByName/);
+  assert.match(src, /Layer\.applyPreset\(file\)/);
+  // 含第三方插件效果的预设不渲染
+  assert.match(src, /function pluginMatchName\(/);
+  assert.match(src, /result\("plugin_preset"/);
+  // 渲染队列项 / 临时合成 / 素材 / raw 帧都要删
+  assert.match(src, /queueItem\.remove\(\)/);
+  assert.match(src, /comp\.remove\(\)/);
+  assert.match(src, /rawFiles\[i\]\.remove\(\)/);
+});
+
+test("预览背景可选内置 5 种或用户上传，索引写独立文件", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  assert.match(src, /BUILTIN_BACKGROUNDS = \[/);
+  assert.match(src, /"photo"/);
+  assert.match(src, /"text"/);
+  assert.match(src, /"solid"/);
+  assert.match(src, /"shape"/);
+  assert.match(src, /"pattern"/);
+  assert.match(src, /function importBackgroundJson\(/);
+  assert.match(src, /function addBackground\(/);
+  assert.match(src, /AEV_Assets\.getFresh\(id, size\)/);
+  // 独立索引，绝不写 L1 的 manifest.json
+  assert.match(src, /preset_manifest\.json/);
+  assert.doesNotMatch(src, /data\/manifest\.json/);
+});
+
+test("面板有背景选择/上传/生成入口，卡片区分静态与动态", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const lib = codeOf(read("cep/com.dreamengine.panel/js/library.js"));
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  assert.match(html, /id="presetBackground"/);
+  assert.match(html, /id="btnBackgroundAdd"/);
+  assert.match(html, /id="btnPresetPreview"/);
+  assert.match(html, /id="presetBackgroundFile"[^>]*type="file"/);
+  assert.match(lib, /function generatePresetPreviews\(/);
+  assert.match(lib, /function loadPresetIndex\(/);
+  assert.match(lib, /function savePresetIndex\(/);
+  assert.match(lib, /function attachPreview\(/);
+  assert.match(lib, /preview\.animated !== false/);
+  assert.match(css, /\.preset-thumb\s*\{/);
+  assert.match(css, /\.preset-badge/);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

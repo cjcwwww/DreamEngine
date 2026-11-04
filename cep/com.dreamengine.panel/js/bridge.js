@@ -100,7 +100,8 @@ var Bridge = (function () {
     "engine/queue.jsx",
     "engine/plugin_state.jsx",
     "engine/catalog.jsx",
-    "engine/presets.jsx"
+    "engine/presets.jsx",
+    "engine/preset_preview.jsx"
   ];
 
   /** 加载 engine 全部模块并求值一个表达式。

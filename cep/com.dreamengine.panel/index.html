@@ -112,8 +112,16 @@
         <input id="presetFileInput" type="file" accept=".ffx" multiple hidden/>
       </div>
     </div>
+    <div class="preset-preview-tools">
+      <label for="presetBackground">预览背景</label>
+      <select id="presetBackground" aria-label="预览背景"></select>
+      <button class="action-button" id="btnBackgroundAdd" type="button" title="上传自己的图片当预览背景">上传背景</button>
+      <button class="action-button" id="btnPresetPreview" type="button"
+              title="按当前背景为库内预设生成缩略图；静态预设出 1 帧，含关键帧的覆盖首末关键帧">生成预览</button>
+      <input id="presetBackgroundFile" type="file" accept="image/*" hidden/>
+    </div>
     <div class="preset-summary" id="presetSummary"></div>
-    <p class="preset-hint">也可以直接把 .ffx 文件拖进这个页面</p>
+    <p class="preset-hint">点卡片应用到当前合成 · 也可以直接把 .ffx 拖进这个页面</p>
     <div class="preset-grid" id="presetList"></div>
   </section>
 
