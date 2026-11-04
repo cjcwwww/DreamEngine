@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /* ============================================================
- * package_l1.mjs —— L1 内置包：帧间去重 + 打包
+ * package_l1.mjs —— L1 内置包打包器：帧间去重 + 全局重排
  *
- * 为什么做这个：静态效果的 6 帧内容完全相同（每帧约 46 KB），
- * 打包 L1 时就是 6 倍的纯浪费。而 AE 里多数效果本来就是静态的，
- * 只有用时间驱动的（运动模糊、湍流、时间置换等）才有帧间差异。
+ * 两件事：
+ *   1. 帧间去重：逐格比较各帧像素，静态格子压成单帧（静态效果的 6 帧是纯浪费）
+ *   2. 全局重排：静态与动态各自填满整网。
+ *      渲染时是「每 8 个一张网」，直接打包会浪费 87% 的画布；
+ *      重排后 307 条只占 5~6 张网。
  *
- * 做法：逐张网比较各格子在 6 帧里的像素是否完全一致，
- *   · 全静态的网 → 只留第 1 帧，体积降到 1/6
- *   · 全动态的网 → 原样保留
- *   · 混在一起的网 → 拆成「静态网（单帧）」+「动态网（多帧）」并重排格位
+ * 关键约束：打包只允许改变存储方式，不允许改变画面。
+ * 所以每条都做逐格像素比对（tools/test-package.mjs 里有同样的断言）。
  *
  * 用法：node tools/package_l1.mjs [--data 面板数据目录] [--out dist/L1]
  * ============================================================ */
@@ -44,13 +44,40 @@ const CELL = manifest.cellSize;
 const COLUMNS = manifest.columns;
 const WIDTH = manifest.width;
 const HEIGHT = manifest.height;
+const PER_SHEET = COLUMNS * COLUMNS;
 
-/**
- * 渲染帧数：指纹是按「渲染参数」算的，而打包会把静态格子从 6 帧压成 1 帧。
- * 如果用打包后的帧数去比对指纹，会把「本来有效」的预览全判成过期
- * （实机踩过：60 条里 40 条被误报）。
- * 所以这里取的是**渲染时的帧数**：优先读源目录的 previews.tsv，没有就退回 manifest。
- */
+const sha = (buf) => createHash("sha1").update(buf).digest("hex");
+
+function cellBox(cellIndex) {
+  return {
+    x: (cellIndex % COLUMNS) * CELL,
+    y: Math.floor(cellIndex / COLUMNS) * CELL,
+  };
+}
+
+function cellIndexOf(item) {
+  return Math.floor(item.y / CELL) * COLUMNS + Math.floor(item.x / CELL);
+}
+
+/** 解码并统一成 RGB（3 通道） */
+function loadRgb(file) {
+  const image = png.decode(file);
+  if (image.channels === 3) return image;
+  const out = Buffer.alloc(image.width * image.height * 3);
+  for (let i = 0, j = 0; i < image.data.length; i += 4, j += 3) {
+    out[j] = image.data[i];
+    out[j + 1] = image.data[i + 1];
+    out[j + 2] = image.data[i + 2];
+  }
+  return { width: image.width, height: image.height, channels: 3, data: out };
+}
+
+function cellRegion(image, cellIndex) {
+  const box = cellBox(cellIndex);
+  return png.region(image, box.x, box.y, CELL, CELL);
+}
+
+/* ---------- 渲染帧数：指纹按渲染参数算，不能用打包后的帧数 ---------- */
 const sourceIndex = resolve(DATA_DIR, "previews.tsv");
 const renderFrames = new Map();
 if (existsSync(sourceIndex)) {
@@ -69,61 +96,98 @@ for (const item of manifest.items) {
   }
 }
 
-/* ---------- 基础工具 ---------- */
+/* ---------- 输出流：静态（单帧）与动态（多帧）各自填满整网 ---------- */
 
-const sha = (buf) => createHash("sha1").update(buf).digest("hex");
+mkdirSync(resolve(OUT_DIR, "thumbs"), { recursive: true });
+const written = new Set();
+let bytesBefore = 0;
+let bytesAfter = 0;
 
-function cellBox(cellIndex) {
-  return {
-    x: (cellIndex % COLUMNS) * CELL,
-    y: Math.floor(cellIndex / COLUMNS) * CELL,
-  };
+function writeFile(name, buf) {
+  writeFileSync(resolve(OUT_DIR, "thumbs", name), buf);
+  written.add(name);
+  bytesAfter += buf.length;
 }
 
-function cellIndexOf(item) {
-  return Math.floor(item.y / CELL) * COLUMNS + Math.floor(item.x / CELL);
-}
+const outItems = [];
+const outSheets = [];
 
-/** 解码并统一成 RGB（3 通道），后面的取块/拼接都按 3 通道做 */
-function loadRgb(file) {
-  const image = png.decode(file);
-  if (image.channels === 3) return image;
-  const out = Buffer.alloc(image.width * image.height * 3);
-  for (let i = 0, j = 0; i < image.data.length; i += 4, j += 3) {
-    out[j] = image.data[i];
-    out[j + 1] = image.data[i + 1];
-    out[j + 2] = image.data[i + 2];
-  }
-  return { width: image.width, height: image.height, channels: 3, data: out };
-}
+/* 静态流与动态流共用一个网号计数器 —— 各自从 0 开始会写同名文件互相覆盖 */
+const sheetCounter = { next: 0 };
 
-/** 取一格（256×256）的像素 */
-function cellRegion(image, cellIndex) {
-  const box = cellBox(cellIndex);
-  return png.region(image, box.x, box.y, CELL, CELL);
-}
-
-/** 把若干格按 slot 顺序拼成一张新网 */
-function compose(cells, image) {
-  const canvas = png.blank(WIDTH, HEIGHT);
-  cells.forEach((cell, slot) => {
-    const from = cellBox(cell);
+/** 静态流：一张网存满 64 个格子就落盘 */
+const staticStream = {
+  buffer: null,
+  cursor: 0,
+  sheetIndex: -1,
+  open() {
+    // 网号在「开缓冲」时就占下来，条目引用的是这一版；
+    // 若等到落盘才占号，静态流与动态流交错时引用会指向别人的网。
+    this.sheetIndex = sheetCounter.next++;
+    this.buffer = png.blank(WIDTH, HEIGHT);
+    this.cursor = 0;
+  },
+  place(region, slot) {
     const to = cellBox(slot);
-    const region = cellRegion(image, cell);
+    const ch = 3;
     for (let row = 0; row < CELL; row++) {
       region.copy(
-        canvas.data,
-        ((to.y + row) * WIDTH + to.x) * 3,
-        row * CELL * 3,
-        (row + 1) * CELL * 3,
+        this.buffer.data,
+        ((to.y + row) * WIDTH + to.x) * ch,
+        row * CELL * ch,
+        (row + 1) * CELL * ch,
       );
     }
-    void from;
-  });
-  return canvas.data;
-}
+  },
+  flush() {
+    if (!this.buffer || this.cursor === 0) return;
+    const name = `batch_${String(this.sheetIndex).padStart(3, "0")}.png`;
+    writeFile(name, png.encode(WIDTH, HEIGHT, this.buffer.data));
+    outSheets.push({ index: this.sheetIndex, src: `thumbs/${name}`, width: WIDTH, height: HEIGHT });
+    this.buffer = null;
+  },
+};
 
-/* ---------- 收集：按 sheet 分组 ---------- */
+/** 动态流：一组帧共用同一张网的格位 */
+const animStream = {
+  buffers: [],
+  cursor: 0,
+  sheetIndex: -1,
+  frames: 0,
+  open(frameCount) {
+    this.sheetIndex = sheetCounter.next++;
+    this.buffers = [];
+    for (let f = 0; f < frameCount; f++) this.buffers.push(png.blank(WIDTH, HEIGHT));
+    this.cursor = 0;
+    this.frames = frameCount;
+  },
+  place(region, frameIndex, slot) {
+    const to = cellBox(slot);
+    const ch = 3;
+    for (let row = 0; row < CELL; row++) {
+      region.copy(
+        this.buffers[frameIndex].data,
+        ((to.y + row) * WIDTH + to.x) * ch,
+        row * CELL * ch,
+        (row + 1) * CELL * ch,
+      );
+    }
+  },
+  flush() {
+    if (!this.buffers.length || this.cursor === 0) return;
+    const prefix = `batch_${String(this.sheetIndex).padStart(3, "0")}`;
+    for (let f = 0; f < this.buffers.length; f++) {
+      writeFile(
+        `${prefix}_${String(f).padStart(4, "0")}.png`,
+        png.encode(WIDTH, HEIGHT, this.buffers[f].data),
+      );
+    }
+    outSheets.push({ index: this.sheetIndex, src: `thumbs/${prefix}_0000.png`, width: WIDTH, height: HEIGHT });
+    this.buffers = [];
+  },
+};
+
+/* ---------- 逐张源网处理 ---------- */
 
 const sheets = new Map();
 for (const item of manifest.items) {
@@ -132,182 +196,129 @@ for (const item of manifest.items) {
 }
 const sheetOrder = [...sheets.keys()].sort((a, b) => a - b);
 
-let outSheetIndex = 0;
-const outItems = [];
-const outSheets = [];
-let bytesBefore = 0;
-let bytesAfter = 0;
-
-/* 先写后清理：不清空输出目录。
-   实测踩过——先 rmSync 整个目录再写，一旦中途失败（而且 rmSync 目录会被
-   环境劫持到回收站、可能超时），旧包已经被删掉，只剩半截。
-   现在写完再按「本次产出的文件清单」删多余文件，失败时旧包仍然完整。 */
-mkdirSync(resolve(OUT_DIR, "thumbs"), { recursive: true });
-const written = new Set();
-
-function writeSheet(name, rgb) {
-  const buf = png.encode(WIDTH, HEIGHT, rgb);
-  writeFileSync(resolve(OUT_DIR, "thumbs", name), buf);
-  written.add(name);
-  bytesAfter += buf.length;
-  return buf.length;
-}
-
 for (const sheetIndex of sheetOrder) {
   const items = sheets.get(sheetIndex);
-  const frames = Math.max(...items.map((i) => i.frames || 1));
   const itemByCell = new Map();
   for (const item of items) itemByCell.set(cellIndexOf(item), item);
 
-  /* --- 单文件网：原样拷贝 --- */
-  if (!items[0].frameSrc) {
-    const src = resolve(DATA_DIR, items[0].src);
-    const name = `batch_${String(outSheetIndex).padStart(3, "0")}.png`;
-    copyFileSync(src, resolve(OUT_DIR, "thumbs", name));
-    written.add(name);
-    bytesBefore += statSync(src).size;
-    bytesAfter += statSync(resolve(OUT_DIR, "thumbs", name)).size;
-    outSheets.push({ index: outSheetIndex, src: `thumbs/${name}`, width: WIDTH, height: HEIGHT });
-    for (const item of items) {
+  /* 一张源网里可能同时有「单文件条目」和「帧序列条目」——
+     早期版本的打包器给两者分配了同一个网号，于是索引里出现混合网。
+     所以这里按**条目**判断，而不是看这张网的第一个条目。 */
+  let singleImage = null;
+  let decoded = null;
+
+  const needSingle = items.some((i) => !i.frameSrc);
+  const needFrames = items.some((i) => i.frameSrc);
+
+  if (needSingle) {
+    const singleFile = resolve(DATA_DIR, "thumbs", `batch_${String(sheetIndex).padStart(3, "0")}.png`);
+    if (existsSync(singleFile)) {
+      bytesBefore += statSync(singleFile).size;
+      singleImage = loadRgb(singleFile);
+    }
+  }
+  if (needFrames) {
+    const frames = Math.max(...items.filter((i) => i.frameSrc).map((i) => i.frames || 1));
+    const files = [];
+    for (let f = 0; f < frames; f++) {
+      files.push(
+        resolve(DATA_DIR, "thumbs", `batch_${String(sheetIndex).padStart(3, "0")}_${String(f).padStart(4, "0")}.png`),
+      );
+    }
+    for (const f of files) if (existsSync(f)) bytesBefore += statSync(f).size;
+    decoded = files.map((f) => (existsSync(f) ? loadRgb(f) : null));
+  }
+
+  const cellIndexes = [...itemByCell.keys()].sort((a, b) => a - b);
+
+  for (const cell of cellIndexes) {
+    const item = itemByCell.get(cell);
+
+    /* --- 单文件条目：静态，直接取区域 --- */
+    if (!item.frameSrc) {
+      if (!singleImage) continue;
+      if (!staticStream.buffer) staticStream.open();
+      const slot = staticStream.cursor++;
+      staticStream.place(cellRegion(singleImage, cell), slot);
+      const to = cellBox(slot);
       outItems.push({
         matchName: item.matchName,
-        sheet: outSheetIndex,
-        x: item.x,
-        y: item.y,
+        sheet: staticStream.sheetIndex,
+        x: to.x,
+        y: to.y,
         width: CELL,
         height: CELL,
         frames: 1,
-        src: `thumbs/${name}`,
+        src: `thumbs/batch_${String(staticStream.sheetIndex).padStart(3, "0")}.png`,
         key: item.key || "",
       });
+      if (staticStream.cursor >= PER_SHEET) staticStream.flush();
+      continue;
     }
-    outSheetIndex++;
-    continue;
-  }
 
-  /* --- 帧序列网：判断每格是否静态 --- */
-  const files = [];
-  for (let f = 0; f < frames; f++) {
-    const name = `batch_${String(sheetIndex).padStart(3, "0")}_${String(f).padStart(4, "0")}.png`;
-    files.push(resolve(DATA_DIR, "thumbs", name));
-  }
-  for (const f of files) bytesBefore += statSync(f).size;
-
-  const decoded = files.map(loadRgb);
-  const cellIndexes = [...itemByCell.keys()].sort((a, b) => a - b);
-
-  const staticCells = [];
-  const animatedCells = [];
-  for (const cell of cellIndexes) {
+    /* --- 帧序列条目：逐格判断静态还是动态 --- */
+    if (!decoded || !decoded[0]) continue;
     const first = sha(cellRegion(decoded[0], cell));
     let same = true;
     for (let f = 1; f < decoded.length; f++) {
+      if (!decoded[f]) continue;
       if (sha(cellRegion(decoded[f], cell)) !== first) {
         same = false;
         break;
       }
     }
-    (same ? staticCells : animatedCells).push(cell);
-  }
 
-  /* --- 全静态：只留第 1 帧 --- */
-  if (animatedCells.length === 0) {
-    const name = `batch_${String(outSheetIndex).padStart(3, "0")}.png`;
-    writeSheet(name, compose(staticCells, decoded[0]));
-    outSheets.push({ index: outSheetIndex, src: `thumbs/${name}`, width: WIDTH, height: HEIGHT });
-    for (const cell of staticCells) {
-      const item = itemByCell.get(cell);
-      const to = cellBox(staticCells.indexOf(cell));
+    if (same) {
+      /* 静态：只取第 1 帧 */
+      if (!staticStream.buffer) staticStream.open();
+      const slot = staticStream.cursor++;
+      staticStream.place(cellRegion(decoded[0], cell), slot);
+      const to = cellBox(slot);
       outItems.push({
         matchName: item.matchName,
-        sheet: outSheetIndex,
+        sheet: staticStream.sheetIndex,
         x: to.x,
         y: to.y,
         width: CELL,
         height: CELL,
         frames: 1,
-        src: `thumbs/${name}`,
+        src: `thumbs/batch_${String(staticStream.sheetIndex).padStart(3, "0")}.png`,
         key: item.key || "",
       });
-    }
-    outSheetIndex++;
-    continue;
-  }
-
-  /* --- 全动态：原样保留 --- */
-  if (staticCells.length === 0) {
-    const prefix = `batch_${String(outSheetIndex).padStart(3, "0")}`;
-    decoded.forEach((image, f) => {
-      writeSheet(`${prefix}_${String(f).padStart(4, "0")}.png`, image.data);
-    });
-    outSheets.push({ index: outSheetIndex, src: `thumbs/${prefix}_0000.png`, width: WIDTH, height: HEIGHT });
-    for (const cell of animatedCells) {
-      const item = itemByCell.get(cell);
-      const to = cellBox(animatedCells.indexOf(cell));
+      if (staticStream.cursor >= PER_SHEET) staticStream.flush();
+    } else {
+      /* 动态：全部帧都留 */
+      if (!animStream.buffers.length || animStream.frames !== decoded.length) {
+        animStream.flush();
+        animStream.open(decoded.length);
+      }
+      const slot = animStream.cursor++;
+      for (let f = 0; f < decoded.length; f++) {
+        if (!decoded[f]) continue;
+        animStream.place(cellRegion(decoded[f], cell), f, slot);
+      }
+      const to = cellBox(slot);
       outItems.push({
         matchName: item.matchName,
-        sheet: outSheetIndex,
+        sheet: animStream.sheetIndex,
         x: to.x,
         y: to.y,
         width: CELL,
         height: CELL,
         frames: decoded.length,
-        frameSrc: `thumbs/${prefix}_%04d.png`,
+        frameSrc: `thumbs/batch_${String(animStream.sheetIndex).padStart(3, "0")}_%04d.png`,
         key: item.key || "",
       });
+      if (animStream.cursor >= PER_SHEET) animStream.flush();
     }
-    outSheetIndex++;
-    continue;
-  }
-
-  /* --- 混合：拆成静态网 + 动态网并重排格位 --- */
-  {
-    const name = `batch_${String(outSheetIndex).padStart(3, "0")}.png`;
-    writeSheet(name, compose(staticCells, decoded[0]));
-    outSheets.push({ index: outSheetIndex, src: `thumbs/${name}`, width: WIDTH, height: HEIGHT });
-    staticCells.forEach((cell, slot) => {
-      const item = itemByCell.get(cell);
-      const to = cellBox(slot);
-      outItems.push({
-        matchName: item.matchName,
-        sheet: outSheetIndex,
-        x: to.x,
-        y: to.y,
-        width: CELL,
-        height: CELL,
-        frames: 1,
-        src: `thumbs/${name}`,
-        key: item.key || "",
-      });
-    });
-    outSheetIndex++;
-  }
-  {
-    const prefix = `batch_${String(outSheetIndex).padStart(3, "0")}`;
-    decoded.forEach((image, f) => {
-      writeSheet(`${prefix}_${String(f).padStart(4, "0")}.png`, compose(animatedCells, image));
-    });
-    outSheets.push({ index: outSheetIndex, src: `thumbs/${prefix}_0000.png`, width: WIDTH, height: HEIGHT });
-    animatedCells.forEach((cell, slot) => {
-      const item = itemByCell.get(cell);
-      const to = cellBox(slot);
-      outItems.push({
-        matchName: item.matchName,
-        sheet: outSheetIndex,
-        x: to.x,
-        y: to.y,
-        width: CELL,
-        height: CELL,
-        frames: decoded.length,
-        frameSrc: `thumbs/${prefix}_%04d.png`,
-        key: item.key || "",
-      });
-    });
-    outSheetIndex++;
   }
 }
 
-/* ---------- 输出 ---------- */
+/* 收尾：把没满的网也落盘 */
+staticStream.flush();
+animStream.flush();
+
+/* ---------- 索引 ---------- */
 
 outItems.sort((a, b) => a.sheet - b.sheet || a.y - b.y || a.x - b.x);
 
@@ -322,10 +333,8 @@ const outManifest = {
 };
 writeFileSync(resolve(OUT_DIR, "manifest.json"), JSON.stringify(outManifest, null, 2) + "\n", "utf8");
 
-/* previews.tsv：缓存索引，描述每条预览的**渲染来源**。
-   frames 列是渲染帧数（不是打包后的存储帧数）——指纹按渲染参数算，
-   这里必须保持渲染帧数，否则 staleList 会把有效预览全判成过期。
-   sheet/cell 列则是打包后的实际位置。 */
+/* previews.tsv：缓存索引，frames 列记的是**渲染帧数**，
+   与打包后的存储帧数不同——指纹按渲染帧数算，这里必须保持渲染帧数。 */
 const indexLines = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
 for (const item of outItems) {
   const cell =
@@ -344,16 +353,13 @@ for (const item of outItems) {
 }
 writeFileSync(resolve(OUT_DIR, "previews.tsv"), indexLines.join("\r\n"), "utf8");
 
-/* 名字表取仓库里的版本（它是源数据），而不是运行时目录里的那份——
-   运行时那份可能是上一轮安装的旧包，拿它打包会形成循环依赖。 */
+/* 名字表取仓库里的版本（它是源数据），避免拿上一轮安装的旧包形成循环依赖 */
 const namesSource = resolve(arg("--names", resolve(ROOT, "cep/com.dreamengine.panel/data/names.json")));
 if (existsSync(namesSource)) {
   copyFileSync(namesSource, resolve(OUT_DIR, "names.json"));
-} else if (existsSync(resolve(DATA_DIR, "names.json"))) {
-  copyFileSync(resolve(DATA_DIR, "names.json"), resolve(OUT_DIR, "names.json"));
 }
-/* ---------- 清理本次没产出的旧文件 ---------- */
 
+/* 清理本次没产出的旧文件（先写后清，失败时旧包仍完整） */
 let pruned = 0;
 for (const name of readdirSync(resolve(OUT_DIR, "thumbs"))) {
   if (written.has(name)) continue;
@@ -367,8 +373,6 @@ for (const name of readdirSync(resolve(OUT_DIR, "thumbs"))) {
 
 const animatedCount = outItems.filter((i) => (i.frames || 1) > 1).length;
 const report = {
-  // 不记构建时间：时间戳会让每次打包都产生一次无意义的版本差异
-  source: DATA_DIR,
   items: outItems.length,
   staticItems: outItems.length - animatedCount,
   animatedItems: animatedCount,
@@ -377,6 +381,7 @@ const report = {
   bytesBefore,
   bytesAfter,
   ratio: bytesBefore > 0 ? Math.round((bytesAfter / bytesBefore) * 1000) / 10 : 0,
+  pruned,
 };
 writeFileSync(resolve(OUT_DIR, "build-report.json"), JSON.stringify(report, null, 2) + "\n", "utf8");
 

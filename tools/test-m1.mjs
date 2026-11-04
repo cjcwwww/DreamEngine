@@ -32,14 +32,19 @@ test("M1 names data is a unique matchName map", () => {
   assert.ok(keys.includes("ScriptEP"));
 });
 
-test("M1 manifest 描述合法的 2048 网格与预览条目", () => {
+test("M1 manifest 描述合法的网格与预览条目", () => {
   // 预览索引不入库，入库的是可分发的 L1 包（dist/L1/）。
   // 扩展数据目录里的那份由 install_l1 部署，属于运行时产物。
   const manifest = readJson("dist/L1/manifest.json");
-  assert.equal(manifest.cellSize, 256);
-  assert.equal(manifest.columns, 8);
-  assert.equal(manifest.width, 2048);
-  assert.equal(manifest.height, 2048);
+  // 网格尺寸按定版配置核对，不写死——格子从 256 改到 128 过
+  const config = read("config/render_params.jsxinc");
+  const cellSize = Number(config.match(/cellSize:\s*(\d+)/)[1]);
+  const columns = Number(config.match(/columns:\s*(\d+)/)[1]);
+  const sheetSize = Number(config.match(/width:\s*(\d+)/)[1]);
+  assert.equal(manifest.cellSize, cellSize);
+  assert.equal(manifest.columns, columns);
+  assert.equal(manifest.width, sheetSize);
+  assert.equal(manifest.height, sheetSize);
 
   // 条目会随生成持续增长，断言下界而不是固定值
   assert.ok(manifest.items.length >= 20, "至少保留初始 20 条");
@@ -47,12 +52,12 @@ test("M1 manifest 描述合法的 2048 网格与预览条目", () => {
 
   const sheetIndexes = new Set(manifest.sheets.map((sheet) => sheet.index));
   for (const item of manifest.items) {
-    assert.equal(item.width, 256, `${item.matchName} 格子宽度`);
-    assert.equal(item.height, 256, `${item.matchName} 格子高度`);
+    assert.equal(item.width, cellSize, `${item.matchName} 格子宽度`);
+    assert.equal(item.height, cellSize, `${item.matchName} 格子高度`);
     assert.ok(sheetIndexes.has(item.sheet), `sheet ${item.sheet} 必须在 sheets 里声明`);
     assert.ok(item.src || item.frameSrc, `${item.matchName} 必须能取到图`);
-    assert.equal(item.x % 256, 0, `${item.matchName} x 必须对齐格位`);
-    assert.equal(item.y % 256, 0, `${item.matchName} y 必须对齐格位`);
+    assert.equal(item.x % cellSize, 0, `${item.matchName} x 必须对齐格位`);
+    assert.equal(item.y % cellSize, 0, `${item.matchName} y 必须对齐格位`);
   }
 
   // 每张网对应的图必须真实存在

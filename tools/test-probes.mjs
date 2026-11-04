@@ -120,12 +120,14 @@ test("T0_6 writes its import report as UTF-8", () => {
   assert.match(source, /outFile\.encoding = "UTF-8";/);
 });
 
-test("M0 render parameters match the finalized 8x8 profile", () => {
+test("M0 render parameters match the finalized profile", () => {
   const source = read("config/render_params.jsxinc");
   assert.match(source, /var DREAM_ENGINE_RENDER_CONFIG =/);
   assert.match(source, /columns: 8,/);
-  assert.match(source, /cellSize: 256,/);
-  assert.match(source, /width: 2048,/);
+  // 格子尺寸：M0 定版时是 256，后来为了与卡片实际显示尺寸（132-180px）匹配
+  // 并压缩 L1 包体积改成 128。定版参数改了，这里的断言要跟着改。
+  assert.match(source, /cellSize: 128,/);
+  assert.match(source, /width: 1024,/);
   assert.match(source, /frameCount: 6,/);
   assert.match(source, /aerenderConcurrency: 1,/);
 });
