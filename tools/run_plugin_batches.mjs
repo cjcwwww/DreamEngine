@@ -70,12 +70,13 @@ for (let round = 1; round <= maxRounds; round++) {
   // 等不掉就强制结束——能走到这里说明 AE 是本脚本拉起来的。
   if (aeRunning()) {
     let waited = 0;
-    while (aeRunning() && waited < 30) {
+    while (aeRunning() && waited < 8) {
       sleep(2000);
       waited += 2;
     }
     if (aeRunning()) {
-      console.log("上一轮的 AE 没有自行退出，强制结束。");
+      // 脚本里的 app.quit() 有时不会生效（AE 退出慢或被弹窗挡住）。
+      // 等 8 秒还不走就直接杀 —— 能走到这里说明 AE 是本脚本拉起来的。
       try {
         execFileSync("taskkill", ["/IM", "AfterFX.exe", "/F"], { stdio: "ignore" });
       } catch (e) {}

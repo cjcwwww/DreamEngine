@@ -209,5 +209,7 @@
     // 真崩了的话 AE 进程已经没了，这句不会执行。
     try {
         app.quit(SaveOptions.DO_NOT_SAVE_CHANGES);
-    } catch (eQuit) {}
+    } catch (eQuit) {
+        try { app.quit(); } catch (eQuit2) {}
+    }
 })();
