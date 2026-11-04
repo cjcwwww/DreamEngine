@@ -275,6 +275,22 @@ var AEV_Library = (function () {
       thumb.appendChild(placeholder);
     }
 
+    /* hover 时浮出的「加到选中层」入口。
+       双击仍是主路径；+ 只是给鼠标用户一个可见的替代。 */
+    var addButton = document.createElement("span");
+    addButton.className = "card-plus";
+    addButton.textContent = "+";
+    addButton.title = L("card.addButton");
+    addButton.setAttribute("aria-hidden", "true");
+    addButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      applyToSelectedLayer(item);
+    });
+    addButton.addEventListener("dblclick", function (event) {
+      event.stopPropagation();
+    });
+    thumb.appendChild(addButton);
+
     var copy = document.createElement("div");
     copy.className = "card-copy";
 
@@ -309,6 +325,18 @@ var AEV_Library = (function () {
     // 单击不做任何事：效果墙是浏览用的，误加效果会污染用户的工程。
     card.addEventListener("dblclick", function () {
       applyToSelectedLayer(item);
+    });
+    // 键盘可达：Enter / Space 明确执行「加到选中层」，与双击等价。
+    card.addEventListener("keydown", function (event) {
+      if (
+        event.key === "Enter" ||
+        event.key === " " ||
+        event.keyCode === 13 ||
+        event.keyCode === 32
+      ) {
+        event.preventDefault();
+        applyToSelectedLayer(item);
+      }
     });
     return card;
   }
@@ -1878,6 +1906,9 @@ var AEV_Library = (function () {
     }
     // 效果墙专属的工具条在另外两个视图下没有意义（搜索的是效果不是预设/曲线）
     byId("effectControls").hidden = view !== "effects";
+    // 顶栏搜索同样只服务效果墙；预设视图有自己的搜索框。
+    var searchWrap = byId("searchWrap");
+    if (searchWrap) searchWrap.hidden = view !== "effects";
 
     if (view === "effects") {
       // 切回来时重建效果墙：离开时把 DOM 清空了
@@ -1944,6 +1975,23 @@ var AEV_Library = (function () {
       if (event.key === "Escape" || event.keyCode === 27) {
         if (!byId("settingsDrawer").hidden) setSettingsOpen(false);
       }
+    });
+    // "/" 聚焦效果搜索：键盘用户的快速入口，输入框里不拦截。
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (state.view !== "effects") return;
+      var target = event.target;
+      var tag = target && target.tagName ? target.tagName.toLowerCase() : "";
+      if (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        (target && target.isContentEditable)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      setSearchOpen(true, "searchInput", "searchField", "searchToggle");
     });
     document.addEventListener("mousedown", function (event) {
       var drawer = byId("settingsDrawer");

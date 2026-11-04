@@ -449,8 +449,8 @@ check("设置页能展开、按钮可见、再点一次能收起", () => {
 });
 
 check("底栏在最长文案下高度恒定、内容不竖排", () => {
-  assert.equal(data.statusbarHeightNormal, 32, "底栏初始高度不是 32：" + data.statusbarHeightNormal);
-  assert.equal(data.statusbarHeightWorst, 32, "长文案把底栏撑高了：" + data.statusbarHeightWorst);
+  assert.equal(data.statusbarHeightNormal, 26, "底栏初始高度不是 26：" + data.statusbarHeightNormal);
+  assert.equal(data.statusbarHeightWorst, 26, "长文案把底栏撑高了：" + data.statusbarHeightWorst);
   assert.ok(data.queueCountsHeightWorst <= 20, "队列计数被压成竖排：" + data.queueCountsHeightWorst);
   assert.ok(data.statusHeightWorst <= 20, "状态文字被压成竖排：" + data.statusHeightWorst);
 });

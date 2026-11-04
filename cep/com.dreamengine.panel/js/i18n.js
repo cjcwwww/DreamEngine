@@ -25,7 +25,7 @@ var AEV_I18N = {
   "lang.enTitle": ["English", "English"],
 
   /* ---------- 效果墙 ---------- */
-  "search.effects": ["搜索效果或分类", "Search effects or categories"],
+  "search.effects": ["搜索效果、分类或 matchName", "Search effects, categories or matchName"],
   "filter.plugin": ["插件筛选", "Plugin filter"],
   "filter.all": ["全部来源", "All sources"],
   "filter.builtin": ["内置", "Built-in"],
@@ -37,7 +37,8 @@ var AEV_I18N = {
   "sidebar.title": ["分类", "Categories"],
   "sidebar.all": ["全部", "All"],
   "empty.effects": ["没有匹配的效果", "No matching effects"],
-  "card.addHint": ["（双击添加到 AE 选中图层）", " (double-click to add to the selected layer)"],
+  "card.addHint": ["（双击或点 + 添加到 AE 选中图层）", " (double-click or click + to add to the selected layer)"],
+  "card.addButton": ["添加到选中层", "Add to selected layer"],
 
   /* ---------- 预设视图 ---------- */
   "preset.title": ["预设库", "Preset library"],
@@ -77,7 +78,7 @@ var AEV_I18N = {
 
   /* ---------- 底栏 ---------- */
   "status.ready": ["准备扫描", "Ready"],
-  "status.size": ["预览大小", "Preview size"],
+  "status.size": ["尺寸", "Size"],
   "queue.label": ["队列", "Queue"],
   "queue.toggle": ["查看生成队列", "Open the render queue"],
 

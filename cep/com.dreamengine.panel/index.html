@@ -16,23 +16,12 @@
         <path d="M6.6 16.4c3.4 0 4.6-8.8 8.9-8.8"/>
       </svg>
     </span>
+    <span class="brand-name">DreamEngine</span>
     <nav class="view-switch" role="tablist" aria-label="主视图切换" data-i18n-aria="tab.aria">
       <button class="view-tab active" id="tabEffects" type="button" role="tab" aria-selected="true" data-i18n="tab.effects">效果预览</button>
       <button class="view-tab" id="tabPresets" type="button" role="tab" aria-selected="false" data-i18n="tab.presets">预设预览</button>
       <button class="view-tab" id="tabCurve" type="button" role="tab" aria-selected="false" data-i18n="tab.curve">曲线编辑</button>
     </nav>
-    <!-- 语言 / 生成 / 刷新 / 重试都收进「设置」页：顶栏只留一个入口 -->
-      <button class="icon-button" id="btnSettings" type="button"
-              title="设置" aria-label="设置" aria-expanded="false" aria-controls="settingsDrawer"
-              data-i18n-title="settings.title" data-i18n-aria="settings.title">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-    </button>
-  </header>
-
-  <section class="controls" id="effectControls">
     <div class="search-wrap" id="searchWrap">
       <button class="icon-button search-toggle" id="searchToggle" type="button"
               title="搜索效果或分类" aria-label="搜索效果或分类" aria-expanded="false"
@@ -47,10 +36,23 @@
           <circle cx="11" cy="11" r="8"/>
           <path d="m21 21-4.3-4.3"/>
         </svg>
-        <input id="searchInput" type="search" placeholder="搜索效果或分类" autocomplete="off"
+        <input id="searchInput" type="search" placeholder="搜索效果、分类或 matchName" autocomplete="off"
                data-i18n-ph="search.effects"/>
+        <kbd class="search-kbd">/</kbd>
       </label>
     </div>
+    <!-- 语言 / 生成 / 刷新 / 重试都收进「设置」页 -->
+      <button class="icon-button" id="btnSettings" type="button"
+              title="设置" aria-label="设置" aria-expanded="false" aria-controls="settingsDrawer"
+              data-i18n-title="settings.title" data-i18n-aria="settings.title">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+    </button>
+  </header>
+
+  <section class="controls" id="effectControls">
     <select id="pluginFilter" aria-label="插件筛选" data-i18n-aria="filter.plugin">
       <option value="全部" data-i18n="filter.all">全部来源</option>
       <option value="内置" selected data-i18n="filter.builtin">内置</option>

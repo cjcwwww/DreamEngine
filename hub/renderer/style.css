@@ -6,16 +6,17 @@
 
 :root {
   color-scheme: dark;
-  --bg: #0f1113;
-  --surface: #16191c;
-  --surface-2: #1c2024;
-  --border: #2a3035;
-  --border-strong: #3a4248;
-  --text: #e8e8e4;
-  --muted: #90989f;
-  --accent: #7fa6aa;
-  --accent-soft: #26383a;
-  --danger: #a36d65;
+  --bg: #0a0b0c;
+  --surface: #101214;
+  --surface-2: #15181b;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #e7e7e3;
+  --muted: #8b9299;
+  --faint: #5c646b;
+  --accent: #86aeb2;
+  --accent-soft: rgba(134, 174, 178, 0.12);
+  --danger: #b07a72;
   --ok: #6f9f7a;
 }
 
@@ -242,7 +243,7 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
   padding: 2px 7px;
   border-radius: 999px;
   font-size: 10px;
-  background: rgba(15, 17, 19, 0.82);
+  background: rgba(10, 11, 12, 0.82);
   border: 1px solid var(--border-strong);
   color: var(--muted);
 }
@@ -424,6 +425,6 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 /* ---------- 滚动条 ---------- */
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #2a3035; border-radius: 6px; border: 2px solid var(--bg); }
-::-webkit-scrollbar-thumb:hover { background: #3a4248; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.10); border-radius: 6px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
 ::-webkit-scrollbar-track { background: transparent; }

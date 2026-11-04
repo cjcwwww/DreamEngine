@@ -349,9 +349,9 @@ var AEV_CurveUI = (function () {
   function drawCorner(ctx, x, y) {
     ctx.beginPath();
     ctx.rect(x - 4.5, y - 4.5, 9, 9);
-    ctx.fillStyle = "#16191c";
+    ctx.fillStyle = "#101214";
     ctx.fill();
-    ctx.strokeStyle = "#7fa6aa";
+    ctx.strokeStyle = "#86aeb2";
     ctx.lineWidth = 1.4;
     ctx.stroke();
   }
@@ -384,7 +384,7 @@ var AEV_CurveUI = (function () {
     ctx.arc(tip.x, tip.y, hot ? 6 : 4.5, 0, Math.PI * 2);
     ctx.fillStyle = hot ? "#ffe1a3" : "#f0c469";
     ctx.fill();
-    ctx.strokeStyle = "#0f1113";
+    ctx.strokeStyle = "#0a0b0c";
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -457,15 +457,15 @@ var AEV_CurveUI = (function () {
       var ky = map.Y(Number((keys[k].v || [])[kd] || 0));
       ctx.beginPath();
       ctx.rect(kx - 3, ky - 3, 6, 6);
-      ctx.fillStyle = "#16191c";
+      ctx.fillStyle = "#101214";
       ctx.fill();
-      ctx.strokeStyle = "#7fa6aa";
+      ctx.strokeStyle = "#86aeb2";
       ctx.lineWidth = 1.2;
       ctx.stroke();
     }
 
     ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
-    ctx.fillStyle = "#5d666c";
+    ctx.fillStyle = "#5c646b";
     ctx.textAlign = "left";
     ctx.fillText(prop.name + t("（只读）", " (read-only)"), rect.x, rect.y - 4);
     if (st.snap.props.length > 1) {
@@ -515,7 +515,7 @@ var AEV_CurveUI = (function () {
       ctx.stroke();
     }
     ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
-    ctx.fillStyle = "#5d666c";
+    ctx.fillStyle = "#5c646b";
     ctx.textAlign = "right";
     for (var j = 0; j <= 4; j++) {
       var value = range.hi - ((range.hi - range.lo) * j) / 4;
@@ -525,7 +525,7 @@ var AEV_CurveUI = (function () {
   }
 
   function drawEmpty(ctx, w, h, text) {
-    ctx.fillStyle = "#5d666c";
+    ctx.fillStyle = "#5c646b";
     ctx.font = "12px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(text, w / 2, h / 2);
@@ -931,7 +931,7 @@ var AEV_CurveUI = (function () {
       if (i === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     }
-    ctx.strokeStyle = "#9fb7ba";
+    ctx.strokeStyle = "#a8c6ca";
     ctx.lineWidth = 1.6;
     ctx.stroke();
   }

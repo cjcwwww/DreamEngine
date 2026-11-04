@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>DreamEngine · A 方案真实样式校验</title>
+<link rel="stylesheet" href="../cep/com.dreamengine.panel/css/style.css"/>
+<style>
+  /* 仅用于静态截图：把 hover 态固定下来，真实面板仍用 :hover */
+  .effect-card.demo-hover .thumb {
+    filter: brightness(1.08);
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+  }
+  .effect-card.demo-hover .card-plus { opacity: 1; }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><path d="M6.6 16.4c3.4 0 4.6-8.8 8.9-8.8"/></svg>
+    </span>
+    <span class="brand-name">DreamEngine</span>
+    <nav class="view-switch">
+      <button class="view-tab active">效果预览</button>
+      <button class="view-tab">预设预览</button>
+      <button class="view-tab">曲线编辑</button>
+    </nav>
+    <div class="search-wrap">
+      <label class="search-field">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" placeholder="搜索效果、分类或 matchName"/>
+        <kbd class="search-kbd">/</kbd>
+      </label>
+    </div>
+    <button class="icon-button" aria-label="设置">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <section class="controls">
+    <select><option>内置</option></select>
+    <div class="segmented">
+      <button class="segment active">按名称</button>
+      <button class="segment">按分类</button>
+    </div>
+    <label class="toggle"><input type="checkbox"/><span>全部已安装</span></label>
+  </section>
+
+  <div class="workspace">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">分类</h2>
+      <ul class="category-list">
+        <li><button class="category-item active"><span class="category-label">全部</span><span class="category-count">211</span></button></li>
+        <li><button class="category-item"><span class="category-label">3D 通道</span><span class="category-count">24</span></button></li>
+        <li><button class="category-item"><span class="category-label">模糊和锐化</span><span class="category-count">18</span></button></li>
+        <li><button class="category-item"><span class="category-label">颜色校正</span><span class="category-count">31</span></button></li>
+        <li><button class="category-item"><span class="category-label">扭曲</span><span class="category-count">27</span></button></li>
+        <li><button class="category-item"><span class="category-label">生成</span><span class="category-count">22</span></button></li>
+        <li><button class="category-item"><span class="category-label">透视</span><span class="category-count">14</span></button></li>
+        <li><button class="category-item"><span class="category-label">风格化</span><span class="category-count">26</span></button></li>
+        <li><button class="category-item"><span class="category-label">文字</span><span class="category-count">9</span></button></li>
+        <li><button class="category-item"><span class="category-label">过渡</span><span class="category-count">12</span></button></li>
+        <li><button class="category-item"><span class="category-label">实用工具</span><span class="category-count">7</span></button></li>
+        <li><button class="category-item"><span class="category-label">音频</span><span class="category-count">4</span></button></li>
+      </ul>
+    </aside>
+    <main><div class="grid" id="previewGrid"></div></main>
+  </div>
+
+  <footer class="statusbar">
+    <span id="statusText">就绪 · 220 条效果</span>
+    <span class="size-slider">
+      <label for="thumbSize">尺寸</label>
+      <input id="thumbSize" type="range" min="48" max="180" step="2" value="132"/>
+      <output id="thumbSizeValue">132</output>
+    </span>
+    <span id="selectionStats"></span>
+    <button class="queue-toggle">队列 <span id="queueCounts">0</span></button>
+  </footer>
+
+<script src="data.js"></script>
+<script>
+  document.documentElement.style.setProperty("--thumb-size", "132px");
+  function sprite(item) {
+    var x = (item.col / 7 * 100).toFixed(4) + "%";
+    var y = (item.row / 7 * 100).toFixed(4) + "%";
+    return "background-image:url('" + window.MOCK_SHEET + "');background-size:800% 800%;background-position:" + x + " " + y + ";";
+  }
+  function card(item, i) {
+    return '<button class="effect-card' + (i === 1 ? ' demo-hover' : '') + '">' +
+      '<div class="thumb" style="' + sprite(item) + '">' +
+        '<span class="card-plus">+</span>' +
+      '</div>' +
+      '<div class="card-copy">' +
+        '<span class="card-name">' + item.zh + '</span>' +
+        '<span class="card-meta"><span class="plugin-dot"></span><span class="card-category">' + item.plugin + ' · ' + item.cat + '</span></span>' +
+      '</div>' +
+    '</button>';
+  }
+  document.getElementById("previewGrid").innerHTML = window.MOCK_ITEMS.slice(0, 15).map(card).join("");
+</script>
+</body>
+</html>

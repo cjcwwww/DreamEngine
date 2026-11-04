@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#060708}iframe{display:block;width:920px;height:620px;border:0}</style></head>
+<body>
+<iframe id="f" src="../cep/com.dreamengine.panel/index.html"></iframe>
+<script>
+  var f = document.getElementById("f");
+  f.addEventListener("load", function () {
+    setTimeout(function () {
+      var doc = f.contentDocument;
+      var name = (location.search.match(/tab=(\w+)/) || [])[1] || "presets";
+      var id = name === "curve" ? "tabCurve" : name === "effects" ? "tabEffects" : "tabPresets";
+      var tab = doc && doc.getElementById(id);
+      if (tab) tab.click();
+    }, 600);
+  });
+</script>
+</body></html>

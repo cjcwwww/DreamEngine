@@ -177,15 +177,15 @@ check("iframe 宽度确实各不相同（否则测的是同一个比例）", () 
   assert.equal(set.size, WIDTHS.length, `只测到 ${set.size} 种视口：${[...set].join(",")}`);
 });
 
-check("所有宽度下底栏高度恒定为 32px", () => {
+check("所有宽度下底栏高度恒定为 26px", () => {
   for (const r of results) {
-    assert.equal(r.bar, 32, `视口 ${r.viewport} 下底栏高 ${r.bar}`);
+    assert.equal(r.bar, 26, `视口 ${r.viewport} 下底栏高 ${r.bar}`);
   }
 });
 
 check("所有宽度下底栏没有垂直溢出（内容没换行）", () => {
   for (const r of results) {
-    assert.ok(r.barScroll <= 34, `视口 ${r.viewport} 下 scrollHeight=${r.barScroll}`);
+    assert.ok(r.barScroll <= 28, `视口 ${r.viewport} 下 scrollHeight=${r.barScroll}`);
   }
 });
 

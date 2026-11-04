@@ -96,7 +96,8 @@ for (const tw of ${JSON.stringify(THUMB_SIZES)}) {
     const sw = grid.scrollWidth;
     const card = grid.querySelector(".effect-card").getBoundingClientRect().width;
     const cols = getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length;
-    out.push([tw, w, Math.round(card * 100) / 100, Math.round(gw), cols, sw > gw + 1 ? "OVERFLOW" : "ok", applied.value].join("|"));
+    const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+    out.push([tw, w, Math.round(card * 100) / 100, Math.round(gw), cols, sw > gw + 1 ? "OVERFLOW" : "ok", applied.value, gap].join("|"));
   }
 }
 document.getElementById("out").textContent = out.join("\\n");
@@ -123,7 +124,7 @@ const block = dom.match(/<pre id="out">([\s\S]*?)<\/pre>/);
 if (block) {
   for (const line of block[1].split("\n")) {
     const parts = line.trim().split("|");
-    if (parts.length === 7) {
+    if (parts.length === 8) {
       rows.push({
         thumb: Number(parts[0]),
         panel: Number(parts[1]),
@@ -132,6 +133,7 @@ if (block) {
         cols: Number(parts[4]),
         overflow: parts[5] === "OVERFLOW",
         applied: Number(parts[6]),
+        gap: Number(parts[7]),
       });
     }
   }
@@ -237,7 +239,7 @@ check("列数符合「可用宽度 ÷ (格子宽 + 间距)」", () => {
   for (const r of rows) {
     const expected = Math.max(
       1,
-      Math.floor((r.gridW + 10) / (r.cardW + 10)),
+      Math.floor((r.gridW + r.gap) / (r.cardW + r.gap)),
     );
     assert.equal(
       r.cols,
