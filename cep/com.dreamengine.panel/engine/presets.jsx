@@ -510,9 +510,17 @@ var AEV_Presets = (function () {
                 '"' + attempts.join(" ;; ").replace(/"/g, "'") + '"]}';
         }
 
-        // 正式应用：只在最佳的那一层上做一次
+        // 正式应用：只在最佳的那一层上做一次。
+        // 必须重新选中它 —— applyPreset 在没有选中层时会自己新建图层
+        // （实测正式应用时多出一个「纯色 2」图层，效果还落在它上面）。
         var finalBefore = snapshot(comp);
         try {
+            for (var fl = 1; fl <= comp.numLayers; fl++) {
+                try {
+                    comp.layer(fl).selected = false;
+                } catch (eUn2) {}
+            }
+            best.layer.selected = true;
             best.layer.applyPreset(file);
         } catch (eFinal) {
             return '{"status":"error","reason":"apply_failed","detail":' +
