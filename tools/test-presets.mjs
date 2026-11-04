@@ -21,6 +21,14 @@ const read = (rel) => readFileSync(resolve(ROOT, rel), "utf8");
 const tests = [];
 function test(name, fn) { tests.push({ name, fn }); }
 
+/** 只看代码行：注释里常会提到被禁用的写法（说明「不要用它」） */
+function codeOf(src) {
+  return src
+    .split("\n")
+    .map((line) => line.replace(/^\s*\/\/.*$/, "").replace(/^\s*\*.*$/, ""))
+    .join("\n");
+}
+
 /* presets.jsx 顶层只是定义函数，不碰 app/File/Folder，可以直接在 vm 里加载 */
 function loadPresets() {
   const ctx = vm.createContext({});
@@ -46,10 +54,7 @@ test("应用预设的安全措施一个都不能少", () => {
   const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
   // 注释里会提到这些被禁用的写法（例如说明「不要用 app.applyPreset」），
   // 所以断言只看代码行。
-  const code = src
-    .split("\n")
-    .map((line) => line.replace(/^\s*\/\/.*$/, ""))
-    .join("\n");
+  const code = codeOf(src);
   // 选层用 layer.selected，不能给 comp.selectedLayers 赋值（AE 2021 上会崩 AE）
   assert.match(code, /target\.selected = true/);
   assert.doesNotMatch(code, /comp\.selectedLayers = \[/);
@@ -72,10 +77,7 @@ test("应用预设的安全措施一个都不能少", () => {
 
 test("不能依赖 AE 的几个不稳定 API", () => {
   const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
-  const code = src
-    .split("\n")
-    .map((line) => line.replace(/^\s*\/\/.*$/, ""))
-    .join("\n");
+  const code = codeOf(src);
   // app.path 在 AE 2021 是 undefined（所以预设目录靠扫 Program Files 找到，
   // app.path 只能当兜底）；typeName 是本地化的；getItemByName 会崩 AE
   assert.match(code, /Support Files\/Presets/);
