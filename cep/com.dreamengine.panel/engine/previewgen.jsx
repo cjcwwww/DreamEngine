@@ -235,19 +235,25 @@ var AEV_PreviewGen = (function () {
                 // 这样"效果加不上"或"参数设不上"能定位到具体 matchName，
                 // 而不是整批失败只回一条 AE 错误。
                 var effectGroup = null;
-                try {
-                    // 有替代方案时挂替代效果（Lumetri 渲染会挂死，用饱和度调整代表）
-                    var effectName = (typeof AEV_Recipe !== "undefined")
-                        ? AEV_Recipe.effectNameFor(matchName)
-                        : matchName;
-                    effectGroup = layer.property("ADBE Effect Parade").addProperty(effectName);
-                } catch (eAdd) {
-                    cellErrors.push(matchName + "|addProperty|" + eAdd);
-                    try { cell.remove(); } catch (eRm) {}
-                    continue;
+                // noEffect：只放素材、不加效果，渲出「素材原样」当对照图。
+                // 插件预览首轮就栽在这里——渲出来的图与素材逐像素相同，
+                // 必须能区分「效果没生效」和「效果生效但看不出差别」。
+                var bareScene = !!(options && options.noEffect);
+                if (!bareScene) {
+                    try {
+                        // 有替代方案时挂替代效果（Lumetri 渲染会挂死，用饱和度调整代表）
+                        var effectName = (typeof AEV_Recipe !== "undefined")
+                            ? AEV_Recipe.effectNameFor(matchName)
+                            : matchName;
+                        effectGroup = layer.property("ADBE Effect Parade").addProperty(effectName);
+                    } catch (eAdd) {
+                        cellErrors.push(matchName + "|addProperty|" + eAdd);
+                        try { cell.remove(); } catch (eRm) {}
+                        continue;
+                    }
                 }
                 try {
-                    if (typeof AEV_Recipe !== "undefined") {
+                    if (effectGroup && typeof AEV_Recipe !== "undefined") {
                         var applied = AEV_Recipe.apply(effectGroup, matchName, cellSize);
                         // 两层输入类：把「图层」选择器接到第 2 层（图案层），
                         // 默认值是「无」，不接的话效果等于没加。
