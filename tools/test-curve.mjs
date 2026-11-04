@@ -211,15 +211,29 @@ test("一维速度是带符号的值速度：正 speed 在下降段会过冲", (
   assert.ok(v > 100, "应该向上过冲，实际 " + v);
 });
 
-test("多维速度按路径模长解释：各维把手与各自 Δ 成比例", () => {
+test("空间多维：速度按路径模长解释", () => {
   const keys = [
-    key(0, [100, 900], { os: [400, 400], oi: [60, 60] }),
-    key(1, [900, 200], { os: [0, 0], oi: [33.33, 33.33] })
+    key(0, [100, 900], { os: [400, 400], oi: [60, 60], sp: true }),
+    key(1, [900, 200], { os: [0, 0], oi: [33.33, 33.33], sp: true })
   ];
   const seg = C.segmentOf(keys, 0);
   const chordMag = Math.sqrt(800 * 800 + (-700) * (-700)) / 1;
   assert.ok(Math.abs(seg.chordMag - chordMag) < 1e-6, "模长速度算错");
   assert.ok(Math.abs(seg.mOut - 400 / chordMag) < 1e-6, "m 应按模长归一，实际 " + seg.mOut);
+});
+
+test("非空间多维（缩放）按主导维的弦解释，不是模长", () => {
+  // 实机矩阵：缩放是 [x,y,z]，AE 要求 ease 数组长度 3；各维有自己的 speed，
+  // 所以基准只能是某一维的弦，不能是模长（否则读出来的 m 与写回去的对不上）。
+  const keys = [
+    key(0, [100, 900], { os: [400, 400], oi: [60, 60] }),
+    key(1, [900, 200], { os: [0, 0], oi: [33.33, 33.33] })
+  ];
+  const seg = C.segmentOf(keys, 0);
+  assert.equal(seg.spatial, false, "样例不该被当成空间属性");
+  // 主导维是 x（800/1 > 700/1）
+  assert.equal(seg.dominant, 0, "主导维应为 x");
+  assert.ok(Math.abs(seg.mOut - 400 / 800) < 1e-6, "非空间多维应按主导维弦归一，实际 " + seg.mOut);
 });
 
 test("空间路径按弧长推进，而不是按贝塞尔参数", () => {

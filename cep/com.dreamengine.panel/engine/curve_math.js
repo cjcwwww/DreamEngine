@@ -157,7 +157,12 @@ var AEV_CurveMath = (function () {
              基准取有符号弦斜率。100→30 的段上 speed=+100 会让曲线先往上冲。
            · 多维属性：speed 是**沿路径的模长速度**，基准取 |ΔP|/dt。
              夹具对照：一维用模长偏差 41px、多维用有符号弦偏差 18–21px。 */
-        var baseOut = dims === 1 ? chord[dominant] : chordMag;
+        /* 基准按属性类型分（2026-11-04 实机矩阵复核）：
+           · 空间属性（位置/锚点/3D 点）：速度是沿路径的**模长速度**，用 |ΔP|/dt
+           · 非空间属性（1D 滑杆、2D 缩放、颜色…）：各维有自己的 speed，
+             用**主导维的有符号弦**，写回时再按各维弦展开 */
+        var sp = !!a.sp;
+        var baseOut = (sp && dims > 1) ? chordMag : chord[dominant];
         var baseIn = baseOut;
         var mOut = 0;
         var mIn = 0;

@@ -607,7 +607,7 @@ var AEV_Curve = (function () {
 
     /** 该键某一侧的 ease 数组（长度必须等于维度数）。
      *  入参 inf / m 都是**图表空间**的值，这里换算回 AE 的原始单位。 */
-    function buildEase(keys, keyIndex, side, dims, inf, m) {
+    function buildEase(keys, keyIndex, side, dims, inf, m, spatial) {
         // keyIndex 是快照里的 0 基序号
         var chord = [];
         var d;
@@ -626,10 +626,6 @@ var AEV_Curve = (function () {
         for (d = 0; d < dims; d++) {
             chord.push((num(at(b.v, d, 0)) - num(at(a.v, d, 0))) / dt);
         }
-        /* AE 2021 实测：多维属性的 temporal ease 数组必须只有 **1 个**元素
-           （传 2/3 个会报「值数组没有 1 元素」）。所以这里写的是
-           「沿路径的模长速度」= m × |ΔP|/dt，AE 会把它作为统一的
-           时间重映射作用到所有维度上。 */
         var mag = 0;
         for (d = 0; d < dims; d++) {
             var dv = num(at(b.v, d, 0)) - num(at(a.v, d, 0));
@@ -638,17 +634,27 @@ var AEV_Curve = (function () {
         mag = Math.sqrt(mag);
         var chordMag = dt > 0 ? mag / dt : 0;
 
-        /* 与 curve_math.segmentOf 的基准保持一致：
-           一维用有符号弦斜率，多维用路径模长速度。写错基准会让
-           「100→30 的段上设 +100 速度」变成往下冲，而不是往上过冲。 */
-        var base = dims === 1 ? chord[0] : chordMag;
         var aeInf = num(inf) / CALIBRATION.influenceScale;
         var aeM = num(m) / CALIBRATION.speedScale;
-        return [makeEase(aeM * base, aeInf)];
+
+        /* ease 数组长度按属性类型分（2026-11-04 实机矩阵实测）：
+           · 空间属性：**必须 1 个**（位置传 2/3 个会报「值数组没有 1 元素」），
+             AE 把它当整条路径的统一时间重映射，速度是沿路径的模长速度
+           · 非空间属性：长度**必须等于值分量数** —— 缩放是 [x,y,z]，传 1 个
+             会报「值数组没有 3 元素」，这就是之前 write_failed 的真凶 */
+        if (spatial) {
+            return [makeEase(aeM * chordMag, aeInf)];
+        }
+        var list = [];
+        for (d = 0; d < dims; d++) {
+            // 各维用**自己的**弦斜率，才能保证每维的归一化进度一致
+            list.push(makeEase(aeM * chord[d], aeInf));
+        }
+        return list.length ? list : [makeEase(aeM * chordMag, aeInf)];
     }
 
     /** 取当前 ease 并原样重建（setTemporalEaseAtKey 要求两侧都给） */
-    function currentEase(prop, aeIndex, side, dims) {
+    function currentEase(prop, aeIndex, side, dims, spatial) {
         var raw = null;
         try {
             raw = side === "in" ? prop.keyInTemporalEase(aeIndex) : prop.keyOutTemporalEase(aeIndex);
@@ -656,8 +662,17 @@ var AEV_Curve = (function () {
             return null;
         }
         if (!isArr(raw) || raw.length === 0) return null;
-        // 只回 1 个：与 AE 2021 的存储形态一致（多维属性也只有一条 ease）
-        return [makeEase(easeField(raw, 0, "speed"), easeField(raw, 0, "influence"))];
+        /* 与 buildEase 对称：空间属性只有 1 条 ease，非空间属性每条对应一维。
+           写回时两侧数组长度必须一致，否则 setTemporalEaseAtKey 会报
+           「值数组没有 N 元素」。 */
+        if (spatial) {
+            return [makeEase(easeField(raw, 0, "speed"), easeField(raw, 0, "influence"))];
+        }
+        var list = [];
+        for (var d = 0; d < dims; d++) {
+            list.push(makeEase(easeField(raw, d, "speed"), easeField(raw, d, "influence")));
+        }
+        return list.length ? list : [makeEase(easeField(raw, 0, "speed"), easeField(raw, 0, "influence"))];
     }
 
     /**
@@ -697,16 +712,19 @@ var AEV_Curve = (function () {
             prop.setInterpolationTypeAtKey(aeIndex, typeConst(inType), typeConst(outType));
         } catch (e4) {}
 
-        var eases = buildEase(keys, keyIndex, side, dims, inf, m);
+        var spatial = false;
+        try { spatial = !!prop.isSpatial; } catch (eSp) {}
+
+        var eases = buildEase(keys, keyIndex, side, dims, inf, m, spatial);
         if (!eases) return "edge";
 
         var inArr = null;
         var outArr = null;
         if (side === "in") {
             inArr = eases;
-            outArr = currentEase(prop, aeIndex, "out", dims);
+            outArr = currentEase(prop, aeIndex, "out", dims, spatial);
         } else {
-            inArr = currentEase(prop, aeIndex, "in", dims);
+            inArr = currentEase(prop, aeIndex, "in", dims, spatial);
             outArr = eases;
         }
         if (!inArr || !outArr) return "edge";
@@ -840,8 +858,21 @@ var AEV_Curve = (function () {
         try {
             raw = side === "in" ? prop.keyInTemporalEase(k) : prop.keyOutTemporalEase(k);
         } catch (e) {}
-        for (var d = 0; d < dims; d++) out.push(easeField(raw, d, "speed"));
+        /* 空间属性只有 1 条 ease：不能按维索引去取（第 2、3 维会变成默认 0，
+           于是「位置」的斜率倍率被读成 0，曲线整条变平）。 */
+        var idx0 = isSpatialProp(prop) ? 0 : -1;
+        for (var d = 0; d < dims; d++) {
+            out.push(easeField(raw, idx0 === 0 ? 0 : d, "speed"));
+        }
         return out;
+    }
+
+    function isSpatialProp(prop) {
+        try {
+            return !!prop.isSpatial;
+        } catch (e) {
+            return false;
+        }
     }
 
     function infsOf(prop, k, side, dims) {
@@ -850,7 +881,9 @@ var AEV_Curve = (function () {
         try {
             raw = side === "in" ? prop.keyInTemporalEase(k) : prop.keyOutTemporalEase(k);
         } catch (e) {}
-        for (var d = 0; d < dims; d++) out.push(easeField(raw, d, "influence"));
+        // 与 speedsOf 同理：空间属性只有 1 条 ease
+        var one = isSpatialProp(prop);
+        for (var d = 0; d < dims; d++) out.push(easeField(raw, one ? 0 : d, "influence"));
         return out;
     }
 
