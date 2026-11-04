@@ -978,6 +978,8 @@ var AEV_Recipe = (function () {
         animate: animate,
         animateAny: animateAny,
         apply: apply,
+        setTuning: setTuning,
+        tuningEnabled: tuningEnabled,
         recipes: RECIPES,
         effectNameFor: effectNameFor,
         stepsFor: stepsFor,
