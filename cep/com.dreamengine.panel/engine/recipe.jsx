@@ -187,6 +187,38 @@ var AEV_Recipe = (function () {
         ]
     };
 
+    /**
+     * 替代方案：某些效果不能真渲（AE 会挂死），但用户仍希望预览墙上有一张
+     * 能代表它的卡片。用一个观感相近的安全效果代替。
+     *
+     * ADBE Lumetri（Lumetri 颜色）实测一渲染就挂死，AE 直接未响应。
+     * 它的视觉本质是「色彩科学 + 饱和度」，所以用饱和度调整来代表。
+     */
+    var SURROGATES = {
+        "ADBE Lumetri": {
+            effect: "ADBE HUE SATURATION",
+            steps: [{ names: ["主饱和度", "Master Saturation"], value: 60 }],
+            reason: "Lumetri 渲染挂死，用饱和度调整代表"
+        }
+    };
+
+    /** 实际要挂到合成上的效果名（有替代方案就用替代的） */
+    function effectNameFor(matchName) {
+        var s = SURROGATES[matchName];
+        return s ? s.effect : matchName;
+    }
+
+    /** 实际要写的参数步骤（有替代方案就用替代的） */
+    function stepsFor(matchName) {
+        var s = SURROGATES[matchName];
+        if (s) return s.steps;
+        return RECIPES[matchName] || null;
+    }
+
+    function isSurrogate(matchName) {
+        return SURROGATES[matchName] ? true : false;
+    }
+
     function lower(value) {
         return String(value === undefined || value === null ? "" : value).toLowerCase();
     }
@@ -381,7 +413,7 @@ var AEV_Recipe = (function () {
 
     /** 套显式配方；返回写入次数，0 表示该效果没有配方 */
     function applyRecipe(effectGroup, matchName) {
-        var steps = RECIPES[matchName];
+        var steps = stepsFor(matchName);
         if (!steps) return 0;
         var writes = 0;
         for (var i = 0; i < steps.length; i++) {
@@ -455,7 +487,7 @@ var AEV_Recipe = (function () {
      * 返回是否成功打上关键帧。
      */
     function animate(effectGroup, matchName, durationSeconds) {
-        var steps = RECIPES[matchName];
+        var steps = stepsFor(matchName);
         if (!steps || !steps.length) return false;
 
         var prop = null;
@@ -674,6 +706,9 @@ var AEV_Recipe = (function () {
         animate: animate,
         animateAny: animateAny,
         apply: apply,
-        recipes: RECIPES
+        recipes: RECIPES,
+        effectNameFor: effectNameFor,
+        stepsFor: stepsFor,
+        isSurrogate: isSurrogate
     };
 })();

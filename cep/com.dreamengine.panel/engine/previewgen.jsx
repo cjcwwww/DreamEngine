@@ -231,7 +231,11 @@ var AEV_PreviewGen = (function () {
                 // 而不是整批失败只回一条 AE 错误。
                 var effectGroup = null;
                 try {
-                    effectGroup = layer.property("ADBE Effect Parade").addProperty(matchName);
+                    // 有替代方案时挂替代效果（Lumetri 渲染会挂死，用饱和度调整代表）
+                    var effectName = (typeof AEV_Recipe !== "undefined")
+                        ? AEV_Recipe.effectNameFor(matchName)
+                        : matchName;
+                    effectGroup = layer.property("ADBE Effect Parade").addProperty(effectName);
                 } catch (eAdd) {
                     cellErrors.push(matchName + "|addProperty|" + eAdd);
                     try { cell.remove(); } catch (eRm) {}

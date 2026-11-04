@@ -155,6 +155,32 @@ test("previewgen 的临时合成清理不依赖 undo", () => {
   assert.match(code, /queueItem\.remove\(\)/);
 });
 
+test("Lumetri 颜色用饱和度调整替代渲染（真渲会挂死 AE）", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+  assert.equal(recipe.isSurrogate("ADBE Lumetri"), true);
+  assert.equal(recipe.effectNameFor("ADBE Lumetri"), "ADBE HUE SATURATION");
+  const steps = recipe.stepsFor("ADBE Lumetri");
+  assert.ok(steps && steps.length > 0, "替代方案要有参数");
+  assert.ok(steps[0].names.includes("主饱和度"), "用饱和度代表 Lumetri");
+
+  // 普通效果不受影响
+  assert.equal(recipe.isSurrogate("ADBE Glo2"), false);
+  assert.equal(recipe.effectNameFor("ADBE Glo2"), "ADBE Glo2");
+  assert.equal(recipe.stepsFor("ADBE Glo2"), recipe.recipes["ADBE Glo2"]);
+});
+
+test("viewmodel 把 Lumetri 留在候选里（走替代方案），但排除会挂死的效果", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  // Lumetri 有替代方案，可以渲染
+  assert.equal(view.isExcludable({ matchName: "ADBE Lumetri", category: "颜色校正" }), false);
+  // 这些是真会挂死的
+  assert.equal(view.isExcludable({ matchName: "ADBE Echo", category: "时间" }), true);
+  assert.equal(view.isExcludable({ matchName: "ADBE AudWave", category: "" }), true);
+  assert.equal(view.isExcludable({ matchName: "CC Hair", category: "模拟" }), true);
+});
+
 test("配方覆盖常用内置效果，每条都带参数名与值", () => {
   const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
   const recipes = ctx.AEV_Recipe.recipes;
