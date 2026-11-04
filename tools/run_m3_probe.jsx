@@ -116,6 +116,26 @@
     }
     push("STALE=" + AEV_PreviewGen.staleList(tmpRoot));
 
+    // ---- 图层顺序自检：确认「图案层在效果层下面且不可见」 ----
+    var diag = null;
+    try {
+        diag = app.project.items.addComp("DE_diag", 256, 256, 1, 0.2, 30);
+        var lay = AEV_Recipe.layoutFor("two-layer-input");
+        diag.layers.add(AEV_Assets.get("photo", 256));
+        var src = diag.layers.add(AEV_Assets.get("pattern", 256));
+        src.enabled = false;
+        diag.layers.add(AEV_Assets.get("photo", 256));
+        for (var L = 1; L <= diag.numLayers; L++) {
+            var lyr = diag.layer(L);
+            push("LAYER|" + L + "|" + lyr.name + "|enabled=" + lyr.enabled);
+        }
+    } catch (eDiag) {
+        push("LAYER_DIAG_FAIL|" + eDiag);
+    } finally {
+        try { if (diag) diag.remove(); } catch (eRmDiag) {}
+    }
+    flush();
+
     push("RESULT=OK");
     flush();
 })();

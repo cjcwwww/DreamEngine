@@ -214,7 +214,12 @@ var AEV_PreviewGen = (function () {
                     cell.layers.add(sceneOf("photo"));
                 }
                 if (layout.needSource) {
-                    cell.layers.add(sceneOf("pattern"));
+                    var sourceLayer = cell.layers.add(sceneOf("pattern"));
+                    // 第二输入层必须关掉可见性——这是 AE 里用置换/遮罩图层的标准做法：
+                    // 它只作为输入参与运算，不该出现在画面上。留着可见会把效果结果盖住。
+                    try {
+                        sourceLayer.enabled = false;
+                    } catch (eSrc) {}
                 }
                 var layer = cell.layers.add(sceneOf(layout.base));
 
