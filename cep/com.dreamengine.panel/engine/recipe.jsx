@@ -731,10 +731,13 @@ var AEV_Recipe = (function () {
                     name = String(prop.name || "");
                 } catch (e4) {}
                 if (!name || isPluginAuxiliary(name)) continue;
+                // 必须是**一维数值**参数。下拉项（名字里常带 blend / mix）不能碰：
+                // 往它上面写值会把整条效果写坏，渲染直接报「需要数字、数组或属性
+                // 的位置找到类型为 Error 的对象」。
+                if (kindOf(prop) !== "oneD") continue;
                 // 只认「强度/占比」类参数。
                 // AE 内置的「效果不透明度」绝不碰：实测对它 setValue 或打关键帧，
-                // 整条效果都会报「需要数字、数组或属性的位置找到类型为 Error 的
-                // 对象」直接渲不出来。
+                // 整条效果都会报同样的错，直接渲不出来。
                 if (isIntensityName(name)) {
                     candidate = prop;
                     return;
@@ -760,8 +763,10 @@ var AEV_Recipe = (function () {
         try {
             current = Number(candidate.value);
         } catch (e6) {
-            current = 0;
+            return null;
         }
+        // 取不到有效数值就放弃这个参数（有些属性读出来是 Error 对象）
+        if (typeof current !== "number" || isNaN(current)) return null;
 
         // 分档：按参数**当前值**决定用小值还是大值
         //   · 当前值已经不小（默认就是满效果）→ 拨到 15%，预览是「轻微生效」的样子

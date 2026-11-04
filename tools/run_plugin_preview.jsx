@@ -81,10 +81,6 @@
     }
 
     var PS = AEV_PluginState;
-    // TEMP: 诊断用——关掉插件调参，看通道本身是否正常
-    if (typeof AEV_Recipe !== "undefined" && AEV_Recipe.setTuning) {
-        AEV_Recipe.setTuning(false);
-    }
     var parsed = PS.parseLog(readText(LOG));
     var logLines = parsed.lines;
 
