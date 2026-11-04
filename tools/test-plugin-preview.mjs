@@ -227,12 +227,13 @@ test("插件按参数「作用」微调：强度类 15%、无强度类用内置�
     .split("\n")
     .map((line) => line.replace(/^\s*\/\/.*$/, "").replace(/^\s*\*.*$/, ""))
     .join("\n");
-  // 强度/占比类 → 15%
+  // 强度/占比类 → 15%；当前值几乎为 0 时改用 70%（否则几乎看不出）
   assert.match(code, /INTENSITY_WORDS = \[/);
-  assert.match(code, /ratio: 0\.15/);
-  // 没有强度参数 → 用 AE 内置「效果不透明度」70%，保证效果看得见
-  assert.match(code, /ratio: 0\.7/);
-  assert.match(code, /isEffectOpacityName/);
+  assert.match(code, /var ratio = 0\.15;/);
+  assert.match(code, /ratio = 0\.7;/);
+  // AE 内置「效果不透明度」绝不碰：碰了整条效果直接渲不出来
+  assert.doesNotMatch(code, /builtinOpacity/);
+  assert.doesNotMatch(code, /isEffectOpacityName/);
   // 形态参数不动：枚举(<5) 与 log 尺度(>1000) 一律排除
   assert.match(code, /maxValue < 5 \|\| maxValue > 1000/);
   // 只动一个参数

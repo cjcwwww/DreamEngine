@@ -689,12 +689,6 @@ var AEV_Recipe = (function () {
         return false;
     }
 
-    /** AE 内置的「效果不透明度」：中文「效果不透明度」，英文「Opacity」 */
-    function isEffectOpacityName(name) {
-        var lower = String(name || "").toLowerCase();
-        return lower.indexOf("不透明度") >= 0 || lower.indexOf("opacity") >= 0;
-    }
-
     /**
      * 找出插件的主强度参数（最多一个）。
      * 优先级：效果自带的强度/占比参数（15%）→ AE 内置「效果不透明度」（70%）。
@@ -702,7 +696,6 @@ var AEV_Recipe = (function () {
      */
     function pluginMainParam(effectGroup) {
         var intensityProp = null;
-        var builtinOpacity = null;
 
         function walk(group, depth) {
             if (depth > 2) return;
@@ -746,21 +739,32 @@ var AEV_Recipe = (function () {
                 // 枚举/开关（0-1、1-3 之类）与 log 尺度的形态参数都不碰
                 if (maxValue < 5 || maxValue > 1000) continue;
 
+                // 只认「强度/占比」类参数。
+                // AE 内置的「效果不透明度」绝不碰：实测对它 setValue 或打关键帧，
+                // 整条效果都会报「需要数字、数组或属性的位置找到类型为 Error 的
+                // 对象」直接渲不出来。
                 if (isIntensityName(name) && !intensityProp) {
                     intensityProp = prop;
-                    continue;
-                }
-                // 内置「效果不透明度」：范围 0-100
-                if (isEffectOpacityName(name) && !builtinOpacity && maxValue <= 100) {
-                    builtinOpacity = prop;
                 }
             }
         }
 
         walk(effectGroup, 0);
-        if (intensityProp) return { prop: intensityProp, ratio: 0.15, kind: "intensity" };
-        if (builtinOpacity) return { prop: builtinOpacity, ratio: 0.7, kind: "opacity" };
-        return null;
+        if (!intensityProp) return null;
+
+        // 分档：按参数**当前值**决定用小值还是大值
+        //   · 当前值已经不小（默认就是满效果）→ 拨到 15%，预览是「轻微生效」的样子
+        //   · 当前值几乎为 0（这类参数 0=满效果或本来就没生效）→ 15% 几乎看不出，
+        //     改用 70%，保证效果看得见
+        var current = 0;
+        var maxValue = 0;
+        try {
+            current = Number(intensityProp.value);
+            if (intensityProp.hasMax) maxValue = Number(intensityProp.maxValue);
+        } catch (e) {}
+        var ratio = 0.15;
+        if (maxValue > 0 && current / maxValue <= 0.2) ratio = 0.7;
+        return { prop: intensityProp, ratio: ratio, kind: "intensity" };
     }
 
     /** 按范围比例算出目标值 */
@@ -923,9 +927,7 @@ var AEV_Recipe = (function () {
             target = paramTarget(main.prop, main.ratio);
             if (target === null || target === 0) return false;
         } else {
-            // TEMP: 临时只允许强度参数打关键帧（验证形态参数关键帧是否为元凶）
-            return false;
-            // 内置「效果不透明度」：只能 setValue，不能打关键帧
+            // 没有强度参数：改用「细节层数 / 数量类」线性形态参数做动态
             prop = pluginAnimParam(effectGroup);
             if (!prop) return false;
             var current = 0;
