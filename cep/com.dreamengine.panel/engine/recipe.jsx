@@ -776,6 +776,39 @@ var AEV_Recipe = (function () {
     }
 
     /**
+     * 安全写数值：只写「本来就是数字」的属性，写完立刻读回校验，
+     * 写坏了（AE 返回 Error 对象）就还原原值。
+     *
+     * 为什么需要：插件属性的 min/max 有时取不到、或参数其实是别的类型，
+     * 硬写会让 AE 在渲染阶段报「需要数字、数组或属性的位置找到类型为 Error
+     * 的对象」——整个效果直接渲不出来（实测 S_BrightnessContrast）。
+     */
+    function setNumberSafely(prop, value) {
+        var oldValue = null;
+        try {
+            oldValue = prop.value;
+        } catch (e) {
+            return false;
+        }
+        if (typeof oldValue !== "number" || isNaN(oldValue)) return false;
+        if (typeof value !== "number" || isNaN(value)) return false;
+        if (!setIfWritable(prop, value)) return false;
+        try {
+            var now = prop.value;
+            if (typeof now !== "number" || isNaN(now)) {
+                setIfWritable(prop, oldValue);
+                return false;
+            }
+        } catch (e2) {
+            try {
+                setIfWritable(prop, oldValue);
+            } catch (e3) {}
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 插件的强度微调：只动一个参数，量到「看得见但不夸张」。
      * 返回写入次数（0 表示没动任何参数）。
      */
@@ -784,7 +817,7 @@ var AEV_Recipe = (function () {
         if (!main) return 0;
         var target = paramTarget(main.prop, main.ratio);
         if (target === null) return 0;
-        return setIfWritable(main.prop, target) ? 1 : 0;
+        return setNumberSafely(main.prop, target) ? 1 : 0;
     }
 
     /**
@@ -801,21 +834,39 @@ var AEV_Recipe = (function () {
         if (target === null || target === 0) return false;
 
         var start = 0;
+        var oldValue = null;
         try {
+            oldValue = main.prop.value;
+            if (typeof oldValue !== "number" || isNaN(oldValue)) return false;
             if (main.prop.hasMin) {
                 var minValue = Number(main.prop.minValue);
                 if (minValue > 0 && minValue < target) start = minValue;
             }
-        } catch (e) {}
+        } catch (e) {
+            return false;
+        }
         if (target === start) return false;
 
         try {
             main.prop.setValueAtTime(0, start);
             main.prop.setValueAtTime(end, target);
-            return true;
         } catch (e2) {
             return false;
         }
+        // 校验打完之后值还是不是数字（有些参数不接受关键帧会写坏）
+        try {
+            var check = main.prop.value;
+            if (typeof check !== "number" || isNaN(check)) {
+                try {
+                    main.prop.setValueAtTime(0, oldValue);
+                    main.prop.setValueAtTime(end, oldValue);
+                } catch (e3) {}
+                return false;
+            }
+        } catch (e4) {
+            return false;
+        }
+        return true;
     }
 
     /** 统一入口：有配方走配方，内置无配方走启发式，插件只微调一个强度参数 */
