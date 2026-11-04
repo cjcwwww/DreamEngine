@@ -198,9 +198,18 @@ function checkFile(abs) {
   return hits;
 }
 
+/* 构建产物与临时目录里存着同一批源码的副本，扫它们只会让同一处告警
+   被重复计数（打包解压出来的 .jsx 也是 .jsx）。 */
+const SKIP_DIRS = new Set([
+  ".git",
+  "node_modules",
+  "dist",
+  ".workbuddy",
+]);
+
 function walk(dir, acc) {
   for (const name of readdirSync(dir)) {
-    if (name === ".git" || name === "node_modules") continue;
+    if (SKIP_DIRS.has(name)) continue;
     const p = join(dir, name);
     let st;
     try { st = statSync(p); } catch { continue; }
