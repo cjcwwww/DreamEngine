@@ -31,7 +31,14 @@
 
     var TARGET = "ADBE Drop Shadow";
     push("TARGET=" + TARGET);
-    push("RECIPE=" + JSON.stringify(AEV_Recipe.recipes[TARGET]));
+    var steps = AEV_Recipe.recipes[TARGET];
+    var recipeText = "";
+    if (steps) {
+        for (var r = 0; r < steps.length; r++) {
+            recipeText += " [" + steps[r].names.join("/") + "=" + steps[r].value + "]";
+        }
+    }
+    push("RECIPE=" + recipeText);
 
     // 单独建一个 256×256 的合成，不走 contact sheet，直接渲 6 帧
     var conf = AEV_PreviewGen.config();
