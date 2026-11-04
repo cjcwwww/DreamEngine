@@ -67,7 +67,7 @@ CC Force Motion Blur
 ADBE Bilateral
 ADBE AutoColor
 ADBE Brush Strokes
-ADBE AudSpect
+ADBE Laser
 ADBE Block Dissolve
 ADBE Playgnd
 ADBE Difference
@@ -76,7 +76,7 @@ ADBE Matte Choker
 ADBE Color Swirl
 ADBE AutoContrast
 ADBE Cartoonify
-ADBE AudWave
+ADBE Cell Pattern
 ADBE Bevel Edges
 ADBE Gradient Wipe
 ADBE Color Range
@@ -89,7 +89,7 @@ ADBE Blend
 ADBE Channel Blur
 ADBE AutoLevels
 ADBE Color Emboss
-ADBE Laser
+ADBE Checkerboard
 ADBE Median
 ADBE IRIS_WIPE
 ADBE Difference Matte2
@@ -100,7 +100,7 @@ ADBE RefineRBMatte
 ADBE Separate XYZ Position
 ADBE Broadcast Colors
 ADBE Emboss
-ADBE Cell Pattern
+ADBE Circle
 ADBE Noise2
 ADBE Radial Shadow
 ADBE Linear Wipe
@@ -112,7 +112,6 @@ ADBE RefineMatte2
 ADBE CM InsetVideoFramed
 ADBE Channel Combiner
 ADBE Change To Color
-ADBE Checkerboard
 ADBE Noise Alpha2
 CC Cylinder
 ADBE Radial Wipe
@@ -122,7 +121,7 @@ ADBE HDR ToneMap
 ADBE CM InsetVideoTorn
 ADBE Compound Arithmetic
 ADBE LIQUIFY
-ADBE Circle
+ADBE ELLIPSE
 ADBE Noise HLS2
 CC Environment
 ADBE Venetian Blinds
@@ -133,6 +132,7 @@ CC Overbrights
 ADBE CM MoodLightAmorph
 ADBE Invert
 ADBE Magnify
+ADBE Eyedropper Fill
 ADBE Noise HLS Auto2
 CC Sphere
 APC CardWipeCam
@@ -140,7 +140,6 @@ CC Ball Action
 ADBE CM MoodLightDigital
 ADBE Minimax
 ADBE Color Link
-ADBE ELLIPSE
 ADBE PS Median
 CC Spotlight
 CC Glass Wipe
@@ -152,7 +151,7 @@ ADBE Set Channels
 ADBE Smart Blur
 ADBE MESH WARP
 ADBE Roughen Edges
-ADBE Eyedropper Fill
+ADBE Fractal
 ADBE AIF Perlin Noise 3D
 CC Grid Wipe
 CC Simple Wire Removal
@@ -160,72 +159,71 @@ CC Mr. Mercury
 ADBE CM CrackedTiles
 ADBE Color Balance (HLS)
 ADBE Scatter
+ADBE Grid
 CC Image Wipe
 CC Particle Systems II
 ADBE CM LightLeaksMarkers
 ADBE Shift Channels
 ADBE Optics Compensation
 ADBE Strobe
-ADBE Fractal
+ADBE Lens Flare
 CC Jaws
 CC Pixel Polly
 ADBE CM LightLeaksRandom
 ADBE Solid Composite
 ADBE Deflicker
 ADBE Texturize
-ADBE Grid
+ADBE Lightning 2
 CC Light Wipe
 CC Particle World
 ADBE CM OpacityFlashMarkers
 ADBE Remove Color Matting
 ADBE RESHAPE
-ADBE Lens Flare
+ADBE Paint Bucket
 CC Radial ScaleWipe
 CC Scatterize
 ADBE CM OpacityFlashRandom
 CC Composite
 ADBE Tile
-ADBE Lightning 2
 CC Scale Wipe
 CC Star Burst
 ADBE CM CropEdges
 ADBE Gamma/Pedestal/Gain2
 ADBE Rolling Shutter
-ADBE Paint Bucket
+ADBE Scribble Fill
 CC Twister
 ADBE CM AutoscrollHorizontal
 ADBE SCHMEAR
+ADBE Stroke
 CC WarpoMatic
 ADBE CM AutoscrollVertical
 ADBE Spherize
-ADBE Scribble Fill
+ADBE Write-on
 ADBE CM Throw
 ADBE SubspaceStabilizer
 CC Mr. Smoothie
-ADBE Stroke
+APC Radio Waves
 ADBE CM FadeInOutFrames
-ADBE Write-on
+APC Vegas
 ADBE CM FadeInOutmsec
 CC RepeTile
-APC Radio Waves
+CC Glue Gun
 ADBE CM Spin
 ADBE SelectiveColor
 CC Threshold
-APC Vegas
+CC Light Burst 2.5
 ADBE CM ScaleBounceMarkers
 ADBE Vibrance
 ADBE Upscale
 CC Threshold RGB
-CC Glue Gun
+CC Light Rays
 ADBE CM ScaleBounceRandom
-CC Light Burst 2.5
+CC Light Sweep
 ADBE CM WiggleGelatin
 CC Bender
-CC Light Rays
 ADBE CM WigglePosition
 ADBE PS Arbitrary Map
 CC Bend It
-CC Light Sweep
 ADBE CM WiggleRotation
 ADBE ShadowHighlight
 CC Blobbylize

@@ -68,6 +68,10 @@ var AEV_ViewModel = (function () {
     var cat = normalize(effect && effect.category);
     if (indexOfText(POOR_PREVIEW_CATEGORIES, cat) >= 0) return true;
     var matchName = normalize(effect && effect.matchName);
+    // 音频族：AE 2021 里有一批以 Aud 开头的效果（AudWave 音频波形、AudSpect 音频频谱…），
+    // 它们的分类字段常常是空的，按名字认更准。
+    // 实测：ADBE AudWave 一渲染就挂死——无音频输入时音频效果没法求值。
+    if (/^adbe aud/.test(matchName)) return true;
     // CS 前缀是本机 Cycore 旧命名残留（displayName 与 CC 系列重名）。
     // 实测：CS CrossBlur 参与整网渲染时报「滤镜无效」，整批随之失败。
     // 这 10 个先整体排除，等隔离探针逐个确认后再决定是否恢复。

@@ -666,6 +666,9 @@ test("面板优先渲染看得出差异的分类，并跳过 3D 通道族", () =
   assert.equal(view.isPoorPreviewTarget({ matchName: "CS CrossBlur", category: "模糊和锐化" }), true);
   // CC Drizzle 实测在 2048 整网 × 6 帧下渲染挂起
   assert.equal(view.isPoorPreviewTarget({ matchName: "CC Drizzle", category: "模拟" }), true);
+  // 音频族在无音频输入时无法求值：ADBE AudWave 一渲染就挂死
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE AudWave", category: "" }), true);
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE AudSpect", category: "生成" }), true);
   // CC Hair 是毛发模拟：打上关键帧后每帧都要重算，AE 直接挂死
   assert.equal(view.isPoorPreviewTarget({ matchName: "CC Hair", category: "模拟" }), true);
   // 文本生成器在 addProperty 时弹模态对话框，会卡死批量渲染
