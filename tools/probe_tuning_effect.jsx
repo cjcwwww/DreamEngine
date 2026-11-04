@@ -61,23 +61,6 @@
             var group = layer.property("ADBE Effect Parade").addProperty(target);
             var main = AEV_Recipe.pluginMainParam(group);
             log(target + "|main|" + (main ? (main.kind + "|" + main.prop.name + "|ratio=" + main.ratio) : "none"));
-            var cnt = group.numProperties;
-            for (var q = 1; q <= cnt; q++) {
-                var pr = group.property(q);
-                var sub = 0;
-                try { sub = pr.numProperties; } catch (e) {}
-                if (sub > 0) {
-                    for (var r2 = 1; r2 <= sub; r2++) {
-                        var sp = pr.property(r2);
-                        var mx = 0;
-                        try { if (sp.hasMax) mx = Number(sp.maxValue); } catch (e2) {}
-                        if (mx >= 5 && mx <= 1000) {
-                            log("  cand|" + String(pr.name) + " / " + String(sp.name) +
-                                "|max=" + mx + "|isIntensity=" + AEV_Recipe.isIntensityName(sp.name));
-                        }
-                    }
-                }
-            }
             try { comp.remove(); } catch (e3) {}
         } catch (eDiag) {
             log(target + "|DIAG_FAIL|" + eDiag);
