@@ -32,8 +32,6 @@ function arg(name, fallback) {
 
 const DATA_DIR = resolve(arg("--data", PANEL_DATA));
 const OUT_DIR = resolve(arg("--out", resolve(ROOT, "dist/L1")));
-const CELL = 256;
-const COLUMNS = 8;
 
 const manifestPath = resolve(DATA_DIR, "manifest.json");
 if (!existsSync(manifestPath)) {
@@ -41,6 +39,9 @@ if (!existsSync(manifestPath)) {
   process.exit(1);
 }
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+// 格子尺寸与列数取自 manifest —— 渲染参数改过（256 -> 128）之后写死会取错格子
+const CELL = manifest.cellSize;
+const COLUMNS = manifest.columns;
 const WIDTH = manifest.width;
 const HEIGHT = manifest.height;
 

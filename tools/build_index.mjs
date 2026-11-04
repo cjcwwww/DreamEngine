@@ -26,10 +26,16 @@ function arg(name, fallback) {
 
 const DATA_DIR = resolve(arg("--data", resolve(ROOT, "cep/com.dreamengine.panel/data")));
 const ENTRIES = resolve(arg("--entries", resolve(ROOT, ".workbuddy/tmp/entries.tsv")));
-const CELL_SIZE = 256;
-const COLUMNS = 8;
-const WIDTH = 2048;
-const HEIGHT = 2048;
+// 渲染参数取自定版配置，不要写死——格子尺寸改过（256 -> 128）
+const configText = readFileSync(resolve(ROOT, "config/render_params.jsxinc"), "utf8");
+function configNumber(field) {
+  const m = configText.match(new RegExp(field + ":\\s*(\\d+)"));
+  return m ? Number(m[1]) : 0;
+}
+const CELL_SIZE = configNumber("cellSize");
+const COLUMNS = configNumber("columns");
+const WIDTH = configNumber("width");
+const HEIGHT = configNumber("height");
 
 if (!existsSync(ENTRIES)) {
   console.error("找不到清单：" + ENTRIES);
