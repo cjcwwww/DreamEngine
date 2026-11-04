@@ -129,7 +129,10 @@
     push("NEXT_SHEET=" + nextSheet);
 
     // ---- 读待渲名单 ----
+    // 名单首行若是 "#replace"，表示「整批重渲」：丢掉现有条目重新建，
+    // 否则追加会与旧条目重名（同一 matchName 出现在索引里两次）。
     var todo = [];
+    var replaceAll = false;
     var list = new File(OUT.fsName + "/next_batch.tsv");
     if (!list.exists) {
         push("NO_TODO_FILE");
@@ -138,9 +141,20 @@
     }
     list.encoding = "UTF-8";
     if (list.open("r")) {
+        var firstLine = true;
         while (!list.eof) {
             var row = list.readln();
-            if (!row) continue;
+            if (firstLine) {
+                firstLine = false;
+                if (row.indexOf("#replace") === 0) {
+                    replaceAll = true;
+                    entries = [];
+                    nextSheet = 0;   // 整批重渲：网号从头排
+                    push("MODE=REPLACE");
+                    continue;
+                }
+            }
+            if (!row || row.charAt(0) === "#") continue;
             var parts = row.split("\t");
             if (!parts[0]) continue;
             todo.push({ matchName: parts[0], frames: parseInt(parts[1], 10) || 6 });
