@@ -81,6 +81,9 @@
     }
 
     var PS = AEV_PluginState;
+    if (typeof AEV_Recipe !== "undefined" && AEV_Recipe.setTrace) {
+        AEV_Recipe.setTrace(OUT.fsName + "/plugin_trace.txt");
+    }
     var parsed = PS.parseLog(readText(LOG));
     var logLines = parsed.lines;
 

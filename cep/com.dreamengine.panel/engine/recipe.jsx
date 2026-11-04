@@ -774,6 +774,8 @@ var AEV_Recipe = (function () {
         //     改用 70%，保证效果看得见
         var ratio = 0.15;
         if (maxValue > 0 && current / maxValue <= 0.2) ratio = 0.7;
+        trace("main|candidate=" + candidate.name + "|current=" + current +
+              "|min=" + minValue + "|max=" + maxValue + "|ratio=" + ratio);
         return { prop: candidate, ratio: ratio, kind: "intensity" };
     }
 
@@ -822,6 +824,27 @@ var AEV_Recipe = (function () {
         return true;
     }
 
+    /* 追踪文件：调参一旦把效果写坏，AE 只会报一句「Error 对象」，
+       靠日志猜不出是哪一步。 */
+    var TRACE_FILE = "";
+
+    function trace(text) {
+        if (!TRACE_FILE) return;
+        try {
+            var f = new File(TRACE_FILE);
+            f.encoding = "UTF-8";
+            if (f.open("a")) {
+                f.write(String(text) + "\r\n");
+                f.close();
+            }
+        } catch (e) {}
+    }
+
+    function setTrace(path) {
+        TRACE_FILE = String(path || "");
+        return TRACE_FILE;
+    }
+
     /* 插件调参总开关（诊断用：关掉就能对比「不调参数」的表现） */
     var TUNING_ENABLED = true;
 
@@ -842,8 +865,10 @@ var AEV_Recipe = (function () {
         if (!TUNING_ENABLED) return 0;
         if (!main) return 0;
         var target = paramTarget(main.prop, main.ratio);
-        if (target === null) return 0;
-        return setNumberSafely(main.prop, target) ? 1 : 0;
+        if (target === null) { trace("tune|no_target"); return 0; }
+        var ok = setNumberSafely(main.prop, target);
+        trace("tune|prop=" + main.prop.name + "|target=" + target + "|ok=" + ok);
+        return ok ? 1 : 0;
     }
     /**
      * 找「可以做动画」的线性形态参数。
@@ -930,7 +955,7 @@ var AEV_Recipe = (function () {
         var end = Number(durationSeconds);
         if (!end || end <= 0) return false;
         var main = pluginMainParam(effectGroup);
-        if (!main) return false;
+        if (!main) { trace("animate|no_main"); return false; }
 
         var prop = null;
         var target = null;
@@ -1093,6 +1118,7 @@ var AEV_Recipe = (function () {
         apply: apply,
         setTuning: setTuning,
         tuningEnabled: tuningEnabled,
+        setTrace: setTrace,
         pluginMainParam: pluginMainParam,
         isIntensityName: isIntensityName,
         recipes: RECIPES,
