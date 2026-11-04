@@ -358,7 +358,28 @@ var AEV_Presets = (function () {
         }
     }
 
-    /** 删掉调用期间自动新建的图层（从末尾往前删，避免索引错位） */
+    /**
+     * 撤销一次「试探性」应用：把期间新增的效果与图层都清掉。
+     *
+     * 试探的目的只是找出「哪个图层吃下了预设」，真正的应用只做一次，
+     * 否则每个候选层都会留一份预设（实测会污染整条图层链）。
+     */
+    function rollback(comp, target, before, after) {
+        cleanupLayers(comp, before.layers);
+        try {
+            var parade = target.property("ADBE Effect Parade");
+            if (parade) {
+                for (var i = after.effects; i > before.effects; i--) {
+                    try {
+                        parade.property(i).remove();
+                    } catch (e) {}
+                }
+            }
+        } catch (e2) {}
+    }
+
+    /**
+     * 删掉调用期间自动新建的图层（从末尾往前删，避免索引错位） */
     function cleanupLayers(comp, beforeCount) {
         var total = 0;
         try {
@@ -465,7 +486,6 @@ var AEV_Presets = (function () {
             var addedEffects = after.effects - before.effects;
             var addedKeys = after.keyProps - before.keyProps;
             var addedLayers = after.layers - before.layers;
-            cleanupLayers(comp, before.layers);
             attempts.push(
                 label + "|effects+" + addedEffects + "|keys+" + addedKeys + "|layers+" + addedLayers
             );
@@ -476,18 +496,33 @@ var AEV_Presets = (function () {
                         kind: label,
                         score: score,
                         effects: addedEffects,
-                        keys: addedKeys
+                        keys: addedKeys,
+                        layer: target
                     };
                 }
             }
+            // 试探完就还原，等选出最佳层再正式应用一次
+            rollback(comp, target, before, after);
         }
 
         if (!best) {
             return '{"status":"no_effect","attempts":[' +
                 '"' + attempts.join(" ;; ").replace(/"/g, "'") + '"]}';
         }
+
+        // 正式应用：只在最佳的那一层上做一次
+        var finalBefore = snapshot(comp);
+        try {
+            best.layer.applyPreset(file);
+        } catch (eFinal) {
+            return '{"status":"error","reason":"apply_failed","detail":' +
+                jsonText(String(eFinal)) + ',"attempts":[' +
+                '"' + attempts.join(" ;; ").replace(/"/g, "'") + '"]}';
+        }
+        var finalAfter = snapshot(comp);
         return '{"status":"ok","best":{"kind":' + jsonText(best.kind) +
-            ',"effects":' + best.effects + ',"keys":' + best.keys +
+            ',"effects":' + (finalAfter.effects - finalBefore.effects) +
+            ',"keys":' + (finalAfter.keyProps - finalBefore.keyProps) +
             '},"attempts":[' + '"' + attempts.join(" ;; ").replace(/"/g, "'") + '"]}';
     }
 
