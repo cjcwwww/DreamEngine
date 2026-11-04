@@ -329,11 +329,49 @@ var AEV_Library = (function () {
    * 一格永远精确等于一个预览框（不会串格）。但面板比例变化时，
    * 1fr 会把卡片拉宽到不同的实际像素宽度——同一张预览在宽面板上
    * 显得比窄面板上小，细节看不清。滑块让用户自己定一个合适的尺寸。
+   *
+   * 关键约束：**滑块能设的值必须在当前面板宽度下放得下**。
+   * 设一个放不下的值（比如面板可用 276px 却要 280px 的格子），
+   * grid 会把格子压到 276px，于是滑块标 280 而实际是 276 —— 对不上。
+   * 所以这里按可用宽度动态限制滑块上限，并且：
+   *   · 面板变窄时自动把当前尺寸收敛到能放下的最大值
+   *   · 面板变宽时恢复用户原本选的尺寸
    */
-  function setThumbSize(size) {
-    var value = Math.max(96, Math.min(280, Number(size) || 132));
+  var THUMB_MIN = 96;
+  var THUMB_MAX = 280;
+  var thumbPreferred = 132;
+
+  /** 侧栏 + 间距 + 主区内边距之外，预览区实际能用的宽度 */
+  function availableThumbWidth() {
+    var main = document.querySelector("main");
+    if (!main) return THUMB_MAX;
+    var style = window.getComputedStyle(main);
+    var padding = parseFloat(style.paddingLeft) || 0;
+    var paddingRight = parseFloat(style.paddingRight) || 0;
+    var width = main.clientWidth - padding - paddingRight;
+    if (!width || width <= 0) return THUMB_MAX;
+    return Math.floor(width);
+  }
+
+  function setThumbSize(size, options) {
+    var requested = Number(size);
+    if (!isNaN(requested) && requested > 0) {
+      thumbPreferred = Math.max(THUMB_MIN, Math.min(THUMB_MAX, requested));
+    }
+    var limit = Math.min(THUMB_MAX, availableThumbWidth());
+    if (limit < THUMB_MIN) limit = THUMB_MIN;
+
+    var value = Math.min(thumbPreferred, limit);
+    value = Math.max(THUMB_MIN, value);
+
     state.thumbSize = value;
     document.documentElement.style.setProperty("--thumb-size", value + "px");
+
+    var slider = byId("thumbSize");
+    if (slider) {
+      slider.max = String(Math.max(THUMB_MIN, limit));
+      if (options && options.fromUser) slider.value = String(value);
+    }
     var output = byId("thumbSizeValue");
     if (output) output.textContent = String(value);
   }
@@ -765,9 +803,20 @@ var AEV_Library = (function () {
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
     byId("thumbSize").addEventListener("input", function () {
-      setThumbSize(this.value);
+      setThumbSize(this.value, { fromUser: true });
     });
     setThumbSize(byId("thumbSize").value);
+
+    /* 面板被拖宽或拖窄时，滑块上限要跟着变。
+       否则会出现「滑块标 280、实际只有 276」的错位。 */
+    var resizeTimer = null;
+    window.addEventListener("resize", function () {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        setThumbSize(thumbPreferred);
+      }, 120);
+    });
+
     refresh();
   }
 

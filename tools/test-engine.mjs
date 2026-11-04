@@ -979,6 +979,28 @@ test("侧栏不被拉成与右栏等高（滚动条不该贯穿整个面板）",
   assert.match(sidebarBlock[0], /max-height: 100%/);
 });
 
+test("侧栏宽度随面板收缩，窄面板下主区不被挤没", () => {
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  // 侧栏不能用固定 168px —— 面板拖窄后会把主区挤到 0
+  const sidebarBlock = css.match(/\.sidebar \{[^}]*\}/s)[0];
+  assert.doesNotMatch(sidebarBlock, /flex: 0 0 168px/);
+  assert.match(sidebarBlock, /clamp\(/);
+  // 主区要有最小宽度，保证至少能显示预览
+  const mainBlock = css.match(/\nmain \{[^}]*\}/s)[0];
+  assert.match(mainBlock, /min-width: \d+px/);
+});
+
+test("滑块上限跟随面板可用宽度，不允许标一个放不下的值", () => {
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  // 必须按可用宽度收敛
+  assert.match(library, /availableThumbWidth/);
+  assert.match(library, /Math\.min\(thumbPreferred, limit\)/);
+  // 滑块自身的 max 要跟着变
+  assert.match(library, /slider\.max = /);
+  // 面板尺寸变化时要重新收敛
+  assert.match(library, /addEventListener\("resize"/);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

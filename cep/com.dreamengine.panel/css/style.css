@@ -255,7 +255,10 @@ select {
 }
 
 .sidebar {
-  flex: 0 0 168px;
+  /* 侧栏宽度随可用空间收缩：面板拖得很窄时（AE 面板可以任意拖窄），
+     固定 168px 会把主区挤到 0，预览墙直接消失。
+     用 clamp 保底 96px，中间按比例缩。 */
+  flex: 0 0 clamp(96px, 22%, 168px);
   padding: 12px 0 16px 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -351,7 +354,10 @@ main::-webkit-scrollbar-thumb:hover {
 
 main {
   flex: 1 1 auto;
-  min-width: 0;
+  /* 主区不能被侧栏挤没：面板极窄时至少留出一列预览的宽度。
+     flex-basis:0 + min-width 让「剩余空间」而不是「内容宽度」决定分配。 */
+  flex-basis: 0;
+  min-width: 120px;
   padding: 12px 16px 48px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -360,7 +366,11 @@ main {
 /* 预览格尺寸由滑块控制（--thumb-size）。
    列宽用固定值而不是 1fr —— 1fr 会把列拉伸填满剩余宽度，
    面板一变宽卡片就跟着变大，滑块形同虚设。
-   固定列宽下：格子大小只由滑块决定，面板比例只影响每行放几张。 */
+   固定列宽下：格子大小只由滑块决定，面板比例只影响每行放几张。
+
+   滑块的上限由 JS 按可用宽度动态限制（setThumbSize），
+   保证「滑块标多少、格子就是多少」，不会出现标 280 实际 276 的错位。
+   CSS 这边的 min() 只是最后一道兜底：极端窄面板下至少让预览可见。 */
 .grid {
   display: grid;
   grid-template-columns: repeat(
