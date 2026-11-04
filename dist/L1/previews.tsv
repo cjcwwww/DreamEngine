@@ -1,5 +1,5 @@
 matchName	sheet	cell	frames	frameTemplate	key
-ADBE Drop Shadow	0	0	6		6euh7y
+ADBE Drop Shadow	0	0	1		6euh7y
 ADBE Gaussian Blur 2	1	0	6	thumbs/batch_001_%04d.png	eapnx1
 APC Colorama	1	1	6	thumbs/batch_001_%04d.png	bl3wfd
 ADBE Turbulent Displace	1	2	6	thumbs/batch_001_%04d.png	iz41ml
@@ -23,32 +23,32 @@ CC Radial Blur	3	4	6	thumbs/batch_003_%04d.png	yb2433
 CC Color Offset	3	5	6	thumbs/batch_003_%04d.png	38civn
 CC Bender	3	6	6	thumbs/batch_003_%04d.png	gqvecd
 CC Burn Film	3	7	6	thumbs/batch_003_%04d.png	fkv824
-CC Glue Gun	4	0	6		i3b804
-VISINF Grain Implant	4	1	6		8s5d3w
-CC Simple Wire Removal	4	2	6		fgqm10
+CC Glue Gun	4	0	1		i3b804
+VISINF Grain Implant	4	1	1		8s5d3w
+CC Simple Wire Removal	4	2	1		fgqm10
 CC Cylinder	5	0	6	thumbs/batch_005_%04d.png	8ex7jb
 CC Glass Wipe	5	1	6	thumbs/batch_005_%04d.png	503xq4
 CC Vector Blur	5	2	6	thumbs/batch_005_%04d.png	w0olbp
 ADBE AutoColor	5	3	6	thumbs/batch_005_%04d.png	4o1gh7
 CC Bend It	5	4	6	thumbs/batch_005_%04d.png	c0ffz7
-CC Environment	6	0	6		20qeaq
-CC Force Motion Blur	6	1	6		p5pwbr
-CC Overbrights	6	2	6		sze2sc
+CC Environment	6	0	1		20qeaq
+CC Force Motion Blur	6	1	1		p5pwbr
+CC Overbrights	6	2	1		sze2sc
 CC Glass	7	0	6	thumbs/batch_007_%04d.png	mw1ahz
 CC Light Burst 2.5	7	1	6	thumbs/batch_007_%04d.png	ahkdgq
 ADBE Dust & Scratches	7	2	6	thumbs/batch_007_%04d.png	64iq7t
 CC Grid Wipe	7	3	6	thumbs/batch_007_%04d.png	3p8cp4
 ADBE Color Difference Key	7	4	6	thumbs/batch_007_%04d.png	aub35y
-ADBE Matte Choker	8	0	6		7yi4ve
-ADBE Color Swirl	8	1	6		gi8alf
+ADBE Matte Choker	8	0	1		7yi4ve
+ADBE Color Swirl	8	1	1		gi8alf
 CC Composite	9	0	6	thumbs/batch_009_%04d.png	95tu74
 ADBE Bilateral	9	1	6	thumbs/batch_009_%04d.png	v0mg2r
 ADBE AutoContrast	9	2	6	thumbs/batch_009_%04d.png	m0klwa
 CC Blobbylize	9	3	6	thumbs/batch_009_%04d.png	h557tn
 CC Kaleida	9	4	6	thumbs/batch_009_%04d.png	10asuw
 CC Light Rays	9	5	6	thumbs/batch_009_%04d.png	iydres
-CC Mr. Mercury	10	0	6		36amkh
-ADBE Getting Jiggy	10	1	6		2zke5b
+CC Mr. Mercury	10	0	1		36amkh
+ADBE Getting Jiggy	10	1	1		2zke5b
 ADBE Fractal Noise	11	0	6	thumbs/batch_011_%04d.png	6jezf2
 CC Sphere	11	1	6	thumbs/batch_011_%04d.png	1ttiz8
 CC Image Wipe	11	2	6	thumbs/batch_011_%04d.png	dmnumd
