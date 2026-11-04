@@ -20,13 +20,18 @@ logs/
 *.avi
 # 文档配图例外
 !docs/**/*.png
-!cep/com.dreamengine.panel/data/thumbs/
-!cep/com.dreamengine.panel/data/thumbs/*.png
 
 # ---- L1 内置包（可分发的预生成预览，已做帧间去重，必须入库）----
 !dist/
 !dist/**
 !dist/L1/thumbs/*.png
+
+# ---- 运行时产物（不入库）----
+# 扩展数据目录里的预览图与索引由 AE 生成或由 install_l1 部署，
+# 可分发的副本在 dist/L1/，运行时这份不入库——否则每次生成都会污染版本历史。
+cep/com.dreamengine.panel/data/thumbs/
+cep/com.dreamengine.panel/data/manifest.json
+cep/com.dreamengine.panel/data/previews.tsv
 
 # ---- 用户数据（本机私有，不入库）----
 library/

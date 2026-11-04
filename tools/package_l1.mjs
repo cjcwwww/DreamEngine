@@ -291,6 +291,26 @@ const outManifest = {
 };
 writeFileSync(resolve(OUT_DIR, "manifest.json"), JSON.stringify(outManifest, null, 2) + "\n", "utf8");
 
+/* previews.tsv：manifest 的 TSV 副本，给 ExtendScript 侧读（没有 JSON.parse）。
+   两份索引必须描述同一批条目——不一致会让 staleList 得出错误的过期结论。 */
+const indexLines = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
+for (const item of outItems) {
+  const cell =
+    Math.floor(item.y / manifest.cellSize) * manifest.columns +
+    Math.floor(item.x / manifest.cellSize);
+  indexLines.push(
+    [
+      item.matchName,
+      String(item.sheet),
+      String(cell),
+      String(item.frames || 1),
+      item.frameSrc || "",
+      item.key || "",
+    ].join("\t"),
+  );
+}
+writeFileSync(resolve(OUT_DIR, "previews.tsv"), indexLines.join("\r\n"), "utf8");
+
 if (existsSync(resolve(DATA_DIR, "names.json"))) {
   copyFileSync(resolve(DATA_DIR, "names.json"), resolve(OUT_DIR, "names.json"));
 }

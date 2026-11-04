@@ -536,9 +536,9 @@ test("writeManifest 同步写 previews.tsv，供 AE 侧校验缓存", () => {
   assert.match(code, /function staleList/);
 });
 
-test("manifest 与 previews.tsv 条目一致，且都带指纹", () => {
-  const manifest = JSON.parse(read("cep/com.dreamengine.panel/data/manifest.json"));
-  const lines = read("cep/com.dreamengine.panel/data/previews.tsv").trim().split(/\r?\n/);
+test("L1 包里的 manifest 与 previews.tsv 条目一致，且都带指纹", () => {
+  const manifest = JSON.parse(read("dist/L1/manifest.json"));
+  const lines = read("dist/L1/previews.tsv").trim().split(/\r?\n/);
   const header = lines.shift().split("\t");
   assert.deepEqual(header, [
     "matchName",
@@ -553,7 +553,6 @@ test("manifest 与 previews.tsv 条目一致，且都带指纹", () => {
   const names = new Set(manifest.items.map((item) => item.matchName));
   for (const item of manifest.items) {
     assert.ok(item.key && item.key.length > 0, `${item.matchName} 缺指纹`);
-    assert.ok(names.has(item.matchName));
   }
   for (const line of lines) {
     const cells = line.split("\t");
