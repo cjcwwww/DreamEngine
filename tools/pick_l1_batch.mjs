@@ -35,6 +35,11 @@ const lines = readFileSync(TARGETS, "utf8")
   .filter((line) => line && !line.startsWith("#"));
 
 mkdirSync(OUT_DIR, { recursive: true });
-writeFileSync(OUT, ["#replace", ...lines.map((n) => `${n}\t${FRAMES}`)].join("\n") + "\n", "utf8");
+const body = lines.map((name) => name + "\t" + FRAMES);
+writeFileSync(OUT, (KEEP ? body : ["#replace", ...body]).join("\n") + "\n", "utf8");
 
-console.log(`L1 目标 ${lines.length} 条 -> ${OUT}（${FRAMES} 帧，整批重渲）`);
+console.log(
+  `L1 目标 ${lines.length} 条 -> ${OUT}（${FRAMES} 帧，${
+    KEEP ? "续跑，已完成的跳过" : "整批重渲"
+  }）`,
+);
