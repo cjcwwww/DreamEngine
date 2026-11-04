@@ -159,7 +159,16 @@
     // ---- 分批渲染 ----
     // 每批刻意小于整网容量：48 格一次渲时 AE 直接崩溃（进程消失，日志断在半路）。
     // 分批后一批崩了只丢这一批，而且「渲染前先写名单」能定位到具体是哪个效果。
+    // 排查单个可疑效果时，在 Probe/chunk.txt 里写 1 即可改成「一格一批」。
     var CHUNK = 8;
+    var chunkFile = new File(OUT.fsName + "/chunk.txt");
+    if (chunkFile.exists && chunkFile.open("r")) {
+        var chunkText = parseInt(chunkFile.read(), 10);
+        chunkFile.close();
+        if (chunkText > 0) CHUNK = chunkText;
+    }
+    push("CHUNK=" + CHUNK);
+
     var rendered = 0;
     var failed = 0;
     var sheetIndex = nextSheet;
