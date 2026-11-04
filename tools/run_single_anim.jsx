@@ -39,6 +39,7 @@
         }
     }
     push("RECIPE=" + recipeText);
+    flush();
 
     // 单独建一个 256×256 的合成，不走 contact sheet，直接渲 6 帧
     var conf = AEV_PreviewGen.config();
@@ -52,6 +53,7 @@
     var applied = AEV_Recipe.apply(group, TARGET, 256);
     var animated = AEV_Recipe.animate(group, TARGET, duration);
     push("applied=" + applied.mode + "|writes=" + applied.writes + "|animated=" + animated);
+    flush();
 
     // 读回关键帧前后的值
     try {
