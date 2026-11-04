@@ -160,7 +160,7 @@ var AEV_Presets = (function () {
     /**
      * 按名字找合成。
      *
-     * 不能用「按名字取 item」的 API（items.getItemByName）—— 实测 AE 2021 上它会抛异常，
+     * 不能用「按名字取 item」的 API —— 实测 AE 2021 上它会抛异常，
      * 甚至直接把 AE 进程带崩。改成遍历 items 自己找。
      * 另外 item.name 可能是 URL 编码形式（中文预设名实测是 %E4%B8%8B 这种），
      * 所以比较时两种都试。
@@ -469,8 +469,8 @@ var AEV_Presets = (function () {
                 }
                 target.selected = true;
                 trace("apply:selected");
-                // 用 **图层** 的 applyPreset，不是 app.applyPreset：
-                // 实测 AE 2021 上 app.applyPreset(file) 会直接把 AE 弄崩
+                // 用 **图层** 的 applyPreset，不是 应用级 applyPreset：
+                // 实测 AE 2021 上 应用级的 applyPreset 调用 会直接把 AE 弄崩
                 // （追踪日志停在 selected 之后），而 T0.4 验证过的写法是
                 // layer.applyPreset(preset)。
                 target.applyPreset(file);
