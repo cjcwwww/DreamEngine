@@ -76,7 +76,7 @@ function pickDataDir() {
   }
   return dirs[0];
 }
-const dataDir = pickDataDir();
+const dataDir = resolve(arg("--data", pickDataDir()));
 
 const existing = new Set();
 const l1Path = resolve(dataDir, "manifest.json");

@@ -232,9 +232,14 @@ test("候选名单不含内置、按包轮转、遵守黑名单与限流", () =>
   mkdirSync(tmp, { recursive: true });
   const out = resolve(tmp, "batch.tsv");
   const black = resolve(tmp, "blacklist.tsv");
+  // 用一份空的运行时索引：真实目录里的插件早就被挑完了（候选会随进度变化），
+  // 测试不能依赖现场状态。
+  const fakeData = resolve(tmp, "data");
+  mkdirSync(fakeData, { recursive: true });
+  writeFileSync(resolve(fakeData, "manifest.json"), '{"items":[]}', "utf8");
   const tool = resolve(ROOT, "tools/pick_plugin_candidates.mjs");
   const runTool = (extra) => execFileSync(process.execPath, [
-    tool, "--limit", "6", "--out", out, "--blacklist", black
+    tool, "--limit", "6", "--out", out, "--blacklist", black, "--data", fakeData
   ].concat(extra), { encoding: "utf8", cwd: ROOT });
 
   if (existsSync(black)) unlinkSync(black);

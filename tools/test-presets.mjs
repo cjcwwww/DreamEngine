@@ -44,17 +44,46 @@ test("预设分类取所在目录名", () => {
 
 test("应用预设的安全措施一个都不能少", () => {
   const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
-  // 只选目标层，不留别的选区
-  assert.match(src, /comp\.selectedLayers = \[target\]/);
+  // 注释里会提到这些被禁用的写法（例如说明「不要用 app.applyPreset」），
+  // 所以断言只看代码行。
+  const code = src
+    .split("\n")
+    .map((line) => line.replace(/^\s*\/\/.*$/, ""))
+    .join("\n");
+  // 选层用 layer.selected，不能给 comp.selectedLayers 赋值（AE 2021 上会崩 AE）
+  assert.match(code, /target\.selected = true/);
+  assert.doesNotMatch(code, /comp\.selectedLayers = \[/);
+  // 用图层方法应用预设，不能用 app.applyPreset（AE 2021 上会崩 AE）
+  assert.match(code, /best\.layer\.applyPreset\(file\)/);
+  assert.doesNotMatch(code, /app\.applyPreset\(/);
+  // 试探要能回滚：只保留效果最多的那一层
+  assert.match(code, /function rollback\(/);
+  assert.match(code, /rollback\(comp, target, before, after\)/);
   // 按类型顺序重试：纯色 → 文本 → 素材 → 调整层
   assert.match(src, /LAYER_ORDER = \["solid", "text", "footage", "adjustment"\]/);
   // 调用后要比对效果数与关键帧数，才知道有没有真的生效
-  assert.match(src, /addedEffects/);
-  assert.match(src, /addedKeys/);
+  assert.match(code, /addedEffects/);
+  assert.match(code, /addedKeys/);
   // 自动新建的图层用 remove() 删掉（不依赖撤销）
-  assert.match(src, /comp\.layer\(i\)\.remove\(\)/);
+  assert.match(code, /comp\.layer\(i\)\.remove\(\)/);
   // 没有选中层时预设会自己建层，所以必须先记录调用前的图层数
-  assert.match(src, /before = snapshot\(comp\)/);
+  assert.match(code, /before = snapshot\(comp\)/);
+});
+
+test("不能依赖 AE 的几个不稳定 API", () => {
+  const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
+  const code = src
+    .split("\n")
+    .map((line) => line.replace(/^\s*\/\/.*$/, ""))
+    .join("\n");
+  // app.path 在 AE 2021 是 undefined；typeName 是本地化的；getItemByName 会崩 AE
+  assert.doesNotMatch(code, /app\.path \+ "\/Presets"/);
+  assert.doesNotMatch(code, /typeName\) === "Composition"/);
+  assert.doesNotMatch(code, /items\.getItemByName/);
+  // 合成判定改成看有没有 numLayers
+  assert.match(code, /item\.numLayers/);
+  // 目录名可能是 URL 编码形式，比较时要能解码
+  assert.match(code, /decodeURI/);
 });
 
 test("预设目录扫描必须递归（单层 getFiles('*.ffx') 在 AE 上返回 0）", () => {
