@@ -448,7 +448,11 @@ var AEV_Presets = (function () {
                 }
                 target.selected = true;
                 trace("apply:selected");
-                app.applyPreset(file);
+                // 用 **图层** 的 applyPreset，不是 app.applyPreset：
+                // 实测 AE 2021 上 app.applyPreset(file) 会直接把 AE 弄崩
+                // （追踪日志停在 selected 之后），而 T0.4 验证过的写法是
+                // layer.applyPreset(preset)。
+                target.applyPreset(file);
                 trace("apply:called");
             } catch (e) {
                 trace("apply:error:" + e);
