@@ -19,6 +19,8 @@ var AEV_Library = (function () {
     // 插件 L2 预览：被拉黑的效果与已生成数量（独立索引，不进 entries）
     pluginBlacklist: {},
     pluginPreviewCount: 0,
+    // 各来源（内置 / BCC / Sapphire…）已有多少张预览
+    pluginCounts: {},
     // 排序方式：name = 按名称首字母，category = 按 AE 分类
     sortMode: "name",
     // 左侧栏选中的分类键（空 = 全部）
@@ -128,7 +130,39 @@ var AEV_Library = (function () {
         items.push(item);
       }
     }
+    var counts = {};
+    for (i = 0; i < items.length; i++) {
+      if (!items[i].hasPreview) continue;
+      counts[items[i].plugin] = (counts[items[i].plugin] || 0) + 1;
+    }
+    state.pluginCounts = counts;
     state.items = items;
+    updatePluginCounts();
+  }
+
+  /**
+   * 来源下拉里标出每个插件包已有多少张预览。
+   * 插件预览是逐条离线渲出来的，用户得一眼看到「哪个包已经有图」，
+   * 否则切到 BCC 只看到一片「待离线生成」还以为功能坏了。
+   */
+  function updatePluginCounts() {
+    var select = byId("pluginFilter");
+    if (!select) return;
+    var options = select.getElementsByTagName("option");
+    for (var i = 0; i < options.length; i++) {
+      var option = options[i];
+      var base = option.getAttribute("data-label");
+      if (!base) {
+        base = option.textContent;
+        option.setAttribute("data-label", base);
+      }
+      if (option.value === "全部") {
+        option.textContent = base;
+        continue;
+      }
+      var n = state.pluginCounts[option.value] || 0;
+      option.textContent = n > 0 ? base + " · " + n : base;
+    }
   }
 
   function createCard(item) {
