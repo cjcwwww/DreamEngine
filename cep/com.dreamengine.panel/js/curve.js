@@ -754,16 +754,18 @@ var AEV_CurveUI = (function () {
       var applied = data.applied || 0;
       var skipped = data.skipped || [];
       var note = skipNote(skipped);
+      /* detail 是 AE 的原话（哪条属性、写的是什么、AE 嫌什么），必须带给用户 */
+      var detail = data.detail ? " · " + data.detail : "";
 
       /* 一条都没写进去：这不是成功，别让用户以为生效了 */
       if (!applied) {
-        setMessage(t("没有写入任何关键帧" + (note ? "：" + note : "（属性不支持缓动）"),
-          "Nothing was written" + (note ? ": " + note : " (no temporal ease)")), true);
+        setMessage(t("没有写入任何关键帧" + (note ? "：" + note : "（属性不支持缓动）") + detail,
+          "Nothing was written" + (note ? ": " + note : " (no temporal ease)") + detail), true);
         return;
       }
 
-      setMessage(t("已应用 " + applied + " 处 · " + describeScope() + note,
-        "Applied " + applied + " · " + describeScope() + note), false);
+      setMessage(t("已应用 " + applied + " 处 · " + describeScope() + note + detail,
+        "Applied " + applied + " · " + describeScope() + note + detail), false);
       setStatus(t("已应用曲线", "Curve applied"));
 
       /* 重读一次：灰色参考要反映 AE 的真实值。

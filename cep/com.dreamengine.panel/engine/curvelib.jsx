@@ -428,6 +428,10 @@ var AEV_Curve = (function () {
     /** 上一轮 collect 里因为「不支持时间缓动」被丢掉的属性数（面板据此给提示） */
     var lastFiltered = 0;
 
+    /** 最近一次 ease 写入的原始异常。不记下来，面板只能报一个 "failed" 代号，
+     *  用户和我们都没法知道 AE 到底嫌什么。 */
+    var lastWriteError = "";
+
     function collect(comp) {
         var list = [];
         var seen = {};
@@ -590,6 +594,13 @@ var AEV_Curve = (function () {
         }
     }
 
+    /** 异常文本里用的短数字，避免一串 0.33333333333 */
+    function numTextOf(v) {
+        var n = Number(v);
+        if (!isFinite(n)) return String(v);
+        return String(Math.round(n * 1000) / 1000);
+    }
+
     function makeEase(speed, influence) {
         return new KeyframeEase(num(speed), clamp(num(influence), MIN_INFLUENCE, MAX_INFLUENCE));
     }
@@ -704,7 +715,11 @@ var AEV_Curve = (function () {
             prop.setTemporalEaseAtKey(aeIndex, inArr, outArr);
         } catch (e5) {
             /* 单条写不进去就跳过这条，别让整批失败 —— 用户选中十条属性，
-               其中一条是 AE 自己也不认的，其余九条应该照写。 */
+               其中一条是 AE 自己也不认的，其余九条应该照写。
+               异常文本留下来，面板会把它显示出来。 */
+            lastWriteError = (side === "in" ? "in" : "out") + " key" + (keyIndex + 1) +
+                " (" + eases.length + " ease, inf=" + numTextOf(inf) +
+                " m=" + numTextOf(m) + "): " + String(e5);
             return "failed";
         }
         return "ok";
@@ -882,6 +897,7 @@ var AEV_Curve = (function () {
      * 面板选择「覆盖」时会带 force 行。
      */
     function applyTextRaw(text) {
+        lastWriteError = "";
         var comp = activeComp();
         if (!comp) {
             return "{" + jfield("status", jstr("error")) + "," + jfield("reason", jstr("no_comp")) + "}";
@@ -1000,12 +1016,13 @@ var AEV_Curve = (function () {
         var skipText = [];
         for (j = 0; j < skipped.length; j++) skipText.push(jstr(skipped[j]));
 
-        return "{" + [
-            jfield("status", jstr("ok")),
-            jfield("applied", String(applied)),
-            jfield("skipped", "[" + skipText.join(",") + "]"),
-            jfield("sigs", "[" + sigs.join(",") + "]")
-        ].join(",") + "}";
+        var out = jfield("status", jstr("ok")) + "," +
+            jfield("applied", String(applied)) + "," +
+            jfield("skipped", "[" + skipText.join(",") + "]") + "," +
+            jfield("sigs", "[" + sigs.join(",") + "]");
+        /* 有失败时把 AE 的原话带上：面板只报「N 条不支持缓动」是不够的 */
+        if (lastWriteError) out += "," + jfield("detail", jstr(lastWriteError));
+        return "{" + out + "}";
     }
 
     /**

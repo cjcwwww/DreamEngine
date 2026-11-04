@@ -334,8 +334,10 @@ test("单条写失败降级成跳过，不许拖垮整批", () => {
   const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
   const body = code.slice(code.indexOf("function writeSide("), code.indexOf("function writeLinear("));
   assert.ok(body.includes("try {"), "writeSide 里没有 try");
-  assert.ok(/try \{\s*prop\.setTemporalEaseAtKey\(aeIndex, inArr, outArr\);\s*\} catch \(e5\) \{\s*return "failed";/.test(body),
+  assert.ok(/try \{\s*prop\.setTemporalEaseAtKey\(aeIndex, inArr, outArr\);\s*\} catch \(e5\) \{[\s\S]*?return "failed";/.test(body),
     "setTemporalEaseAtKey 没有包 try/catch，抛出来就是整批 write_failed");
+  // 异常文本必须留下来，否则面板只能报一个 "failed" 代号
+  assert.ok(body.includes("lastWriteError ="), "写失败时没有记下 AE 的原话");
 });
 
 test("写入被拒时把 AE 的原始异常与属性位置一起报出来", () => {
