@@ -97,6 +97,7 @@ var Bridge = (function () {
     "engine/recipe.jsx",
     "engine/previewgen.jsx",
     "engine/queue.jsx",
+    "engine/plugin_state.jsx",
     "engine/catalog.jsx"
   ];
 
@@ -124,10 +125,19 @@ var Bridge = (function () {
       "(function(){" +
       "  try{" +
       "    var files = [" + paths.join(",") + "];" +
+      // 用文件修改时间做戳：戳没变就跳过 evalFile —— 每次调用都重载九个
+      // 模块是面板刷新发顿的主因（一次刷新要调好几次 runEngine）。
+      // 戳变了说明引擎代码改过，自动重载，开发期不用手动清缓存。
+      "    var stamp = '';" +
       "    for(var i=0;i<files.length;i++){" +
       "      var f = new File(files[i]);" +
       "      if(!f.exists) return 'ERR:missing_engine:' + files[i];" +
-      "      $.evalFile(f);" +
+      "      try { stamp += f.modified.getTime() + ':'; } catch(e1) { stamp += 'x:'; }" +
+      "    }" +
+      "    if (typeof AEV_EngineStamp === 'undefined') AEV_EngineStamp = '';" +
+      "    if (stamp !== AEV_EngineStamp) {" +
+      "      for(var j=0;j<files.length;j++){ $.evalFile(new File(files[j])); }" +
+      "      AEV_EngineStamp = stamp;" +
       "    }" +
       "    return String(" + expr + ");" +
       "  }catch(e){return 'ERR:'+e.toString();}" +

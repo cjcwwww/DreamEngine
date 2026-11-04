@@ -58,29 +58,34 @@ var AEV_Library = (function () {
     });
   }
 
-  function getCatalog(callback) {
+  /**
+   * 取本机效果清单。
+   * 走 runEngine 而不是单独 evalFile：单独 eval 会把 catalog 模块整个重置，
+   * 模块里的会话缓存（枚举 1371 条的结果）就白丢了。
+   * force=true 表示「重新扫描」——用户装了新插件后要能看到。
+   */
+  function getCatalog(callback, force) {
     Bridge.getExtensionPath(function (extensionPath) {
       if (!extensionPath) {
         callback(new Error("无法取得扩展目录"));
         return;
       }
       state.extensionPath = extensionPath;
-      var catalogPath = extensionPath + "/engine/catalog.jsx";
-      var jsx =
-        "(function(){try{$.evalFile(new File(" +
-        JSON.stringify(catalogPath) +
-        "));return AEV_Catalog.getCatalogJson();}catch(e){return 'ERR:'+e.toString();}})()";
-      Bridge.evalAE(jsx, function (result) {
-        if (!result || result.indexOf("ERR:") === 0) {
-          callback(new Error(result || "AE catalog 返回空值"));
-          return;
+      Bridge.runEngine(
+        extensionPath,
+        "AEV_Catalog.getCatalogJson(" + (force ? "true" : "false") + ")",
+        function (result) {
+          if (!result || result.indexOf("ERR:") === 0) {
+            callback(new Error(result || "AE catalog 返回空值"));
+            return;
+          }
+          try {
+            callback(null, JSON.parse(result));
+          } catch (error) {
+            callback(error);
+          }
         }
-        try {
-          callback(null, JSON.parse(result));
-        } catch (error) {
-          callback(error);
-        }
-      });
+      );
     });
   }
 
@@ -421,7 +426,12 @@ var AEV_Library = (function () {
     status.className = isError ? "error" : "";
   }
 
-  function refresh(done) {
+  /**
+   * 重新扫描并渲染。
+   * @param {function} done    完成回调
+   * @param {boolean} force    true = 强制重扫 AE 效果清单（用户点了「重新扫描」）
+   */
+  function refresh(done, force) {
     var button = byId("btnRefresh");
     button.disabled = true;
     setStatus(state.lang === "zh" ? "正在扫描 AE 效果…" : "Scanning AE effects…", false);
@@ -526,7 +536,7 @@ var AEV_Library = (function () {
                 button.disabled = false;
                 if (done) done(null);
               });
-            });
+            }, force);
           });
         });
       });
@@ -877,7 +887,10 @@ var AEV_Library = (function () {
       rebuildItems();
       render();
     });
-    byId("btnRefresh").addEventListener("click", refresh);
+    byId("btnRefresh").addEventListener("click", function () {
+      // 「重新扫描」= 强制重扫 AE 效果清单（用户可能刚装了新插件）
+      refresh(null, true);
+    });
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
     byId("thumbSize").addEventListener("input", function () {

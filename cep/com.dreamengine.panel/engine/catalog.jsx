@@ -64,7 +64,12 @@ var AEV_Catalog = (function () {
         }
     }
 
-    function getCatalogJson() {
+    /* 会话内缓存：枚举 app.effects 要走 1371 条，是面板刷新发顿的来源之一。
+       缓存到 AE 会话结束；用户点「重新扫描」时传 force=true 重建。 */
+    var cacheJson = "";
+
+    function getCatalogJson(force) {
+        if (!force && cacheJson) return cacheJson;
         var effects = app.effects;
         var rows = [];
         var total = effects.length;
@@ -76,7 +81,8 @@ var AEV_Catalog = (function () {
                 ',"category":' + jsonString(effect.category) + "}"
             );
         }
-        return '{"version":1,"count":' + total + ',"effects":[' + rows.join(",") + "]}";
+        cacheJson = '{"version":1,"count":' + total + ',"effects":[' + rows.join(",") + "]}";
+        return cacheJson;
     }
 
     /** 描述单个属性节点；组节点带 children */
