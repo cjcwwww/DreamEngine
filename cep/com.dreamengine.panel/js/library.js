@@ -1316,6 +1316,25 @@ var AEV_Library = (function () {
   }
 
   /**
+   * 搜索框的展开/收起。
+   *
+   * 平时只显示一个小图标（面板可以拖得很窄，常驻的大输入框会把筛选栏
+   * 挤爆）；点一下才展开输入框并聚焦。
+   */
+  function setSearchOpen(open, inputId, fieldId, toggleId) {
+    var field = byId(fieldId);
+    var toggle = byId(toggleId);
+    var input = byId(inputId);
+    if (!field || !toggle || !input) return;
+    field.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      input.focus();
+      input.select();
+    }
+  }
+
+  /**
    * 主视图切换：效果预览 / 预设预览。
    *
    * 两个视图同级，切换栏固定在面板最上方。
@@ -1345,6 +1364,23 @@ var AEV_Library = (function () {
     byId("searchInput").addEventListener("input", function () {
       state.query = this.value;
       render();
+    });
+    byId("searchToggle").addEventListener("click", function () {
+      setSearchOpen(true, "searchInput", "searchField", "searchToggle");
+    });
+    // 输入框里按 Esc 收起；输入框外点击也收起（点别处就不该占着位置）
+    byId("searchInput").addEventListener("keydown", function (event) {
+      if (event.key === "Escape" || event.keyCode === 27) {
+        this.value = "";
+        state.query = "";
+        render();
+        setSearchOpen(false, "searchInput", "searchField", "searchToggle");
+      }
+    });
+    byId("searchWrap").addEventListener("click", function (event) {
+      if (event.target === this) {
+        setSearchOpen(false, "searchInput", "searchField", "searchToggle");
+      }
     });
     byId("pluginFilter").addEventListener("change", function () {
       state.plugin = this.value;
@@ -1380,6 +1416,22 @@ var AEV_Library = (function () {
     byId("presetSearch").addEventListener("input", function () {
       state.presetQuery = this.value;
       renderPresetList();
+    });
+    byId("presetSearchToggle").addEventListener("click", function () {
+      setSearchOpen(true, "presetSearch", "presetSearchField", "presetSearchToggle");
+    });
+    byId("presetSearch").addEventListener("keydown", function (event) {
+      if (event.key === "Escape" || event.keyCode === 27) {
+        this.value = "";
+        state.presetQuery = "";
+        renderPresetList();
+        setSearchOpen(false, "presetSearch", "presetSearchField", "presetSearchToggle");
+      }
+    });
+    byId("presetSearchWrap").addEventListener("click", function (event) {
+      if (event.target === this) {
+        setSearchOpen(false, "presetSearch", "presetSearchField", "presetSearchToggle");
+      }
     });
     byId("thumbSize").addEventListener("input", function () {
       setThumbSize(this.value);

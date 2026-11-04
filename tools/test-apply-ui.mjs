@@ -162,6 +162,34 @@ test("切帧前先预加载，避免首次悬停闪几下", () => {
   assert.match(code, /preloadFrames\(urls/);
 });
 
+/* ---------- 5. 搜索框收成图标 ---------- */
+
+test("搜索框平时是图标，点一下才展开输入框", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  // 图标按钮 + 隐藏的输入框
+  assert.match(html, /id="searchToggle"/);
+  assert.match(html, /id="searchField"[^>]*hidden/);
+  assert.match(html, /id="searchInput"/);
+  // 展开逻辑
+  assert.match(lib, /function setSearchOpen\(/);
+  assert.match(lib, /byId\("searchToggle"\)\.addEventListener\("click"/);
+  // Esc 收起
+  assert.match(lib, /keyCode === 27/);
+  // 收起时输入框隐藏
+  assert.match(css, /\.search-field\[hidden\]\s*\{\s*display: none/);
+});
+
+test("预设视图的搜索框也是图标形态", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(html, /id="presetSearchToggle"/);
+  assert.match(html, /id="presetSearchField"[^>]*hidden/);
+  assert.match(html, /id="presetSearch"/);
+  assert.match(lib, /byId\("presetSearchToggle"\)\.addEventListener\("click"/);
+});
+
 test("mark_animated 工具按帧字节比对判定静态，且写独立索引", () => {
   const tool = read("tools/mark_animated.mjs");
   assert.match(tool, /createHash\("md5"\)/);

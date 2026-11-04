@@ -48,13 +48,22 @@
   </header>
 
   <section class="controls" id="effectControls">
-    <label class="search-field">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="m21 21-4.3-4.3"/>
-      </svg>
-      <input id="searchInput" type="search" placeholder="搜索效果或分类" autocomplete="off"/>
-    </label>
+    <div class="search-wrap" id="searchWrap">
+      <button class="icon-button search-toggle" id="searchToggle" type="button"
+              title="搜索效果或分类" aria-label="搜索效果或分类" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+      </button>
+      <label class="search-field" id="searchField" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input id="searchInput" type="search" placeholder="搜索效果或分类" autocomplete="off"/>
+      </label>
+    </div>
     <select id="pluginFilter" aria-label="插件筛选">
       <option value="全部">全部来源</option>
       <option value="内置" selected>内置</option>
@@ -93,7 +102,18 @@
     <div class="preset-head">
       <h2>预设库</h2>
       <div class="preset-tools">
-        <input id="presetSearch" type="search" placeholder="搜索预设" autocomplete="off"/>
+        <div class="search-wrap" id="presetSearchWrap">
+          <button class="icon-button search-toggle" id="presetSearchToggle" type="button"
+                  title="搜索预设" aria-label="搜索预设" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </button>
+          <label class="search-field" id="presetSearchField" hidden>
+            <input id="presetSearch" type="search" placeholder="搜索预设" autocomplete="off"/>
+          </label>
+        </div>
         <button class="action-button" id="btnPresetAdd" type="button" title="选择 .ffx 文件加入预设库">添加预设</button>
       </div>
     </div>
