@@ -12,23 +12,36 @@
 // ============================================================
 
 (function dumpParamTrees() {
+    /** 第二批：主攻 CC 系列（候选池里占比最大的一类）与两层输入/调整层效果。
+     *  刻意不含 ADBE Numbers2 / ADBE Timecode —— 它们在 addProperty 时弹模态框，
+     *  脚本会永久卡住（实测踩过）。也不含 CC Drizzle（渲染挂起）。
+     */
     var TARGETS = [
-        "ADBE Gaussian Blur 2", "ADBE Box Blur2", "ADBE Radial Blur",
-        "ADBE Directional Blur", "ADBE Sharpen", "ADBE Unsharp Mask2",
-        "ADBE Brightness & Contrast 2", "ADBE HUE SATURATION", "ADBE Tint",
-        "ADBE CurvesCustom", "ADBE Easy Levels2", "ADBE Color Balance2",
-        "ADBE Invert", "ADBE Mosaic", "ADBE Find Edges", "ADBE Glo2",
-        "ADBE Turbulent Displace", "ADBE Wave Warp", "ADBE Ripple",
-        "ADBE Bulge", "ADBE Twirl", "ADBE Polar Coordinates",
-        "ADBE Drop Shadow", "ADBE Bevel Alpha", "ADBE Fractal Noise",
-        "ADBE Ramp", "ADBE Stroke", "ADBE Fill"
+        // CC 模糊与锐化
+        "CC Radial Blur", "CC Vector Blur",
+        // CC 颜色
+        "CC Color Offset", "CC Toner", "CC Overbrights",
+        // CC 风格化
+        "CC Threshold", "CC Threshold RGB", "CC Kaleida", "CC Glass",
+        "CC Plastic", "CC RepeTile", "CC Mr. Smoothie",
+        // CC 扭曲
+        "CC Bend It", "CC Blobbylize", "CC Flo Motion", "CC Griddler",
+        "CC Page Turn", "CC Ripple Pulse", "CC Slant", "CC Smear",
+        "CC Split", "CC Split 2", "CC Tiler", "CC WarpoMatic",
+        // CC 生成 / 过渡 / 透视
+        "CC Light Burst 2.5", "CC Light Rays", "CC Light Sweep",
+        "CC Glue Gun", "CC Scale Wipe", "CC Grid Wipe", "CC Image Wipe",
+        "CC Star Burst", "CC Scatterize", "CC Cylinder", "CC Sphere",
+        // 两层输入 / 调整层（M2 新场景的验证目标）
+        "ADBE Displacement Map", "ADBE Compound Blur", "ADBE Set Matte3",
+        "ADBE Fill", "ADBE Ramp", "ADBE Gradient Wipe", "ADBE 4ColorGradient"
     ];
 
     var ext = new Folder(Folder.userData.fsName + "/Adobe/CEP/extensions/com.dreamengine.panel");
     var outDir = new Folder(Folder.myDocuments.fsName + "/DreamEngineProbe");
     if (!outDir.exists) outDir.create();
 
-    var tsv = new File(outDir.fsName + "/param_trees.tsv");
+    var tsv = new File(outDir.fsName + "/param_trees_b2.tsv");
     tsv.encoding = "UTF-8";
     var lines = ["matchName\tparamName\ttype\tmin\tmax"];
 
