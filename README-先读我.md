@@ -1,6 +1,6 @@
 # DreamEngine · AE 效果可视化面板
 
-DreamEngine 是自用的 After Effects 效果可视化面板：用 CEP 做薄 UI，用 ExtendScript 读写 AE 数据，并以离线预渲染为首选预览来源。当前已完成 M0，并跑通 M1 的首个端到端竖向切片；完整 M1 仍在进行中。
+DreamEngine 是自用的 After Effects 效果可视化面板：用 CEP 做薄 UI，用 ExtendScript 读写 AE 数据，并以离线预渲染为首选预览来源。当前 M0 已归档，M1 / M2 / M2.5 完成，M3 主体完成，M4 曲线编辑器代码完成、待实机验收。
 
 设计与任务拆解先读这两份：
 
@@ -92,7 +92,10 @@ T0_7 的三条命令输出全文
 - 面板已改名为 DreamEngine，CEP Bundle / Extension ID 使用 `com.dreamengine.panel`。
 - 探针目录、AE 输出模板和当前代码路径均已统一为 DreamEngine 命名。
 - M1 首屏已打通：20 个真实预览、本机 1371 个效果、566 个唯一名字、双语、搜索、来源筛选、缺图占位和重新扫描。
-- M1 尚未完整完成：`store.jsx`、完整参数树、engine 化的 `names` / `recipe` / `previewgen`、运行时生成队列、CC2022/2023 实机验收。
+- M1 代码项已完成，仅剩 CC2022 / CC2023 实机验收。
+- M4 曲线编辑器代码完成：换算数学（`engine/curve_math.js`）由面板与 ExtendScript 共用一份，
+  值图 / 速度图 / 路径图三视图、把手拖拽、整批 undo、写回前指纹校验都已落地；
+  标定夹具与目视验收待实机。
 - 详细进度与待办以 `进度清单.md` 为准。
 
 ---

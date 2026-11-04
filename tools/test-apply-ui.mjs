@@ -19,9 +19,13 @@ import vm from "node:vm";
 const ROOT = resolve(import.meta.dirname, "..");
 const read = (rel) => readFileSync(resolve(ROOT, rel), "utf8");
 
-/** 剥掉注释，避免注释里提到的写法被当成代码 */
+/** 剥掉注释，避免注释里提到的写法被当成代码
+ *  先统一换行符：Windows 检出（core.autocrlf=true）是 CRLF，
+ *  按 "\n" 切完每行尾部还剩 "\r"，`//.*$` 就匹配不到行尾，
+ *  注释剥不掉 → 注释里提到的 getItemByName 会被误判成代码。 */
 function codeOf(source) {
   return source
+    .replace(/\r\n/g, "\n")
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .split("\n")
     .map((line) => line.replace(/^\s*\/\/.*$/, ""))

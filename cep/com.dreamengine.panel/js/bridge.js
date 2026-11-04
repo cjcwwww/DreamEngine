@@ -86,13 +86,16 @@ var Bridge = (function () {
   }
 
   /** engine 目录下的模块，按依赖顺序加载。
-   *  render_config 必须最先（previewgen 读它的定版参数），
+   *  curve_math 必须最先（纯数学，浏览器也加载同一个文件）；
+   *  render_config 次之（previewgen 读它的定版参数）；
    *  store 与 recipe 在 previewgen 之前（previewgen 依赖两者）。
    */
   var ENGINE_FILES = [
+    "engine/curve_math.js",
     "engine/render_config.jsx",
     "engine/store.jsx",
     "engine/names.jsx",
+    "engine/curvelib.jsx",
     "engine/assets.jsx",
     "engine/recipe.jsx",
     "engine/apply.jsx",
@@ -146,6 +149,7 @@ var Bridge = (function () {
       "    else if (typeof AEV_Recipe === 'undefined') missing = 'AEV_Recipe';" +
       "    else if (typeof AEV_Apply === 'undefined') missing = 'AEV_Apply';" +
       "    else if (typeof AEV_Presets === 'undefined') missing = 'AEV_Presets';" +
+      "    else if (typeof AEV_Curve === 'undefined') missing = 'AEV_Curve';" +
       "    if (typeof AEV_EngineStamp === 'undefined') AEV_EngineStamp = '';" +
       "    if (stamp !== AEV_EngineStamp || missing !== '') {" +
       // 逐个 evalFile 并各自捕获：某一个模块加载失败时，

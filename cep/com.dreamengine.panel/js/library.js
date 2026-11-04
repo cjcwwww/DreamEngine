@@ -33,7 +33,7 @@ var AEV_Library = (function () {
     categoryOrder: [],
     // 预览格尺寸（px）。面板比例不同、卡片实际渲染大小不同时可手动调。
     thumbSize: 132,
-    // 当前主视图：effects = 效果预览，presets = 预设预览
+    // 当前主视图：effects = 效果预览，presets = 预设预览，curve = 曲线编辑
     view: "effects",
     // 已知「帧内容完全相同」的预览：这些是静态效果，不该轮播（会闪）
     staticPreviews: {}
@@ -469,6 +469,8 @@ var AEV_Library = (function () {
       lang === "zh" ? "搜索效果或分类" : "Search effects or categories";
     updateHeader();
     render();
+    // 曲线视图的标签（预设下拉、提示语）跟着语言走
+    if (state.view === "curve" && window.AEV_CurveUI) AEV_CurveUI.enter();
   }
 
   /**
@@ -1532,23 +1534,31 @@ var AEV_Library = (function () {
   }
 
   /**
-   * 主视图切换：效果预览 / 预设预览。
+   * 主视图切换：效果预览 / 预设预览 / 曲线编辑。
    *
-   * 两个视图同级，切换栏固定在面板最上方。
-   * 切到预设视图时才去读预设库 —— 效果视图用不到它。
+   * 三个视图同级，切换栏固定在面板最上方。用表驱动而不是逐个写 if：
+   * 以后再加视图（比如批量导入）只改这两张表。
    */
+  var VIEW_TABS = { effects: "tabEffects", presets: "tabPresets", curve: "tabCurve" };
+  var VIEW_PANELS = { effects: "viewEffects", presets: "viewPresets", curve: "viewCurve" };
+
   function setView(view) {
     state.view = view;
-    var isEffects = view === "effects";
-    byId("viewEffects").hidden = !isEffects;
-    byId("viewPresets").hidden = isEffects;
-    byId("tabEffects").className = "view-tab" + (isEffects ? " active" : "");
-    byId("tabPresets").className = "view-tab" + (!isEffects ? " active" : "");
-    byId("tabEffects").setAttribute("aria-selected", isEffects ? "true" : "false");
-    byId("tabPresets").setAttribute("aria-selected", !isEffects ? "true" : "false");
-    // 效果墙专属的工具条在预设视图下没有意义（搜索的是效果不是预设）
-    byId("effectControls").hidden = !isEffects;
-    if (isEffects) {
+    var key;
+    for (key in VIEW_PANELS) {
+      if (!VIEW_PANELS.hasOwnProperty(key)) continue;
+      var panel = byId(VIEW_PANELS[key]);
+      if (panel) panel.hidden = key !== view;
+      var tab = byId(VIEW_TABS[key]);
+      if (tab) {
+        tab.className = "view-tab" + (key === view ? " active" : "");
+        tab.setAttribute("aria-selected", key === view ? "true" : "false");
+      }
+    }
+    // 效果墙专属的工具条在另外两个视图下没有意义（搜索的是效果不是预设/曲线）
+    byId("effectControls").hidden = view !== "effects";
+
+    if (view === "effects") {
       // 切回来时重建效果墙：离开时把 DOM 清空了
       render();
     } else {
@@ -1556,8 +1566,11 @@ var AEV_Library = (function () {
       // 但每次切回来都要重建，白白浪费一次建 hundreds 个节点的开销。
       var grid = byId("previewGrid");
       if (grid) grid.textContent = "";
-      loadPresetLibrary();
     }
+
+    if (view === "presets") loadPresetLibrary();
+    // 曲线视图每次进入都重读 AE 选中态：用户很可能刚在时间轴里换了属性
+    if (view === "curve" && window.AEV_CurveUI) AEV_CurveUI.enter();
   }
 
   function boot() {
@@ -1565,6 +1578,7 @@ var AEV_Library = (function () {
     byId("langEn").addEventListener("click", function () { setLanguage("en"); });
     byId("tabEffects").addEventListener("click", function () { setView("effects"); });
     byId("tabPresets").addEventListener("click", function () { setView("presets"); });
+    byId("tabCurve").addEventListener("click", function () { setView("curve"); });
     byId("sortName").addEventListener("click", function () { setSortMode("name"); });
     byId("sortCategory").addEventListener("click", function () { setSortMode("category"); });
     byId("searchInput").addEventListener("input", function () {
@@ -1661,6 +1675,17 @@ var AEV_Library = (function () {
       setThumbSize(this.value);
     });
     setThumbSize(byId("thumbSize").value);
+
+    // 曲线编辑器：面板把自己的引擎通道与状态栏注入进去，
+    // curve.js 不直接依赖 Bridge / 本文件的私有状态（否则又是一处耦合）。
+    if (window.AEV_CurveUI) {
+      AEV_CurveUI.init({
+        engine: engine,
+        parse: parseEngineResult,
+        status: setStatus,
+        lang: function () { return state.lang; }
+      });
+    }
 
     /* 面板被拖宽或拖窄时重新收敛实际尺寸（滑块范围始终 48–180，不变）。
        否则会出现「滑块标 180、实际只有 150」的错位。 */

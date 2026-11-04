@@ -15,6 +15,9 @@
     <button class="view-tab" id="tabPresets" type="button" role="tab" aria-selected="false">
       预设预览
     </button>
+    <button class="view-tab" id="tabCurve" type="button" role="tab" aria-selected="false">
+      曲线编辑
+    </button>
   </nav>
 
   <header class="topbar">
@@ -117,6 +120,33 @@
     <div class="preset-grid" id="presetList"></div>
   </section>
 
+  <section class="curve-view" id="viewCurve" hidden aria-label="曲线编辑">
+    <div class="curve-toolbar">
+      <button class="action-button" id="btnCurveRead" type="button"
+              title="读取 AE 当前选中的属性">读取选中</button>
+      <select class="curve-prop" id="curveProp" aria-label="属性"></select>
+      <div class="segmented" role="group" aria-label="图表类型">
+        <button class="segment active" id="curveModeValue" type="button" title="值图表">值</button>
+        <button class="segment" id="curveModeSpeed" type="button" title="速度图表">速度</button>
+        <button class="segment" id="curveModePath" type="button" title="空间路径">路径</button>
+      </div>
+      <select id="curveDim" aria-label="维度" hidden></select>
+      <select id="curvePreset" aria-label="缓动预设"></select>
+    </div>
+    <div class="curve-stage" id="curveStage">
+      <canvas id="curveCanvas"></canvas>
+    </div>
+    <p class="curve-hint" id="curveHint"></p>
+    <div class="curve-conflict" id="curveConflict" hidden role="alertdialog" aria-label="并发冲突">
+      <p id="curveConflictText"></p>
+      <div class="curve-conflict-actions">
+        <button class="action-button" id="curveConflictOverwrite" type="button">覆盖</button>
+        <button class="action-button" id="curveConflictReload" type="button">重新载入</button>
+        <button class="action-button" id="curveConflictDrop" type="button">放弃</button>
+      </div>
+    </div>
+  </section>
+
   <footer class="statusbar">
     <span id="statusText" title="">准备扫描</span>
     <span class="size-slider">
@@ -203,7 +233,10 @@
   </aside>
 
   <script src="js/bridge.js"></script>
+  <!-- 曲线纯数学：与 AE 侧 $.evalFile 的是同一个文件，拖拽时才不用过桥 -->
+  <script src="engine/curve_math.js"></script>
   <script src="js/viewmodel.js"></script>
+  <script src="js/curve.js"></script>
   <script src="js/library.js"></script>
 </body>
 </html>

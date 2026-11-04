@@ -229,6 +229,10 @@ if (args.length) {
   });
 } else {
   files = walk(ROOT, []);
+  /* curve_math.js 后缀是 .js（面板要 <script> 加载），但同一份代码也会被
+     ExtendScript 的 $.evalFile 执行 —— 所以它必须守 ES3 规则，纳入本检查。 */
+  const shared = join(ROOT, "cep", "com.dreamengine.panel", "engine", "curve_math.js");
+  if (existsSync(shared) && !files.includes(shared)) files.push(shared);
 }
 
 let errCount = 0, warnCount = 0, cleanCount = 0;

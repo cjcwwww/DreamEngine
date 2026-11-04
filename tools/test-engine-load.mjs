@@ -30,6 +30,15 @@ function test(name, fn) { tests.push({ name, fn }); }
 
 /* ---------- 提取 bridge 里的 jsx 字符串 ---------- */
 
+/** 从 bridge.js 的 ENGINE_FILES 里取出模块名单（不含 engine/ 前缀） */
+function engineFilesOf(source) {
+  const start = source.indexOf("var ENGINE_FILES = [");
+  const end = source.indexOf("];", start);
+  if (start === -1 || end === -1) throw new Error("找不到 ENGINE_FILES");
+  const block = source.slice(start, end);
+  return [...block.matchAll(/"engine\/([^"]+)"/g)].map((m) => m[1]);
+}
+
 /**
  * 把 bridge.js 里 runEngine 的 jsx 拼装代码抠出来，用一个假的 AE 环境跑。
  *
@@ -52,13 +61,13 @@ function extractJsx(source) {
 
   // 在一个带 paths 与 expr 的环境里求值，取出拼好的 jsx 字符串。
   // paths 里的每项要自带引号（真实代码里是 JSON.stringify 过的）。
-  // 模块列表要与真实 ENGINE_FILES 一致，测试才验得到真实行为。
-  const MODULES = [
-    "render_config", "store", "names", "assets", "recipe", "apply",
-    "previewgen", "queue", "plugin_state", "catalog", "presets",
-  ];
+  // 模块列表必须与真实 ENGINE_FILES 一致，测试才验得到真实行为。
+  // 不从 bridge 里读会漂移：加一个模块（M4 的 curve_math / curvelib）就会
+  // 让这里的戳算错，出现「明明模块齐全却被判成需要重载」的假失败。
+  const MODULES = engineFilesOf(read("cep/com.dreamengine.panel/js/bridge.js"));
   const ctx = vm.createContext({
-    paths: MODULES.map((n) => `"/ext/engine/${n}.jsx"`),
+    // 名字已自带扩展名（.jsx / .js），不要重复拼
+    paths: MODULES.map((n) => `"/ext/engine/${n}"`),
     expr: "1 + 1",
   });
   vm.runInContext("var out;" + snippet.replace("var jsx =", "out ="), ctx);
@@ -142,6 +151,8 @@ test("模块齐全且戳没变时跳过重载（保留性能优化）", () => {
   env.AEV_Recipe = true;
   env.AEV_Apply = true;
   env.AEV_Presets = true;
+  // M4 的曲线模块也在这个自愈检查里：缺了会强制重载
+  env.AEV_Curve = true;
   const { result } = runBridgeJsx(jsx, env);
   assert.ok(!result.startsWith("ERR:"), "不该报错：" + result);
   assert.equal(env.evalLog.length, 0, "戳没变时不该重新加载，却加载了 " + env.evalLog.length + " 个");
