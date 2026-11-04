@@ -1276,8 +1276,8 @@ var AEV_Library = (function () {
         // 含插件的预设不能在面板里渲（会杀 AE）：明确告诉用户走离线通道
         var offlineHint = pluginSkipped > 0
           ? (state.lang === "zh"
-              ? " · 含插件 " + pluginSkipped + " 条请关 AE 后跑 node tools/run_plugin_preset_batches.mjs"
-              : " · with AE closed, run run_plugin_preset_batches.mjs for " + pluginSkipped + " plugin presets")
+              ? " · 含插件 " + pluginSkipped + " 条：保存工程后双击「生成插件预设预览.bat」"
+              : " · " + pluginSkipped + " plugin presets: save your project, then run Generate Plugin Preset Previews.bat")
           : "";
         setStatus(
           (state.lang === "zh"

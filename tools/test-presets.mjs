@@ -319,8 +319,41 @@ test("面板合并离线索引，插件预设明确提示走离线脚本", () =>
   const lib = read("cep/com.dreamengine.panel/js/library.js");
   assert.match(lib, /loadOptionalJson\("data\/preset_plugin_manifest\.json"/);
   assert.match(lib, /pluginSkipped/);
-  assert.match(lib, /run_plugin_preset_batches\.mjs/);
+  assert.match(lib, /生成插件预设预览\.bat/);
   assert.match(lib, /preview\.plugin/);
+});
+
+test("给其他用户的一键工具：零 Node 依赖、温和关开 AE、索引无 BOM", () => {
+  const ps1 = read("tools/generate_plugin_presets.ps1");
+  assert.match(ps1, /param\(/);
+  assert.match(ps1, /Read-Host/);              // 关 AE 前必须让用户确认并保存
+  assert.match(ps1, /CloseMainWindow\(\)/);    // 温和关闭，不强制结束
+  assert.match(ps1, /Start-Process -FilePath \$AE \| Out-Null/);
+  assert.match(ps1, /New-Object System\.Text\.UTF8Encoding\(\$false\)/);
+  assert.match(ps1, /ConvertTo-Json/);
+  assert.match(ps1, /preset_plugin_manifest\.json/);
+  // 代码里不能依赖 Node / Python（注释里提到"不需要"不算）
+  const ps1Code = ps1.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n");
+  assert.doesNotMatch(ps1Code, /\bnode\b|\.mjs|python/i);
+  const bat = read("tools/生成插件预设预览.bat");
+  assert.match(bat, /-File "%PS1%"/);
+  assert.match(bat, /%~dp0tools\\generate_plugin_presets\.ps1/); // 分发包里 bat 在根目录
+  assert.match(bat, /pause/);
+});
+
+test("分发包会把一键工具带上，安装脚本与 README 都有说明", () => {
+  const build = read("tools/build_release.mjs");
+  assert.match(build, /DreamEngine\/tools/);
+  for (const name of [
+    "generate_plugin_presets.ps1",
+    "生成插件预设预览.bat",
+    "run_plugin_preset_preview.jsx",
+  ]) {
+    assert.ok(build.includes(`"${name}"`), `打包清单缺 ${name}`);
+  }
+  assert.match(build, /Copy-Item -Force \(Join-Path \$here "tools/);
+  assert.match(build, /生成插件预设预览\.bat/);
+  assert.match(build, /不需要 Node/);
 });
 
 /* ---------- 运行 ---------- */
