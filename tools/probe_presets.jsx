@@ -81,12 +81,21 @@
         return;
     }
 
-    /* 挑一个「效果类」预设（Image - Special Effects 之类） */
+    /* 挑一个预设：优先「夜视」（T0.4 实测能安全应用的那个），
+       否则退回 Image - Special Effects 里的第一个，最后才用任意一个。 */
     var target = null;
     for (var t = 0; t < scanned.items.length; t++) {
-        if (String(scanned.items[t].category).indexOf("Image") >= 0) {
+        if (String(scanned.items[t].name).indexOf("夜视") >= 0) {
             target = scanned.items[t];
             break;
+        }
+    }
+    if (!target) {
+        for (var t2 = 0; t2 < scanned.items.length; t2++) {
+            if (String(scanned.items[t2].category).indexOf("Special Effects") >= 0) {
+                target = scanned.items[t2];
+                break;
+            }
         }
     }
     if (!target) target = scanned.items[0];
