@@ -492,6 +492,78 @@ var AEV_Recipe = (function () {
         }
     }
 
+    /**
+     * 给任意效果的主数值参数打关键帧（不依赖显式配方）。
+     *
+     * 背景：六成以上的效果没有显式配方，走的是启发式赋值。
+     * 它们同样需要动起来——否则缩略图是静止的，看不出效果在做什么。
+     * 这里取启发式写过的第一个一维数值参数，从 0 渐变到它当前的取值。
+     *
+     * 颜色与位置类一律跳过：颜色渐变到 0 会变成黑场，位置类单位不统一。
+     */
+    function animateAny(effectGroup, durationSeconds) {
+        var end = Number(durationSeconds);
+        if (!end || end <= 0) return false;
+
+        var found = null;
+        function walk(group, depth) {
+            if (found || depth > MAX_DEPTH) return;
+            var count = 0;
+            try {
+                count = group.numProperties;
+            } catch (e) {
+                return;
+            }
+            for (var i = 1; i <= count && !found; i++) {
+                var prop = null;
+                try {
+                    prop = group.property(i);
+                } catch (e2) {
+                    continue;
+                }
+                if (!prop) continue;
+                var childCount = 0;
+                try {
+                    childCount = prop.numProperties;
+                } catch (e3) {
+                    childCount = 0;
+                }
+                if (childCount && childCount > 0) {
+                    walk(prop, depth + 1);
+                    continue;
+                }
+                if (kindOf(prop) !== "oneD") continue;
+                found = prop;
+            }
+        }
+        walk(effectGroup, 0);
+        if (!found) return false;
+
+        var target = null;
+        try {
+            target = Number(found.value);
+        } catch (e4) {
+            return false;
+        }
+        if (isNaN(target) || target === 0) return false;
+
+        var start = 0;
+        try {
+            if (found.hasMin) {
+                var minValue = Number(found.minValue);
+                if (minValue > 0 && minValue < target) start = minValue;
+            }
+        } catch (e5) {}
+
+        try {
+            found.setValueAtTime(0, start);
+            found.setValueAtTime(end, target);
+            return true;
+        } catch (e6) {
+            return false;
+        }
+    }
+
     /** 统一入口：有配方走配方，没有就走启发式 */
     function apply(effectGroup, matchName, cellSize) {
         var explicitWrites = applyRecipe(effectGroup, matchName);
@@ -576,6 +648,7 @@ var AEV_Recipe = (function () {
         applyRecipe: applyRecipe,
         applyHeuristics: applyHeuristics,
         animate: animate,
+        animateAny: animateAny,
         apply: apply,
         recipes: RECIPES
     };

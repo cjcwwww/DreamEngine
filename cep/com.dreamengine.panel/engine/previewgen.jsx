@@ -250,6 +250,9 @@ var AEV_PreviewGen = (function () {
                         // 缩略图轮播就是静止画面（实测 60 条里 59 条如此）。
                         if (applied && applied.mode === "recipe") {
                             AEV_Recipe.animate(effectGroup, matchName, durationSeconds);
+                        } else {
+                            // 走启发式的效果同样要动起来，否则大半缩略图是静止的
+                            AEV_Recipe.animateAny(effectGroup, durationSeconds);
                         }
                     }
                 } catch (eRecipe) {

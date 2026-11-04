@@ -35,8 +35,14 @@ rm -f "$DATA_REL"/manifest.json.backup-*
 # 2. 快进合并
 git merge --ff-only "$BRANCH"
 
-# 3. 重装 L1 内置包（打包产物与运行时目录保持一致）
+# 3. 先按运行时的最新成果重新打包，再装回去。
+#    顺序不能反：直接装旧包会把刚渲出来的预览覆盖成上一轮的结果。
+#    （实测踩过：整批重渲 60 条之后一同步，索引被打回旧包，帧文件成了孤儿。）
 cd "$HERE"
+if [ -f "$MAIN/$DATA_REL/manifest.json" ]; then
+  node tools/package_l1.mjs --data "$MAIN/$DATA_REL" --out "dist/L1" || \
+    echo "重新打包失败，沿用仓库里的包"
+fi
 node tools/install_l1.mjs --target "$MAIN/$DATA_REL"
 
 # 4. 报告
