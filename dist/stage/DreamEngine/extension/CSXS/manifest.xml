@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0"
+                   ExtensionBundleId="com.dreamengine.panel"
+                   ExtensionBundleVersion="0.2.0"
+                   ExtensionBundleName="DreamEngine"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <ExtensionList>
+    <Extension Id="com.dreamengine.panel.main" Version="0.2.0"/>
+  </ExtensionList>
+
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- AEFT = After Effects。下界取 18.0：本机实测为 AE 2021 (18.4.1)，原值 [22.0,99.0] 会让面板在本机不加载。
+           设计目标区间 CC2022(22.x)~2026(26.x) 仍在 [18.0,99.0] 之内，兼容性只增不减。
+           参考实证：AE 2021 自带面板 com.adobe.ccx.start 声明 [17.1.1,99.9]；本机已装的 Flow v1.4.2 声明 [13.5,99.9]。 -->
+      <Host Name="AEFT" Version="[18.0,99.0]"/>
+    </HostList>
+
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+
+    <RequiredRuntimeList>
+      <!-- 该字段语义为"最低运行时要求"且向上兼容，取低值兼容性最好。
+           本机实证：CEPHtmlEngine.exe 版本 = 11.1.0（CEP 11）；AE 2021 自带面板与已装 Flow v1.4.2 均声明 6.0 且可正常加载。
+           故取 6.0（原值 12.0 高于本机 11.1.0，会导致面板不加载）。
+           本机 24 个可加载扩展的该字段分布为 5.0/6.0/9.0/11.0，无一例 12.0。
+           面板仅用 window.__adobe_cep__.evalScript 等基础 API，不依赖高版本特性；
+           写盘走 evalScript 在 ExtendScript 内 new File() 实现，因此无需开启 Node（CEFCommandLine 里 enable-nodejs 那个参数）。
+           注意：本文件是 XML，注释内不得出现连续两个减号，否则解析失败导致面板不加载。 -->
+      <RequiredRuntime Name="CSXS" Version="6.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+
+  <DispatchInfoList>
+    <Extension Id="com.dreamengine.panel.main">
+      <DispatchInfo>
+        <Resources>
+          <!-- 标签名必须是 MainPath 而非 MainFile：本机 24 个可正常加载的扩展（AE 自带面板、Flow、Colorista、
+               CC Libraries、Film Impact 等）全部使用 <MainPath>，无一使用 <MainFile>。
+               路径写法沿用同一惯例：相对扩展根的 ./index.html -->
+          <MainPath>./index.html</MainPath>
+        </Resources>
+
+        <Lifecycle>
+          <AutoStart>false</AutoStart>
+        </Lifecycle>
+
+        <UI>
+          <Type>Panel</Type>
+          <Menu>DreamEngine</Menu>
+          <Geometry>
+            <Size>
+              <Height>620</Height>
+              <Width>920</Width>
+            </Size>
+            <Max>
+              <Height>1400</Height>
+              <Width>2000</Width>
+            </Max>
+            <Min>
+              <Height>360</Height>
+              <Width>520</Width>
+            </Min>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

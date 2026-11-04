@@ -1,0 +1,1733 @@
+{
+  "version": 2,
+  "cellSize": 128,
+  "columns": 8,
+  "width": 1024,
+  "height": 1024,
+  "sheets": [
+    {
+      "index": 0,
+      "src": "thumbs/batch_000_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 1,
+      "src": "thumbs/batch_001_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 2,
+      "src": "thumbs/batch_002_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 3,
+      "src": "thumbs/batch_003_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 4,
+      "src": "thumbs/batch_004_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 5,
+      "src": "thumbs/batch_005_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 6,
+      "src": "thumbs/batch_006_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 7,
+      "src": "thumbs/batch_007_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 8,
+      "src": "thumbs/batch_008_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 9,
+      "src": "thumbs/batch_009.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 10,
+      "src": "thumbs/batch_010_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 11,
+      "src": "thumbs/batch_011_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 12,
+      "src": "thumbs/batch_012_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 13,
+      "src": "thumbs/batch_013.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 14,
+      "src": "thumbs/batch_014_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 15,
+      "src": "thumbs/batch_015.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 16,
+      "src": "thumbs/batch_016_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 17,
+      "src": "thumbs/batch_017.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 18,
+      "src": "thumbs/batch_018_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 19,
+      "src": "thumbs/batch_019.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 20,
+      "src": "thumbs/batch_020_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 21,
+      "src": "thumbs/batch_021.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 22,
+      "src": "thumbs/batch_022_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 23,
+      "src": "thumbs/batch_023.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 24,
+      "src": "thumbs/batch_024_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 25,
+      "src": "thumbs/batch_025_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 26,
+      "src": "thumbs/batch_026_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 27,
+      "src": "thumbs/batch_027_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 28,
+      "src": "thumbs/batch_028_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 29,
+      "src": "thumbs/batch_029_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 30,
+      "src": "thumbs/batch_030.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 31,
+      "src": "thumbs/batch_031_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 32,
+      "src": "thumbs/batch_032_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 33,
+      "src": "thumbs/batch_033.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 34,
+      "src": "thumbs/batch_034_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 35,
+      "src": "thumbs/batch_035_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 36,
+      "src": "thumbs/batch_036_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 37,
+      "src": "thumbs/batch_037_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 38,
+      "src": "thumbs/batch_038.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 39,
+      "src": "thumbs/batch_039_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 40,
+      "src": "thumbs/batch_040.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 41,
+      "src": "thumbs/batch_041_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 42,
+      "src": "thumbs/batch_042.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 43,
+      "src": "thumbs/batch_043_0000.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "index": 44,
+      "src": "thumbs/batch_044_0000.png",
+      "width": 1024,
+      "height": 1024
+    }
+  ],
+  "items": [
+    {
+      "matchName": "ADBE Brightness & Contrast 2",
+      "sheet": 0,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_000_%04d.png",
+      "key": "kkbxlc"
+    },
+    {
+      "matchName": "ADBE Easy Levels2",
+      "sheet": 0,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_000_%04d.png",
+      "key": "xohb6o"
+    },
+    {
+      "matchName": "ADBE HUE SATURATION",
+      "sheet": 0,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_000_%04d.png",
+      "key": "en30e5"
+    },
+    {
+      "matchName": "ADBE Color Balance 2",
+      "sheet": 0,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_000_%04d.png",
+      "key": "7msrm0"
+    },
+    {
+      "matchName": "ADBE CurvesCustom",
+      "sheet": 1,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_001_%04d.png",
+      "key": "lj7nwk"
+    },
+    {
+      "matchName": "ADBE Tint",
+      "sheet": 1,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_001_%04d.png",
+      "key": "45yxn4"
+    },
+    {
+      "matchName": "ADBE Black&White",
+      "sheet": 1,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_001_%04d.png",
+      "key": "ik2jf9"
+    },
+    {
+      "matchName": "ADBE CHANNEL MIXER",
+      "sheet": 1,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_001_%04d.png",
+      "key": "ulby7j"
+    },
+    {
+      "matchName": "ADBE Bulge",
+      "sheet": 2,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_002_%04d.png",
+      "key": "70byww"
+    },
+    {
+      "matchName": "ADBE Corner Pin",
+      "sheet": 2,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_002_%04d.png",
+      "key": "wr0fkx"
+    },
+    {
+      "matchName": "ADBE BEZMESH",
+      "sheet": 2,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_002_%04d.png",
+      "key": "99ssin"
+    },
+    {
+      "matchName": "ADBE Mirror",
+      "sheet": 2,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_002_%04d.png",
+      "key": "66c6uk"
+    },
+    {
+      "matchName": "CC Kaleida",
+      "sheet": 3,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_003_%04d.png",
+      "key": "zj4ae"
+    },
+    {
+      "matchName": "CC Burn Film",
+      "sheet": 3,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_003_%04d.png",
+      "key": "fk3jhm"
+    },
+    {
+      "matchName": "CC Slant",
+      "sheet": 3,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_003_%04d.png",
+      "key": "rsk52l"
+    },
+    {
+      "matchName": "ADBE Fill",
+      "sheet": 3,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_003_%04d.png",
+      "key": "d0j4fs"
+    },
+    {
+      "matchName": "ADBE Timewarp",
+      "sheet": 4,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_004_%04d.png",
+      "key": "yp4qpm"
+    },
+    {
+      "matchName": "ADBE Bilateral",
+      "sheet": 4,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_004_%04d.png",
+      "key": "uzuri9"
+    },
+    {
+      "matchName": "ADBE Brush Strokes",
+      "sheet": 4,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_004_%04d.png",
+      "key": "fzvqmf"
+    },
+    {
+      "matchName": "ADBE Block Dissolve",
+      "sheet": 4,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_004_%04d.png",
+      "key": "ah00bp"
+    },
+    {
+      "matchName": "ADBE Pro Levels2",
+      "sheet": 5,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_005_%04d.png",
+      "key": "1yoenz"
+    },
+    {
+      "matchName": "ADBE PhotoFilterPS",
+      "sheet": 5,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_005_%04d.png",
+      "key": "y0lz7o"
+    },
+    {
+      "matchName": "ADBE Leave Color",
+      "sheet": 5,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_005_%04d.png",
+      "key": "6iuwt9"
+    },
+    {
+      "matchName": "ADBE Threshold2",
+      "sheet": 5,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_005_%04d.png",
+      "key": "oqkh8w"
+    },
+    {
+      "matchName": "ADBE Polar Coordinates",
+      "sheet": 6,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_006_%04d.png",
+      "key": "nsehyi"
+    },
+    {
+      "matchName": "ADBE Glo2",
+      "sheet": 6,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_006_%04d.png",
+      "key": "vygr8l"
+    },
+    {
+      "matchName": "ADBE Bevel Alpha",
+      "sheet": 6,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_006_%04d.png",
+      "key": "pbl4yt"
+    },
+    {
+      "matchName": "ADBE Mosaic",
+      "sheet": 6,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_006_%04d.png",
+      "key": "v12x1p"
+    },
+    {
+      "matchName": "ADBE Set Matte3",
+      "sheet": 7,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_007_%04d.png",
+      "key": "jfzpd7"
+    },
+    {
+      "matchName": "ADBE Calculations",
+      "sheet": 7,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_007_%04d.png",
+      "key": "bfvz03"
+    },
+    {
+      "matchName": "CC Force Motion Blur",
+      "sheet": 7,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_007_%04d.png",
+      "key": "p4y7r9"
+    },
+    {
+      "matchName": "ADBE Laser",
+      "sheet": 7,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_007_%04d.png",
+      "key": "9apua0"
+    },
+    {
+      "matchName": "ADBE Box Blur2",
+      "sheet": 8,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_008_%04d.png",
+      "key": "dzdh7l"
+    },
+    {
+      "matchName": "ADBE Motion Blur",
+      "sheet": 8,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_008_%04d.png",
+      "key": "71g7mk"
+    },
+    {
+      "matchName": "ADBE Unsharp Mask2",
+      "sheet": 8,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_008_%04d.png",
+      "key": "pkm21c"
+    },
+    {
+      "matchName": "CC Radial Blur",
+      "sheet": 8,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_008_%04d.png",
+      "key": "yaafil"
+    },
+    {
+      "matchName": "ADBE Exposure2",
+      "sheet": 9,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_009.png",
+      "key": "hohywu"
+    },
+    {
+      "matchName": "ADBE Lumetri",
+      "sheet": 10,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_010_%04d.png",
+      "key": "wqijpv"
+    },
+    {
+      "matchName": "ADBE Tritone",
+      "sheet": 10,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_010_%04d.png",
+      "key": "nzp4m"
+    },
+    {
+      "matchName": "ADBE Turbulent Displace",
+      "sheet": 10,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_010_%04d.png",
+      "key": "iycd23"
+    },
+    {
+      "matchName": "ADBE Ripple",
+      "sheet": 11,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_011_%04d.png",
+      "key": "fxteyl"
+    },
+    {
+      "matchName": "ADBE WRPMESH",
+      "sheet": 11,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_011_%04d.png",
+      "key": "37ryv"
+    },
+    {
+      "matchName": "ADBE Offset",
+      "sheet": 11,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_011_%04d.png",
+      "key": "s0ol08"
+    },
+    {
+      "matchName": "ADBE Drop Shadow",
+      "sheet": 11,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_011_%04d.png",
+      "key": "6e2sng"
+    },
+    {
+      "matchName": "ADBE Find Edges",
+      "sheet": 12,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_012_%04d.png",
+      "key": "cqn4m2"
+    },
+    {
+      "matchName": "CC Glass",
+      "sheet": 12,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_012_%04d.png",
+      "key": "mv9lxh"
+    },
+    {
+      "matchName": "ADBE 4ColorGradient",
+      "sheet": 12,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_012_%04d.png",
+      "key": "6g2lu"
+    },
+    {
+      "matchName": "ADBE Dust & Scratches",
+      "sheet": 12,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_012_%04d.png",
+      "key": "63r1nb"
+    },
+    {
+      "matchName": "ADBE Cineon Converter2",
+      "sheet": 13,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_013.png",
+      "key": "dzvuqf"
+    },
+    {
+      "matchName": "ADBE Linear Color Key2",
+      "sheet": 14,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_014_%04d.png",
+      "key": "fu9fza"
+    },
+    {
+      "matchName": "ADBE Arithmetic",
+      "sheet": 14,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_014_%04d.png",
+      "key": "pkgtcr"
+    },
+    {
+      "matchName": "ADBE Playgnd",
+      "sheet": 14,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_014_%04d.png",
+      "key": "7q4x4w"
+    },
+    {
+      "matchName": "ADBE Color Swirl",
+      "sheet": 15,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_015.png",
+      "key": "ghgm0x"
+    },
+    {
+      "matchName": "ADBE Cartoonify",
+      "sheet": 16,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_016_%04d.png",
+      "key": "iimktr"
+    },
+    {
+      "matchName": "ADBE Bevel Edges",
+      "sheet": 16,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_016_%04d.png",
+      "key": "bls7ev"
+    },
+    {
+      "matchName": "ADBE Color Range",
+      "sheet": 16,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_016_%04d.png",
+      "key": "tl9d6l"
+    },
+    {
+      "matchName": "ADBE Posterize Time",
+      "sheet": 17,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_017.png",
+      "key": "bne8rp"
+    },
+    {
+      "matchName": "ADBE Simple Choker",
+      "sheet": 18,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_018_%04d.png",
+      "key": "89ixx3"
+    },
+    {
+      "matchName": "ADBE Blend",
+      "sheet": 18,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_018_%04d.png",
+      "key": "1m0vau"
+    },
+    {
+      "matchName": "ADBE AutoLevels",
+      "sheet": 18,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_018_%04d.png",
+      "key": "n7ud9x"
+    },
+    {
+      "matchName": "APC Caustics",
+      "sheet": 19,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_019.png",
+      "key": "k19vtk"
+    },
+    {
+      "matchName": "ADBE GROW BOUNDS",
+      "sheet": 19,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_019.png",
+      "key": "ynkn4r"
+    },
+    {
+      "matchName": "ADBE Checkerboard",
+      "sheet": 20,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_020_%04d.png",
+      "key": "gqfxq"
+    },
+    {
+      "matchName": "ADBE IRIS_WIPE",
+      "sheet": 20,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_020_%04d.png",
+      "key": "n0r1wc"
+    },
+    {
+      "matchName": "ADBE Separate XYZ Position",
+      "sheet": 21,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_021.png",
+      "key": "m3d46"
+    },
+    {
+      "matchName": "ADBE Emboss",
+      "sheet": 22,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_022_%04d.png",
+      "key": "boxpcq"
+    },
+    {
+      "matchName": "ADBE Noise2",
+      "sheet": 22,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_022_%04d.png",
+      "key": "2drmdd"
+    },
+    {
+      "matchName": "ADBE Linear Wipe",
+      "sheet": 22,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_022_%04d.png",
+      "key": "1m7ba9"
+    },
+    {
+      "matchName": "ADBE RefineMatte2",
+      "sheet": 23,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_023.png",
+      "key": "7o4sev"
+    },
+    {
+      "matchName": "ADBE Channel Combiner",
+      "sheet": 23,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_023.png",
+      "key": "6s75jt"
+    },
+    {
+      "matchName": "APC Foam",
+      "sheet": 24,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_024_%04d.png",
+      "key": "9k8m1o"
+    },
+    {
+      "matchName": "ADBE Noise Alpha2",
+      "sheet": 24,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_024_%04d.png",
+      "key": "ixms07"
+    },
+    {
+      "matchName": "ADBE Radial Wipe",
+      "sheet": 25,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_025_%04d.png",
+      "key": "1n9scz"
+    },
+    {
+      "matchName": "APC Shatter",
+      "sheet": 25,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_025_%04d.png",
+      "key": "6klfys"
+    },
+    {
+      "matchName": "ADBE HDR ToneMap",
+      "sheet": 25,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_025_%04d.png",
+      "key": "5o92ir"
+    },
+    {
+      "matchName": "ADBE Compound Arithmetic",
+      "sheet": 25,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_025_%04d.png",
+      "key": "w44ow0"
+    },
+    {
+      "matchName": "ADBE ELLIPSE",
+      "sheet": 26,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_026_%04d.png",
+      "key": "v5u2in"
+    },
+    {
+      "matchName": "CC Environment",
+      "sheet": 26,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_026_%04d.png",
+      "key": "1zypq8"
+    },
+    {
+      "matchName": "ADBE KeyCleaner",
+      "sheet": 26,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_026_%04d.png",
+      "key": "55z2z8"
+    },
+    {
+      "matchName": "CC Overbrights",
+      "sheet": 26,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_026_%04d.png",
+      "key": "syme7u"
+    },
+    {
+      "matchName": "ADBE Invert",
+      "sheet": 27,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_027_%04d.png",
+      "key": "nw43ah"
+    },
+    {
+      "matchName": "ADBE Eyedropper Fill",
+      "sheet": 27,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_027_%04d.png",
+      "key": "avj8hj"
+    },
+    {
+      "matchName": "CC Sphere",
+      "sheet": 27,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_027_%04d.png",
+      "key": "1t1ueq"
+    },
+    {
+      "matchName": "CC Ball Action",
+      "sheet": 27,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_027_%04d.png",
+      "key": "h7r2zo"
+    },
+    {
+      "matchName": "ADBE CM MoodLightDigital",
+      "sheet": 28,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_028_%04d.png",
+      "key": "a9b4rq"
+    },
+    {
+      "matchName": "ADBE Color Link",
+      "sheet": 28,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_028_%04d.png",
+      "key": "d5kmda"
+    },
+    {
+      "matchName": "CC Spotlight",
+      "sheet": 28,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_028_%04d.png",
+      "key": "ep7ccp"
+    },
+    {
+      "matchName": "ADBE Spill2",
+      "sheet": 28,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_028_%04d.png",
+      "key": "a45urr"
+    },
+    {
+      "matchName": "ADBE CM MoodLightStreaks",
+      "sheet": 29,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_029_%04d.png",
+      "key": "2f6f9h"
+    },
+    {
+      "matchName": "ADBE Smart Blur",
+      "sheet": 29,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_029_%04d.png",
+      "key": "l7j7zh"
+    },
+    {
+      "matchName": "ADBE Roughen Edges",
+      "sheet": 29,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_029_%04d.png",
+      "key": "1u1q4x"
+    },
+    {
+      "matchName": "ADBE AIF Perlin Noise 3D",
+      "sheet": 29,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_029_%04d.png",
+      "key": "40lcao"
+    },
+    {
+      "matchName": "ADBE CM CrackedTiles",
+      "sheet": 30,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_030.png",
+      "key": "bw5nkf"
+    },
+    {
+      "matchName": "CC Simple Wire Removal",
+      "sheet": 31,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_031_%04d.png",
+      "key": "ffyxgi"
+    },
+    {
+      "matchName": "ADBE Scatter",
+      "sheet": 31,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_031_%04d.png",
+      "key": "bd8m9z"
+    },
+    {
+      "matchName": "CC Image Wipe",
+      "sheet": 31,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_031_%04d.png",
+      "key": "dlw61v"
+    },
+    {
+      "matchName": "ADBE CM LightLeaksMarkers",
+      "sheet": 32,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_032_%04d.png",
+      "key": "3eeiji"
+    },
+    {
+      "matchName": "ADBE Optics Compensation",
+      "sheet": 32,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_032_%04d.png",
+      "key": "gkxk2b"
+    },
+    {
+      "matchName": "ADBE Lens Flare",
+      "sheet": 32,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_032_%04d.png",
+      "key": "v0hvfx"
+    },
+    {
+      "matchName": "CC Pixel Polly",
+      "sheet": 32,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_032_%04d.png",
+      "key": "pf8wcd"
+    },
+    {
+      "matchName": "ADBE Texturize",
+      "sheet": 33,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_033.png",
+      "key": "r3aqw0"
+    },
+    {
+      "matchName": "ADBE Solid Composite",
+      "sheet": 34,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_034_%04d.png",
+      "key": "9qpgcw"
+    },
+    {
+      "matchName": "CC Light Wipe",
+      "sheet": 34,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_034_%04d.png",
+      "key": "i1wz4o"
+    },
+    {
+      "matchName": "ADBE CM OpacityFlashMarkers",
+      "sheet": 34,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_034_%04d.png",
+      "key": "fvtdod"
+    },
+    {
+      "matchName": "ADBE Radial Blur",
+      "sheet": 35,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_035_%04d.png",
+      "key": "omdn4j"
+    },
+    {
+      "matchName": "CC Radial Fast Blur",
+      "sheet": 35,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_035_%04d.png",
+      "key": "7zdqcb"
+    },
+    {
+      "matchName": "APC Colorama",
+      "sheet": 35,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_035_%04d.png",
+      "key": "bkc7uv"
+    },
+    {
+      "matchName": "ADBE Equalize",
+      "sheet": 35,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_035_%04d.png",
+      "key": "4jerkh"
+    },
+    {
+      "matchName": "ADBE Twirl",
+      "sheet": 36,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_036_%04d.png",
+      "key": "uuqdgj"
+    },
+    {
+      "matchName": "ADBE Geometry2",
+      "sheet": 36,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_036_%04d.png",
+      "key": "l2hgzz"
+    },
+    {
+      "matchName": "CC Plastic",
+      "sheet": 36,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_036_%04d.png",
+      "key": "c24ed7"
+    },
+    {
+      "matchName": "ADBE Fractal Noise",
+      "sheet": 36,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_036_%04d.png",
+      "key": "6inauk"
+    },
+    {
+      "matchName": "ADBE Compound Blur",
+      "sheet": 37,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_037_%04d.png",
+      "key": "t76dfv"
+    },
+    {
+      "matchName": "ADBE Difference",
+      "sheet": 37,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_037_%04d.png",
+      "key": "fircos"
+    },
+    {
+      "matchName": "ADBE AutoContrast",
+      "sheet": 37,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_037_%04d.png",
+      "key": "lzsxbs"
+    },
+    {
+      "matchName": "ADBE Gradient Wipe",
+      "sheet": 37,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_037_%04d.png",
+      "key": "buqq2c"
+    },
+    {
+      "matchName": "ADBE Channel Blur",
+      "sheet": 38,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_038.png",
+      "key": "gt047z"
+    },
+    {
+      "matchName": "ADBE OFMotionBlur",
+      "sheet": 38,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_038.png",
+      "key": "heam0h"
+    },
+    {
+      "matchName": "ADBE Compander",
+      "sheet": 39,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_039_%04d.png",
+      "key": "g8yui2"
+    },
+    {
+      "matchName": "ADBE Median",
+      "sheet": 39,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_039_%04d.png",
+      "key": "crhsrj"
+    },
+    {
+      "matchName": "ADBE Change To Color",
+      "sheet": 40,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_040.png",
+      "key": "gqkzmh"
+    },
+    {
+      "matchName": "ADBE Broadcast Colors",
+      "sheet": 41,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_041_%04d.png",
+      "key": "xon7ue"
+    },
+    {
+      "matchName": "ADBE Radial Shadow",
+      "sheet": 41,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_041_%04d.png",
+      "key": "h1xw78"
+    },
+    {
+      "matchName": "ADBE ProfileToProfile",
+      "sheet": 41,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_041_%04d.png",
+      "key": "4w95sm"
+    },
+    {
+      "matchName": "ADBE CM InsetVideoTorn",
+      "sheet": 42,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 1,
+      "src": "thumbs/batch_042.png",
+      "key": "1vssla"
+    },
+    {
+      "matchName": "ADBE ATG Extract",
+      "sheet": 43,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_043_%04d.png",
+      "key": "76mamg"
+    },
+    {
+      "matchName": "ADBE Noise HLS2",
+      "sheet": 43,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_043_%04d.png",
+      "key": "dcjgug"
+    },
+    {
+      "matchName": "APC Wave World",
+      "sheet": 43,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_043_%04d.png",
+      "key": "ro86s"
+    },
+    {
+      "matchName": "ADBE Magnify",
+      "sheet": 44,
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_044_%04d.png",
+      "key": "l2s29o"
+    },
+    {
+      "matchName": "APC CardWipeCam",
+      "sheet": 44,
+      "x": 256,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_044_%04d.png",
+      "key": "75ze55"
+    },
+    {
+      "matchName": "ADBE Minimax",
+      "sheet": 44,
+      "x": 512,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_044_%04d.png",
+      "key": "hg7hxg"
+    },
+    {
+      "matchName": "CC Glass Wipe",
+      "sheet": 44,
+      "x": 768,
+      "y": 0,
+      "width": 256,
+      "height": 256,
+      "frames": 6,
+      "frameSrc": "thumbs/batch_044_%04d.png",
+      "key": "4zc95m"
+    }
+  ]
+}

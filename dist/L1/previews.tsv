@@ -103,3 +103,31 @@ ADBE Texturize	33	0	6		r3aqw0
 ADBE Solid Composite	34	0	6	thumbs/batch_034_%04d.png	9qpgcw
 CC Light Wipe	34	2	6	thumbs/batch_034_%04d.png	i1wz4o
 ADBE CM OpacityFlashMarkers	34	4	6	thumbs/batch_034_%04d.png	fvtdod
+ADBE Radial Blur	35	0	6	thumbs/batch_035_%04d.png	omdn4j
+CC Radial Fast Blur	35	2	6	thumbs/batch_035_%04d.png	7zdqcb
+APC Colorama	35	4	6	thumbs/batch_035_%04d.png	bkc7uv
+ADBE Equalize	35	6	6	thumbs/batch_035_%04d.png	4jerkh
+ADBE Twirl	36	0	6	thumbs/batch_036_%04d.png	uuqdgj
+ADBE Geometry2	36	2	6	thumbs/batch_036_%04d.png	l2hgzz
+CC Plastic	36	4	6	thumbs/batch_036_%04d.png	c24ed7
+ADBE Fractal Noise	36	6	6	thumbs/batch_036_%04d.png	6inauk
+ADBE Compound Blur	37	0	6	thumbs/batch_037_%04d.png	t76dfv
+ADBE Difference	37	2	6	thumbs/batch_037_%04d.png	fircos
+ADBE AutoContrast	37	4	6	thumbs/batch_037_%04d.png	lzsxbs
+ADBE Gradient Wipe	37	6	6	thumbs/batch_037_%04d.png	buqq2c
+ADBE Channel Blur	38	0	6		gt047z
+ADBE OFMotionBlur	38	2	6		heam0h
+ADBE Compander	39	0	6	thumbs/batch_039_%04d.png	g8yui2
+ADBE Median	39	2	6	thumbs/batch_039_%04d.png	crhsrj
+ADBE Change To Color	40	0	6		gqkzmh
+ADBE Broadcast Colors	41	0	6	thumbs/batch_041_%04d.png	xon7ue
+ADBE Radial Shadow	41	2	6	thumbs/batch_041_%04d.png	h1xw78
+ADBE ProfileToProfile	41	4	6	thumbs/batch_041_%04d.png	4w95sm
+ADBE CM InsetVideoTorn	42	0	6		1vssla
+ADBE ATG Extract	43	0	6	thumbs/batch_043_%04d.png	76mamg
+ADBE Noise HLS2	43	2	6	thumbs/batch_043_%04d.png	dcjgug
+APC Wave World	43	4	6	thumbs/batch_043_%04d.png	ro86s
+ADBE Magnify	44	0	6	thumbs/batch_044_%04d.png	l2s29o
+APC CardWipeCam	44	2	6	thumbs/batch_044_%04d.png	75ze55
+ADBE Minimax	44	4	6	thumbs/batch_044_%04d.png	hg7hxg
+CC Glass Wipe	44	6	6	thumbs/batch_044_%04d.png	4zc95m

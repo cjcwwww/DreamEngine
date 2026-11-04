@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src * data: file: blob: 'unsafe-inline' 'unsafe-eval';"/>
+  <title>DreamEngine</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">DE</span>
+      <div>
+        <h1>DreamEngine</h1>
+        <p id="libraryStats">正在读取效果库</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="segmented" role="group" aria-label="语言">
+        <button class="segment active" id="langZh" type="button">中文</button>
+        <button class="segment" id="langEn" type="button">EN</button>
+      </div>
+      <button class="action-button" id="btnGenerate" type="button" title="在当前合成环境下渲染缺失的预览">
+        生成缺失预览
+      </button>
+      <button class="action-button" id="btnRetry" type="button" hidden title="重新排队失败的条目">
+        重试失败
+      </button>
+      <button class="icon-button" id="btnRefresh" type="button" title="重新扫描 AE 效果" aria-label="重新扫描 AE 效果">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+          <path d="M16 16h5v5"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="controls">
+    <label class="search-field">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input id="searchInput" type="search" placeholder="搜索效果或分类" autocomplete="off"/>
+    </label>
+    <select id="pluginFilter" aria-label="插件筛选">
+      <option value="全部">全部来源</option>
+      <option value="内置" selected>内置</option>
+      <option value="BCC">BCC</option>
+      <option value="Sapphire">Sapphire</option>
+      <option value="Red Giant">Red Giant</option>
+      <option value="RE:Vision">RE:Vision</option>
+      <option value="Video Copilot">Video Copilot</option>
+    </select>
+    <div class="segmented" role="group" aria-label="排序">
+      <button class="segment active" id="sortName" type="button">按名称</button>
+      <button class="segment" id="sortCategory" type="button">按分类</button>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="showAll"/>
+      <span>全部已安装</span>
+    </label>
+  </section>
+
+  <div class="workspace">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">分类</h2>
+      <ul class="category-list" id="categoryList"></ul>
+    </aside>
+
+    <main>
+      <div class="grid" id="previewGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <strong>没有匹配的效果</strong>
+      </div>
+    </main>
+  </div>
+
+  <footer class="statusbar">
+    <span id="statusText">准备扫描</span>
+    <span id="selectionStats"></span>
+  </footer>
+
+  <script src="js/bridge.js"></script>
+  <script src="js/viewmodel.js"></script>
+  <script src="js/library.js"></script>
+</body>
+</html>
