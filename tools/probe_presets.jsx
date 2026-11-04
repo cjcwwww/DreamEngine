@@ -43,6 +43,21 @@
         }
     }
 
+    /* 0) 诊断：AE 安装目录能不能列出来 */
+    var diag = [];
+    try {
+        var base = new Folder("C:/Program Files/Adobe");
+        diag.push("base_exists=" + base.exists);
+        var fs = base.getFiles();
+        diag.push("entries=" + fs.length);
+        for (var d = 0; d < fs.length && d < 12; d++) {
+            diag.push((fs[d] instanceof Folder ? "D:" : "F:") + fs[d].name);
+        }
+    } catch (eDiag) {
+        diag.push("ERR:" + eDiag);
+    }
+    log("DIAG|" + diag.join(" | "));
+
     /* 1) 内置预设目录 */
     var roots = AEV_Presets.defaultRootJson();
     log("ROOTS|" + roots);
