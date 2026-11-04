@@ -221,21 +221,29 @@ test("依赖外部渲染器的效果（CINEMA 4D / Element 3D）不参与预览"
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Glo2", category: "风格化" }), false);
 });
 
-test("插件保持默认参数，只做「0→默认值」的动画（不改最终值）", () => {
+test("插件按参数「作用」微调：强度类 15%、无强度类用内置不透明度 70%、形态参数不动", () => {
   const src = read("cep/com.dreamengine.panel/engine/recipe.jsx");
   const code = src
     .split("\n")
     .map((line) => line.replace(/^\s*\/\/.*$/, "").replace(/^\s*\*.*$/, ""))
     .join("\n");
-  // 插件不改参数（用户反馈：拨参数会让预览偏离插件真实表现）
-  assert.match(code, /mode: "plugin-default", writes: 0/);
-  assert.doesNotMatch(code, /applyPluginHeuristic/);
-  // 动画：0 渐变到当前值
+  // 强度/占比类 → 15%
+  assert.match(code, /INTENSITY_WORDS = \[/);
+  assert.match(code, /ratio: 0\.15/);
+  // 没有强度参数 → 用 AE 内置「效果不透明度」70%，保证效果看得见
+  assert.match(code, /ratio: 0\.7/);
+  assert.match(code, /isEffectOpacityName/);
+  // 形态参数不动：枚举(<5) 与 log 尺度(>1000) 一律排除
+  assert.match(code, /maxValue < 5 \|\| maxValue > 1000/);
+  // 只动一个参数
+  assert.match(code, /function pluginMainParam\(/);
+  assert.match(code, /function tunePlugin\(/);
+  // 动画用同一个强度参数：0 → 目标
   assert.match(code, /function animatePlugin\(/);
-  assert.match(code, /best\.setValueAtTime\(0, start\)/);
-  assert.match(code, /best\.setValueAtTime\(end, target\)/);
-  // animateAny 对插件分派过去
-  assert.match(code, /return animatePlugin\(effectGroup, durationSeconds\)/);
+  assert.match(code, /main\.prop\.setValueAtTime\(0, start\)/);
+  assert.match(code, /main\.prop\.setValueAtTime\(end, target\)/);
+  // 附属模块不碰
+  assert.match(code, /isPluginAuxiliary\(name\)/);
 });
 
 test("插件预览是 6 帧（要能悬停轮播）", () => {

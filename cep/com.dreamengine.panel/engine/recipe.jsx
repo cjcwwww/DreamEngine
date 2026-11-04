@@ -654,7 +654,7 @@ var AEV_Recipe = (function () {
         "mocha", "audio", "beat reactor", "preset", "help", "compare", "host",
         "graph", "sampler", "watch folder", "matte tool", "depth", "project data",
         "docs", "face ml", "pixel chooser", "load", "save", "edit", "mask from",
-        "mix with", "blend", "opacity", "alpha", "channel"
+        "mix with", "blend", "alpha", "channel"
     ];
 
     function isPluginAuxiliary(name) {
@@ -666,21 +666,43 @@ var AEV_Recipe = (function () {
     }
 
     /**
-     * 插件的动画：找一个「范围大、不是附属模块、当前值不为 0」的一维数值参数，
-     * 从 0 渐变到它**当前的值**。
+     * 参数「作用」分类（只按名字判断，够用且可解释）。
      *
-     * 关键点：**不修改参数的最终值**。参数保持插件默认，预览因此是插件真实的
-     * 默认表现，只是把「效果逐渐起作用」的过程演出来。
-     *
-     * 为什么不用「把参数拨到 70%」：用户反馈「部分效果与原始状态不符合」——
-     * 拨参数会让预览偏离插件本来的样子（实测 S_Clouds 被拨成一片彩色噪点，
-     * 完全不是它该有的云）。所以插件一律用默认值。
+     * intensity —— 强度 / 占比 / 混合类：值越大效果越强
+     *              → 拨到 15%，预览是「轻微生效」的样子，最接近真实观感
+     * opacity   —— AE 内置的「效果不透明度」（0-100），整条效果的强度
+     *              → 效果本身没有强度参数时用它，拨到 70%，保证看得出来
+     * 其它（形态类：Radius / Size / Frequency / Octaves / Seed…）**一律不动**：
+     *   Sapphire 这类是 log 尺度（实测 Frequency 范围 0.01–32767），
+     *   线性取 70% 会把云变成一片噪点——这正是之前翻车的地方。
      */
-    function animatePlugin(effectGroup, durationSeconds) {
-        var end = Number(durationSeconds);
-        if (!end || end <= 0) return false;
-        var best = null;
-        var bestMax = -1;
+    var INTENSITY_WORDS = [
+        "intensity", "amount", "contribution", "strength", "visibility",
+        "weight", "density", "mix", "blend", "mixing"
+    ];
+
+    function isIntensityName(name) {
+        var lower = String(name || "").toLowerCase();
+        for (var i = 0; i < INTENSITY_WORDS.length; i++) {
+            if (lower.indexOf(INTENSITY_WORDS[i]) >= 0) return true;
+        }
+        return false;
+    }
+
+    /** AE 内置的「效果不透明度」：中文「效果不透明度」，英文「Opacity」 */
+    function isEffectOpacityName(name) {
+        var lower = String(name || "").toLowerCase();
+        return lower.indexOf("不透明度") >= 0 || lower.indexOf("opacity") >= 0;
+    }
+
+    /**
+     * 找出插件的主强度参数（最多一个）。
+     * 优先级：效果自带的强度/占比参数（15%）→ AE 内置「效果不透明度」（70%）。
+     * 返回 {prop, ratio} 或 null（不动任何参数）。
+     */
+    function pluginMainParam(effectGroup) {
+        var intensityProp = null;
+        var builtinOpacity = null;
 
         function walk(group, depth) {
             if (depth > 2) return;
@@ -709,65 +731,108 @@ var AEV_Recipe = (function () {
                     continue;
                 }
                 if (kindOf(prop) !== "oneD") continue;
-                if (isPluginAuxiliary(prop.name)) continue;
+                var name = "";
+                try {
+                    name = String(prop.name || "");
+                } catch (e4) {}
+                if (!name || isPluginAuxiliary(name)) continue;
+
+                var minValue = 0;
                 var maxValue = 0;
                 try {
+                    if (prop.hasMin) minValue = Number(prop.minValue);
                     if (prop.hasMax) maxValue = Number(prop.maxValue);
-                } catch (e4) {}
-                if (maxValue < 5) continue;
-                var current = 0;
-                try {
-                    current = Number(prop.value);
-                } catch (e5) {
-                    current = 0;
+                } catch (e5) {}
+                // 枚举/开关（0-1、1-3 之类）与 log 尺度的形态参数都不碰
+                if (maxValue < 5 || maxValue > 1000) continue;
+
+                if (isIntensityName(name) && !intensityProp) {
+                    intensityProp = prop;
+                    continue;
                 }
-                // 当前值是 0 时 0→0 等于没动画，换下一个候选
-                if (current === 0) continue;
-                if (maxValue > bestMax) {
-                    bestMax = maxValue;
-                    best = prop;
+                // 内置「效果不透明度」：范围 0-100
+                if (isEffectOpacityName(name) && !builtinOpacity && maxValue <= 100) {
+                    builtinOpacity = prop;
                 }
             }
         }
 
         walk(effectGroup, 0);
-        if (!best) return false;
-        var target = 0;
+        if (intensityProp) return { prop: intensityProp, ratio: 0.15 };
+        if (builtinOpacity) return { prop: builtinOpacity, ratio: 0.7 };
+        return null;
+    }
+
+    /** 按范围比例算出目标值 */
+    function paramTarget(prop, ratio) {
+        var minValue = 0;
+        var maxValue = 0;
         try {
-            target = Number(best.value);
-        } catch (e6) {
-            return false;
-        }
-        if (isNaN(target) || target === 0) return false;
+            if (prop.hasMin) minValue = Number(prop.minValue);
+            if (prop.hasMax) maxValue = Number(prop.maxValue);
+        } catch (e) {}
+        if (!(maxValue > minValue)) return null;
+        return minValue + (maxValue - minValue) * ratio;
+    }
+
+    /**
+     * 插件的强度微调：只动一个参数，量到「看得见但不夸张」。
+     * 返回写入次数（0 表示没动任何参数）。
+     */
+    function tunePlugin(effectGroup) {
+        var main = pluginMainParam(effectGroup);
+        if (!main) return 0;
+        var target = paramTarget(main.prop, main.ratio);
+        if (target === null) return 0;
+        return setIfWritable(main.prop, target) ? 1 : 0;
+    }
+
+    /**
+     * 插件的动画：同一个强度参数从 0 渐变到目标值。
+     * 形态参数不动，所以动起来时看到的是「效果逐渐显现」，
+     * 而不是「参数乱跳」。
+     */
+    function animatePlugin(effectGroup, durationSeconds) {
+        var end = Number(durationSeconds);
+        if (!end || end <= 0) return false;
+        var main = pluginMainParam(effectGroup);
+        if (!main) return false;
+        var target = paramTarget(main.prop, main.ratio);
+        if (target === null || target === 0) return false;
 
         var start = 0;
         try {
-            if (best.hasMin) {
-                var minValue = Number(best.minValue);
+            if (main.prop.hasMin) {
+                var minValue = Number(main.prop.minValue);
                 if (minValue > 0 && minValue < target) start = minValue;
             }
-        } catch (e7) {}
+        } catch (e) {}
         if (target === start) return false;
 
         try {
-            best.setValueAtTime(0, start);
-            best.setValueAtTime(end, target);
+            main.prop.setValueAtTime(0, start);
+            main.prop.setValueAtTime(end, target);
             return true;
-        } catch (e8) {
+        } catch (e2) {
             return false;
         }
     }
 
-    /** 统一入口：有配方走配方，内置无配方走启发式，插件保持默认参数 */
+    /** 统一入口：有配方走配方，内置无配方走启发式，插件只微调一个强度参数 */
     function apply(effectGroup, matchName, cellSize) {
         var explicitWrites = applyRecipe(effectGroup, matchName);
         if (explicitWrites > 0) {
             return { mode: "recipe", writes: explicitWrites };
         }
         if (!isBuiltinMatch(matchName)) {
-            // 插件：只挂效果，参数一律保持默认。
-            // 动参数（哪怕只是拨到 70%）都会让预览偏离插件的真实表现。
-            return { mode: "plugin-default", writes: 0 };
+            // 插件：形态参数一律不动（log 尺度，拨了会失真），
+            // 只把「强度/占比」类参数拨到 15%；没有这类参数时，
+            // 用 AE 内置的「效果不透明度」拨到 70%，保证效果看得见。
+            var writes = tunePlugin(effectGroup);
+            return {
+                mode: writes > 0 ? "plugin-tuned" : "plugin-default",
+                writes: writes
+            };
         }
         var heuristicWrites = applyHeuristics(effectGroup, cellSize);
         return { mode: heuristicWrites > 0 ? "heuristic" : "none", writes: heuristicWrites };
