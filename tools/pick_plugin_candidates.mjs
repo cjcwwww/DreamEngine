@@ -144,9 +144,11 @@ function interleaveByPlugin(list) {
 
 const ordered = interleaveByPlugin(candidates);
 const picked = ordered.slice(0, limit);
-const configText = readFileSync(resolve(ROOT, "config/render_params.jsxinc"), "utf8");
-const frameMatch = configText.match(/frameCount:\s*(\d+)/);
-const frames = frameMatch ? Number(frameMatch[1]) : 6;
+/* 插件预览的帧数：1 帧。
+   插件效果不打关键帧（参数是保守启发式拨的，动起来会失真），
+   6 帧内容完全相同 —— 只渲 1 帧，省 5/6 的磁盘与面板加载开销。
+   内置效果走 pick_candidates.mjs，那边仍然是 6 帧（有动画）。 */
+const frames = 1;
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(

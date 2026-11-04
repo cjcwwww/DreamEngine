@@ -154,6 +154,11 @@ var AEV_PreviewGen = (function () {
         var width = singleCell ? cellSize : conf.contactSheet.width;
         var height = singleCell ? cellSize : conf.contactSheet.height;
         var frames = conf.animatedPreview.frameCount;
+        // 帧数可覆盖：插件 L2 预览不打关键帧（参数是保守启发式拨的，动起来失真），
+        // 6 帧内容完全相同 —— 只渲 1 帧，省 5/6 的磁盘与加载开销。
+        if (options && options.frames) {
+            frames = Math.max(1, parseInt(options.frames, 10) || frames);
+        }
 
         // 合成帧率固定 30，而 config 里的 fps(12) 只是面板播放帧率。
         // 两者混用会把"6 帧"算成 0.5 秒 → 30fps 下实际渲出 15 帧（实测踩过）。
