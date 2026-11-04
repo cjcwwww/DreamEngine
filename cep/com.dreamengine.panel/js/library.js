@@ -16,6 +16,9 @@ var AEV_Library = (function () {
     generating: false,
     // 有图但配方/素材已变、需要重渲的条目（来自 AEV_PreviewGen.staleList）
     stale: {},
+    // 插件 L2 预览：被拉黑的效果与已生成数量（独立索引，不进 entries）
+    pluginBlacklist: {},
+    pluginPreviewCount: 0,
     // 排序方式：name = 按名称首字母，category = 按 AE 分类
     sortMode: "name",
     // 左侧栏选中的分类键（空 = 全部）
@@ -46,6 +49,13 @@ var AEV_Library = (function () {
       }
     };
     request.send();
+  }
+
+  /** 可选索引：插件 L2 索引/黑名单在首次安装时根本不存在，不能中断 refresh */
+  function loadOptionalJson(path, callback) {
+    loadJson(path, function (error, data) {
+      callback(error ? null : data);
+    });
   }
 
   function getCatalog(callback) {
@@ -169,7 +179,15 @@ var AEV_Library = (function () {
     } else {
       var placeholder = document.createElement("span");
       placeholder.className = "thumb-placeholder";
-      placeholder.textContent = state.lang === "zh" ? "无预览" : "No preview";
+      var skipReason = state.pluginBlacklist[item.matchName];
+      if (skipReason) {
+        placeholder.textContent = state.lang === "zh" ? "已跳过" : "Skipped";
+        card.title += " · " + (state.lang === "zh" ? "已跳过：" : "skipped: ") + skipReason;
+      } else if (item.plugin !== "内置") {
+        placeholder.textContent = state.lang === "zh" ? "待离线生成" : "Offline render";
+      } else {
+        placeholder.textContent = state.lang === "zh" ? "无预览" : "No preview";
+      }
       thumb.appendChild(placeholder);
     }
 
@@ -454,29 +472,61 @@ var AEV_Library = (function () {
           });
         }
 
-        getCatalog(function (catalogError, catalogData) {
-          if (catalogError) {
-            finish(catalogError);
-            return;
-          }
-          state.catalog = catalogData.effects;
-          // 分类顺序 = AE 菜单里的顺序（catalog 里各类首次出现的次序）
-          state.categoryOrder = AEV_ViewModel.categoryOrder(state.catalog);
-          checkStale(function () {
-            rebuildItems();
-            updateHeader();
-            render();
-            var staleCount = Object.keys(state.stale).length;
-            var ready = state.lang === "zh" ? "效果库已就绪" : "Library ready";
-            if (staleCount > 0) {
-              ready +=
-                state.lang === "zh"
-                  ? "（" + staleCount + " 张预览待刷新）"
-                  : " (" + staleCount + " previews stale)";
+        // ---- 插件 L2 预览（可选索引，首次安装时不存在） ----
+        // 只合入显示用的 state.previews；绝不塞进 state.entries——
+        // writeManifest 会整份重写 L1 主索引，install_l1 又会覆盖它。
+        loadOptionalJson("data/plugin_manifest.json", function (pluginData) {
+          loadOptionalJson("data/plugin_blacklist.json", function (blacklistData) {
+            state.pluginBlacklist = {};
+            var blackItems = (blacklistData && blacklistData.items) || [];
+            for (var b = 0; b < blackItems.length; b++) {
+              state.pluginBlacklist[blackItems[b].matchName] =
+                blackItems[b].reason || "crash";
             }
-            setStatus(ready, false);
-            button.disabled = false;
-            if (done) done(null);
+
+            state.pluginPreviewCount = 0;
+            var pluginItems = (pluginData && pluginData.items) || [];
+            for (var q = 0; q < pluginItems.length; q++) {
+              var pluginPreview = pluginItems[q];
+              // 帧序列的第 0 帧作为 src 兜底（静止时不依赖轮播）
+              if (!pluginPreview.src && pluginPreview.frameSrc) {
+                pluginPreview.src = pluginPreview.frameSrc.replace("%04d", "0000");
+              }
+              state.previews[pluginPreview.matchName] = pluginPreview;
+              state.pluginPreviewCount++;
+            }
+
+            getCatalog(function (catalogError, catalogData) {
+              if (catalogError) {
+                finish(catalogError);
+                return;
+              }
+              state.catalog = catalogData.effects;
+              // 分类顺序 = AE 菜单里的顺序（catalog 里各类首次出现的次序）
+              state.categoryOrder = AEV_ViewModel.categoryOrder(state.catalog);
+              checkStale(function () {
+                rebuildItems();
+                updateHeader();
+                render();
+                var staleCount = Object.keys(state.stale).length;
+                var ready = state.lang === "zh" ? "效果库已就绪" : "Library ready";
+                if (staleCount > 0) {
+                  ready +=
+                    state.lang === "zh"
+                      ? "（" + staleCount + " 张预览待刷新）"
+                      : " (" + staleCount + " previews stale)";
+                }
+                if (state.pluginPreviewCount > 0) {
+                  ready +=
+                    state.lang === "zh"
+                      ? " · 插件预览 " + state.pluginPreviewCount + " 张"
+                      : " · " + state.pluginPreviewCount + " plugin previews";
+                }
+                setStatus(ready, false);
+                button.disabled = false;
+                if (done) done(null);
+              });
+            });
           });
         });
       });
@@ -596,9 +646,16 @@ var AEV_Library = (function () {
     }
 
     var candidates = [];
+    var pluginSkipped = 0;
     for (var i = 0; i < state.catalog.length; i++) {
       var effect = state.catalog[i];
       if (!isActiveEffect(effect)) continue;
+      // 插件效果绝不进整网混渲：实测 BCC / Sapphire 混渲会让 AE 进程直接消失，
+      // 而面板与 AE 是同一个进程。它们走独立离线通道 run_plugin_preview.jsx。
+      if (!AEV_ViewModel.isBuiltinEffect(effect)) {
+        pluginSkipped++;
+        continue;
+      }
       // 已过期的不算「已有预览」：图留着继续显示，但要重新渲一遍
       if (state.previews[effect.matchName] && !state.stale[effect.matchName]) continue;
       if (AEV_ViewModel.isNoPreview(effect.category)) continue;
@@ -617,19 +674,26 @@ var AEV_Library = (function () {
     }
 
     if (queueNames.length === 0) {
-      setStatus("当前没有需要生成的效果", false);
+      setStatus(
+        pluginSkipped > 0
+          ? "内置预览已齐；" + pluginSkipped + " 个插件效果请用离线脚本生成"
+          : "当前没有需要生成的效果",
+        false
+      );
       return;
     }
 
     state.generating = true;
     byId("btnGenerate").disabled = true;
     var staleCount = staleNames.length;
-    setStatus(
+    var queueMessage =
       staleCount > 0
         ? "正在排队 " + queueNames.length + " 个效果（其中 " + staleCount + " 个是刷新过期预览）…"
-        : "正在排队 " + queueNames.length + " 个效果…",
-      false
-    );
+        : "正在排队 " + queueNames.length + " 个效果…";
+    if (pluginSkipped > 0) {
+      queueMessage += "（另有 " + pluginSkipped + " 个插件效果需离线脚本生成）";
+    }
+    setStatus(queueMessage, false);
 
     var totalAdded = 0;
     var guard = 0;

@@ -134,9 +134,11 @@ var AEV_PreviewGen = (function () {
      * 批量渲染一张 contact sheet。
      * matchNames：本次要渲的 matchName 数组（不超过每网格数）
      * sheetIndex：第几张网，决定输出文件名
-     * options：{ extensionPath, outputRoot, startTime, cellOffset }
+     * options：{ extensionPath, outputRoot, startTime, cellOffset, singleCell }
      *   cellOffset —— 本批从网格第几格开始摆。整张新网传 0；
      *   往已有网里补空位时才用得上（要与 manifest 里的 cell 编号一致）。
+     *   singleCell —— 插件 L2 预览专用：1×1 单格网，输出 128×128 帧序列，
+     *   不与其它效果混渲（第三方插件混渲会直接杀掉 AE 进程）。
      */
     function renderBatch(matchNames, sheetIndex, options) {
         if (!matchNames || matchNames.length === 0) {
@@ -144,17 +146,20 @@ var AEV_PreviewGen = (function () {
         }
 
         var conf = config();
-        var columns = conf.contactSheet.columns;
         var cellSize = conf.contactSheet.cellSize;
-        var width = conf.contactSheet.width;
-        var height = conf.contactSheet.height;
+        // 插件 L2 预览走 singleCell：一张图只渲一个格子（128×128），
+        // 不必为一条效果生成一整张 1024×1024 的网。默认路径完全不变。
+        var singleCell = !!(options && options.singleCell);
+        var columns = singleCell ? 1 : conf.contactSheet.columns;
+        var width = singleCell ? cellSize : conf.contactSheet.width;
+        var height = singleCell ? cellSize : conf.contactSheet.height;
         var frames = conf.animatedPreview.frameCount;
 
         // 合成帧率固定 30，而 config 里的 fps(12) 只是面板播放帧率。
         // 两者混用会把"6 帧"算成 0.5 秒 → 30fps 下实际渲出 15 帧（实测踩过）。
         var CELL_FPS = 30;
         var durationSeconds = frames / CELL_FPS;
-        var cellOffset = (options && options.cellOffset) || 0;
+        var cellOffset = singleCell ? 0 : ((options && options.cellOffset) || 0);
 
         if (typeof AEV_Store !== "undefined") {
             var permission = AEV_Store.writePermission();

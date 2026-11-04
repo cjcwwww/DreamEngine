@@ -290,10 +290,22 @@ var AEV_ViewModel = (function () {
    * 返回 { size: "...", position: "..." }，可直接写进 style。
    */
   function spriteSlice(preview, manifest) {
-    var cellSize = (manifest && manifest.cellSize) || 128;
-    var columns = (manifest && manifest.columns) || 8;
-    var width = (manifest && manifest.width) || cellSize * columns;
-    var height = (manifest && manifest.height) || cellSize * columns;
+    // L1 是 8×8 整网，布局取自全局 manifest；插件 L2 预览是 1×1 单格图，
+    // 布局写在条目自身的 slice* 字段里。
+    // 不能读 item.width/height：L1 那两个字段是「格子尺寸」而非整图尺寸，
+    // 拿它当整图会把 rows 算成 1，所有非首格条目都被切到 (0,0)。
+    var cellSize =
+      (preview && preview.sliceCellSize) || (manifest && manifest.cellSize) || 128;
+    var columns =
+      (preview && preview.sliceColumns) || (manifest && manifest.columns) || 8;
+    var width =
+      (preview && preview.sliceWidth) ||
+      (manifest && manifest.width) ||
+      cellSize * columns;
+    var height =
+      (preview && preview.sliceHeight) ||
+      (manifest && manifest.height) ||
+      cellSize * columns;
     var rows = Math.max(1, Math.round(height / cellSize));
 
     var x = (preview && preview.x) || 0;
@@ -320,6 +332,26 @@ var AEV_ViewModel = (function () {
     };
   }
 
+  /**
+   * 是否 AE 自带效果。
+   *
+   * 用 matchName 前缀判定，而不是 inferPlugin 的显示结果：插件厂商会把自己的
+   * category 写成中文分类名（「杂色和颗粒」「沉浸式视频」等），按分类判断会把
+   * 插件误认成内置。内置效果的 matchName 只有 ADBE / APC / CC / CS 四种前缀
+   * （T0.1 实测 1371 条枚举的分布，CS 是 Cycore 旧命名残留）。
+   *
+   * 这条判断是插件预览的安全边界：内置可以进整网混渲，插件必须逐条隔离。
+   */
+  function isBuiltinEffect(item) {
+    var matchName = String((item && item.matchName) || "");
+    return (
+      matchName.indexOf("ADBE") === 0 ||
+      matchName.indexOf("APC") === 0 ||
+      matchName.indexOf("CC ") === 0 ||
+      matchName.indexOf("CS") === 0
+    );
+  }
+
   function inferPlugin(item) {
     var matchName = String(item.matchName || "");
     var category = String(item.category || "");
@@ -342,14 +374,12 @@ var AEV_ViewModel = (function () {
       matchName.indexOf("VIDEOCOPILOT") === 0 ||
       category === "Video Copilot"
     ) return "Video Copilot";
-    if (
-      matchName.indexOf("ADBE") === 0 ||
-      matchName.indexOf("APC") === 0 ||
-      matchName.indexOf("CC ") === 0 ||
-      matchName.indexOf("CS") === 0
-    ) return "内置";
+    if (isBuiltinEffect(item)) return "内置";
 
-    return category || "未收录";
+    // 没落到已知插件包的第三方效果：category 常常是厂商自造的分类名
+    // （「杂色和颗粒」「沉浸式视频」…），拿它当「插件名」会误导筛选。
+    // 统一归到「其它插件」，让来源筛选没有漏网条目。
+    return "其它插件";
   }
 
   function buildItem(effect, namesByName, previewByMatchName, staleByName) {
@@ -402,6 +432,7 @@ var AEV_ViewModel = (function () {
     isNoPreview: isNoPreview,
     isPoorPreviewTarget: isPoorPreviewTarget,
     isExcludable: isExcludable,
+    isBuiltinEffect: isBuiltinEffect,
     previewRank: previewRank,
     interleaveByCategory: interleaveByCategory,
     inferPlugin: inferPlugin,
