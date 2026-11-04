@@ -2,7 +2,15 @@
 # DreamEngine —— 一键生成「含第三方插件的预设」预览
 #
 # 纯 Windows 内置 PowerShell，不需要 Node / Python / 任何额外安装。
-# 自动完成：温和关闭 AE -> 逐条隔离渲染（崩溃自动跳过）-> 重新打开 AE。
+#
+# 流程（默认）：
+#   1. 检测 AE 是否在运行 —— 在运行就提示用户「保存并关闭 AE」，然后只等待，不代为关闭
+#   2. 用户关闭后自动继续：逐条隔离渲染（崩溃自动拉黑、断点续做）
+#   3. 完成后按原状重新打开 AE
+#
+# 状态：全程把进度写进 <我的文档>\DreamEngineProbe\hub_state.json，
+#       供 DreamEngine Hub（独立程序）实时显示，不需要解析控制台输出。
+#
 # 用法：双击同目录的 bat，或执行：
 #   -File .\generate_plugin_presets.ps1
 # ============================================================
@@ -13,7 +21,11 @@ param(
   [int]$Timeout = 240,
   [string]$AE = "",
   [switch]$Force,
-  [switch]$NoRestart
+  [switch]$NoRestart,
+  # 代用户温和关闭 AE（旧行为）。默认不关，只提示并等待用户自己关。
+  [switch]$AutoClose,
+  # 等待用户关闭 AE 的最长秒数，超时即放弃
+  [int]$WaitAE = 900
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,6 +55,33 @@ function Read-Lines($path) {
   return @(Get-Content $path -Encoding UTF8 | Where-Object { $_.Trim() -ne "" })
 }
 
+# ---------- 状态文件：Hub 程序靠它显示进度，不依赖控制台输出 ----------
+if (-not (Test-Path $probe)) { New-Item -ItemType Directory -Force -Path $probe | Out-Null }
+$statePath = Join-Path $probe "hub_state.json"
+$script:state = [ordered]@{
+  phase    = "starting"   # starting|waiting-close|rendering|done|failed|cancelled
+  message  = ""
+  current  = 0
+  total    = 0
+  ok       = 0
+  fail     = 0
+  round    = 0
+  updated  = (Get-Date).ToString("s")
+  pid      = $PID
+}
+function Write-State {
+  param([string]$Phase, [string]$Message, [int]$Current = -1, [int]$Total = -1, [int]$Ok = -1, [int]$Fail = -1, [int]$Round = -1)
+  if ($Phase)   { $script:state.phase = $Phase }
+  if ($Message) { $script:state.message = $Message }
+  if ($Current -ge 0) { $script:state.current = $Current }
+  if ($Total   -ge 0) { $script:state.total = $Total }
+  if ($Ok      -ge 0) { $script:state.ok = $Ok }
+  if ($Fail    -ge 0) { $script:state.fail = $Fail }
+  if ($Round   -ge 0) { $script:state.round = $Round }
+  $script:state.updated = (Get-Date).ToString("s")
+  try { Write-Utf8 $statePath ($script:state | ConvertTo-Json -Compress) } catch {}
+}
+
 # ---------- 定位 AfterFX.exe ----------
 if (-not $AE) {
   $adobeRoot = Join-Path ${env:ProgramFiles} "Adobe"
@@ -57,21 +96,24 @@ if (-not $AE) {
 }
 if (-not $AE -or -not (Test-Path $AE)) {
   Write-Host "[错误] 找不到 AfterFX.exe，请用 -AE 参数指定完整路径。" -ForegroundColor Red
+  Write-State -Phase "failed" -Message "找不到 AfterFX.exe"
   exit 1
 }
 if (-not (Test-Path $jsx)) {
   Write-Host "[错误] 找不到离线渲染脚本：$jsx" -ForegroundColor Red
+  Write-State -Phase "failed" -Message "找不到离线渲染脚本"
   exit 1
 }
 if (-not (Test-Path $ext)) {
   Write-Host "[错误] 没找到已安装的 DreamEngine 扩展：$ext" -ForegroundColor Red
   Write-Host "请先运行安装包里的安装脚本。"
+  Write-State -Phase "failed" -Message "未安装 DreamEngine 扩展"
   exit 1
 }
-if (-not (Test-Path $probe)) { New-Item -ItemType Directory -Force -Path $probe | Out-Null }
 if (-not (Test-Path $presets)) {
   Write-Host "[提示] 预设库还是空的：$presets" -ForegroundColor Yellow
   Write-Host "请先在面板的「预设预览」里添加 .ffx 文件。"
+  Write-State -Phase "failed" -Message "预设库为空，请先导入 .ffx"
   exit 0
 }
 
@@ -126,27 +168,42 @@ function Build-PluginIndex {
   return $items.Count
 }
 
-# ---------- 安全：温和关闭 AE（绝不强制结束，不丢未保存工程）----------
-$closedByTool = $false
+# ---------- 前置：检测 AE，提示用户自行关闭（默认不代为关闭）----------
+$hadAE = $false
 $running = @(Get-Process -Name AfterFX -ErrorAction SilentlyContinue)
 if ($running.Count -gt 0) {
+  $hadAE = $true
   Write-Host ""
   Write-Host "检测到 After Effects 正在运行。" -ForegroundColor Yellow
-  Write-Host "插件渲染必须在专用 AE 实例里做，所以需要暂时关闭当前 AE。"
-  Write-Host "请先保存好工程；本工具不会强制结束 AE，也不会丢弃未保存内容。"
+  Write-Host "插件渲染需要独占一个 AE 实例，请在当前 AE 里【保存工程】，然后【关闭 After Effects】。"
   Write-Host ""
-  Write-Host "保存完成后按回车继续（按 Ctrl+C 可取消）..." -ForegroundColor Cyan
-  Read-Host | Out-Null
-  foreach ($p in $running) { try { $p.CloseMainWindow() | Out-Null } catch {} }
-  for ($i = 0; $i -lt 30; $i++) {
+
+  if ($AutoClose) {
+    Write-Host "保存完成后按回车，本工具会代为温和关闭 AE（不强制结束、不丢弃未保存内容）。" -ForegroundColor Cyan
+    Write-State -Phase "waiting-close" -Message "等待确认后关闭 After Effects"
+    Read-Host | Out-Null
+    foreach ($p in $running) { try { $p.CloseMainWindow() | Out-Null } catch {} }
+  } else {
+    Write-Host "关闭 AE 后本工具会自动开始渲染，不需要再按任何键（按 Ctrl+C 可取消）。" -ForegroundColor Cyan
+    Write-State -Phase "waiting-close" -Message "等待你关闭 After Effects"
+  }
+
+  $deadline = (Get-Date).AddSeconds($WaitAE)
+  $closed = $false
+  while ((Get-Date) -lt $deadline) {
+    if (@(Get-Process -Name AfterFX -ErrorAction SilentlyContinue).Count -eq 0) { $closed = $true; break }
     Start-Sleep -Seconds 2
-    if (@(Get-Process -Name AfterFX -ErrorAction SilentlyContinue).Count -eq 0) { break }
   }
-  if (@(Get-Process -Name AfterFX -ErrorAction SilentlyContinue).Count -gt 0) {
-    Write-Host "[中止] AE 仍未退出（可能在等你确认保存）。请手动关闭后重新运行本工具。" -ForegroundColor Red
-    exit 1
+  if (-not $closed) {
+    Write-Host "[中止] 等待超时：After Effects 仍在运行（可能在等你确认保存）。" -ForegroundColor Red
+    Write-Host "请手动关闭 AE 后重新运行本工具。" -ForegroundColor Red
+    Write-State -Phase "failed" -Message "等待 After Effects 关闭超时"
+    exit 2
   }
-  $closedByTool = $true
+  Write-Host "After Effects 已退出，开始渲染。" -ForegroundColor Green
+  Write-State -Phase "rendering" -Message "After Effects 已退出，准备渲染"
+} else {
+  Write-State -Phase "rendering" -Message "准备渲染"
 }
 
 Write-Host ""
@@ -211,6 +268,8 @@ for ($round = 1; $round -le $Rounds; $round++) {
   Write-Utf8 $bgPath $Background
   $before = @(Read-Lines $logPath).Count
   Write-Host "第 $round 轮：本次 $($batch.Count) 条，剩余 $($cands.Count) 条 ..."
+  Write-State -Phase "rendering" -Message "第 $round 轮渲染中，本次 $($batch.Count) 条，剩余 $($cands.Count) 条" `
+              -Current 0 -Total $batch.Count -Ok $totalOk -Fail $totalFail -Round $round
 
   $proc = Start-Process -FilePath $AE -ArgumentList @('-r', ('"' + $jsx + '"')) -PassThru
   $startAt = Get-Date
@@ -218,6 +277,11 @@ for ($round = 1; $round -le $Rounds; $round++) {
   while ($true) {
     Start-Sleep -Seconds 4
     $lines = @(Read-Lines $logPath)
+    $newLines = @($lines | Select-Object -Skip $before)
+    $okNow = @($newLines | Where-Object { $_.StartsWith("OK|") }).Count
+    $failNow = @($newLines | Where-Object { $_.StartsWith("FAIL|") }).Count
+    Write-State -Phase "rendering" -Current ($okNow + $failNow) -Total $batch.Count `
+                -Ok ($totalOk + $okNow) -Fail ($totalFail + $failNow) -Round $round
     if ($lines.Count -gt $before -and $lines[-1].StartsWith("RESULT")) { break }
     if ($proc.HasExited) { $crashed = $true; break }
     if (((Get-Date) - $startAt).TotalSeconds -gt $Timeout) {
@@ -245,7 +309,8 @@ Write-Host ""
 Write-Host "完成：成功 $totalOk，失败 $totalFail" -ForegroundColor Green
 Write-Host "索引：$pluginIndexPath"
 Write-Host "日志：$logPath"
-if ($closedByTool -and -not $NoRestart) {
+Write-State -Phase "done" -Message "渲染完成：成功 $totalOk，失败 $totalFail" -Ok $totalOk -Fail $totalFail
+if ($hadAE -and -not $NoRestart) {
   Write-Host "正在重新打开 After Effects ..." -ForegroundColor Cyan
   Start-Process -FilePath $AE | Out-Null
   Write-Host "请打开刚才的工程，并关闭重开 DreamEngine 面板即可看到新预览。"

@@ -351,9 +351,58 @@ test("分发包会把一键工具带上，安装脚本与 README 都有说明", 
   ]) {
     assert.ok(build.includes(`"${name}"`), `打包清单缺 ${name}`);
   }
-  assert.match(build, /Copy-Item -Force \(Join-Path \$here "tools/);
+  // 安装脚本已抽成独立源文件：能被 -WhatIf 演练、也能被将来的 exe 安装器复用
+  assert.match(build, /install_dreamengine\.ps1/, "打包没引用独立的安装脚本");
+  const installer = read("tools/install_dreamengine.ps1");
+  assert.match(
+    installer,
+    /Copy-Item -Path \(Join-Path \$toolsSrc "\*"\)/,
+    "安装脚本没有把 tools/ 部署到扩展目录",
+  );
   assert.match(build, /生成插件预设预览\.bat/);
   assert.match(build, /不需要 Node/);
+});
+
+test("安装脚本：升级不删用户数据，PlayerDebugMode 覆盖所有 CEP 版本", () => {
+  const installer = read("tools/install_dreamengine.ps1");
+
+  // ① 升级不得清空用户数据。旧实现是 Remove-Item -Recurse 全删再覆盖，
+  //    一次升级会把用户几小时的插件预览渲染结果清零。
+  assert.match(installer, /\$KEEP = @\(/, "没有用户数据保护清单");
+  for (const name of ["manifest.json", "plugin_manifest.json", "preset_plugin_manifest.json", "thumbs"]) {
+    assert.ok(installer.includes(`"${name}"`), `KEEP 清单缺 ${name}`);
+  }
+  // 整目录删除只允许出现在 -Fresh 路径上，且必须带「输入 YES」二次确认
+  const purges = installer.split("Remove-Item -Recurse -Force $Target").length - 1;
+  assert.equal(purges, 1, "整目录删除出现了 " + purges + " 次，升级路径可能也在删");
+  const purgeAt = installer.indexOf("Remove-Item -Recurse -Force $Target");
+  const beforePurge = installer.slice(Math.max(0, purgeAt - 500), purgeAt);
+  assert.match(beforePurge, /Read-Host/, "-Fresh 删除前没有二次确认");
+  assert.match(beforePurge, /YES/, "-Fresh 删除前没有要求输入 YES");
+
+  // ② AE 读的是「自身 CEP 版本对应」的键，只写 CSXS.11 等于在别的版本上没写
+  assert.match(
+    installer,
+    /foreach \(\$v in @\(9, 10, 11, 12, 13, 14\)\)/,
+    "PlayerDebugMode 没有覆盖 CSXS.9~14",
+  );
+
+  // ③ 开发机上扩展目录是 Junction，顺着链接递归删会毁掉仓库
+  assert.match(installer, /ReparsePoint/, "没有 Junction / 符号链接检测");
+
+  // ④ 「是否老用户」必须在复制扩展本体之前判断：复制会在目标里创建
+  //    data/manifest.json（包里带了索引时），之后再判断会把全新安装误判成
+  //    老用户、跳过 L1 部署 —— 表现为装完一张缩略图都没有。
+  const hadIdx = installer.indexOf("$hadLocalManifest = Test-Path");
+  const copyIdx = installer.indexOf('Copy-Item -Path (Join-Path $extSrc "*")');
+  assert.ok(hadIdx > 0, "没有在复制前记录 $hadLocalManifest");
+  assert.ok(copyIdx > 0, "找不到复制扩展本体的语句");
+  assert.ok(hadIdx < copyIdx, "$hadLocalManifest 的判断晚于复制扩展本体");
+  assert.match(
+    installer,
+    /if \(\$hadLocalManifest -and -not \$UpdateL1\)/,
+    "L1 部署仍在用「当前文件是否存在」判断，会误判全新安装",
+  );
 });
 
 /* ---------- 运行 ---------- */
