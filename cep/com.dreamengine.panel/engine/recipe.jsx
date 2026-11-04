@@ -738,7 +738,7 @@ var AEV_Recipe = (function () {
                 // 只认「强度/占比」类参数。
                 // AE 内置的「效果不透明度」绝不碰：实测对它 setValue 或打关键帧，
                 // 整条效果都会报同样的错，直接渲不出来。
-                if (isIntensityName(name) || true) {   // TEMP: 任意 oneD 都试
+                if (isIntensityName(name)) {
                     candidate = prop;
                     return;
                 }
@@ -856,20 +856,27 @@ var AEV_Recipe = (function () {
     function tuningEnabled() {
         return TUNING_ENABLED;
     }
-
     /**
-     * 插件的强度微调：只动一个参数，量到「看得见但不夸张」。
-     * 返回写入次数（0 表示没动任何参数）。
+     * 插件的强度微调：**不动任何参数**。
+     *
+     * 结论来自实机（AE 2021 / Sapphire / BCC）：
+     *   用脚本给插件效果写参数（哪怕是它自己的数值滑杆），整条效果就会变成
+     *   「在需要数字、数组或属性的位置找到类型为 Error 的对象」直接渲不出来，
+     *   严重时 AE 进程直接消失。逐项验证过：写内置「效果不透明度」→ 坏；
+     *   写强度滑杆 → 坏；写形态滑杆（Octaves）→ 同样坏。
+     *   所以插件预览一律**保持默认参数**，忠实地反映效果本来的样子。
+     *
+     * 内置效果不受影响（AE 自带参数可以安全地写与打关键帧）。
+     *
+     * 「按作用分档（强度类 15% / 尺寸类 70%）」的判断逻辑保留在
+     * pluginMainParam 里，等将来有办法安全写参数时直接启用。
      */
     function tunePlugin(effectGroup) {
         if (!TUNING_ENABLED) return 0;
-
+        var main = pluginMainParam(effectGroup);
         if (!main) return 0;
-        var target = paramTarget(main.prop, main.ratio);
-        if (target === null) { trace("tune|no_target"); return 0; }
-        var ok = setNumberSafely(main.prop, target);
-        trace("tune|prop=" + main.prop.name + "|target=" + target + "|ok=" + ok);
-        return ok ? 1 : 0;
+        trace("tune|skip|" + main.prop.name + "|ratio=" + main.ratio);
+        return 0;
     }
     /**
      * 找「可以做动画」的线性形态参数。
