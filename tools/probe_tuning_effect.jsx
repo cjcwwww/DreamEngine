@@ -54,6 +54,34 @@
 
     for (var t = 0; t < TARGETS.length; t++) {
         var target = TARGETS[t];
+        /* 诊断：把参数清单与「会被选中的强度参数」打出来 */
+        try {
+            var comp = app.project.items.addComp("DE_diag_" + t, 64, 64, 1, 1, 30);
+            var layer = comp.layers.addSolid([0.3, 0.5, 0.6], "bg", 64, 64, 1);
+            var group = layer.property("ADBE Effect Parade").addProperty(target);
+            var main = AEV_Recipe.pluginMainParam(group);
+            log(target + "|main|" + (main ? (main.kind + "|" + main.prop.name + "|ratio=" + main.ratio) : "none"));
+            var cnt = group.numProperties;
+            for (var q = 1; q <= cnt; q++) {
+                var pr = group.property(q);
+                var sub = 0;
+                try { sub = pr.numProperties; } catch (e) {}
+                if (sub > 0) {
+                    for (var r2 = 1; r2 <= sub; r2++) {
+                        var sp = pr.property(r2);
+                        var mx = 0;
+                        try { if (sp.hasMax) mx = Number(sp.maxValue); } catch (e2) {}
+                        if (mx >= 5 && mx <= 1000) {
+                            log("  cand|" + String(pr.name) + " / " + String(sp.name) +
+                                "|max=" + mx + "|isIntensity=" + AEV_Recipe.isIntensityName(sp.name));
+                        }
+                    }
+                }
+            }
+            try { comp.remove(); } catch (e3) {}
+        } catch (eDiag) {
+            log(target + "|DIAG_FAIL|" + eDiag);
+        }
         AEV_Recipe.setTuning(false);
         var off = render(target, 3100 + t * 2);
         log(target + "|tuning_off|" + off.substring(0, 220));

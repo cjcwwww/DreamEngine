@@ -1080,6 +1080,8 @@ var AEV_Recipe = (function () {
         apply: apply,
         setTuning: setTuning,
         tuningEnabled: tuningEnabled,
+        pluginMainParam: pluginMainParam,
+        isIntensityName: isIntensityName,
         recipes: RECIPES,
         effectNameFor: effectNameFor,
         stepsFor: stepsFor,
