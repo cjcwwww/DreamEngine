@@ -157,18 +157,24 @@
     }
 
     // ---- 分批渲染 ----
+    // 每批刻意小于整网容量：48 格一次渲时 AE 直接崩溃（进程消失，日志断在半路）。
+    // 分批后一批崩了只丢这一批，而且「渲染前先写名单」能定位到具体是哪个效果。
+    var CHUNK = 8;
     var rendered = 0;
     var failed = 0;
     var sheetIndex = nextSheet;
     var cursor = 0;
     while (cursor < todo.length) {
         var chunk = [];
-        while (cursor < todo.length && chunk.length < perSheet) {
+        while (cursor < todo.length && chunk.length < CHUNK) {
             chunk.push(todo[cursor]);
             cursor++;
         }
         var names = [];
         for (var c = 0; c < chunk.length; c++) names.push(chunk[c].matchName);
+
+        push("BEGIN_SHEET|" + sheetIndex + "|" + names.join(","));
+        flush();
 
         var started = new Date().getTime();
         var raw = AEV_PreviewGen.renderBatch(names, sheetIndex, {
