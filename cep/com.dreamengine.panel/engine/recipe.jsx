@@ -474,7 +474,12 @@ var AEV_Recipe = (function () {
 
         var start = 0;
         try {
-            if (prop.hasMin) {
+            if (target === 0) {
+                // 目标值是 0（常见于「与原始图像混合」这类 0=满效果的参数）时，
+                // 0→0 等于没动画。此时从一个小非零值起步，动画方向是「效果退场」。
+                var maxValue = prop.hasMax ? Number(prop.maxValue) : 1;
+                start = maxValue > 0 ? Math.min(maxValue, 10) : 1;
+            } else if (prop.hasMin) {
                 var minValue = Number(prop.minValue);
                 // 有些参数 0 不合法（最小值是 1 之类），那就从最小值起步
                 if (minValue > 0 && minValue < Number(target)) start = minValue;
@@ -505,16 +510,21 @@ var AEV_Recipe = (function () {
         var end = Number(durationSeconds);
         if (!end || end <= 0) return false;
 
-        var found = null;
+        // 选参数：取「范围最大」的一维数值属性。
+        // 直觉上第一个数值参数最好，但实测里第一个常常是下拉项
+        // （通道、场景检测、运算类型），改了画面没反应。
+        // 范围最大的那个才是真正有表现力的滑杆。
+        var best = null;
+        var bestMax = -1;
         function walk(group, depth) {
-            if (found || depth > MAX_DEPTH) return;
+            if (depth > MAX_DEPTH) return;
             var count = 0;
             try {
                 count = group.numProperties;
             } catch (e) {
                 return;
             }
-            for (var i = 1; i <= count && !found; i++) {
+            for (var i = 1; i <= count; i++) {
                 var prop = null;
                 try {
                     prop = group.property(i);
@@ -533,33 +543,47 @@ var AEV_Recipe = (function () {
                     continue;
                 }
                 if (kindOf(prop) !== "oneD") continue;
-                found = prop;
+                var maxValue = 0;
+                try {
+                    if (prop.hasMax) maxValue = Number(prop.maxValue);
+                } catch (e4) {}
+                // 范围小于 5 的是下拉/枚举，改了也没画面变化
+                if (maxValue < 5) continue;
+                if (maxValue > bestMax) {
+                    bestMax = maxValue;
+                    best = prop;
+                }
             }
         }
         walk(effectGroup, 0);
-        if (!found) return false;
+        if (!best) return false;
 
         var target = null;
         try {
-            target = Number(found.value);
-        } catch (e4) {
+            target = Number(best.value);
+        } catch (e5) {
             return false;
         }
-        if (isNaN(target) || target === 0) return false;
+        if (isNaN(target)) return false;
 
         var start = 0;
-        try {
-            if (found.hasMin) {
-                var minValue = Number(found.minValue);
-                if (minValue > 0 && minValue < target) start = minValue;
-            }
-        } catch (e5) {}
+        if (target === 0) {
+            start = bestMax > 0 ? Math.min(bestMax, 10) : 1;
+        } else {
+            try {
+                if (best.hasMin) {
+                    var minValue = Number(best.minValue);
+                    if (minValue > 0 && minValue < target) start = minValue;
+                }
+            } catch (e6) {}
+            if (target === start) return false;
+        }
 
         try {
-            found.setValueAtTime(0, start);
-            found.setValueAtTime(end, target);
+            best.setValueAtTime(0, start);
+            best.setValueAtTime(end, target);
             return true;
-        } catch (e6) {
+        } catch (e7) {
             return false;
         }
     }
