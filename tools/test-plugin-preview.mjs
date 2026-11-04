@@ -221,30 +221,22 @@ test("依赖外部渲染器的效果（CINEMA 4D / Element 3D）不参与预览"
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Glo2", category: "风格化" }), false);
 });
 
-test("插件按参数「作用」微调：强度类 15%、无强度类用内置不透明度 70%、形态参数不动", () => {
+test("插件保持默认参数、不人为加动画（AE 2021 上一写就坏）", () => {
   const src = read("cep/com.dreamengine.panel/engine/recipe.jsx");
   const code = src
     .split("\n")
     .map((line) => line.replace(/^\s*\/\/.*$/, "").replace(/^\s*\*.*$/, ""))
     .join("\n");
-  // 强度/占比类 → 15%；当前值几乎为 0 时改用 70%（否则几乎看不出）
-  assert.match(code, /INTENSITY_WORDS = \[/);
+  // 不写参数：实测写插件参数会让整条效果报「Error 的对象」渲不出来
+  assert.match(code, /function tunePlugin\(/);
+  assert.match(code, /trace\("tune\|skip\|"/);
+  assert.doesNotMatch(code, /setNumberSafely\(main\.prop, target\)/);
+  // 不人为打关键帧（打关键帧同样是写参数）
+  assert.match(code, /trace\("animate\|skip_for_plugin"\)/);
+  // 「按作用分档」的判断逻辑保留着，等将来能安全写参数时直接启用
   assert.match(code, /var ratio = 0\.15;/);
   assert.match(code, /ratio = 0\.7;/);
-  // AE 内置「效果不透明度」绝不碰：碰了整条效果直接渲不出来
-  assert.doesNotMatch(code, /builtinOpacity/);
-  assert.doesNotMatch(code, /isEffectOpacityName/);
-  // 形态参数不动：枚举(<5) 与 log 尺度(>1000) 一律排除
-  assert.match(code, /maxValue < 5 \|\| maxValue > 1000/);
-  // 只动一个参数
   assert.match(code, /function pluginMainParam\(/);
-  assert.match(code, /function tunePlugin\(/);
-  // 动画：强度参数打关键帧（0 → 目标）；内置不透明度不能打，改用线性形态参数
-  assert.match(code, /function animatePlugin\(/);
-  assert.match(code, /main\.kind === "intensity"/);
-  assert.match(code, /function pluginAnimParam\(/);
-  assert.match(code, /prop\.setValueAtTime\(0, start\)/);
-  assert.match(code, /prop\.setValueAtTime\(end, target\)/);
   // 附属模块不碰
   assert.match(code, /isPluginAuxiliary\(name\)/);
 });
