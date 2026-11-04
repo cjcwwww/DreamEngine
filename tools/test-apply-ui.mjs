@@ -98,13 +98,27 @@ test("面板用引擎的 apply 模块，且提示用户先选中图层", () => {
 
 /* ---------- 3. 顶部切换栏 ---------- */
 
-test("index.html 顶部有效果/预设切换栏，预设不再是抽屉", () => {
+test("顶栏一行：logo + 效果/预设/曲线切换 + 设置齿轮", () => {
   const html = read("cep/com.dreamengine.panel/index.html");
-  // 切换栏在文件最上方（header 之前）
-  const switchAt = html.indexOf('class="view-switch"');
   const headerAt = html.indexOf('class="topbar"');
-  assert.notEqual(switchAt, -1, "缺少顶部切换栏");
-  assert.ok(switchAt < headerAt, "切换栏必须在顶栏之上");
+  const headerEnd = html.indexOf("</header>", headerAt);
+  assert.ok(headerAt > 0 && headerEnd > headerAt, "缺少顶栏");
+
+  /* 品牌栏去掉之后，切换栏搬进了顶栏内部：logo ／ 切换 ／ 齿轮 同一行 */
+  const bar = html.slice(headerAt, headerEnd);
+  const markAt = bar.indexOf('id="brandMark"');
+  const switchAt = bar.indexOf('class="view-switch"');
+  const gearAt = bar.indexOf('id="btnSettings"');
+  assert.ok(markAt > 0, "顶栏缺少 logo 占位");
+  assert.ok(switchAt > markAt, "切换栏必须在 logo 右侧");
+  assert.ok(gearAt > switchAt, "齿轮必须在切换栏右侧");
+  assert.doesNotMatch(bar, /<h1>/, "顶栏里还留着旧标题");
+  assert.doesNotMatch(bar, /libraryStats/, "顶栏不该再有条目统计");
+  assert.match(html.slice(html.indexOf('id="settingsDrawer"')), /id="libraryStats"/,
+    "条目统计应挪进设置页");
+  // 顶栏只有一行：不该再有第二个切换栏
+  assert.equal((html.match(/class="view-switch"/g) || []).length, 1, "切换栏只能有一个");
+
   assert.match(html, /id="tabEffects"/);
   assert.match(html, /id="tabPresets"/);
   // 两个视图同级
@@ -268,7 +282,7 @@ test("mark_animated 工具按帧字节比对判定静态，且写独立索引", 
 
 test("顶栏只留设置入口，四个按钮搬进设置页", () => {
   const html = read("cep/com.dreamengine.panel/index.html");
-  const topActions = html.slice(html.indexOf('class="top-actions"'), html.indexOf("</header>"));
+  const topActions = html.slice(html.indexOf('class="topbar"'), html.indexOf("</header>"));
   const settings = html.slice(html.indexOf('id="settingsDrawer"'));
   assert.match(topActions, /id="btnSettings"/);
   // 顶栏里不能再有这些按钮

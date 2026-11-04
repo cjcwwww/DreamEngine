@@ -8,37 +8,27 @@
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-  <nav class="view-switch" role="tablist" aria-label="主视图切换">
-    <button class="view-tab active" id="tabEffects" type="button" role="tab" aria-selected="true">
-      效果预览
-    </button>
-    <button class="view-tab" id="tabPresets" type="button" role="tab" aria-selected="false">
-      预设预览
-    </button>
-    <button class="view-tab" id="tabCurve" type="button" role="tab" aria-selected="false">
-      曲线编辑
-    </button>
-  </nav>
-
   <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">DE</span>
-      <div>
-        <h1>DreamEngine</h1>
-        <p id="libraryStats">正在读取效果库</p>
-      </div>
-    </div>
-    <div class="top-actions">
-      <!-- 语言 / 生成 / 刷新 / 重试都收进「设置」页：顶栏只留一个入口，
-           面板拖窄时品牌区不会被一堆按钮挤到换行。 -->
+    <!-- 占位图标：正式 logo 到位后替换这个 svg（按 22×22 设计） -->
+    <span class="brand-mark" id="brandMark" title="DreamEngine" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/>
+        <path d="M6.6 16.4c3.4 0 4.6-8.8 8.9-8.8"/>
+      </svg>
+    </span>
+    <nav class="view-switch" role="tablist" aria-label="主视图切换">
+      <button class="view-tab active" id="tabEffects" type="button" role="tab" aria-selected="true">效果预览</button>
+      <button class="view-tab" id="tabPresets" type="button" role="tab" aria-selected="false">预设预览</button>
+      <button class="view-tab" id="tabCurve" type="button" role="tab" aria-selected="false">曲线编辑</button>
+    </nav>
+    <!-- 语言 / 生成 / 刷新 / 重试都收进「设置」页：顶栏只留一个入口 -->
       <button class="icon-button" id="btnSettings" type="button"
               title="设置" aria-label="设置" aria-expanded="false" aria-controls="settingsDrawer">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
-      </button>
-    </div>
+    </button>
   </header>
 
   <section class="controls" id="effectControls">
@@ -198,6 +188,14 @@
     </div>
 
     <div class="settings-scroll">
+      <section class="settings-group">
+        <h4>库</h4>
+        <div class="settings-row">
+          <span class="settings-label">条目</span>
+          <span class="settings-value" id="libraryStats">正在读取效果库</span>
+        </div>
+      </section>
+
       <section class="settings-group">
         <h4>外观</h4>
         <div class="settings-row">

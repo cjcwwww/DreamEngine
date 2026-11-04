@@ -47,34 +47,34 @@ button {
 /* 顶部的视图切换栏：效果预览 / 预设预览。
    两个视图同级，切换栏固定在面板最上方——之前预设藏在右上角的
    抽屉里，等级比效果墙低一层，用起来要来回找。 */
+/* 切换栏与 logo、齿轮同在顶栏一行：只占中间的剩余空间，不再自带分割线。 */
 .view-switch {
-  flex: none;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   gap: 4px;
-  padding: 8px 16px 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
 }
 
 .view-tab {
-  height: 30px;
-  padding: 0 14px;
+  height: 26px;
+  padding: 0 10px;
   border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: 7px 7px 0 0;
+  border-radius: 7px;
   background: transparent;
   color: var(--muted);
   font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .view-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text);
 }
 
 .view-tab.active {
   border-color: var(--border);
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text);
   font-weight: 600;
 }
@@ -255,51 +255,35 @@ button {
   white-space: nowrap;
 }
 
+/* 顶栏只有一行：占位 logo ／ 三个视图切换 ／ 设置齿轮 */
 .topbar {
   flex: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 64px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 7px 12px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 10px;
-}
-
+/* 占位 logo：换正式图标时只动里面的 svg，外面这圈尺寸与位置不变 */
 .brand-mark {
+  flex: none;
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   place-items: center;
-  border: 1px solid var(--border-strong);
-  border-radius: 7px;
   color: var(--accent);
-  font-size: 11px;
-  font-weight: 700;
 }
 
-.brand h1 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 650;
-  line-height: 1.25;
-}
-
-.brand p {
-  margin: 2px 0 0;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.brand-mark svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .top-actions,
@@ -996,6 +980,17 @@ main {
   font-size: 12px;
 }
 
+/* 右侧的值（顶栏去掉副标题后，条目统计挪到了这里） */
+.settings-value {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .settings-action {
   display: flex;
   flex-direction: column;
@@ -1080,18 +1075,14 @@ main {
 
 @media (max-width: 520px) {
   .topbar {
-    padding-right: 10px;
-    padding-left: 10px;
-  }
-
-  .view-switch {
-    padding-right: 10px;
-    padding-left: 10px;
+    padding-right: 8px;
+    padding-left: 8px;
+    gap: 6px;
   }
 
   .view-tab {
     flex: 1 1 auto;
-    padding: 0 8px;
+    padding: 0 6px;
   }
 
   .preset-view {
