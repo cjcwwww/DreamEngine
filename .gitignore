@@ -23,8 +23,12 @@ logs/
 
 # ---- L1 内置包（可分发的预生成预览，已做帧间去重，必须入库）----
 !dist/
-!dist/**
+!dist/L1/
+!dist/L1/**
 !dist/L1/thumbs/*.png
+# 打包中间产物与安装包本身不入库（随时可用 tools/build_release.mjs 重新生成）
+dist/stage/
+dist/*.zip
 
 # ---- 运行时产物（不入库）----
 # 扩展数据目录里的预览图与索引由 AE 生成或由 install_l1 部署，
