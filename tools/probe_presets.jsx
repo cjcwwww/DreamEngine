@@ -99,6 +99,24 @@
     log("COMPOSITE|" + comp.name + "|layers=" + comp.numLayers);
 
     var before = comp.numLayers;
+    /* 诊断：项目里到底有哪些 item，getItemByName 为什么找不到 */
+    try {
+        var items = app.project.items;
+        var names = [];
+        for (var it = 1; it <= items.length && it <= 10; it++) {
+            var item = items[it];
+            names.push(String(item.name) + "(" + String(item.typeName) + ")");
+        }
+        log("ITEMS|count=" + items.length + "|" + names.join(" , "));
+    } catch (eItems) {
+        log("ITEMS_ERR|" + eItems);
+    }
+    try {
+        var found = app.project.items.getItemByName("DE_preset_probe");
+        log("LOOKUP|" + (found ? "found:" + found.typeName : "null"));
+    } catch (eLookup) {
+        log("LOOKUP_ERR|" + eLookup);
+    }
     var applied = AEV_Presets.applyJson(comp.name, target.path, 0);
     log("APPLY|" + applied);
     var after = comp.numLayers;

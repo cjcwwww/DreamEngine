@@ -253,11 +253,18 @@ var AEV_Presets = (function () {
      */
     function applyJson(compName, presetPath, layerIndex) {
         var comp = null;
+        var lookupError = "";
         try {
             comp = app.project.items.getItemByName(String(compName || ""));
-        } catch (e) {}
+        } catch (e) {
+            lookupError = String(e);
+        }
         if (!comp) {
-            return result("error", [["reason", "no_comp"], ["comp", String(compName || "")]]);
+            return result("error", [
+                ["reason", "no_comp"],
+                ["comp", String(compName || "")],
+                ["lookupError", lookupError]
+            ]);
         }
         var file = new File(String(presetPath || ""));
         if (!file.exists) {
