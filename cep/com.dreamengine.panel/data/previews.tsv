@@ -1,0 +1,61 @@
+matchName	sheet	cell	frames	frameTemplate	key
+ADBE Gaussian Blur 2	0	0	1		eapnww
+ADBE Drop Shadow	0	1	1		6euh7t
+APC Colorama	0	2	1		bl3wf8
+ADBE Turbulent Displace	0	3	1		iz41mg
+ADBE Tint	0	4	1		46qm7h
+ADBE Invert	0	5	1		nwvruu
+ADBE Glo2	0	6	1		vz8fsy
+ADBE Motion Blur	0	7	1		727w6x
+ADBE Ripple	0	8	1		fyl3iy
+ADBE Wave Warp	0	9	1		lx0a6z
+ADBE Mosaic	0	10	1		v1ulm2
+ADBE Find Edges	0	11	1		cret6f
+CC Ball Action	0	12	1		h8irk1
+CC Bubbles	0	13	1		k7gm1z
+CC Particle Systems II	0	14	1		70pvuu
+CC Star Burst	0	15	1		w76lte
+CC Toner	0	16	1		pcjjdc
+CC Radial Fast Blur	0	17	1		805ewo
+CC Lens	0	18	1		uytuuy
+CC Twister	0	19	1		kc9b16
+CC Radial Blur	1	0	6	thumbs/batch_001_%04d.png	yb2433
+CC Color Offset	2	0	6	thumbs/batch_002_%04d.png	38civn
+CC Bender	3	0	6	thumbs/batch_003_%04d.png	gqvecd
+CC Burn Film	4	0	6	thumbs/batch_004_%04d.png	fkv824
+CC Glue Gun	5	0	6	thumbs/batch_005_%04d.png	i3b804
+VISINF Grain Implant	6	0	6	thumbs/batch_006_%04d.png	8s5d3w
+CC Cylinder	7	0	6	thumbs/batch_007_%04d.png	8ex7jb
+CC Glass Wipe	8	0	6	thumbs/batch_008_%04d.png	503xq4
+CC Simple Wire Removal	9	0	6	thumbs/batch_009_%04d.png	fgqm10
+CC Vector Blur	10	0	6	thumbs/batch_010_%04d.png	w0olbp
+ADBE AutoColor	10	1	6	thumbs/batch_010_%04d.png	4o1gh7
+CC Bend It	10	2	6	thumbs/batch_010_%04d.png	c0ffz7
+CC Glass	10	3	6	thumbs/batch_010_%04d.png	mw1ahz
+CC Light Burst 2.5	10	4	6	thumbs/batch_010_%04d.png	ahkdgq
+ADBE Dust & Scratches	10	5	6	thumbs/batch_010_%04d.png	64iq7t
+CC Environment	10	6	6	thumbs/batch_010_%04d.png	20qeaq
+CC Grid Wipe	10	7	6	thumbs/batch_010_%04d.png	3p8cp4
+ADBE Color Difference Key	11	0	6	thumbs/batch_011_%04d.png	aub35y
+CC Hair	11	1	6	thumbs/batch_011_%04d.png	g181sh
+CC Force Motion Blur	11	2	6	thumbs/batch_011_%04d.png	p5pwbr
+CC Overbrights	11	3	6	thumbs/batch_011_%04d.png	sze2sc
+ADBE Matte Choker	11	4	6	thumbs/batch_011_%04d.png	7yi4ve
+ADBE Color Swirl	11	5	6	thumbs/batch_011_%04d.png	gi8alf
+CC Composite	11	6	6	thumbs/batch_011_%04d.png	95tu74
+ADBE Bilateral	11	7	6	thumbs/batch_011_%04d.png	v0mg2r
+ADBE AutoContrast	12	0	6	thumbs/batch_012_%04d.png	m0klwa
+CC Blobbylize	12	1	6	thumbs/batch_012_%04d.png	h557tn
+CC Kaleida	12	2	6	thumbs/batch_012_%04d.png	10asuw
+CC Light Rays	12	3	6	thumbs/batch_012_%04d.png	iydres
+ADBE Fractal Noise	12	4	6	thumbs/batch_012_%04d.png	6jezf2
+CC Sphere	12	5	6	thumbs/batch_012_%04d.png	1ttiz8
+CC Image Wipe	12	6	6	thumbs/batch_012_%04d.png	dmnumd
+ADBE Color Range	12	7	6	thumbs/batch_012_%04d.png	tm11r3
+CC Mr. Mercury	13	0	6	thumbs/batch_013_%04d.png	36amkh
+CC Wide Time	14	0	6	thumbs/batch_014_%04d.png	jwpsth
+ADBE Simple Choker	15	0	6	thumbs/batch_015_%04d.png	8aamhl
+ADBE Getting Jiggy	16	0	6	thumbs/batch_016_%04d.png	2zke5b
+ADBE Arithmetic	17	0	6	thumbs/batch_017_%04d.png	pl8hx9
+ADBE Box Blur2	18	0	6	thumbs/batch_018_%04d.png	e055s3
+ADBE AutoLevels	19	0	6	thumbs/batch_019_%04d.png	n8m1uf

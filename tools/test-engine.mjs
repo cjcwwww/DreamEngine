@@ -536,6 +536,32 @@ test("writeManifest 同步写 previews.tsv，供 AE 侧校验缓存", () => {
   assert.match(code, /function staleList/);
 });
 
+test("manifest 与 previews.tsv 条目一致，且都带指纹", () => {
+  const manifest = JSON.parse(read("cep/com.dreamengine.panel/data/manifest.json"));
+  const lines = read("cep/com.dreamengine.panel/data/previews.tsv").trim().split(/\r?\n/);
+  const header = lines.shift().split("\t");
+  assert.deepEqual(header, [
+    "matchName",
+    "sheet",
+    "cell",
+    "frames",
+    "frameTemplate",
+    "key",
+  ]);
+  assert.equal(lines.length, manifest.items.length, "两份索引的条目数必须一致");
+
+  const names = new Set(manifest.items.map((item) => item.matchName));
+  for (const item of manifest.items) {
+    assert.ok(item.key && item.key.length > 0, `${item.matchName} 缺指纹`);
+    assert.ok(names.has(item.matchName));
+  }
+  for (const line of lines) {
+    const cells = line.split("\t");
+    assert.ok(names.has(cells[0]), `previews.tsv 里的 ${cells[0]} 不在 manifest 中`);
+    assert.ok(cells[5] && cells[5].length > 0, `${cells[0]} 在 previews.tsv 里缺指纹`);
+  }
+});
+
 /* ---------- assets / catalog 静态契约 ---------- */
 
 test("assets 按类型生成五套素材并复用缓存", () => {
