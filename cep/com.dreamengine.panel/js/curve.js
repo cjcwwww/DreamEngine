@@ -700,10 +700,12 @@ var AEV_CurveUI = (function () {
       if (!data.props || !data.props.length) {
         setBusy(false);
         draw();
-        setMessage(t(
-          "AE 里没有可编辑的动画属性：先选中一个带动画的属性，或选中带关键帧的图层",
-          "Nothing animated is selected — pick an animated property or a layer with keyframes"
-        ), true);
+        setMessage(data.filtered > 0
+          ? t("选中的 " + data.filtered + " 个属性没有时间缓动（路径、文本、标记类改不了曲线）",
+              "Selected properties have no temporal ease (paths, text, markers)")
+          : t("AE 里没有可编辑的动画属性：先选中一个带动画的属性，或选中带关键帧的图层",
+              "Nothing animated is selected — pick an animated property or a layer with keyframes"),
+          true);
         return;
       }
 
@@ -738,8 +740,12 @@ var AEV_CurveUI = (function () {
       }
       if (data.status !== "ok") {
         setBusy(false);
-        setMessage(t("写入被拒：" + (data.reason || data.status || "unknown"),
-          "Rejected: " + (data.reason || data.status || "unknown")), true);
+        /* 以前只报 reason（work_failed 之类的代号），detail 与 loc 被丢掉了，
+           等于告诉用户「失败了」却不说为什么。现在三段一起给。 */
+        var why = data.reason || data.status || "unknown";
+        if (data.detail) why += " · " + data.detail;
+        if (data.loc) why += " · " + shortLoc(data.loc);
+        setMessage(t("写入被拒：" + why, "Rejected: " + why), true);
         return;
       }
 
@@ -747,17 +753,54 @@ var AEV_CurveUI = (function () {
       st.pendingText = "";
       var applied = data.applied || 0;
       var skipped = data.skipped || [];
-      var note = skipped.length
-        ? t("（跳过 " + skipped.length + " 处：roving 或端点）", " (" + skipped.length + " skipped)")
-        : "";
+      var note = skipNote(skipped);
+
+      /* 一条都没写进去：这不是成功，别让用户以为生效了 */
+      if (!applied) {
+        setMessage(t("没有写入任何关键帧" + (note ? "：" + note : "（属性不支持缓动）"),
+          "Nothing was written" + (note ? ": " + note : " (no temporal ease)")), true);
+        return;
+      }
+
       setMessage(t("已应用 " + applied + " 处 · " + describeScope() + note,
-        "Applied " + applied + note), false);
+        "Applied " + applied + " · " + describeScope() + note), false);
       setStatus(t("已应用曲线", "Curve applied"));
 
       /* 重读一次：灰色参考要反映 AE 的真实值。
          不假设 AE 接受了我们的数（它可能钳位或规范化）。 */
       refreshSnap();
     });
+  }
+
+  /**
+   * 把 skipped 数组归成一句人话。
+   *
+   * AE 侧的 skipped 是重复出现的原因码（failed / roving / edge / loc_missing /
+   * key_out_of_range），直接数总数说明不了问题 —— 「跳过 8 处」既可能是
+   * 端点（正常），也可能是属性根本不支持缓动（要用户换属性）。
+   */
+  function skipNote(skipped) {
+    if (!skipped || !skipped.length) return "";
+    var counts = {};
+    for (var i = 0; i < skipped.length; i++) {
+      var k = skipped[i];
+      counts[k] = (counts[k] || 0) + 1;
+    }
+    var parts = [];
+    if (counts.failed) {
+      parts.push(t(counts.failed + " 条属性不支持缓动", counts.failed + " without ease"));
+    }
+    if (counts.roving) parts.push(t("roving " + counts.roving, "roving " + counts.roving));
+    if (counts.edge) parts.push(t("端点 " + counts.edge, "edge " + counts.edge));
+    if (counts.loc_missing) {
+      parts.push(t(counts.loc_missing + " 条属性已不存在", counts.loc_missing + " gone"));
+    }
+    if (counts.key_out_of_range) {
+      parts.push(t(counts.key_out_of_range + " 处关键帧越界", counts.key_out_of_range + " out of range"));
+    }
+    return parts.length
+      ? t("（跳过 " + parts.join("、") + "）", " (" + parts.join(", ") + " skipped)")
+      : "";
   }
 
   function describeScope() {

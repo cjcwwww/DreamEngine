@@ -311,6 +311,51 @@ test("绝不写 comp.selectedLayers；不用会崩的 API", () => {
   }
 });
 
+test("只收数值属性：路径/文本吃不进 ease，不能进快照", () => {
+  const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
+  assert.ok(code.includes("function isNumericValue("), "缺少 isNumericValue");
+  assert.ok(code.includes("if (typeof v === \"number\") return true;"), "没把裸数字算数值");
+  assert.ok(code.includes("if (!isNumericValue(prop)) {"), "push 没有过滤非数值属性");
+  // 过滤要计数，面板才能区分「没选中」与「选中的不支持缓动」
+  assert.ok(code.includes("filtered++;"), "没有统计被过滤的属性");
+  assert.ok(code.includes('jfield("filtered", String(lastFiltered))'), "快照没带 filtered");
+});
+
+test("选中的属性不支持缓动时，不再退回「遍历整层」", () => {
+  const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
+  // fallback 的判据必须是「有没有选中」，不是「收上来几条」
+  assert.ok(code.includes("var hadSelection = false;"), "缺少 hadSelection");
+  assert.ok(code.includes("if (sp && sp.length > 0) {"), "没按选中数量判断");
+  assert.ok(!/if \(!list\.length\) \{\s*var layers/.test(code),
+    "还在用「list 为空」当 fallback 判据（会把用户没选的属性一起改掉）");
+});
+
+test("单条写失败降级成跳过，不许拖垮整批", () => {
+  const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
+  const body = code.slice(code.indexOf("function writeSide("), code.indexOf("function writeLinear("));
+  assert.ok(body.includes("try {"), "writeSide 里没有 try");
+  assert.ok(/try \{\s*prop\.setTemporalEaseAtKey\(aeIndex, inArr, outArr\);\s*\} catch \(e5\) \{\s*return "failed";/.test(body),
+    "setTemporalEaseAtKey 没有包 try/catch，抛出来就是整批 write_failed");
+});
+
+test("写入被拒时把 AE 的原始异常与属性位置一起报出来", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
+  const send = code.slice(code.indexOf("function send("), code.indexOf("function skipNote("));
+  assert.ok(send.includes("data.detail"), "没有显示 AE 的异常详情");
+  assert.ok(send.includes("shortLoc(data.loc)"), "没有指出是哪条属性");
+  // 一条都没写成时按失败处理，不能显示「已应用 0 处」
+  assert.ok(send.includes("if (!applied)"), "全部跳过时没有按失败处理");
+});
+
+test("跳过原因按类别归并成一句人话", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
+  const note = code.slice(code.indexOf("function skipNote("), code.indexOf("function describeScope("));
+  for (const key of ["failed", "roving", "edge", "loc_missing", "key_out_of_range"]) {
+    assert.ok(note.includes("counts." + key), "没有归类 " + key);
+  }
+  assert.ok(note.includes("不支持缓动"), "failed 没有说明是「不支持缓动」");
+});
+
 test("乐观并发：expect 指纹不匹配时不写，返回 conflict", () => {
   const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
   assert.match(code, /kind === "expect"/);

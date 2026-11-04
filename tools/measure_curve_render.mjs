@@ -275,7 +275,17 @@ function run() {
           R.modeBackToValue = AEV_CurveUI.snapshot().mode;
           R.paintedBack = paintedPixels();
 
-          finish();
+          /* 6) 写回被 AE 抛异常：必须把原始 detail 与属性名一起显示出来，
+                只报一个 write_failed 等于没说 */
+          window.__SIM_APPLY =
+            '{"status":"error","reason":"write_failed","detail":"bad ease array","loc":"M4Sim|m4_2d|变换|位置"}';
+          document.getElementById("curveApply").click();
+
+          wait(300, function () {
+            R.failMsg = String(document.getElementById("curveHint").textContent);
+            R.failClass = document.getElementById("curveHint").className;
+            finish();
+          });
         });
       });
     });
@@ -428,6 +438,13 @@ check("速 / 路是只读检查：应用后可用，切回值图能编辑", () =
   assert.ok(data.paintedPath > 300, "路径图没画出来：" + data.paintedPath);
   assert.equal(data.modeBackToValue, "value", "没切回值图");
   assert.ok(data.paintedBack > 300, "切回值图后没画出来：" + data.paintedBack);
+});
+
+check("写回抛异常时，detail 与属性名都要显示出来", () => {
+  const msg = String(data.failMsg || "");
+  assert.match(msg, /bad ease array/, "没显示 AE 的原始异常：" + msg);
+  assert.match(msg, /位置/, "没指出是哪条属性：" + msg);
+  assert.match(String(data.failClass || ""), /error/, "提示没有标成错误态");
 });
 
 check("全流程没有 JS 错误", () => {

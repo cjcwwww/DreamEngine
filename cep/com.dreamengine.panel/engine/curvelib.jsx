@@ -139,6 +139,26 @@ var AEV_Curve = (function () {
         return 1;
     }
 
+    /**
+     * 这个属性的值是不是数字 / 数字数组。
+     *
+     * 为什么要判：蒙版路径、形状路径、源文本、标记这些属性的关键帧**没有
+     * 时间缓动**，把 ease 写进去 AE 直接抛异常（面板上表现为
+     * 「写入被拒：write_failed」）。它们的 value 是 Shape / TextDocument
+     * 之类对象，既不是 number 也不是数组。
+     */
+    function isNumericValue(prop) {
+        var v;
+        try {
+            v = prop.value;
+        } catch (e) {
+            return false;   // 有表达式或读不到值，一律不碰
+        }
+        if (typeof v === "number") return true;
+        if (isArr(v)) return true;
+        return false;
+    }
+
     /** 快照里的值一律输出成数组：一维属性 AE 返回的是裸数字，
      *  模型侧按 v[dim] 取会全部变成 0（实机踩过：曲线全平、误差 1e8）。 */
     function valueArr(value) {
@@ -405,9 +425,13 @@ var AEV_Curve = (function () {
      * 再没有就把选中图层下所有带动画的属性递归收进来。
      * 三种路径都只读，绝不写选中态（AE 2021 给 selectedLayers 赋值会崩）。
      */
+    /** 上一轮 collect 里因为「不支持时间缓动」被丢掉的属性数（面板据此给提示） */
+    var lastFiltered = 0;
+
     function collect(comp) {
         var list = [];
         var seen = {};
+        var filtered = 0;
 
         function push(prop) {
             if (!prop) return;
@@ -418,40 +442,57 @@ var AEV_Curve = (function () {
                 return;
             }
             if (typeof nk !== "number" || nk <= 0) return;
+            // 路径 / 文本 / 标记吃不进 ease，收进来只会让写回整批失败
+            if (!isNumericValue(prop)) {
+                filtered++;
+                return;
+            }
             var loc = locOf(prop, comp);
             if (seen[loc]) return;
             seen[loc] = true;
             list.push({ prop: prop, loc: loc });
         }
 
+        /* 关键：fallback 的判据是「用户到底有没有选中东西」，不是「收上来几条」。
+           选了蒙版路径这种不支持缓动的属性时，list 同样是空的 —— 旧写法会因此
+           退回到「遍历整层的所有属性」，把用户没选中的属性也一起改了。 */
+        var hadSelection = false;
+
         try {
             var sp = comp.selectedProperties;
-            if (sp) {
+            if (sp && sp.length > 0) {
+                hadSelection = true;
                 for (var i = 0; i < sp.length; i++) push(sp[i]);
             }
         } catch (e1) {}
 
-        if (!list.length) {
+        if (!hadSelection) {
             var layers = null;
             try {
                 layers = comp.selectedLayers;
             } catch (e2) {}
+            if (layers && layers.length > 0) hadSelection = true;
             for (var l = 0; layers && l < layers.length; l++) {
                 var layer = layers[l];
+                var usedLayerProps = false;
                 try {
                     var lp = layer.selectedProperties;
-                    if (lp) {
+                    if (lp && lp.length > 0) {
+                        usedLayerProps = true;
                         for (var j = 0; j < lp.length; j++) push(lp[j]);
                     }
                 } catch (e3) {}
-                if (!list.length) walkGroup(layer, 0, push);
+                // 图层里也没单独选中属性时，才遍历整层
+                if (!usedLayerProps) walkGroup(layer, 0, push);
             }
         }
 
+        lastFiltered = filtered;
         return list;
     }
 
     function snapshotJson() {
+        lastFiltered = 0;
         var comp = activeComp();
         if (!comp) {
             return "{" + jfield("status", jstr("error")) + "," +
@@ -482,6 +523,8 @@ var AEV_Curve = (function () {
             jfield("ae", jstr(version)),
             jfield("comp", jstr(String(comp.name))),
             jfield("time", jnum(time)),
+            /* 被丢掉的非数值属性数：面板据此区分「没选中」与「选中的不支持缓动」 */
+            jfield("filtered", String(lastFiltered)),
             jfield("props", "[" + props.join(",") + "]")
         ].join(",") + "}";
     }
@@ -657,7 +700,13 @@ var AEV_Curve = (function () {
         }
         if (!inArr || !outArr) return "edge";
 
-        prop.setTemporalEaseAtKey(aeIndex, inArr, outArr);
+        try {
+            prop.setTemporalEaseAtKey(aeIndex, inArr, outArr);
+        } catch (e5) {
+            /* 单条写不进去就跳过这条，别让整批失败 —— 用户选中十条属性，
+               其中一条是 AE 自己也不认的，其余九条应该照写。 */
+            return "failed";
+        }
         return "ok";
     }
 
