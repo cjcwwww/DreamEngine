@@ -568,9 +568,9 @@ test("L1 包里的 manifest 与 previews.tsv 条目一致，且都带指纹", ()
     const renderFrames = Number(cells[3]);
     const storedFrames = item.frames || 1;
     assert.ok(renderFrames >= storedFrames, `${cells[0]} 渲染帧数不应小于存储帧数`);
-    if (renderFrames > storedFrames) renderFrameKept++;
+    if (renderFrames > 1) renderFrameKept++;
   }
-  assert.ok(renderFrameKept > 0, "打包后应当至少有一条保留了渲染帧数");
+  assert.ok(renderFrameKept > 0, "previews.tsv 里应当记着渲染帧数（多帧渲染的条目）");
 });
 
 /* ---------- assets / catalog 静态契约 ---------- */

@@ -1,12 +1,12 @@
 {
-  "builtAt": "2026-11-04T01:47:52.744Z",
+  "builtAt": "2026-11-04T01:53:12.605Z",
   "source": "D:\\workqwen\\DreamEngine-1\\cep\\com.dreamengine.panel\\data",
   "items": 59,
-  "staticItems": 22,
-  "animatedItems": 37,
-  "sheetsBefore": 16,
-  "sheetsAfter": 16,
-  "bytesBefore": 5543349,
-  "bytesAfter": 5543349,
-  "ratio": 100
+  "staticItems": 11,
+  "animatedItems": 48,
+  "sheetsBefore": 8,
+  "sheetsAfter": 13,
+  "bytesBefore": 4975221,
+  "bytesAfter": 6030272,
+  "ratio": 121.2
 }
