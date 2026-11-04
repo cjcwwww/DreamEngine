@@ -36,21 +36,22 @@
     }
 
     var TARGETS = [
-        "APC Colorama",
-        "ADBE Black&White",
-        "ADBE PhotoFilterPS",
-        "ADBE CHANNEL MIXER",
-        "ADBE Tritone",
-        "ADBE Leave Color",
-        "ADBE Change Color",
-        "ADBE Threshold2",
-        "ADBE Exposure2",
-        "ADBE Equalize",
-        "ADBE Turbulent Displace",
-        "ADBE Wave Warp",
-        "ADBE Ripple",
-        "ADBE Bulge",
-        "ADBE Twirl"
+        "ADBE Playgnd",
+        "ADBE Difference",
+        "ADBE Cineon Converter2",
+        "ADBE Matte Choker",
+        "ADBE Color Swirl",
+        "ADBE AutoContrast",
+        "ADBE Cartoonify",
+        "ADBE AudWave",
+        "ADBE Bevel Edges",
+        "ADBE Gradient Wipe",
+        "ADBE Color Range",
+        "APC CardDanceCam",
+        "ADBE Echo",
+        "ADBE Compander",
+        "ADBE Simple Choker",
+        "ADBE Getting Jiggy"
     ];
 
     for (var t = 0; t < TARGETS.length; t++) {
