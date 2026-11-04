@@ -160,8 +160,10 @@ var Bridge = (function () {
       "      var loadErr = '';" +
       "      for(var j=0;j<files.length;j++){" +
       "        try { $.evalFile(new File(files[j])); }" +
-      "        catch(ej) { loadErr = files[j] + ':' + ej.toString();" +
-      "          if (loadErr.indexOf('catalog') < 0) loadErr = ''; }" +
+      // 只保留**第一个**失败原因：它就是真正的元凶，后面的失败往往是它连带出来的。
+      // 旧写法里有个「不含 catalog 就清空」的过滤，把 curvelib 的语法错误吞掉，
+      // 面板上只剩「AEV_Curve 未定义」这种误导性提示（实机踩过）。
+      "        catch(ej) { if (loadErr === '') loadErr = files[j] + ':' + ej.toString(); }" +
       "      }" +
       "      AEV_EngineStamp = stamp;" +
       "      if (loadErr !== '') return 'ERR:engine_load:' + loadErr;" +
