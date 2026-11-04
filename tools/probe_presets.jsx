@@ -99,6 +99,23 @@
     log("COMPOSITE|" + comp.name + "|layers=" + comp.numLayers);
 
     var before = comp.numLayers;
+    /* 诊断：各图层的 sourceType / 文本属性 / 调整层标记 */
+    try {
+        var diagLayers = [];
+        for (var dl = 1; dl <= comp.numLayers; dl++) {
+            var L = comp.layer(dl);
+            var st = "?";
+            try { st = String(L.source.mainSource.sourceType); } catch (e1) {}
+            var hasText = "no";
+            try { hasText = L.property("ADBE Text Properties") ? "yes" : "no"; } catch (e2) {}
+            var isAdj = "no";
+            try { isAdj = L.adjustmentLayer ? "yes" : "no"; } catch (e3) {}
+            diagLayers.push("L" + dl + ":" + L.name + " type=" + st + " text=" + hasText + " adj=" + isAdj);
+        }
+        log("LAYER_DIAG|" + diagLayers.join(" | "));
+    } catch (eDiagL) {
+        log("LAYER_DIAG_ERR|" + eDiagL);
+    }
     /* 诊断：项目里到底有哪些 item，getItemByName 为什么找不到 */
     try {
         var items = app.project.items;

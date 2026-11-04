@@ -267,6 +267,21 @@ var AEV_Presets = (function () {
         }
     }
 
+    /* AE 2021 的 sourceType 数值（Scripting Guide）：
+       FOOTAGE=1、SOLID=2、PLACEHOLDER=3、TEXT=4。
+       枚举 SourceType 在部分版本里不可用，所以数值兜底、枚举优先。 */
+    var TYPE_FOOTAGE = 1;
+    var TYPE_SOLID = 2;
+
+    function typeIs(type, enumName, fallback) {
+        try {
+            if (typeof SourceType !== "undefined" && SourceType && SourceType[enumName] !== undefined) {
+                if (type === SourceType[enumName]) return true;
+            }
+        } catch (e) {}
+        return type === fallback;
+    }
+
     function matchesKind(layer, kind) {
         if (kind === "adjustment") {
             try {
@@ -275,13 +290,18 @@ var AEV_Presets = (function () {
                 return false;
             }
         }
+        // 文本层靠「有没有文本属性」判断，比 sourceType 可靠
+        if (kind === "text") {
+            try {
+                return !!layer.property("ADBE Text Properties");
+            } catch (e2) {
+                return false;
+            }
+        }
         var type = sourceTypeOf(layer);
         if (type === null) return false;
-        try {
-            if (kind === "solid") return type === SourceType.SOLID;
-            if (kind === "text") return type === SourceType.TEXT;
-            if (kind === "footage") return type === SourceType.FOOTAGE;
-        } catch (e2) {}
+        if (kind === "solid") return typeIs(type, "SOLID", TYPE_SOLID);
+        if (kind === "footage") return typeIs(type, "FOOTAGE", TYPE_FOOTAGE);
         return false;
     }
 
