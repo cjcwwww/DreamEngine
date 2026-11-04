@@ -63,70 +63,70 @@ ADBE AutoLevels	0	60	6	thumbs/batch_000_%04d.png	n7ud9x
 ADBE Checkerboard	0	61	6	thumbs/batch_000_%04d.png	gqfxq
 ADBE Median	0	62	6	thumbs/batch_000_%04d.png	crhsrj
 ADBE IRIS_WIPE	0	63	6	thumbs/batch_000_%04d.png	n0r1wc
-ADBE CurvesCustom	1	0	6		lj7nwk
-ADBE Easy Levels2	1	1	6		xohb6o
-ADBE Pro Levels2	1	2	6		1yoenz
-ADBE HUE SATURATION	1	3	6		en30e5
-ADBE Lumetri	1	4	6		wqijpv
-ADBE Change Color	1	5	6		mqhoja
-ADBE Threshold2	1	6	6		oqkh8w
-ADBE Exposure2	1	7	6		hohywu
-ADBE Corner Pin	1	8	6		wr0fkx
-ADBE BEZMESH	1	9	6		99ssin
-ADBE Mirror	1	10	6		66c6uk
-ADBE Offset	1	11	6		s0ol08
-ADBE Drop Shadow	1	12	6		6e2sng
-ADBE Ramp	1	13	6		20bphd
-ADBE Linear Color Key2	1	14	6		fu9fza
-ADBE Set Matte3	1	15	6		jfzpd7
-ADBE Timewarp	1	16	6		yp4qpm
-CC Force Motion Blur	1	17	6		p4y7r9
-ADBE Playgnd	1	18	6		7q4x4w
-ADBE Difference	1	19	6		fircos
-ADBE Cineon Converter2	1	20	6		dzvuqf
-ADBE Matte Choker	1	21	6		7xqgaw
-ADBE Color Swirl	1	22	6		ghgm0x
-APC CardDanceCam	1	23	6		a1zqov
-ADBE Posterize Time	1	24	6		bne8rp
-ADBE Getting Jiggy	1	25	6		2yspkt
-ADBE Channel Blur	1	26	6		gt047z
-ADBE Color Emboss	1	27	6		n4c7nd
-ADBE Difference Matte2	1	28	6		r0ej8p
-APC Caustics	1	29	6		k19vtk
-ADBE OFMotionBlur	1	30	6		heam0h
-ADBE GROW BOUNDS	1	31	6		ynkn4r
-ADBE RefineRBMatte	1	32	6		x0zpg9
-ADBE Separate XYZ Position	1	33	6		m3d46
-ADBE Emboss	1	34	6		boxpcq
-ADBE Radial Shadow	1	35	6		h1xw78
-ADBE ProfileToProfile	1	36	6		4w95sm
-ADBE RefineMatte2	1	37	6		7o4sev
-ADBE CM InsetVideoFramed	1	38	6		mkdoa2
-ADBE Channel Combiner	1	39	6		6s75jt
-ADBE Change To Color	1	40	6		gqkzmh
-ADBE ATG Extract	1	41	6		76mamg
-ADBE Time Displacement	1	42	6		1jsemx
-ADBE CM InsetVideoTorn	1	43	6		1vssla
-ADBE LIQUIFY	1	44	6		gcvrg4
-CC Environment	1	45	6		1zypq8
-ADBE KeyCleaner	1	46	6		55z2z8
-CC Overbrights	1	47	6		syme7u
-ADBE CM MoodLightAmorph	1	48	6		hpfd3j
-ADBE CM MoodLightDigital	1	49	6		a9b4rq
-CC Spotlight	1	50	6		ep7ccp
-ADBE CM MoodLightStreaks	1	51	6		2f6f9h
-ADBE MESH WARP	1	52	6		uip02g
-ADBE Grid	1	53	6		usxg9j
-CC Simple Wire Removal	1	54	6		ffyxgi
-CC Mr. Mercury	1	55	6		35ixzz
-ADBE CM CrackedTiles	1	56	6		bw5nkf
-ADBE CM LightLeaksMarkers	1	57	6		3eeiji
-ADBE CM LightLeaksRandom	1	58	6		1abd4a
-ADBE Deflicker	1	59	6		8414vu
-ADBE Texturize	1	60	6		r3aqw0
-ADBE Paint Bucket	1	61	6		futckr
-ADBE CM OpacityFlashMarkers	1	62	6		fvtdod
-ADBE Remove Color Matting	1	63	6		ps6yya
+ADBE CurvesCustom	1	0	1		lj7nwk
+ADBE Easy Levels2	1	1	1		xohb6o
+ADBE Pro Levels2	1	2	1		1yoenz
+ADBE HUE SATURATION	1	3	1		en30e5
+ADBE Lumetri	1	4	1		wqijpv
+ADBE Change Color	1	5	1		mqhoja
+ADBE Threshold2	1	6	1		oqkh8w
+ADBE Exposure2	1	7	1		hohywu
+ADBE Corner Pin	1	8	1		wr0fkx
+ADBE BEZMESH	1	9	1		99ssin
+ADBE Mirror	1	10	1		66c6uk
+ADBE Offset	1	11	1		s0ol08
+ADBE Drop Shadow	1	12	1		6e2sng
+ADBE Ramp	1	13	1		20bphd
+ADBE Linear Color Key2	1	14	1		fu9fza
+ADBE Set Matte3	1	15	1		jfzpd7
+ADBE Timewarp	1	16	1		yp4qpm
+CC Force Motion Blur	1	17	1		p4y7r9
+ADBE Playgnd	1	18	1		7q4x4w
+ADBE Difference	1	19	1		fircos
+ADBE Cineon Converter2	1	20	1		dzvuqf
+ADBE Matte Choker	1	21	1		7xqgaw
+ADBE Color Swirl	1	22	1		ghgm0x
+APC CardDanceCam	1	23	1		a1zqov
+ADBE Posterize Time	1	24	1		bne8rp
+ADBE Getting Jiggy	1	25	1		2yspkt
+ADBE Channel Blur	1	26	1		gt047z
+ADBE Color Emboss	1	27	1		n4c7nd
+ADBE Difference Matte2	1	28	1		r0ej8p
+APC Caustics	1	29	1		k19vtk
+ADBE OFMotionBlur	1	30	1		heam0h
+ADBE GROW BOUNDS	1	31	1		ynkn4r
+ADBE RefineRBMatte	1	32	1		x0zpg9
+ADBE Separate XYZ Position	1	33	1		m3d46
+ADBE Emboss	1	34	1		boxpcq
+ADBE Radial Shadow	1	35	1		h1xw78
+ADBE ProfileToProfile	1	36	1		4w95sm
+ADBE RefineMatte2	1	37	1		7o4sev
+ADBE CM InsetVideoFramed	1	38	1		mkdoa2
+ADBE Channel Combiner	1	39	1		6s75jt
+ADBE Change To Color	1	40	1		gqkzmh
+ADBE ATG Extract	1	41	1		76mamg
+ADBE Time Displacement	1	42	1		1jsemx
+ADBE CM InsetVideoTorn	1	43	1		1vssla
+ADBE LIQUIFY	1	44	1		gcvrg4
+CC Environment	1	45	1		1zypq8
+ADBE KeyCleaner	1	46	1		55z2z8
+CC Overbrights	1	47	1		syme7u
+ADBE CM MoodLightAmorph	1	48	1		hpfd3j
+ADBE CM MoodLightDigital	1	49	1		a9b4rq
+CC Spotlight	1	50	1		ep7ccp
+ADBE CM MoodLightStreaks	1	51	1		2f6f9h
+ADBE MESH WARP	1	52	1		uip02g
+ADBE Grid	1	53	1		usxg9j
+CC Simple Wire Removal	1	54	1		ffyxgi
+CC Mr. Mercury	1	55	1		35ixzz
+ADBE CM CrackedTiles	1	56	1		bw5nkf
+ADBE CM LightLeaksMarkers	1	57	1		3eeiji
+ADBE CM LightLeaksRandom	1	58	1		1abd4a
+ADBE Deflicker	1	59	1		8414vu
+ADBE Texturize	1	60	1		r3aqw0
+ADBE Paint Bucket	1	61	1		futckr
+ADBE CM OpacityFlashMarkers	1	62	1		fvtdod
+ADBE Remove Color Matting	1	63	1		ps6yya
 ADBE Broadcast Colors	2	0	6	thumbs/batch_002_%04d.png	xon7ue
 ADBE Circle	2	1	6	thumbs/batch_002_%04d.png	v2ojlv
 ADBE Noise2	2	2	6	thumbs/batch_002_%04d.png	2drmdd
@@ -191,70 +191,70 @@ CC Threshold	2	60	6	thumbs/batch_002_%04d.png	d1qiu0
 CC Light Burst 2.5	2	61	6	thumbs/batch_002_%04d.png	agsow8
 CC Threshold RGB	2	62	6	thumbs/batch_002_%04d.png	bj99eb
 CC Light Rays	2	63	6	thumbs/batch_002_%04d.png	ixm2ua
-ADBE RESHAPE	3	0	6		75sok9
-ADBE CM OpacityFlashRandom	3	1	6		vsrpt5
-ADBE Scribble Fill	3	2	6		6v9szi
-ADBE CM CropEdges	3	3	6		3oa9rx
-ADBE Gamma/Pedestal/Gain2	3	4	6		gqe5cl
-ADBE Rolling Shutter	3	5	6		nyjcd3
-ADBE Stroke	3	6	6		4x80i8
-ADBE CM AutoscrollHorizontal	3	7	6		82w5ir
-ADBE SCHMEAR	3	8	6		wexb78
-ADBE CM AutoscrollVertical	3	9	6		d6d09v
-ADBE CM Throw	3	10	6		ah6zv9
-ADBE SubspaceStabilizer	3	11	6		dtza8
-APC Vegas	3	12	6		h0ml4f
-ADBE CM FadeInOutFrames	3	13	6		5fky5a
-CC RepeTile	3	14	6		4fp7ad
-CC Glue Gun	3	15	6		i2jjfm
-ADBE CM FadeInOutmsec	3	16	6		iqygiw
-ADBE CM Spin	3	17	6		eozau3
-ADBE CM ScaleBounceMarkers	3	18	6		3pg55m
-ADBE SelectiveColor	3	19	6		6itst0
-ADBE CM ScaleBounceRandom	3	20	6		2de7ae
-ADBE CM WiggleGelatin	3	21	6		7ahm78
-ADBE CM WigglePosition	3	22	6		qefzp
-ADBE CM WiggleRotation	3	23	6		px3er4
-ADBE PS Arbitrary Map	3	24	6		jrr1ia
-ADBE CM WiggleScale	3	25	6		usu5e0
-ADBE ShadowHighlight	3	26	6		obfuxb
-ADBE CM WiggleShear	3	27	6		bksn3n
-ADBE CM Wigglerama	3	28	6		dpnych
-ADBE CM DissolveUnmelt	3	29	6		u6eyf3
-ADBE DigitalVideoLimiter	3	30	6		hw1pq4
-ADBE CM Zoom2DSpin	3	31	6		ae3qeu
-CC Ripple Pulse	3	32	6		hh8rnk
-ADBE CM Zoom3DTumble	3	33	6		fao0jq
-ADBE CM ZoomWobble	3	34	6		nuoo01
-CC Smear	3	35	6		oq8srn
-ADBE CM ZoomBubble	3	36	6		nocn5e
-ADBE CM ZoomSpiral	3	37	6		h6vd8x
-ADBE CM SlideVariable	3	38	6		64fm0o
-ADBE CM FlyToInset	3	39	6		vtd8s2
-ADBE CM CornerReveal	3	40	6		y5fg2x
-ADBE CM GridWipe	3	41	6		agul3w
-ADBE CM TransComplete	3	42	6		rbb32a
-ADBE CM TransStretch	3	43	6		qnmo06
-ADBE CM TransDissolve	3	44	6		z54ys2
-ADBE CM TransFade	3	45	6		lo3ahl
-ADBE CM TransFadeMask	3	46	6		n9jaat
-ADBE CM TransWipe	3	47	6		9t8bb2
-ADBE CM TransWipeFeath	3	48	6		59rv5y
-ADBE CM TransCard	3	49	6		csg08z
-ADBE CM TransSlide	3	50	6		n67mze
-ADBE CM TransCorner	3	51	6		yq6ib6
-ADBE CM TransDirection	3	52	6		ajo9wq
-ADBE CM TransIris	3	53	6		o5nehs
-ADBE CM TransRadial	3	54	6		q427li
-ADBE DE Jiggle	3	55	6		oqikek
-ADBE DE Jiggle At Marker	3	56	6		fjxcar
-ADBE DE Jiggle On Beat	3	57	6		thy5ol
-ADBE DE Jiggle Random	3	58	6		u29pxp
-ADBE DE Pulse	3	59	6		9bmuwz
-ADBE DE Pulse At Marker	3	60	6		bgi3qy
-ADBE DE Pulse On Beat	3	61	6		vkybuk
-ADBE DE Pulse Random	3	62	6		ptke04
-ADBE DE Bounce	3	63	6		1kgara
+ADBE RESHAPE	3	0	1		75sok9
+ADBE CM OpacityFlashRandom	3	1	1		vsrpt5
+ADBE Scribble Fill	3	2	1		6v9szi
+ADBE CM CropEdges	3	3	1		3oa9rx
+ADBE Gamma/Pedestal/Gain2	3	4	1		gqe5cl
+ADBE Rolling Shutter	3	5	1		nyjcd3
+ADBE Stroke	3	6	1		4x80i8
+ADBE CM AutoscrollHorizontal	3	7	1		82w5ir
+ADBE SCHMEAR	3	8	1		wexb78
+ADBE CM AutoscrollVertical	3	9	1		d6d09v
+ADBE CM Throw	3	10	1		ah6zv9
+ADBE SubspaceStabilizer	3	11	1		dtza8
+APC Vegas	3	12	1		h0ml4f
+ADBE CM FadeInOutFrames	3	13	1		5fky5a
+CC RepeTile	3	14	1		4fp7ad
+CC Glue Gun	3	15	1		i2jjfm
+ADBE CM FadeInOutmsec	3	16	1		iqygiw
+ADBE CM Spin	3	17	1		eozau3
+ADBE CM ScaleBounceMarkers	3	18	1		3pg55m
+ADBE SelectiveColor	3	19	1		6itst0
+ADBE CM ScaleBounceRandom	3	20	1		2de7ae
+ADBE CM WiggleGelatin	3	21	1		7ahm78
+ADBE CM WigglePosition	3	22	1		qefzp
+ADBE CM WiggleRotation	3	23	1		px3er4
+ADBE PS Arbitrary Map	3	24	1		jrr1ia
+ADBE CM WiggleScale	3	25	1		usu5e0
+ADBE ShadowHighlight	3	26	1		obfuxb
+ADBE CM WiggleShear	3	27	1		bksn3n
+ADBE CM Wigglerama	3	28	1		dpnych
+ADBE CM DissolveUnmelt	3	29	1		u6eyf3
+ADBE DigitalVideoLimiter	3	30	1		hw1pq4
+ADBE CM Zoom2DSpin	3	31	1		ae3qeu
+CC Ripple Pulse	3	32	1		hh8rnk
+ADBE CM Zoom3DTumble	3	33	1		fao0jq
+ADBE CM ZoomWobble	3	34	1		nuoo01
+CC Smear	3	35	1		oq8srn
+ADBE CM ZoomBubble	3	36	1		nocn5e
+ADBE CM ZoomSpiral	3	37	1		h6vd8x
+ADBE CM SlideVariable	3	38	1		64fm0o
+ADBE CM FlyToInset	3	39	1		vtd8s2
+ADBE CM CornerReveal	3	40	1		y5fg2x
+ADBE CM GridWipe	3	41	1		agul3w
+ADBE CM TransComplete	3	42	1		rbb32a
+ADBE CM TransStretch	3	43	1		qnmo06
+ADBE CM TransDissolve	3	44	1		z54ys2
+ADBE CM TransFade	3	45	1		lo3ahl
+ADBE CM TransFadeMask	3	46	1		n9jaat
+ADBE CM TransWipe	3	47	1		9t8bb2
+ADBE CM TransWipeFeath	3	48	1		59rv5y
+ADBE CM TransCard	3	49	1		csg08z
+ADBE CM TransSlide	3	50	1		n67mze
+ADBE CM TransCorner	3	51	1		yq6ib6
+ADBE CM TransDirection	3	52	1		ajo9wq
+ADBE CM TransIris	3	53	1		o5nehs
+ADBE CM TransRadial	3	54	1		q427li
+ADBE DE Jiggle	3	55	1		oqikek
+ADBE DE Jiggle At Marker	3	56	1		fjxcar
+ADBE DE Jiggle On Beat	3	57	1		thy5ol
+ADBE DE Jiggle Random	3	58	1		u29pxp
+ADBE DE Pulse	3	59	1		9bmuwz
+ADBE DE Pulse At Marker	3	60	1		bgi3qy
+ADBE DE Pulse On Beat	3	61	1		vkybuk
+ADBE DE Pulse Random	3	62	1		ptke04
+ADBE DE Bounce	3	63	1		1kgara
 CC Light Sweep	4	0	6	thumbs/batch_004_%04d.png	mlru1z
 ADBE Vibrance	4	1	6	thumbs/batch_004_%04d.png	ixcwvv
 CC Bender	4	2	6	thumbs/batch_004_%04d.png	gq3prv
@@ -270,39 +270,39 @@ CC Toner	4	11	6	thumbs/batch_004_%04d.png	pbrusz
 CC Split	4	12	6	thumbs/batch_004_%04d.png	pjqal3
 CC Split 2	4	13	6	thumbs/batch_004_%04d.png	yp1cyx
 CC Tiler	4	14	6	thumbs/batch_004_%04d.png	29may3
-ADBE DE Bounce At Marker	5	0	6		yt7qul
-ADBE DE Bounce On Beat	5	1	6		rk53hr
-ADBE DE Bounce Random	5	2	6		duzqif
-ADBE DE Opacity Pulse	5	3	6		6crayk
-ADBE DE Opacity Pulse At Marker	5	4	6		96vilv
-ADBE DE Opacity Pulse On Beat	5	5	6		kbtqyd
-ADBE DE Opacity Pulse Random	5	6	6		oejn5p
-ADBE DE Oscillate	5	7	6		elibsq
-ADBE DE Oscillate At Marker	5	8	6		cq5unl
-ADBE DE Oscillate On Beat	5	9	6		yafxyr
-ADBE DE Oscillate Random	5	10	6		xfq9ff
-ADBE DE Pendulum	5	11	6		51z2ck
-ADBE DE Pendulum At Marker	5	12	6		95g197
-ADBE DE Pendulum On Beat	5	13	6		xc9yql
-ADBE DE Pendulum Random	5	14	6		xeozmt
-ADBE DE Swarm	5	15	6		5um4p0
-ADBE DE Follow	5	16	6		ujwtl9
-ADBE DE Orbit	5	17	6		w65tbu
-ADBE DE Orbit 3D	5	18	6		pcuxd
-ADBE DE Random Motion 1D	5	19	6		uthnja
-ADBE DE Random Motion	5	20	6		f43xm9
-ADBE DE Random Rotation	5	21	6		5z1kb
-ADBE DE Random Rotation 3D	5	22	6		wevahu
-ADBE DE Random Opacity	5	23	6		32mfg4
-ADBE DE Random Scale	5	24	6		1gic4j
-ADBE DE Random Fill Color	5	25	6		dfurhd
-ADBE DE Z Spring	5	26	6		qmoh8n
-ADBE DE Z Spring At Marker	5	27	6		cjnu0u
-ADBE DE Wobble Bounce	5	28	6		mp9si9
-ADBE DE Wobble Bounce At Marker	5	29	6		2pr72g
-ADBE DE Wobble Bounce On Beat	5	30	6		5g8lje
-ADBE DE Wobble Bounce Random	5	31	6		p125ki
-ADBE CM Animated Shape Control	5	32	6		v3p32u
-ADBE CM Animated Shape 2	5	33	6		ss1s5j
-ADBE CM Animated Shape 3	5	34	6		f5q0tk
-ADBE Sample Image	5	35	6		j4y3va
+ADBE DE Bounce At Marker	5	0	1		yt7qul
+ADBE DE Bounce On Beat	5	1	1		rk53hr
+ADBE DE Bounce Random	5	2	1		duzqif
+ADBE DE Opacity Pulse	5	3	1		6crayk
+ADBE DE Opacity Pulse At Marker	5	4	1		96vilv
+ADBE DE Opacity Pulse On Beat	5	5	1		kbtqyd
+ADBE DE Opacity Pulse Random	5	6	1		oejn5p
+ADBE DE Oscillate	5	7	1		elibsq
+ADBE DE Oscillate At Marker	5	8	1		cq5unl
+ADBE DE Oscillate On Beat	5	9	1		yafxyr
+ADBE DE Oscillate Random	5	10	1		xfq9ff
+ADBE DE Pendulum	5	11	1		51z2ck
+ADBE DE Pendulum At Marker	5	12	1		95g197
+ADBE DE Pendulum On Beat	5	13	1		xc9yql
+ADBE DE Pendulum Random	5	14	1		xeozmt
+ADBE DE Swarm	5	15	1		5um4p0
+ADBE DE Follow	5	16	1		ujwtl9
+ADBE DE Orbit	5	17	1		w65tbu
+ADBE DE Orbit 3D	5	18	1		pcuxd
+ADBE DE Random Motion 1D	5	19	1		uthnja
+ADBE DE Random Motion	5	20	1		f43xm9
+ADBE DE Random Rotation	5	21	1		5z1kb
+ADBE DE Random Rotation 3D	5	22	1		wevahu
+ADBE DE Random Opacity	5	23	1		32mfg4
+ADBE DE Random Scale	5	24	1		1gic4j
+ADBE DE Random Fill Color	5	25	1		dfurhd
+ADBE DE Z Spring	5	26	1		qmoh8n
+ADBE DE Z Spring At Marker	5	27	1		cjnu0u
+ADBE DE Wobble Bounce	5	28	1		mp9si9
+ADBE DE Wobble Bounce At Marker	5	29	1		2pr72g
+ADBE DE Wobble Bounce On Beat	5	30	1		5g8lje
+ADBE DE Wobble Bounce Random	5	31	1		p125ki
+ADBE CM Animated Shape Control	5	32	1		v3p32u
+ADBE CM Animated Shape 2	5	33	1		ss1s5j
+ADBE CM Animated Shape 3	5	34	1		f5q0tk
+ADBE Sample Image	5	35	1		j4y3va
