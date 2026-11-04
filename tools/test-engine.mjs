@@ -957,6 +957,28 @@ test("面板提供预览格尺寸滑块，并写进 CSS 变量", () => {
   assert.match(css, /body \{[^}]*height: 100vh[^}]*overflow: hidden/s);
 });
 
+test("网格列宽是固定值，不被 1fr 拉伸（否则滑块形同虚设）", () => {
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  const gridBlock = css.match(/\.grid \{[^}]*\}/s);
+  assert.ok(gridBlock, "找不到 .grid 规则");
+  // minmax 的第二个值不能是 1fr —— 1fr 会把列拉满剩余宽度
+  assert.doesNotMatch(
+    gridBlock[0],
+    /minmax\([^)]*,\s*1fr\)/,
+    "列宽不能用 1fr：面板变宽时卡片会被拉伸，滑块设定的尺寸就失效了",
+  );
+  // 必须用固定宽度值
+  assert.match(gridBlock[0], /var\(--thumb-size/);
+});
+
+test("侧栏不被拉成与右栏等高（滚动条不该贯穿整个面板）", () => {
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  const sidebarBlock = css.match(/\.sidebar \{[^}]*\}/s);
+  assert.ok(sidebarBlock, "找不到 .sidebar 规则");
+  assert.match(sidebarBlock[0], /align-self: flex-start/);
+  assert.match(sidebarBlock[0], /max-height: 100%/);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

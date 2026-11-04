@@ -259,6 +259,11 @@ select {
   padding: 12px 0 16px 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* 侧栏不要被拉成和右栏一样高。
+     stretch 会让它的滚动条贯穿整个面板高度（内容才 500px，条却拖到 1000px），
+     看起来像一根多余的竖线。改成按内容高度自适应，超出才滚。 */
+  align-self: flex-start;
+  max-height: 100%;
 }
 
 .sidebar-title {
@@ -319,6 +324,31 @@ select {
   color: inherit;
 }
 
+/* 细滚动条：侧栏与主区各自滚动，滚动条要低调。
+   Chromium（CEP 11 = Chrome 87）支持 ::-webkit-scrollbar。 */
+.sidebar::-webkit-scrollbar,
+main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+main::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-clip: padding-box;
+  background-color: var(--border-strong);
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+main::-webkit-scrollbar-thumb:hover {
+  background-color: #4c565d;
+}
+
 main {
   flex: 1 1 auto;
   min-width: 0;
@@ -328,12 +358,14 @@ main {
 }
 
 /* 预览格尺寸由滑块控制（--thumb-size）。
-   min() 保证在窄面板里不会超出可用宽度。 */
+   列宽用固定值而不是 1fr —— 1fr 会把列拉伸填满剩余宽度，
+   面板一变宽卡片就跟着变大，滑块形同虚设。
+   固定列宽下：格子大小只由滑块决定，面板比例只影响每行放几张。 */
 .grid {
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax(min(var(--thumb-size, 132px), 100%), 1fr)
+    minmax(min(var(--thumb-size, 132px), 100%), var(--thumb-size, 132px))
   );
   gap: 10px;
 }
