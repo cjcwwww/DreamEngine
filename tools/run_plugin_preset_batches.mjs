@@ -48,7 +48,7 @@ function arg(name, fallback) {
 const limit = Number(arg("--limit", "12")) || 12;
 const maxRounds = Number(arg("--rounds", "40")) || 40;
 const timeoutSec = Number(arg("--timeout", "240")) || 240;
-const background = arg("--background", "photo");
+const background = arg("--background", "") || defaultBackground();
 const force = process.argv.indexOf("--force") > 0;
 const AE = arg(
   "--ae",
@@ -127,6 +127,19 @@ function blacklistPaths() {
   return set;
 }
 
+/** 没显式传 --background 时，跟随面板最后一次生成预览所用的背景 */
+function defaultBackground() {
+  if (!existsSync(PANEL_INDEX)) return "photo";
+  try {
+    const j = JSON.parse(readFileSync(PANEL_INDEX, "utf8"));
+    const items = j.items || [];
+    for (let i = items.length - 1; i >= 0; i--) {
+      if (items[i].background) return items[i].background;
+    }
+  } catch (e) {}
+  return "photo";
+}
+
 /** 面板里已经生成过的内置预设，离线不必重渲（--force 可覆盖） */
 function panelDonePaths() {
   if (force || !existsSync(PANEL_INDEX)) return new Set();
@@ -157,7 +170,7 @@ function buildPluginIndex() {
       keyStart: Number(row[5]) || 0,
       keyEnd: Number(row[6]) || 0,
       background: row[7] || "photo",
-      plugins: row[8] ? row[8].split(",").filter(Boolean) : [],
+      plugins: row[8] ? Array.from(new Set(row[8].split(",").filter(Boolean))) : [],
       plugin: true,
       sliceColumns: 1,
       sliceCellSize: 128,
@@ -206,6 +219,8 @@ for (let round = 1; round <= maxRounds; round++) {
     (p) => !done.has(p) && !black.has(p) && !panelDone.has(p),
   );
   if (!candidates.length) {
+    // 幂等刷新一次索引（格式更新 / 插件名单去重），不启动 AE
+    buildPluginIndex();
     console.log(`第 ${round} 轮：没有待渲的预设，收工。`);
     break;
   }

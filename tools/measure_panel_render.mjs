@@ -477,7 +477,8 @@ check("预设预览：静态/动态卡片都显示缩略图，背景可选", () 
   assert.equal(images.length, 3);
   assert.ok(images.some((i) => /preset_1000_/.test(i)), "离线条目的帧没挂上：" + JSON.stringify(images));
   for (const img of images) {
-    assert.match(img, /preset_\d{3}_\d{4}\.png/, "缩略图没挂上预览帧：" + img);
+    // 面板生成的编号是 3 位，离线通道从 1000 起（4 位）
+    assert.match(img, /preset_\d+_\d{4}\.png/, "缩略图没挂上预览帧：" + img);
   }
   assert.ok(data.backgroundOptions >= 5, "背景下拉少于 5 项：" + data.backgroundOptions);
   assert.match(data.presetSummaryText, /已生成 3 张预览/, "统计没更新：" + data.presetSummaryText);
