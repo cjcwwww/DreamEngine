@@ -60,3 +60,5 @@ __pycache__/
 
 # AE 运行时在当前工作目录生成的设置目录（跑 -r 脚本时产生）
 invalidParam/
+cep/com.dreamengine.panel/data/plugin_*.json
+cep/com.dreamengine.panel/data/plugin_*.tsv
