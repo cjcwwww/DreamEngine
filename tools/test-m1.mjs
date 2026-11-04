@@ -32,6 +32,24 @@ test("M1 names data is a unique matchName map", () => {
   assert.ok(keys.includes("ScriptEP"));
 });
 
+test("面板 JS 引用的元素 id 都存在于 HTML", () => {
+  // 加了左侧分类栏、排序按钮之后最容易出的错就是
+  // 「JS 取某个 id，HTML 里没有」——运行时报错、面板空白。
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  const ids = new Set();
+  const re = /byId\("([^"]+)"\)/g;
+  let m = re.exec(library);
+  while (m) {
+    ids.add(m[1]);
+    m = re.exec(library);
+  }
+  assert.ok(ids.size >= 8, `解析到的 id 太少（${ids.size}），检查没生效？`);
+  for (const id of ids) {
+    assert.ok(html.includes(`id="${id}"`), `HTML 里缺少 id="${id}"`);
+  }
+});
+
 test("M1 manifest 描述合法的网格与预览条目", () => {
   // 预览索引不入库，入库的是可分发的 L1 包（dist/L1/）。
   // 扩展数据目录里的那份由 install_l1 部署，属于运行时产物。
