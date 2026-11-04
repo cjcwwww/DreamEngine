@@ -745,6 +745,89 @@ test("viewmodel 给过期条目打标记，图仍然照常显示", () => {
   assert.equal(missing.stale, false);
 });
 
+test("排序：按名称首字母（中文按拼音）", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const items = [
+    { matchName: "X1", nameEn: "Zeta", nameZh: "斑马纹", category: "风格化" },
+    { matchName: "X2", nameEn: "Alpha", nameZh: "爱丽丝", category: "风格化" },
+    { matchName: "X3", nameEn: "Mango", nameZh: "芒果", category: "风格化" },
+  ];
+  const byEn = Array.from(view.sortItems(items, "name", "en"), (i) => i.matchName);
+  assert.deepEqual(byEn, ["X2", "X3", "X1"], "英文按字母序");
+
+  // 中文按拼音：爱丽丝(ai) < 斑马纹(ban) < 芒果(mang)
+  const byZh = Array.from(view.sortItems(items, "name", "zh"), (i) => i.matchName);
+  assert.deepEqual(byZh, ["X2", "X1", "X3"], "中文按拼音序");
+});
+
+test("排序：按分类时同分类排在一起，类内按名称", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const items = [
+    { matchName: "A", nameEn: "Zed", nameZh: "泽德", category: "扭曲" },
+    { matchName: "B", nameEn: "Abe", nameZh: "艾比", category: "颜色校正" },
+    { matchName: "C", nameEn: "Mid", nameZh: "米德", category: "扭曲" },
+  ];
+  const out = Array.from(view.sortItems(items, "category", "zh"), (i) => i.matchName);
+  assert.equal(out.length, 3);
+  // 同分类的两条必须相邻（分类名排序：扭 n < 颜 y，所以扭曲在前）
+  const categories = out.map((key) => (key === "B" ? "颜色校正" : "扭曲"));
+  assert.equal(categories[0], "扭曲");
+  assert.equal(categories[1], "扭曲", "同分类必须相邻");
+  assert.equal(categories[2], "颜色校正");
+  // 类内按名称：艾比(ai) < 泽德(zé) < 米德(mǐ) → 扭曲类内应是 B? 不，是 米德 与 泽德
+  const twisted = out.filter((key) => key !== "B").map((key) => (key === "A" ? "泽德" : "米德"));
+  assert.deepEqual(twisted, ["米德", "泽德"], "类内按名称排序");
+});
+
+test("分类键用 AE 原始分类名，显示名走名字表映射", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const item = {
+    matchName: "ADBE Glo2",
+    nameEn: "Glow",
+    nameZh: "发光",
+    category: "风格化",
+    categoryZh: "风格化",
+    categoryEn: "Stylize",
+  };
+  // 键取原始分类（切语言不变），显示名取本地化
+  assert.equal(view.categoryKey(item), "风格化");
+  assert.equal(view.categoryLabel(item, "en"), "Stylize");
+  assert.equal(view.categoryLabel(item, "zh"), "风格化");
+
+  // 没有分类的归到「未分类」
+  assert.equal(view.categoryKey({ matchName: "X" }), "未分类");
+});
+
+test("分类顺序取自 catalog 首次出现顺序", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const order = Array.from(view.categoryOrder([
+    { matchName: "A", category: "模糊和锐化" },
+    { matchName: "B", category: "颜色校正" },
+    { matchName: "C", category: "模糊和锐化" },
+    { matchName: "D", category: "扭曲" },
+  ]));
+  assert.deepEqual(order, ["模糊和锐化", "颜色校正", "扭曲"]);
+});
+
+test("分类计数用于侧栏", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const stats = view.categoryCounts(
+    [
+      { matchName: "A", category: "模糊和锐化" },
+      { matchName: "B", category: "模糊和锐化" },
+      { matchName: "C", category: "扭曲" },
+    ],
+    "zh",
+  );
+  assert.equal(stats.counts["模糊和锐化"], 2);
+  assert.equal(stats.counts["扭曲"], 1);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

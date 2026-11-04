@@ -36,14 +36,22 @@
     }
 
     var TARGETS = [
-        "ADBE Dust & Scratches",
-        "CC Environment",
-        "ADBE Color Difference Key",
-        "CC Hair",
-        "CC Force Motion Blur",
-        "CC Glass",
-        "CC Light Burst 2.5",
-        "CC Grid Wipe"
+        "ADBE Lumetri",
+        "APC Colorama",
+        "ADBE Black&White",
+        "ADBE PhotoFilterPS",
+        "ADBE CHANNEL MIXER",
+        "ADBE Tritone",
+        "ADBE Leave Color",
+        "ADBE Change Color",
+        "ADBE Threshold2",
+        "ADBE Exposure2",
+        "ADBE Equalize",
+        "ADBE Turbulent Displace",
+        "ADBE Wave Warp",
+        "ADBE Ripple",
+        "ADBE Bulge",
+        "ADBE Twirl"
     ];
 
     for (var t = 0; t < TARGETS.length; t++) {

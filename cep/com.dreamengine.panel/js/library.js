@@ -15,7 +15,13 @@ var AEV_Library = (function () {
     entries: [],
     generating: false,
     // 有图但配方/素材已变、需要重渲的条目（来自 AEV_PreviewGen.staleList）
-    stale: {}
+    stale: {},
+    // 排序方式：name = 按名称首字母，category = 按 AE 分类
+    sortMode: "name",
+    // 左侧栏选中的分类键（空 = 全部）
+    category: "",
+    // AE 菜单里的分类顺序（从 catalog 首次出现顺序推导）
+    categoryOrder: []
   };
 
   function byId(id) {
@@ -203,6 +209,19 @@ var AEV_Library = (function () {
       query: state.query,
       plugin: state.plugin
     });
+    // 分类筛选
+    if (state.category) {
+      var narrowed = [];
+      for (var c = 0; c < visible.length; c++) {
+        if (AEV_ViewModel.categoryKey(visible[c]) === state.category) {
+          narrowed.push(visible[c]);
+        }
+      }
+      visible = narrowed;
+    }
+    // 排序（默认按名称首字母）
+    visible = AEV_ViewModel.sortItems(visible, state.sortMode, state.lang);
+
     var grid = byId("previewGrid");
     var empty = byId("emptyState");
     var fragment = document.createDocumentFragment();
@@ -215,6 +234,72 @@ var AEV_Library = (function () {
     empty.hidden = visible.length !== 0;
     byId("selectionStats").textContent =
       (state.lang === "zh" ? "显示 " : "Showing ") + visible.length;
+    renderSidebar(visible);
+  }
+
+  /**
+   * 左侧分类栏。
+   * 分类顺序取自 AE 菜单（catalog 里首次出现的顺序），
+   * 计数取当前插件筛选后的结果，所以切来源时数字会跟着变。
+   */
+  function renderSidebar(visible) {
+    var list = byId("categoryList");
+    if (!list) return;
+    var stats = AEV_ViewModel.categoryCounts(visible, state.lang);
+    var order = state.categoryOrder.length
+      ? state.categoryOrder
+      : Object.keys(stats.counts);
+
+    list.textContent = "";
+    var total = visible.length;
+
+    list.appendChild(
+      categoryButton("", state.lang === "zh" ? "全部分类" : "All categories", total, !state.category)
+    );
+
+    for (var i = 0; i < order.length; i++) {
+      var key = order[i];
+      var count = stats.counts[key];
+      if (!count) continue;
+      var label = stats.labels[key] || key;
+      list.appendChild(categoryButton(key, label, count, state.category === key));
+    }
+
+    // catalog 里没有但确实存在的分类（理论上不会出现）兜底追加
+    var extra = [];
+    for (var name in stats.counts) {
+      if (order.indexOf(name) < 0) extra.push(name);
+    }
+    for (var e = 0; e < extra.length; e++) {
+      list.appendChild(
+        categoryButton(extra[e], stats.labels[extra[e]] || extra[e], stats.counts[extra[e]], state.category === extra[e])
+      );
+    }
+  }
+
+  function categoryButton(key, label, count, active) {
+    var li = document.createElement("li");
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "category-item" + (active ? " active" : "");
+    button.setAttribute("data-key", key);
+
+    var text = document.createElement("span");
+    text.className = "category-label";
+    text.textContent = label;
+
+    var badge = document.createElement("span");
+    badge.className = "category-count";
+    badge.textContent = String(count);
+
+    button.appendChild(text);
+    button.appendChild(badge);
+    button.addEventListener("click", function () {
+      state.category = key;
+      render();
+    });
+    li.appendChild(button);
+    return li;
   }
 
   function updateHeader() {
@@ -233,6 +318,13 @@ var AEV_Library = (function () {
     byId("searchInput").placeholder =
       lang === "zh" ? "搜索效果或分类" : "Search effects or categories";
     updateHeader();
+    render();
+  }
+
+  function setSortMode(mode) {
+    state.sortMode = mode;
+    byId("sortName").className = "segment" + (mode === "name" ? " active" : "");
+    byId("sortCategory").className = "segment" + (mode === "category" ? " active" : "");
     render();
   }
 
@@ -292,6 +384,8 @@ var AEV_Library = (function () {
             return;
           }
           state.catalog = catalogData.effects;
+          // 分类顺序 = AE 菜单里的顺序（catalog 里各类首次出现的次序）
+          state.categoryOrder = AEV_ViewModel.categoryOrder(state.catalog);
           checkStale(function () {
             rebuildItems();
             updateHeader();
@@ -628,6 +722,8 @@ var AEV_Library = (function () {
   function boot() {
     byId("langZh").addEventListener("click", function () { setLanguage("zh"); });
     byId("langEn").addEventListener("click", function () { setLanguage("en"); });
+    byId("sortName").addEventListener("click", function () { setSortMode("name"); });
+    byId("sortCategory").addEventListener("click", function () { setSortMode("category"); });
     byId("searchInput").addEventListener("input", function () {
       state.query = this.value;
       render();

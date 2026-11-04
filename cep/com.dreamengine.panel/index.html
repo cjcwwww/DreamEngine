@@ -55,18 +55,29 @@
       <option value="RE:Vision">RE:Vision</option>
       <option value="Video Copilot">Video Copilot</option>
     </select>
+    <div class="segmented" role="group" aria-label="排序">
+      <button class="segment active" id="sortName" type="button">按名称</button>
+      <button class="segment" id="sortCategory" type="button">按分类</button>
+    </div>
     <label class="toggle">
       <input type="checkbox" id="showAll"/>
       <span>全部已安装</span>
     </label>
   </section>
 
-  <main>
-    <div class="grid" id="previewGrid"></div>
-    <div class="empty-state" id="emptyState" hidden>
-      <strong>没有匹配的效果</strong>
-    </div>
-  </main>
+  <div class="workspace">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">分类</h2>
+      <ul class="category-list" id="categoryList"></ul>
+    </aside>
+
+    <main>
+      <div class="grid" id="previewGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <strong>没有匹配的效果</strong>
+      </div>
+    </main>
+  </div>
 
   <footer class="statusbar">
     <span id="statusText">准备扫描</span>

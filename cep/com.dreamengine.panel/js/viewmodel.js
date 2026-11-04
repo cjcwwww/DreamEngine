@@ -157,6 +157,83 @@ var AEV_ViewModel = (function () {
     return out;
   }
 
+  /**
+   * 分类键：直接用 AE 的原始分类名。
+   * 用原始串而不是显示名做键，切换语言时筛选状态才不会失效
+   * （中文 AE 的分类是「模糊和锐化」，英文 AE 是「Blur & Sharpen」，
+   * 但它们指的是同一个分类，显示名要走 names.json 映射）。
+   */
+  function categoryKey(item) {
+    var raw = String((item && item.category) || "").trim();
+    return raw || "未分类";
+  }
+
+  /** 分类的显示名：优先用名字表里的双语分类，其次用本机分类名 */
+  function categoryLabel(item, lang) {
+    var resolved = resolveCategory(item, lang);
+    if (resolved) return resolved;
+    return categoryKey(item);
+  }
+
+  /**
+   * 分类的先后顺序：按 AE 菜单里首次出现的顺序。
+   * 从 catalog 推导而不是写死表——AE 的界面语言不同，分类名就不同，
+   * 写死的表在另一种语言的 AE 上对不上。
+   */
+  function categoryOrder(catalog) {
+    var seen = [];
+    var known = {};
+    for (var i = 0; i < catalog.length; i++) {
+      var key = categoryKey(catalog[i]);
+      if (!known[key]) {
+        known[key] = true;
+        seen.push(key);
+      }
+    }
+    return seen;
+  }
+
+  /**
+   * 排序。
+   * mode = "name"     按名称首字母（中文按拼音，英文按字母）
+   * mode = "category" 先按 AE 分类，分类内再按名称
+   */
+  function sortItems(items, mode, lang) {
+    var locale = lang === "zh" ? "zh-Hans-CN" : "en";
+    var copy = [];
+    for (var i = 0; i < items.length; i++) copy.push(items[i]);
+    copy.sort(function (a, b) {
+      if (mode === "category") {
+        var ca = categoryLabel(a, lang);
+        var cb = categoryLabel(b, lang);
+        if (ca !== cb) {
+          var byCategory = ca.localeCompare(cb, locale);
+          if (byCategory !== 0) return byCategory;
+        }
+      }
+      var na = resolveName(a, lang);
+      var nb = resolveName(b, lang);
+      if (na !== nb) {
+        var byName = na.localeCompare(nb, locale);
+        if (byName !== 0) return byName;
+      }
+      return String(a.matchName).localeCompare(String(b.matchName), locale);
+    });
+    return copy;
+  }
+
+  /** 统计各分类的条目数（用于侧栏） */
+  function categoryCounts(items, lang) {
+    var counts = {};
+    var labels = {};
+    for (var i = 0; i < items.length; i++) {
+      var key = categoryKey(items[i]);
+      counts[key] = (counts[key] || 0) + 1;
+      if (!labels[key]) labels[key] = categoryLabel(items[i], lang);
+    }
+    return { counts: counts, labels: labels };
+  }
+
   function firstText() {
     for (var i = 0; i < arguments.length; i++) {
       var value = arguments[i];
@@ -268,6 +345,11 @@ var AEV_ViewModel = (function () {
     inferPlugin: inferPlugin,
     resolveName: resolveName,
     resolveCategory: resolveCategory,
+    categoryKey: categoryKey,
+    categoryLabel: categoryLabel,
+    categoryOrder: categoryOrder,
+    categoryCounts: categoryCounts,
+    sortItems: sortItems,
     buildItem: buildItem,
     filterItems: filterItems
   };
