@@ -31,7 +31,7 @@ function arg(name, fallback) {
 }
 const limit = Number(arg("--limit", "24")) || 24;
 const maxRounds = Number(arg("--rounds", "40")) || 40;
-const timeoutSec = Number(arg("--timeout", "900")) || 900;
+const timeoutSec = Number(arg("--timeout", "240")) || 240;
 const AE = arg("--ae", "C:/Program Files/Adobe/Adobe After Effects 2021/Support Files/AfterFX.exe");
 const SCRIPT = resolve(ROOT, "tools/run_plugin_preview.jsx");
 

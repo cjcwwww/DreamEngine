@@ -96,6 +96,14 @@ var AEV_ViewModel = (function () {
     // 实测：ADBE Apply Color LUT2 在渲染阶段弹出「选择 LUT 文件」对话框，
     // 整批渲染卡死在同一格（逐格排查时定位到它）。
     if (matchName.indexOf("apply color lut") >= 0) return true;
+    // CINEMA 4D / Element 3D：依赖外部渲染器，AE 会挂住不动
+    // （实测 "CINEMA 4D Effect" 一渲染就卡死，AE 进程还在但永远不返回）
+    if (matchName.indexOf("cinema 4d") === 0 || matchName.indexOf("element 3d") === 0) {
+      return true;
+    }
+    if (cat.indexOf("cinema 4d") >= 0 || cat.indexOf("element 3d") >= 0) {
+      return true;
+    }
     var hints = ["tracker", "glasses", "stereo", "camera", "extracto"];
     for (var i = 0; i < hints.length; i++) {
       if (matchName.indexOf(hints[i]) >= 0) return true;

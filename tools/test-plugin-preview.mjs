@@ -214,6 +214,13 @@ test("离线脚本：逐条 singleCell + 心跳 + 独立索引，绝不碰主 ma
   assert.match(jsx, /AEV_PreviewGen\.renderBatch\(\[item\.matchName\]/);
 });
 
+test("依赖外部渲染器的效果（CINEMA 4D / Element 3D）不参与预览", () => {
+  // 实测：一渲染 AE 就挂住（进程还在但永远不返回），会拖死整批
+  assert.equal(view.isPoorPreviewTarget({ matchName: "CINEMA 4D Effect", category: "CINEMA 4D" }), true);
+  assert.equal(view.isPoorPreviewTarget({ matchName: "Element 3D Comp", category: "Element 3D" }), true);
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Glo2", category: "风格化" }), false);
+});
+
 test("来源下拉包含「其它插件」", () => {
   assert.match(read("cep/com.dreamengine.panel/index.html"), /value="其它插件"/);
 });
