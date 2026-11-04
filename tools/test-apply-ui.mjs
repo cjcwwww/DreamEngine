@@ -119,7 +119,10 @@ test("面板的 setView 会切换两个视图与工具条的显隐", () => {
   assert.match(code, /viewPresets/);
   assert.match(code, /effectControls/);
   // 切到预设视图才去读预设库
-  assert.match(code, /if \(!isEffects\) loadPresetLibrary\(\)/);
+  assert.match(code, /loadPresetLibrary\(\)/);
+  // 离开效果墙时把几百张卡片从 DOM 摘掉（留着虽然看不见，
+  // 但每次切回来都要重建，白白浪费建节点的开销）
+  assert.match(code, /grid\.textContent = ""/);
 });
 
 test("预设视图渲染成卡片网格，不再是抽屉里的列表", () => {
