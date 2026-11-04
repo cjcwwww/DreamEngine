@@ -549,6 +549,8 @@ var AEV_Library = (function () {
   function setStatus(text, isError) {
     var status = byId("statusText");
     status.textContent = text;
+    // 底栏固定单行省略，长错误详情挂到 title 上仍能看全
+    status.title = text;
     status.className = isError ? "error" : "";
   }
 
@@ -1115,7 +1117,15 @@ var AEV_Library = (function () {
       var counts = byId("queueCounts");
       if (counts) {
         if (data && data.pending !== undefined) {
-          counts.textContent = data.pending + " 待渲染 / " + data.failed + " 失败";
+          // 底栏只放紧凑数字：「0 待渲染 / 0 失败」在窄面板下会被压成
+          // 逐字竖排、把底栏撑高好几倍。完整含义放 title 与队列抽屉里。
+          counts.textContent = data.pending + " / " + data.failed;
+          var toggle = byId("btnQueue");
+          if (toggle) {
+            toggle.title = state.lang === "zh"
+              ? "查看生成队列：待渲染 " + data.pending + " · 失败 " + data.failed
+              : "Queue: " + data.pending + " pending · " + data.failed + " failed";
+          }
         } else {
           counts.textContent = "—";
         }
@@ -1389,6 +1399,24 @@ var AEV_Library = (function () {
   }
 
   /**
+   * 设置页开关。
+   *
+   * 与队列抽屉互斥：两个都是右侧覆盖层，同时开只会互相盖住。
+   * 齿轮按钮是「切换」语义；Esc 与点抽屉外都能收起。
+   */
+  function setSettingsOpen(open) {
+    var drawer = byId("settingsDrawer");
+    var trigger = byId("btnSettings");
+    if (!drawer || !trigger) return;
+    drawer.hidden = !open;
+    trigger.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      var queue = byId("queueDrawer");
+      if (queue) queue.hidden = true;
+    }
+  }
+
+  /**
    * 主视图切换：效果预览 / 预设预览。
    *
    * 两个视图同级，切换栏固定在面板最上方。
@@ -1444,11 +1472,42 @@ var AEV_Library = (function () {
     });
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
+    byId("btnSettings").addEventListener("click", function () {
+      setSettingsOpen(byId("settingsDrawer").hidden);
+    });
+    byId("btnSettingsClose").addEventListener("click", function () {
+      setSettingsOpen(false);
+    });
+    byId("btnOpenQueue").addEventListener("click", function () {
+      setSettingsOpen(false);
+      var drawer = byId("queueDrawer");
+      if (drawer) {
+        drawer.hidden = false;
+        refreshQueue();
+      }
+    });
+    // Esc 关设置页；点在抽屉与齿轮之外也关。
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" || event.keyCode === 27) {
+        if (!byId("settingsDrawer").hidden) setSettingsOpen(false);
+      }
+    });
+    document.addEventListener("mousedown", function (event) {
+      var drawer = byId("settingsDrawer");
+      if (drawer.hidden) return;
+      var target = event.target;
+      var trigger = byId("btnSettings");
+      if (trigger && trigger.contains && trigger.contains(target)) return;
+      if (drawer.contains && drawer.contains(target)) return;
+      setSettingsOpen(false);
+    });
     byId("btnQueue").addEventListener("click", function () {
       var drawer = byId("queueDrawer");
       if (!drawer) return;
-      drawer.hidden = !drawer.hidden;
-      if (!drawer.hidden) refreshQueue();
+      var opening = drawer.hidden;
+      setSettingsOpen(false); // 与设置页互斥
+      drawer.hidden = !opening;
+      if (opening) refreshQueue();
     });
     byId("btnQueueClose").addEventListener("click", function () {
       var drawer = byId("queueDrawer");

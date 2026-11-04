@@ -26,22 +26,13 @@
       </div>
     </div>
     <div class="top-actions">
-      <div class="segmented" role="group" aria-label="语言">
-        <button class="segment active" id="langZh" type="button">中文</button>
-        <button class="segment" id="langEn" type="button">EN</button>
-      </div>
-      <button class="action-button" id="btnGenerate" type="button" title="在当前合成环境下渲染缺失的预览">
-        生成缺失预览
-      </button>
-      <button class="action-button" id="btnRetry" type="button" hidden title="重新排队失败的条目">
-        重试失败
-      </button>
-      <button class="icon-button" id="btnRefresh" type="button" title="重新扫描 AE 效果" aria-label="重新扫描 AE 效果">
+      <!-- 语言 / 生成 / 刷新 / 重试都收进「设置」页：顶栏只留一个入口，
+           面板拖窄时品牌区不会被一堆按钮挤到换行。 -->
+      <button class="icon-button" id="btnSettings" type="button"
+              title="设置" aria-label="设置" aria-expanded="false" aria-controls="settingsDrawer">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-          <path d="M16 16h5v5"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
     </div>
@@ -122,7 +113,7 @@
   </section>
 
   <footer class="statusbar">
-    <span id="statusText">准备扫描</span>
+    <span id="statusText" title="">准备扫描</span>
     <span class="size-slider">
       <label for="thumbSize">预览大小</label>
       <input id="thumbSize" type="range" min="48" max="180" step="2" value="132"/>
@@ -148,6 +139,62 @@
       <span class="queue-summary" id="queueSummary"></span>
     </div>
     <ul class="queue-list" id="queueList"></ul>
+  </aside>
+
+  <aside class="settings-drawer" id="settingsDrawer" hidden aria-label="设置">
+    <div class="queue-head">
+      <h3>设置</h3>
+      <button class="icon-button" id="btnSettingsClose" type="button" aria-label="关闭设置">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="settings-scroll">
+      <section class="settings-group">
+        <h4>外观</h4>
+        <div class="settings-row">
+          <span class="settings-label">界面语言</span>
+          <div class="segmented" role="group" aria-label="语言">
+            <button class="segment active" id="langZh" type="button">中文</button>
+            <button class="segment" id="langEn" type="button">EN</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-group">
+        <h4>预览维护</h4>
+        <button class="settings-action" id="btnGenerate" type="button">
+          <span class="settings-action-title">生成缺失预览</span>
+          <span class="settings-action-note">渲染当前 AE 环境里还没出图的内置效果</span>
+        </button>
+        <button class="settings-action" id="btnRefresh" type="button">
+          <span class="settings-action-title">重新扫描 AE 效果</span>
+          <span class="settings-action-note">刚装了新插件时用，强制重读效果清单</span>
+        </button>
+        <button class="settings-action" id="btnRetry" type="button" hidden>
+          <span class="settings-action-title">重试失败</span>
+          <span class="settings-action-note">把生成失败的条目重新排队</span>
+        </button>
+        <button class="settings-action" id="btnOpenQueue" type="button">
+          <span class="settings-action-title">查看生成队列</span>
+          <span class="settings-action-note">待渲染 / 渲染中 / 失败的逐条状态</span>
+        </button>
+      </section>
+
+      <section class="settings-group">
+        <h4>使用说明</h4>
+        <p class="settings-note">
+          在 AE 里选中图层后，<b>双击</b>效果卡片即可把该效果加到选中层。
+          单击不会改动工程。悬停预览可播放动态效果，静止效果不播放。
+        </p>
+        <p class="settings-note">
+          第三方插件的预览不能靠面板按钮实时生成（会让 AE 崩溃），
+          需关闭 AE 后用离线脚本逐条渲染；插件参数一律保持默认。
+        </p>
+      </section>
+    </div>
   </aside>
 
   <script src="js/bridge.js"></script>

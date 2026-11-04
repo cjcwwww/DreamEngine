@@ -258,6 +258,74 @@ test("mark_animated 工具按帧字节比对判定静态，且写独立索引", 
   assert.doesNotMatch(tool, /writeFileSync\(path, JSON\.stringify\(manifest/);
 });
 
+/* ---------- 4. 设置页与底部栏 ---------- */
+
+test("顶栏只留设置入口，四个按钮搬进设置页", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const topActions = html.slice(html.indexOf('class="top-actions"'), html.indexOf("</header>"));
+  const settings = html.slice(html.indexOf('id="settingsDrawer"'));
+  assert.match(topActions, /id="btnSettings"/);
+  // 顶栏里不能再有这些按钮
+  for (const id of ["langZh", "langEn", "btnGenerate", "btnRefresh", "btnRetry"]) {
+    assert.doesNotMatch(topActions, new RegExp(`id="${id}"`), `${id} 还在顶栏`);
+  }
+  // 它们都在设置页里（id 保持原样，JS 绑定不用改）
+  for (const id of ["langZh", "langEn", "btnGenerate", "btnRefresh", "btnRetry"]) {
+    assert.match(settings, new RegExp(`id="${id}"`), `${id} 不在设置页`);
+  }
+  assert.match(settings, /id="settingsDrawer"[^>]*hidden/);
+  assert.match(settings, /id="btnSettingsClose"/);
+});
+
+test("设置抽屉与隐藏按钮都显式写了 [hidden] 覆盖", () => {
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  // 带 display:flex 的容器，hidden 会被类选择器盖掉（上轮踩过）
+  assert.match(css, /\.settings-drawer\[hidden\]\s*\{\s*display: none/);
+  assert.match(css, /\.settings-action\[hidden\]\s*\{\s*display: none/);
+});
+
+test("设置页与队列抽屉互斥，Esc / 点外部都能关", () => {
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  const code = codeOf(lib);
+  assert.match(code, /function setSettingsOpen\(open\)/);
+  assert.match(code, /queue\.hidden = true/);
+  assert.match(code, /byId\("btnSettings"\)\.addEventListener\("click"/);
+  assert.match(code, /key === "Escape"/);
+  assert.match(code, /drawer\.contains\(target\)/);
+  // 打开队列时也要关设置页
+  const queueBinding = code.slice(
+    code.indexOf('byId("btnQueue").addEventListener'),
+    code.indexOf('byId("btnQueueClose")'),
+  );
+  assert.match(queueBinding, /setSettingsOpen\(false\)/);
+});
+
+test("底部栏固定高度、禁止换行，窄比例按顺序隐藏次要项", () => {
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  const block = css.slice(css.indexOf(".statusbar {"), css.indexOf(".statusbar .error"));
+  assert.match(block, /height: 32px/);
+  assert.match(block, /flex-wrap: nowrap/);
+  assert.match(block, /overflow: hidden/);
+  assert.match(css, /\.statusbar > \*\s*\{[^}]*white-space: nowrap/);
+  assert.match(css, /#statusText\s*\{[^}]*text-overflow: ellipsis/);
+  // 断点：标签 → 滑块 → 「显示 N」→ 整个滑块
+  assert.match(css, /@media \(max-width: 620px\)/);
+  assert.match(css, /@media \(max-width: 460px\)/);
+  assert.match(css, /@media \(max-width: 360px\)/);
+  assert.match(css, /\.size-slider label\s*\{\s*display: none/);
+  assert.match(css, /#selectionStats\s*\{\s*display: none/);
+});
+
+test("队列计数改成紧凑数字，完整含义放 title", () => {
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  const code = codeOf(lib);
+  assert.match(code, /counts\.textContent = data\.pending \+ " \/ " \+ data\.failed/);
+  assert.doesNotMatch(code, /" 待渲染 \/ "/);
+  assert.match(code, /toggle\.title =/);
+  // 长状态文案也要留完整内容
+  assert.match(code, /status\.title = text/);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

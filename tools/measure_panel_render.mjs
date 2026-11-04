@@ -163,6 +163,44 @@ function finish() {
         toggle.click();
         result.searchHiddenAfterSecondClick = field ? field.hidden : null;
 
+        /* --- 设置页：齿轮展开 / 收起，四个按钮都搬进去了 --- */
+        var settingsBtn = document.getElementById("btnSettings");
+        var drawer = document.getElementById("settingsDrawer");
+        var topActions = document.querySelector(".top-actions");
+        result.settingsHiddenInitially = drawer ? drawer.hidden : null;
+        result.settingsButtonsInTopbar = ["langZh", "langEn", "btnGenerate", "btnRefresh", "btnRetry"]
+          .filter(function (id) {
+            var el = document.getElementById(id);
+            return el && topActions && topActions.contains(el);
+          });
+        settingsBtn.click();
+        result.settingsOpenAfterClick = drawer ? !drawer.hidden : null;
+        result.settingsVisible = drawer ? drawer.getBoundingClientRect().width > 0 : null;
+        result.settingsActions = ["langZh", "langEn", "btnGenerate", "btnRefresh", "btnOpenQueue"]
+          .map(function (id) {
+            var el = document.getElementById(id);
+            return el
+              ? { id: id, visible: el.getBoundingClientRect().height > 0 }
+              : { id: id, missing: true };
+          });
+        settingsBtn.click();
+        result.settingsHiddenAfterSecondClick = drawer ? drawer.hidden : null;
+
+        /* --- 底栏：塞进最长文案，高度仍必须恒定（不能被撑成两行/竖排）--- */
+        var bar = document.querySelector(".statusbar");
+        var st = document.getElementById("statusText");
+        var qc = document.getElementById("queueCounts");
+        var oldStatus = st.textContent;
+        var oldQueue = qc.textContent;
+        result.statusbarHeightNormal = bar.getBoundingClientRect().height;
+        st.textContent = "索引写入失败：在需要数字、数组或属性的位置找到类型为 Error 的对象（很长的错误详情很长的错误详情很长的错误详情）";
+        qc.textContent = "0 待渲染 / 0 失败";
+        result.statusbarHeightWorst = bar.getBoundingClientRect().height;
+        result.queueCountsHeightWorst = qc.getBoundingClientRect().height;
+        result.statusHeightWorst = st.getBoundingClientRect().height;
+        st.textContent = oldStatus;
+        qc.textContent = oldQueue;
+
         document.getElementById("out").textContent = JSON.stringify(result);
       }, 500);
     }, 400);
@@ -299,6 +337,29 @@ check("搜索框点图标展开、再点收起", () => {
   assert.equal(data.searchHiddenInitially, true, "初始应是收起的");
   assert.equal(data.searchOpenAfterClick, true, "点一次图标应展开");
   assert.equal(data.searchHiddenAfterSecondClick, true, "再点一次应收起");
+});
+
+check("顶栏只剩设置入口，四个按钮都搬进了设置页", () => {
+  assert.equal(data.settingsHiddenInitially, true, "设置页初始应该是收起的");
+  assert.deepEqual(data.settingsButtonsInTopbar, [], "顶栏里还留着" + JSON.stringify(data.settingsButtonsInTopbar));
+  const missing = (data.settingsActions || []).filter((a) => a.missing);
+  assert.equal(missing.length, 0, "设置页里缺按钮：" + JSON.stringify(missing));
+});
+
+check("设置页能展开、按钮可见、再点一次能收起", () => {
+  assert.equal(data.settingsOpenAfterClick, true, "点齿轮没展开");
+  assert.equal(data.settingsVisible, true, "设置页展开了但不可见（hidden 被 CSS 盖掉？）");
+  for (const a of data.settingsActions || []) {
+    assert.equal(a.visible, true, a.id + " 在设置页里不可见");
+  }
+  assert.equal(data.settingsHiddenAfterSecondClick, true, "再点齿轮没收回");
+});
+
+check("底栏在最长文案下高度恒定、内容不竖排", () => {
+  assert.equal(data.statusbarHeightNormal, 32, "底栏初始高度不是 32：" + data.statusbarHeightNormal);
+  assert.equal(data.statusbarHeightWorst, 32, "长文案把底栏撑高了：" + data.statusbarHeightWorst);
+  assert.ok(data.queueCountsHeightWorst <= 20, "队列计数被压成竖排：" + data.queueCountsHeightWorst);
+  assert.ok(data.statusHeightWorst <= 20, "状态文字被压成竖排：" + data.statusHeightWorst);
 });
 
 console.log(`\n${failed === 0 ? "全部通过" : failed + " 项失败"}`);

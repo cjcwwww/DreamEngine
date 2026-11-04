@@ -667,23 +667,41 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 30px;
-  padding: 6px 16px;
+  /* 固定高度 + 不换行：中文一旦被 flex 压到逐字竖排（截图里
+     「0 待渲染 / 0 失败」变成一根竖条），整个底栏会被撑高好几倍。
+     这里从容器层面把高度钉死，任何内容都撑不动它。 */
+  height: 32px;
+  min-height: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  padding: 0 16px;
   border-top: 1px solid var(--border);
   background: var(--bg);
   color: var(--muted);
   font-size: 10px;
 }
 
-/* 状态文案可能很长（生成进度、错误详情）。面板比例一变窄，
-   长文案会把底栏撑成两行、显得又高又挤 —— 这里让它单行省略，
-   底栏高度恒定。 */
+/* 底栏里除状态文字外的每一项都不许被压窄。
+   空间不够时由下面的媒体查询「隐藏次要项」，而不是硬挤成竖排。 */
+.statusbar > * {
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* 状态文案可能很长（生成进度、错误详情）：单行省略，完整内容放 title。 */
 #statusText {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#selectionStats,
+#queueCounts {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .statusbar .error {
@@ -829,6 +847,151 @@ main {
   padding: 18px 0;
   color: var(--muted);
   text-align: center;
+}
+
+/* 设置页：顶栏只留一个齿轮入口，语言 / 生成 / 刷新 / 重试都收进这里。
+   做成右侧整页抽屉而不是第三个顶部 tab —— 设置是随时调一下就走的，
+   不该把效果墙切掉，也不该跟「效果预览 / 预设预览」这两个内容视图同级。 */
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(340px, 88vw);
+  padding: 12px 14px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: -12px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+/* 带 display:flex 的容器必须显式写 [hidden]，否则类选择器会盖掉
+   浏览器默认的 display:none —— 上一轮预设视图就栽在这里。 */
+.settings-drawer[hidden] {
+  display: none;
+}
+
+#btnSettings[aria-expanded="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.settings-group {
+  margin: 0 0 16px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-group:last-child {
+  border-bottom: none;
+}
+
+.settings-group h4 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.settings-label {
+  font-size: 12px;
+}
+
+.settings-action {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-action:hover {
+  border-color: var(--border-strong);
+}
+
+.settings-action:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+/* 「重试失败」平时是 hidden —— 和抽屉一样要显式覆盖 display:flex */
+.settings-action[hidden] {
+  display: none;
+}
+
+.settings-action-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-action-note {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.settings-note {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.settings-note b {
+  color: var(--text);
+}
+
+/* 面板拖到很窄时，底栏按顺序舍弃次要信息（而不是把它们压成竖排）。
+   顺序：先省掉滑块标签 → 再缩滑块 → 再隐藏「显示 N」→ 最后隐藏整个滑块。 */
+@media (max-width: 620px) {
+  .statusbar {
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .size-slider label {
+    display: none;
+  }
+
+  .size-slider input[type="range"] {
+    width: 64px;
+  }
+}
+
+@media (max-width: 460px) {
+  #selectionStats {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .size-slider {
+    display: none;
+  }
 }
 
 /* 预设视图里的卡片样式见上面的 .preset-card */
