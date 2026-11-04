@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 /* ============================================================
- * measure_curve_render.mjs —— 曲线编辑视图的真渲染实测（M4）
+ * measure_curve_render.mjs —— 曲线编辑视图的真渲染实测
  *
  * 用无头 Chrome 加载**真实的 index.html + curve_math.js + curve.js +
  * library.js + style.css**，只把 Bridge 的 AE 通道换成桩：
  *   · snapshotJson 返回一份真实结构的快照
  *   · applyText 记录面板下发的文本协议并返回可切换的结果
- * 然后派发真实的 mousedown/mousemove/mouseup 去拖把手 ——
- * 走的是命中测试、坐标换算、本地重绘、松手写回的全链路。
+ * 然后派发真实的鼠标事件、点真实的预设卡片与「应用」按钮。
  *
- * 这样能测到静态断言测不出来的东西：画布到底画没画、坐标算错没有、
- * 拖拽过程中是不是真的没过桥、冲突对话框能不能弹出来。
+ * 这一版验的是新的工作流（曲线模板 + 应用）：
+ *   · 进入视图、选预设、拖把手，**一次 AE 都不读、不写**
+ *   · 只有按「应用」才读快照并写回，写回文本覆盖每条属性的每一段
+ *   · 写成功后自动重读一次，灰色参考反映 AE 真实值
  *
  * 用法：node tools/measure_curve_render.mjs
  * ============================================================ */
@@ -22,7 +23,6 @@ import assert from "node:assert/strict";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const PANEL = resolve(ROOT, "cep/com.dreamengine.panel");
-/* 模拟页必须放在扩展目录里：面板用相对路径加载 js/ css/ 与 data/ */
 const SIM = resolve(PANEL, "__sim_curve.html");
 
 function findChrome() {
@@ -45,7 +45,6 @@ if (!browser) {
 
 function keyFrame(i, t, v, opts) {
   const o = opts || {};
-  const dims = v.length;
   const fill = (n) => v.map(() => n);
   return {
     i, t, v,
@@ -61,25 +60,9 @@ function keyFrame(i, t, v, opts) {
   };
 }
 
-const sliderProp = {
-  i: 0,
-  loc: "M4Sim|m4_1d|变换|滑杆",
-  name: "滑杆",
-  group: "变换",
-  matchName: "ADBE Slider Control-0001",
-  vt: 1, dims: 1, spatial: false, sep: false, n: 3,
-  sig: "sig-a",
-  keys: [
-    keyFrame(0, 0, [0]),
-    // 第二段给足 out 缓动（x1=0.85）：归一化后两段形状明显不同，
-    // 截图里才看得出「灰度显示其余段」确实画了东西
-    keyFrame(1, 1, [100], { os: [0], oi: [85] }),
-    keyFrame(2, 2, [30]),
-  ],
-};
-
+/* 位置在前：面板默认看第 0 条属性，它决定「路」能不能用 */
 const positionProp = {
-  i: 1,
+  i: 0,
   loc: "M4Sim|m4_2d|变换|位置",
   name: "位置",
   group: "变换",
@@ -93,14 +76,33 @@ const positionProp = {
   ],
 };
 
+const sliderProp = {
+  i: 1,
+  loc: "M4Sim|m4_1d|变换|滑杆",
+  name: "滑杆",
+  group: "变换",
+  matchName: "ADBE Slider Control-0001",
+  vt: 1, dims: 1, spatial: false, sep: false, n: 3,
+  sig: "sig-a",
+  keys: [
+    keyFrame(0, 0, [0]),
+    keyFrame(1, 1, [100], { os: [0], oi: [85] }),
+    keyFrame(2, 2, [30]),
+  ],
+};
+
 const SNAPSHOT = JSON.stringify({
   status: "ok",
   version: "1.0.0",
   ae: "21.0.0",
   comp: "M4Sim",
   time: 0.6,
-  props: [sliderProp, positionProp],
+  props: [positionProp, sliderProp],
 });
+
+/* 2 条属性 × 2 段 = 4 段 → expect 2 行 + out/in 8 行 */
+const EXPECT_LINES = 2;
+const EXPECT_OPS = 8;
 
 /* ---------- 桩 ---------- */
 
@@ -109,9 +111,9 @@ const stub = `
 <script>
 window.__SIM_ERRORS = [];
 window.addEventListener("error", function (e) { window.__SIM_ERRORS.push(String(e.message)); });
-window.__SIM = { reads: 0, writes: [], writesDuringMove: 0, dragging: false };
+window.__SIM = { reads: 0, writes: [] };
 window.__SIM_SNAPSHOT = ${JSON.stringify(SNAPSHOT)};
-window.__SIM_APPLY = '{"status":"ok","applied":1,"skipped":[],"sigs":[]}';
+window.__SIM_APPLY = '{"status":"ok","applied":8,"skipped":[],"sigs":[]}';
 
 Bridge.getExtensionPath = function (cb) { cb("file:///sim/panel"); };
 Bridge.evalAE = function (jsx, cb) { if (cb) cb("__NOT_CEP__"); };
@@ -127,7 +129,6 @@ Bridge.runEngine = function (path, expr, cb) {
       var arg = expr.slice(expr.indexOf("(") + 1, expr.lastIndexOf(")"));
       var text = "";
       try { text = JSON.parse(arg); } catch (e) { text = String(arg); }
-      if (window.__SIM.dragging) window.__SIM.writesDuringMove++;
       window.__SIM.writes.push({ text: text });
       out = window.__SIM_APPLY;
     } else if (expr.indexOf("AEV_Queue.stats") === 0) {
@@ -148,7 +149,7 @@ Bridge.runEngine = function (path, expr, cb) {
 const probe = `
 <script>
 var R = {};
-var canvas, ctx, rect;
+var canvas, rect;
 
 function wait(ms, fn) { setTimeout(fn, ms); }
 
@@ -172,108 +173,107 @@ function mouseAt(type, x, y) {
   }));
 }
 
-function drag() {
+function clickPreset(id) {
+  var chips = document.querySelectorAll("#curvePresets .preset-chip");
+  for (var i = 0; i < chips.length; i++) {
+    if (chips[i].getAttribute("data-pid") === id) { chips[i].click(); return true; }
+  }
+  return false;
+}
+
+function dragHandle() {
   var snap = AEV_CurveUI.snapshot();
-  /* 单位方块：点曲线上的一点 = 把该段设为编辑对象 */
-  var seg = snap.segPoints && snap.segPoints.length ? snap.segPoints[0] : null;
-  if (!seg) { R.error = "没有段代表点（segPoints 为空）"; return false; }
-  mouseAt("mousedown", seg.x, seg.y);
-  mouseAt("mouseup", seg.x, seg.y);
-  var after = AEV_CurveUI.snapshot();
-  R.afterClick = { selected: after.selected, handle: after.handle, seg: seg, unit: after.unit, targets: after.targets };
-  if (!after.handle) { R.error = "选中段后没有拿到把手坐标"; return false; }
-  R.handleBefore = after.handle;
-  // 真正的拖拽：必须先在把手上按下，才算进入拖拽（点关键帧只是选中）
-  mouseAt("mousedown", after.handle.x, after.handle.y);
-  window.__SIM.dragging = true;
-  mouseAt("mousemove", after.handle.x, after.handle.y + 6);
-  mouseAt("mousemove", after.handle.x + 18, after.handle.y + 10);
-  R.writesDuringMove = window.__SIM.writesDuringMove;
-  window.__SIM.dragging = false;
-  mouseAt("mouseup", after.handle.x + 18, after.handle.y + 10);
+  if (!snap.handle) { R.error = "没有把手坐标"; return false; }
+  mouseAt("mousedown", snap.handle.x, snap.handle.y);
+  mouseAt("mousemove", snap.handle.x + 14, snap.handle.y + 8);
+  mouseAt("mousemove", snap.handle.x + 26, snap.handle.y + 16);
+  R.writesDuringDrag = window.__SIM.writes.length;
+  R.readsDuringDrag = window.__SIM.reads;
+  mouseAt("mouseup", snap.handle.x + 26, snap.handle.y + 16);
+  R.afterDrag = AEV_CurveUI.snapshot();
   return true;
 }
 
 function run() {
   R.errors = window.__SIM_ERRORS;
 
-  /* 切到曲线视图 */
   document.getElementById("tabCurve").click();
 
   wait(400, function () {
     R.viewCurveHidden = document.getElementById("viewCurve").hidden;
     R.viewCurveVisible = document.getElementById("viewCurve").getBoundingClientRect().height > 0;
     R.effectsVisible = document.getElementById("viewEffects").getBoundingClientRect().height > 0;
-    R.propOptions = document.getElementById("curveProp").options.length;
-    R.readsAfterEnter = window.__SIM.reads;
     R.painted = paintedPixels();
+    R.initial = AEV_CurveUI.snapshot();
+    R.readsOnEnter = window.__SIM.reads;
+    R.writesOnEnter = window.__SIM.writes.length;
+    R.chipCount = document.querySelectorAll("#curvePresets .preset-chip").length;
+    R.chipHasCurve = (function () {
+      var cv = document.querySelector("#curvePresets .preset-chip canvas");
+      if (!cv) return 0;
+      var d = cv.getContext("2d").getImageData(0, 0, cv.width, cv.height).data;
+      var n = 0;
+      for (var i = 3; i < d.length; i += 4) if (d[i] > 8) n++;
+      return n;
+    })();
     R.hint = String(document.getElementById("curveHint").textContent);
-    R.snap = AEV_CurveUI.snapshot();
-    R.keyCount = R.snap.keyPoints.length;
-    R.writesBeforeDrag = window.__SIM.writes.length;
+    R.hasReloadBtn = !!document.getElementById("curveConflictReload");
 
     canvas = document.getElementById("curveCanvas");
-    ctx = canvas.getContext("2d");
     rect = canvas.getBoundingClientRect();
 
-    /* 第一次拖拽：正常写回 */
-    if (!drag()) { finish(); return; }
+    /* 1) 点预设：只改模板 */
+    R.presetClicked = clickPreset("back-out");
+    R.afterPreset = AEV_CurveUI.snapshot();
+    R.readsAfterPreset = window.__SIM.reads;
+    R.writesAfterPreset = window.__SIM.writes.length;
 
-    wait(300, function () {
-      R.writesAfterDrag = window.__SIM.writes.length;
-      R.firstWrite = window.__SIM.writes.length ? window.__SIM.writes[0].text : "";
-      R.readsAfterWrite = window.__SIM.reads;
+    /* 2) 拖把手：仍然不读不写 */
+    if (!dragHandle()) { finish(); return; }
 
-      /* 第二次拖拽：模拟并发冲突 */
-      window.__SIM_APPLY = '{"status":"conflict","reason":"changed","loc":"M4Sim|m4_1d|变换|滑杆","sig":"sig-z"}';
-      if (!drag()) { finish(); return; }
+    /* 3) 应用：这时才读快照并写回 */
+    window.__SIM_APPLY = '{"status":"ok","applied":8,"skipped":[],"sigs":[]}';
+    document.getElementById("curveApply").click();
 
-      wait(200, function () {
+    wait(400, function () {
+      R.writesAfterApply = window.__SIM.writes.length;
+      R.applyText = window.__SIM.writes.length ? window.__SIM.writes[0].text : "";
+      R.readsAfterApply = window.__SIM.reads;
+      R.afterApply = AEV_CurveUI.snapshot();
+      R.applyBtnText = String(document.getElementById("curveApply").textContent);
+      R.applyBtnDisabled = document.getElementById("curveApply").disabled;
+
+      /* 4) 冲突：第二次应用被拒 → 弹框 → 覆盖 */
+      window.__SIM_APPLY = '{"status":"conflict","reason":"changed","loc":"M4Sim|m4_2d|变换|位置","sig":"sig-z"}';
+      document.getElementById("curveApply").click();
+
+      wait(300, function () {
         R.conflictVisible = !document.getElementById("curveConflict").hidden;
         R.conflictText = String(document.getElementById("curveConflictText").textContent);
 
-        /* 点「覆盖」：应当发 force 且去掉 expect 行。
-           先把桩的返回值改回 ok —— 用户选「覆盖」意味着这次写入被接受，
-           否则会再次冲突，测的就不是覆盖路径了。 */
-        window.__SIM_APPLY = '{"status":"ok","applied":1,"skipped":[],"sigs":[]}';
+        window.__SIM_APPLY = '{"status":"ok","applied":8,"skipped":[],"sigs":[]}';
         document.getElementById("curveConflictOverwrite").click();
 
-        wait(200, function () {
+        wait(300, function () {
           R.writesAfterOverwrite = window.__SIM.writes.length;
-          R.overwriteText = window.__SIM.writes.length > 1
+          R.overwriteText = window.__SIM.writes.length
             ? window.__SIM.writes[window.__SIM.writes.length - 1].text : "";
           R.conflictHiddenAfter = document.getElementById("curveConflict").hidden;
 
-          /* 切到速度图 & 路径图 */
-          document.getElementById("curveModeSpeed").click();
-          R.paintedSpeed = paintedPixels();
+          /* 5) 速/路：应用后才有数据可用 */
           var pathBtn = document.getElementById("curveModePath");
-          R.pathEnabledForSpatialPos = !pathBtn.disabled;
+          R.pathEnabledAfterApply = !pathBtn.disabled;
+          document.getElementById("curveModeSpeed").click();
           R.modeAfterSpeed = AEV_CurveUI.snapshot().mode;
+          R.paintedSpeed = paintedPixels();
 
-          /* 换成二维位置属性（空间）：路径图应可用 */
-          var sel = document.getElementById("curveProp");
-          sel.value = "1";
-          sel.dispatchEvent(new Event("change", { bubbles: true }));
-          R.pathCapableOnPosition = AEV_CurveUI.snapshot().pathCapable;
           pathBtn.click();
-          R.modePath = AEV_CurveUI.snapshot().mode;
+          R.modeAfterPath = AEV_CurveUI.snapshot().mode;
           R.paintedPath = paintedPixels();
 
-          /* 换回一维滑杆：路径图应被禁用 */
-          sel.value = "0";
-          sel.dispatchEvent(new Event("change", { bubbles: true }));
-          R.pathDisabledOnScalar = document.getElementById("curveModePath").disabled;
-          R.modeAfterScalar = AEV_CurveUI.snapshot().mode;
-
-          /* 收尾：选中第一段，让截图里能看到把手 */
-          var endSnap = AEV_CurveUI.snapshot();
-          if (endSnap.segPoints && endSnap.segPoints.length) {
-            mouseAt("mousedown", endSnap.segPoints[0].x, endSnap.segPoints[0].y);
-            mouseAt("mouseup", endSnap.segPoints[0].x, endSnap.segPoints[0].y);
-          }
-          R.unitAfterScalar = AEV_CurveUI.snapshot().unit;
-          R.finalSelected = AEV_CurveUI.snapshot().selected;
+          document.getElementById("curveModeValue").click();
+          R.modeBackToValue = AEV_CurveUI.snapshot().mode;
+          R.paintedBack = paintedPixels();
 
           finish();
         });
@@ -303,13 +303,12 @@ try {
       "--disable-gpu",
       "--allow-file-access-from-files",
       "--dump-dom",
-      "--virtual-time-budget=12000",
+      "--virtual-time-budget=14000",
       "file:///" + SIM.replace(/\\/g, "/"),
     ],
     { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] },
   );
 } finally {
-  // KEEP_SIM=1 时留着模拟页，方便手工用浏览器打开看版式
   if (process.env.KEEP_SIM !== "1") {
     try { unlinkSync(SIM); } catch (e) {}
   } else {
@@ -336,10 +335,16 @@ function check(name, fn) {
   }
 }
 
-console.log("=== 曲线视图真渲染实测 ===");
-console.log("读数 " + data.readsAfterEnter + " 次 ｜ 画布着色像素 " +
-  data.painted + "（速度图 " + data.paintedSpeed + " / 路径图 " + data.paintedPath + "）");
-console.log("提示：" + data.hint);
+const lines = String(data.applyText || "").split("\n");
+const expectCount = lines.filter((l) => l.indexOf("expect\t") === 0).length;
+const opCount = lines.filter((l) => /^(out|in)\t/.test(l)).length;
+
+console.log("=== 曲线编辑器真渲染实测（Flow 式工作流）===");
+console.log("画布着色 " + data.painted + " ｜ 预设卡片 " + data.chipCount +
+  "（缩略图着色 " + data.chipHasCurve + "）｜ 提示：" + data.hint);
+console.log("读数：进入 " + data.readsOnEnter + " 次 ｜ 选预设后 " + data.readsAfterPreset +
+  " ｜ 拖拽后 " + data.readsDuringDrag + " ｜ 应用后 " + data.readsAfterApply);
+console.log("写回：" + data.writesAfterApply + " 次（expect " + expectCount + " 行 / out+in " + opCount + " 行）");
 console.log("页面错误：" + JSON.stringify(data.errorsFinal || []));
 console.log("");
 
@@ -349,76 +354,80 @@ check("切到曲线视图后真的可见，效果墙不可见", () => {
   assert.equal(data.effectsVisible, false, "效果墙还占着位置");
 });
 
-check("进入视图自动读一次，属性下拉有 2 项", () => {
-  assert.ok(data.readsAfterEnter >= 1, "进入视图没有读快照");
-  assert.equal(data.propOptions, 2, "属性下拉项数不对：" + data.propOptions);
+check("曲线面板常驻：进入视图不读 AE，画布已经画好", () => {
+  assert.equal(data.readsOnEnter, 0, "进入视图就读了快照：" + data.readsOnEnter);
+  assert.equal(data.writesOnEnter, 0, "进入视图就写了 AE");
+  assert.ok(data.painted > 300, "画布几乎没有着色像素：" + data.painted);
+  assert.equal(data.initial.mode, "value", "默认应停在值图");
+  assert.ok(data.initial.handle, "没有算出把手坐标");
 });
 
-check("画布真的画出了东西", () => {
-  assert.ok(data.painted > 200, "画布几乎没有着色像素：" + data.painted);
+check("预设以曲线缩略图列在下面（15 条，且真的画了线）", () => {
+  assert.equal(data.initial.presets, 15, "预设条数不对：" + data.initial.presets);
+  assert.equal(data.chipCount, 15, "预设卡片数量不对：" + data.chipCount);
+  assert.ok(data.chipHasCurve > 30, "缩略图 canvas 几乎是空的：" + data.chipHasCurve);
 });
 
-check("单位方块：只有两个角，每段一个代表点", () => {
-  assert.equal(data.snap.unit, true, "一维属性的值图应走单位方块");
-  assert.equal(data.keyCount, 2, "单位方块里只应有两个角，实际 " + data.keyCount);
-  assert.ok(data.snap.segPoints.length === 2, "两段应各有一个代表点：" + data.snap.segPoints.length);
+check("点预设只换模板：不读 AE、不写 AE", () => {
+  assert.equal(data.presetClicked, true, "没找到 back-out 卡片");
+  assert.equal(data.readsAfterPreset, 0, "点预设时读了 AE");
+  assert.equal(data.writesAfterPreset, 0, "点预设时写了 AE");
+  assert.equal(data.afterPreset.preset, "back-out", "预设没被记住");
+  assert.equal(data.afterPreset.activeChip, "back-out", "卡片没有高亮");
+  assert.ok(data.afterPreset.curve.y2 > 1.2,
+    "back-out 的 y2 应大于 1.2（回弹），实际 " + data.afterPreset.curve.y2);
 });
 
-check("点曲线即选中该段，并算出两端把手", () => {
-  assert.ok(data.afterClick && data.afterClick.handle, "选段后没算出把手坐标");
-  assert.deepEqual(data.afterClick.selected, [0], "点第一段没有选中它：" + JSON.stringify(data.afterClick.selected));
-  assert.deepEqual(data.afterClick.targets, [0], "目标段不是刚点的那个：" + JSON.stringify(data.afterClick.targets));
-  assert.equal(data.afterClick.unit, true, "断言时已不在单位方块模式");
+check("拖把手只改本地曲线：全程不过桥", () => {
+  assert.equal(data.readsDuringDrag, 0, "拖拽时读了 AE");
+  assert.equal(data.writesDuringDrag, 0, "拖拽时写了 AE");
+  const before = data.afterPreset.curve;
+  const after = data.afterDrag.curve;
+  assert.ok(after.x1 !== before.x1 || after.y1 !== before.y1, "拖拽没有改变曲线");
+  assert.equal(data.afterDrag.preset, "", "手动拖过之后还挂着预设高亮");
 });
 
-check("切到速度图后回到时间轴（不再是单位方块）", () => {
-  assert.equal(data.modeAfterSpeed, "speed");
-  assert.equal(data.unitAfterScalar, true, "切回一维属性后应回到单位方块");
-  assert.equal(data.modeAfterScalar, "value", "切回一维属性后模式应回到值图");
+check("按「应用」才读快照，写回覆盖每条属性的每一段", () => {
+  assert.equal(data.writesAfterApply, 1, "应用没有写回：" + data.writesAfterApply);
+  assert.equal(expectCount, EXPECT_LINES, "expect 行数不对：" + expectCount);
+  assert.equal(opCount, EXPECT_OPS, "out/in 行数不对：" + opCount);
+  const first = lines[1].split("\t");
+  assert.match(lines[1], /^(out|in)\t/, "第一条不是 ease 操作：" + lines[1]);
+  assert.ok(Number.isFinite(Number(first[3])), "influence 不是数字：" + first[3]);
+  assert.ok(Number.isFinite(Number(first[4])), "m 不是数字：" + first[4]);
 });
 
-check("拖拽过程中不过桥，松手才写", () => {
-  assert.equal(data.writesBeforeDrag, 0, "还没拖就已经写了");
-  assert.equal(data.writesDuringMove, 0, "mousemove 期间就过桥了：" + data.writesDuringMove);
-  assert.equal(data.writesAfterDrag, 1, "松手后没有写回：" + data.writesAfterDrag);
+check("写成功后自动重读一次，按钮恢复可用", () => {
+  assert.equal(data.readsAfterApply, 2, "应用后应读 2 次（apply + 对齐），实际 " + data.readsAfterApply);
+  assert.equal(data.afterApply.hasSnap, true, "快照没有留下");
+  assert.equal(data.applyBtnDisabled, false, "按钮还禁着");
+  assert.match(String(data.applyBtnText), /应用|Apply/, "按钮文案没恢复：" + data.applyBtnText);
 });
 
-check("写回文本是合法的文本协议（expect + out 行）", () => {
-  const lines = String(data.firstWrite || "").split("\n");
-  assert.ok(lines.length >= 2, "写回文本行数不足：" + JSON.stringify(lines));
-  assert.match(lines[0], /^expect\t/, "第一行不是 expect：" + lines[0]);
-  assert.match(lines[1], /^out\t|^in\t/, "第二行不是 ease 操作：" + lines[1]);
-  // influence / m 必须是数字
-  const fields = lines[1].split("\t");
-  assert.ok(Number.isFinite(Number(fields[3])), "influence 不是数字：" + fields[3]);
-  assert.ok(Number.isFinite(Number(fields[4])), "m 不是数字：" + fields[4]);
-});
-
-check("写回后重新读了一次快照（显示值以 AE 为准）", () => {
-  assert.ok(data.readsAfterWrite > data.readsAfterEnter, "写回后没有重读");
-});
-
-check("并发冲突会弹框，而不是静默覆盖", () => {
+check("并发冲突弹框，只有覆盖 / 放弃两个选项", () => {
   assert.equal(data.conflictVisible, true, "冲突没有弹框");
-  assert.match(String(data.conflictText), /修改过|找不到/, "冲突文案不对：" + data.conflictText);
+  assert.match(String(data.conflictText), /改过|changed/, "冲突文案不对：" + data.conflictText);
+  assert.equal(data.hasReloadBtn, false, "不该再有「重新载入」按钮");
 });
 
 check("点「覆盖」重发时带 force 且去掉 expect 行", () => {
-  // 三次写入：第一次正常、第二次撞冲突、第三次用户点「覆盖」重发
-  assert.equal(data.writesAfterOverwrite, 3,
-    "覆盖没有重发写回（期望 3 次：正常 1 + 冲突 1 + 覆盖 1），实际 " + data.writesAfterOverwrite);
+  // 三次 applyText 调用：正常 1 + 撞冲突 1（桩也记了一次）+ 覆盖重发 1
+  assert.equal(data.writesAfterOverwrite, 3, "覆盖没有重发（期望 3 次调用），实际 " + data.writesAfterOverwrite);
   const text = String(data.overwriteText || "");
   assert.match(text.split("\n")[0], /^force$/, "首行不是 force：" + text.split("\n")[0]);
-  assert.doesNotMatch(text, /^expect\t/m, "覆盖时仍带 expect 行");
+  assert.equal(text.split("\n").filter((l) => l.indexOf("expect\t") === 0).length, 0,
+    "覆盖时仍带 expect 行");
   assert.equal(data.conflictHiddenAfter, true, "覆盖后对话框没关");
 });
 
-check("速度图能画、路径图只对空间属性开放", () => {
-  assert.ok(data.paintedSpeed > 200, "速度图没画出来：" + data.paintedSpeed);
-  assert.ok(data.paintedPath > 200, "路径图没画出来：" + data.paintedPath);
-  assert.equal(data.pathCapableOnPosition, true, "二维位置应支持路径");
-  assert.equal(data.modePath, "path");
-  assert.equal(data.pathDisabledOnScalar, true, "一维属性不该能切路径图");
+check("速 / 路是只读检查：应用后可用，切回值图能编辑", () => {
+  assert.equal(data.pathEnabledAfterApply, true, "空间属性应用后路径图应可用");
+  assert.equal(data.modeAfterSpeed, "speed", "没切到速度图");
+  assert.ok(data.paintedSpeed > 300, "速度图没画出来：" + data.paintedSpeed);
+  assert.equal(data.modeAfterPath, "path", "没切到路径图");
+  assert.ok(data.paintedPath > 300, "路径图没画出来：" + data.paintedPath);
+  assert.equal(data.modeBackToValue, "value", "没切回值图");
+  assert.ok(data.paintedBack > 300, "切回值图后没画出来：" + data.paintedBack);
 });
 
 check("全流程没有 JS 错误", () => {

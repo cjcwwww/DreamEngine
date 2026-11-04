@@ -1128,7 +1128,7 @@ main {
 }
 
 /* ============================================================
-   曲线编辑（M4）
+   曲线编辑（Flow 式：曲线模板 + 应用 + 预设网格）
    ============================================================ */
 
 .curve-view {
@@ -1137,44 +1137,26 @@ main {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 16px 12px;
+  gap: 6px;
+  padding: 10px 12px 10px;
 }
 
 .curve-view[hidden] {
   display: none;
 }
 
-.curve-toolbar {
-  flex: none;
+.curve-flow {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.curve-toolbar .curve-prop {
-  flex: 1 1 130px;
-  min-width: 0;
-}
-
-.curve-toolbar .segmented {
-  flex: none;
-  display: flex;
-}
-
-.curve-toolbar select {
-  max-width: 150px;
-}
-
-.curve-toolbar .action-button {
-  flex: none;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .curve-stage {
   position: relative;
   flex: 1 1 auto;
-  min-height: 180px;
+  min-height: 140px;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--surface);
@@ -1187,21 +1169,188 @@ main {
   height: 100%;
 }
 
+/* 四个数：cubic-bezier(x1, y1, x2, y2)，与 Flow 的读数一致 */
+.curve-readout {
+  flex: none;
+  color: var(--muted);
+  font-family: Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 应用：Flow 里最重的那个按钮，做得宽而实 */
+.curve-apply {
+  flex: none;
+  height: 34px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.curve-apply:hover {
+  background: #2c4346;
+}
+
+.curve-apply:active {
+  transform: translateY(1px);
+}
+
+.curve-apply[disabled] {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+/* 预设：每一条画成一条小曲线，点一下换掉模板 */
+.curve-presets {
+  flex: 0 1 auto;
+  max-height: 168px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: 5px;
+  padding-right: 2px;
+}
+
+.preset-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin: 0;
+  padding: 4px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.preset-chip canvas {
+  display: block;
+  width: 100%;
+  height: 26px;
+}
+
+.preset-chip span {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-chip:hover {
+  border-color: var(--border-strong);
+}
+
+.preset-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preset-chip.active span {
+  color: var(--text);
+}
+
 .curve-hint {
   flex: none;
   margin: 0;
   color: var(--muted);
   font-size: 11px;
-  white-space: nowrap;
+  line-height: 1.4;
+  max-height: 32px;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .curve-hint.error {
   color: var(--danger);
 }
 
-/* 并发冲突：覆盖 / 重新载入 / 放弃。AE 没有属性变化事件，
+/* 值 / 速 / 路：收进画布右上角，浮在方块外面，不占布局 */
+.mode-box {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+}
+
+.mode-box-btn {
+  width: 24px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.mode-box-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+  opacity: 1;
+}
+
+.mode-menu {
+  position: absolute;
+  top: 25px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.mode-menu[hidden] {
+  display: none;
+}
+
+.mode-item {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.mode-item:hover {
+  color: var(--text);
+}
+
+.mode-item.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.mode-item:disabled {
+  color: #4a5157;
+  cursor: default;
+}
+
+/* 并发冲突：覆盖 / 放弃。AE 没有属性变化事件，
    这是唯一能阻止「静默覆盖用户在时间轴上的修改」的关口。 */
 .curve-conflict {
   position: absolute;
@@ -1225,6 +1374,7 @@ main {
   margin: 0 0 10px;
   font-size: 12px;
   line-height: 1.6;
+  white-space: pre-wrap;
 }
 
 .curve-conflict-actions {
@@ -1240,95 +1390,15 @@ main {
 
 @media (max-width: 620px) {
   .curve-view {
-    padding: 8px 10px 10px;
+    padding: 8px 8px 8px;
   }
 
-  .curve-toolbar .segmented .segment {
-    min-width: 36px;
+  .curve-presets {
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    max-height: 146px;
   }
 
-  .curve-toolbar select {
-    max-width: 110px;
+  .curve-apply {
+    height: 32px;
   }
-}
-
-/* 图表模式的「小方块》：按钮显示当前模式，点开是三项 */
-.mode-box {
-  position: relative;
-  flex: none;
-}
-
-.mode-box-btn {
-  width: 32px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.mode-box-btn:hover {
-  border-color: var(--border-strong);
-}
-
-.mode-menu {
-  position: absolute;
-  top: 33px;
-  right: 0;
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 4px;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: var(--surface-2);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
-}
-
-.mode-menu[hidden] {
-  display: none;
-}
-
-.mode-item {
-  width: 34px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.mode-item:hover {
-  color: var(--text);
-}
-
-.mode-item.active {
-  background: var(--accent-soft);
-  color: var(--text);
-}
-
-.mode-item:disabled {
-  color: #4a5157;
-  cursor: default;
-}
-
-/* 四个数：cubic-bezier(x1, y1, x2, y2)，与 Flow 的读数一致 */
-.curve-readout {
-  flex: none;
-  margin-top: -4px;
-  color: var(--muted);
-  font-family: Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }

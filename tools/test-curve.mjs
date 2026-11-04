@@ -370,137 +370,126 @@ test("面板缓动库是合法的 cubic-bezier，且覆盖常用族", () => {
     assert.ok(Math.abs(r.b[1]) <= 3 && Math.abs(r.b[3]) <= 3, r.id + " 的 y 超出可表达范围");
   }
   assert.ok(panelSrc.includes("function bezierToEase("), "缺少 bezierToEase");
-  assert.ok(panelSrc.includes("function applyBezier("), "缺少 applyBezier");
+  assert.ok(panelSrc.includes("function buildText("), "缺少 buildText（预设与拖拽共用的写回出口）");
 });
 
-test("三种图表收进小方块，读数在画布下方", () => {
+test("Flow 布局：曲线 + 应用 + 预设网格，没有「读取选中」入口", () => {
   const html = read("cep/com.dreamengine.panel/index.html");
-  assert.ok(html.includes('id="curveModeBtn"'), "缺少模式方块按钮");
-  assert.ok(html.includes('id="curveModeMenu"'), "缺少模式菜单");
-  assert.ok(html.includes('id="curveReadout"'), "缺少读数");
-  for (const id of ["curveModeValue", "curveModeSpeed", "curveModePath"]) {
+  for (const id of ["curveStage", "curveCanvas", "curveReadout", "curveApply", "curvePresets"]) {
     assert.ok(html.includes('id="' + id + '"'), "缺少 " + id);
   }
-  const toolbar = html.slice(html.indexOf('class="curve-toolbar"'), html.indexOf('class="curve-stage"'));
-  assert.ok(toolbar.indexOf('class="segmented"') < 0, "工具栏里还留着并排按钮");
+  // 手动读取与属性下拉都取消了：读 AE 只发生在按「应用」时
+  for (const gone of ["btnCurveRead", "curveProp", "curvePreset", "curveDim"]) {
+    assert.ok(!html.includes('id="' + gone + '"'), "不该再有 " + gone);
+  }
   const css = read("cep/com.dreamengine.panel/css/style.css");
-  assert.ok(css.includes(".mode-menu[hidden]"), "缺少 .mode-menu[hidden]");
-  assert.ok(css.includes(".curve-readout"), "缺少 .curve-readout");
+  for (const sel of [".curve-apply", ".curve-presets", ".preset-chip", ".curve-readout"]) {
+    assert.ok(css.includes(sel), "缺少样式 " + sel);
+  }
 });
 
-test("值图是「两端各一条把手线」，且只作用于选中的段", () => {
+test("曲线是常驻模板：进入视图不读 AE", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  for (const fn of ["segmentHandlePixels", "segmentBezier", "targetSegments"]) {
+  const enter = code.slice(code.indexOf("function enter("), code.indexOf("function snapshot("));
+  assert.ok(enter.length > 20, "没找到 enter");
+  assert.ok(!enter.includes("snapshotJson"), "enter() 还在读快照");
+  assert.ok(!enter.includes("engine("), "enter() 还在过桥");
+  // 读快照只应出现在 apply / refreshSnap 里
+  assert.equal((code.match(/snapshotJson/g) || []).length, 2,
+    "snapshotJson 只应在 apply 与 refreshSnap 各出现一次");
+});
+
+test("值图只有一组把手，拖拽只改本地曲线、绝不过桥", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
+  for (const fn of ["handleAt", "applyDrag", "drawHandles", "bezierPoint"]) {
     assert.ok(code.includes("function " + fn + "("), "缺少 " + fn);
   }
-  const apply = code.slice(code.indexOf("function applyBezier("), code.indexOf("function send("));
-  assert.ok(apply.includes('["out", p.loc, String(s)'), "写回缺少 out 侧");
-  assert.ok(apply.includes('["in", p.loc, String(s + 1)'), "写回缺少 in 侧");
-  assert.ok(code.includes('indexOf(segs, dragSeg) < 0) segs = [dragSeg]'),
-    "拖拽没有把范围收敛到单段");
-});
-
-test("值图走单位方块：0→1 的正方形，其余段用灰度叠在同一空间", () => {
-  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  for (const fn of ["unitMode", "unitSquare", "drawUnitGrid", "drawUnitView", "unitBezierPoint", "segmentAt", "drawCorner"]) {
-    assert.ok(code.includes("function " + fn + "("), "缺少 " + fn);
-  }
-  // 单位方块只在「值图 + 非空间属性」时启用
-  assert.ok(code.includes("return st.mode === \"value\" && !(p && p.spatial);"),
-    "unitMode 的启用条件不对");
-  // 归一化贝塞尔的 p0/p3 必须固定在 (0,0) 与 (1,1)，否则方块里的形状跟 AE 对不上
-  assert.ok(code.includes("x: w1 * b.x1 + w2 * b.x2 + w3"), "unitBezierPoint 的 x 没按 p0=0/p3=1 展开");
-  assert.ok(code.includes("y: w1 * b.y1 + w2 * b.y2 + w3"), "unitBezierPoint 的 y 没按 p0=0/p3=1 展开");
-  // 灰度段：非目标段用低透明度画，目标段亮色
-  const view = code.slice(code.indexOf("function drawUnitView("), code.indexOf("function drawUnitHandles("));
-  assert.ok(view.includes('indexOf(targets, i) >= 0) continue'), "没有跳过目标段");
-  assert.ok(/rgba\(127,166,170,0\.\d+\)/.test(view), "其余段没有用灰度画");
-  assert.ok(view.includes('"#cfe3e5", 2'), "目标段没有用亮色画");
-  // 单位模式下不再画时间轴网格与播放头
-  const draw = code.slice(code.indexOf("function draw() {"), code.indexOf("function drawEmpty("));
-  const unitAt = draw.indexOf("if (unitMode()) {");
-  assert.ok(unitAt > 0, "draw() 里没有单位方块分支");
-  const unitBlock = draw.slice(unitAt, draw.indexOf("return;", unitAt));
-  assert.ok(unitBlock.includes("drawUnitView"), "单位分支没调 drawUnitView");
-  assert.ok(!unitBlock.includes("drawGrid"), "单位分支不该再画时间轴网格");
-});
-
-test("单位方块里点曲线选段，且把手优先于关键帧", () => {
-  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  const down = code.slice(code.indexOf("function onMouseDown("), code.indexOf("function onMouseMove("));
-  // 先判把手：单位方块的两个把手基点正好落在两个角上，顺序错了就点不到把手
-  const handleAt = down.indexOf("var hitHandle = handleAt(");
-  const segAt = down.indexOf("var segHit = segmentAt(");
-  const keyAt2 = down.indexOf("var hitKey = keyAt(");
-  assert.ok(handleAt > 0 && segAt > 0 && keyAt2 > 0, "onMouseDown 缺少某条命中分支");
-  assert.ok(handleAt < segAt, "把手判定必须早于点曲线");
-  assert.ok(segAt < keyAt2, "单位方块分支必须早于关键帧判定");
-  // 点空白 = 回到「作用于全部段」
-  assert.ok(down.includes("st.selected = {};"), "点空白没有清空选区");
-  // Shift + 点已选中的段要能轮到下一段（形状重合时唯一的选法）
-  assert.ok(down.includes("segHit = (segHit + 1) % (hitKeys.length - 1)"), "没有轮换逻辑");
-});
-
-test("拖拽过程中不过桥，松手才写", () => {
-  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  const drag = code.slice(code.indexOf("function applyDrag("), code.indexOf("function writeLocal("));
+  const drag = code.slice(code.indexOf("function applyDrag("), code.indexOf("function onMouseUp("));
   assert.ok(drag.length > 100, "没找到 applyDrag");
-  assert.doesNotMatch(drag, /send\(/, "拖拽过程中调用了写回（每个 mousemove 一次 evalScript）");
-  const up = code.slice(code.indexOf("function onMouseUp("), code.indexOf("function applyBezier("));
-  assert.match(up, /send\(/, "松手必须写回");
+  assert.ok(!drag.includes("send("), "拖拽里调用了写回");
+  assert.ok(!drag.includes("engine("), "拖拽里过了桥");
+  assert.ok(drag.includes("st.curve.x1 = nx"), "拖拽没有更新本地曲线");
+  // 松手也不写：写入只由「应用」触发
+  const up = code.slice(code.indexOf("function onMouseUp("), code.indexOf("function onKeyDown("));
+  assert.ok(!up.includes("send("), "松手还在写回");
 });
 
-test("Shift 拖动只改缓动幅度（斜率保持拖拽前）", () => {
+test("应用时才读快照：expect + out/in 覆盖每条属性的每一段", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  assert.match(code, /m0:/);
-  assert.match(code, /if \(drag\.shift\) m = drag\.m0/);
+  const build = code.slice(code.indexOf("function buildText("), code.indexOf("function apply("));
+  assert.ok(build.includes('"expect') && build.includes("p.loc") && build.includes("p.sig"), "缺少 expect 行");
+  assert.ok(build.includes('["out", p.loc, String(s)'), "缺少 out 侧");
+  assert.ok(build.includes('["in", p.loc, String(s + 1)'), "缺少 in 侧");
+  assert.ok(build.includes("segs++"), "没有累计段数");
+  assert.ok(build.includes("keys.length < 2"), "不足两把关键帧的属性没有跳过");
+
+  const apply = code.slice(code.indexOf("function apply("), code.indexOf("function send("));
+  assert.ok(apply.includes('engine("AEV_Curve.snapshotJson()"'), "apply 没有读快照");
+  assert.ok(apply.includes("st.snap = data"), "apply 没有留下快照");
+  assert.ok(apply.includes("buildText(data.props, st.curve)"), "apply 没有用模板曲线");
+
+  const send = code.slice(code.indexOf("function send("), code.indexOf("function describeScope("));
+  assert.ok(send.includes("AEV_Curve.applyText"), "send 没调写回");
+  assert.ok(send.includes("refreshSnap()"), "写成功后没有重读对齐");
 });
 
-test("Esc 取消拖拽不写回 AE", () => {
+test("预设以曲线缩略图呈现，点选即换模板", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  const keydown = code.slice(code.indexOf('document.addEventListener("keydown"'), code.indexOf('byId("curveConflictOverwrite")'));
-  assert.match(keydown, /st\.backup/);
-  assert.match(keydown, /已取消这次拖拽/);
-  assert.doesNotMatch(keydown, /send\(/, "Esc 不应该写回 AE");
+  for (const fn of ["renderPresets", "makeChip", "drawChip", "selectPreset"]) {
+    assert.ok(code.includes("function " + fn + "("), "缺少 " + fn);
+  }
+  // 缩略图必须真的画曲线，不能只写文字
+  const chip = code.slice(code.indexOf("function drawChip("), code.indexOf("function selectPreset("));
+  assert.ok(chip.includes("bezierPoint(curve"), "缩略图没有按贝塞尔采样");
+  assert.ok(chip.includes("ctx.stroke()"), "缩略图没有描边");
+  // 回弹族会跑出 0..1，缩略图要按实际范围取景
+  assert.ok(chip.includes("Math.min(0, curve.y1, curve.y2)"), "缩略图没有按 y 范围取景");
+  const sel = code.slice(code.indexOf("function selectPreset("), code.indexOf("function updateReadout("));
+  assert.ok(sel.includes("st.curve = { x1: b[0]"), "点预设没有换模板");
+  assert.ok(sel.includes("st.preset = id"), "点预设没有记选中态");
+  // 手动拖过之后必须取消预设高亮，否则出现「高亮着缓动、曲线已变」的假象
+  const drag = code.slice(code.indexOf("function applyDrag("), code.indexOf("function onMouseUp("));
+  assert.ok(drag.includes('st.preset = ""'), "手动拖拽没有取消预设高亮");
 });
 
-test("并发冲突对话框有三个选项：覆盖 / 重新载入 / 放弃", () => {
+test("并发冲突只剩两个选项：覆盖 / 放弃", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  assert.match(code, /curveConflictOverwrite/);
-  assert.match(code, /curveConflictReload/);
-  assert.match(code, /curveConflictDrop/);
+  assert.ok(code.includes("curveConflictOverwrite"));
+  assert.ok(code.includes("curveConflictDrop"));
+  assert.ok(!code.includes("curveConflictReload"), "「重新载入」已随读取入口一起取消");
   // 覆盖时必须去掉 expect 行并加 force，否则会再次冲突
-  assert.match(code, /"force\\n"/);
-  assert.match(code, /indexOf\("expect\\t"\) !== 0/);
+  assert.ok(code.includes('"force') && code.includes("overwrite"), "覆盖没有加 force");
+  assert.ok(code.includes('indexOf("expect') && code.includes("!== 0"),
+    "覆盖时没有过滤掉 expect 行");
 });
 
-test("路径图等比缩放（否则切线方向是假的）", () => {
+test("Esc 取消拖拽：曲线回到按下把手时的样子", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  assert.match(code, /function equalizeAspect\(/);
-  assert.match(code, /st\.mode === "path"\) range = equalizeAspect/);
+  const keydown = code.slice(code.indexOf("function onKeyDown("), code.indexOf("function buildText("));
+  assert.ok(keydown.includes("st.drag.curve"), "没有记下拖拽前的曲线");
+  assert.ok(keydown.includes("已取消这次拖拽"), "缺少取消反馈");
+  assert.ok(!keydown.includes("send("), "Esc 不应该写回 AE");
 });
 
-test("三视图切换：表驱动 + 曲线视图每次进入重读", () => {
+test("三视图切换：表驱动 + 曲线视图进入不读 AE", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/library.js"));
-  assert.match(code, /var VIEW_TABS = \{ effects: "tabEffects", presets: "tabPresets", curve: "tabCurve" \}/);
-  assert.match(code, /var VIEW_PANELS = \{ effects: "viewEffects", presets: "viewPresets", curve: "viewCurve" \}/);
-  assert.match(code, /AEV_CurveUI\.enter\(\)/);
-  assert.match(code, /byId\("tabCurve"\)\.addEventListener/);
+  assert.ok(code.includes('var VIEW_TABS = { effects: "tabEffects", presets: "tabPresets", curve: "tabCurve" }'));
+  assert.ok(code.includes('var VIEW_PANELS = { effects: "viewEffects", presets: "viewPresets", curve: "viewCurve" }'));
+  assert.ok(code.includes("AEV_CurveUI.enter()"));
+  assert.ok(code.includes('byId("tabCurve").addEventListener'));
 });
 
 test("index.html：第三个视图与冲突按钮齐全，且与预设视图同级", () => {
   const html = read("cep/com.dreamengine.panel/index.html");
-  assert.match(html, /id="tabCurve"/);
-  assert.match(html, /id="viewCurve"[^>]*hidden/);
-  assert.match(html, /id="curveCanvas"/);
-  // 曲线视图必须是 viewPresets 之后的兄弟节点，不能塞在预设视图里
-  const presetsEnd = html.indexOf('id="viewCurve"');
-  assert.ok(presetsEnd > 0);
-  assert.ok(html.indexOf('id="viewPresets"') < presetsEnd);
-  for (const id of ["curveConflictOverwrite", "curveConflictReload", "curveConflictDrop"]) {
-    assert.match(html, new RegExp(`id="${id}"`));
+  assert.ok(html.includes('id="tabCurve"'));
+  assert.ok(/id="viewCurve"[^>]*hidden/.test(html));
+  assert.ok(html.includes('id="curveCanvas"'));
+  const curveAt = html.indexOf('id="viewCurve"');
+  assert.ok(curveAt > 0);
+  assert.ok(html.indexOf('id="viewPresets"') < curveAt);
+  for (const id of ["curveConflictOverwrite", "curveConflictDrop"]) {
+    assert.ok(html.includes('id="' + id + '"'), "缺少 " + id);
   }
-  // 数学脚本必须在 curve.js 之前
   assert.ok(html.indexOf('src="engine/curve_math.js"') < html.indexOf('src="js/curve.js"'));
 
   // 三个视图必须在**同一个**顶部切换栏里（效果预览 / 预设预览 / 曲线编辑），
@@ -510,7 +499,7 @@ test("index.html：第三个视图与冲突按钮齐全，且与预设视图同�
   assert.ok(navStart > 0 && navEnd > navStart, "缺少顶部切换栏");
   const nav = html.slice(navStart, navEnd);
   for (const id of ["tabEffects", "tabPresets", "tabCurve"]) {
-    assert.match(nav, new RegExp(`id="${id}"`), id + " 不在切换栏里");
+    assert.ok(nav.includes('id="' + id + '"'), id + " 不在切换栏里");
   }
   assert.equal((html.match(/class="view-switch"/g) || []).length, 1, "切换栏只能有一个");
   assert.ok(nav.indexOf("tabEffects") < nav.indexOf("tabPresets"), "顺序应为 效果 → 预设");
@@ -521,7 +510,7 @@ test("CSS：视图与对话框的 [hidden] 都要显式覆盖", () => {
   const css = read("cep/com.dreamengine.panel/css/style.css");
   assert.match(css, /\.curve-view\[hidden\]\s*\{\s*display: none/);
   assert.match(css, /\.curve-conflict\[hidden\]\s*\{\s*display: none/);
-  assert.match(css, /\.curve-hint\s*\{[^}]*text-overflow: ellipsis/);
+  assert.match(css, /\.curve-hint\s*\{[^}]*overflow: hidden/);
 });
 
 test("bridge 先加载 curve_math 再加载 curvelib，并纳入自愈检查", () => {

@@ -1891,7 +1891,7 @@ var AEV_Library = (function () {
     }
 
     if (view === "presets") loadPresetLibrary();
-    // 曲线视图每次进入都重读 AE 选中态：用户很可能刚在时间轴里换了属性
+    // 曲线视图是常驻的曲线模板：进入只重绘，不去读 AE（读只发生在按「应用」时）
     if (view === "curve" && window.AEV_CurveUI) AEV_CurveUI.enter();
   }
 
