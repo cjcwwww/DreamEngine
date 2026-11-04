@@ -5,8 +5,13 @@ title DreamEngine - Plugin Preset Previews
 echo.
 echo   DreamEngine : generate previews for presets with 3rd-party plugins
 echo   Windows PowerShell only - no Node.js / Python required.
-echo   It will temporarily CLOSE After Effects and reopen it when done.
-echo   Please SAVE your project before pressing Enter in the next step.
+echo.
+echo   STEP 1  Save your project, then CLOSE After Effects yourself.
+echo   STEP 2  This tool detects AE has exited and starts rendering
+echo           in a private instance (crash-loop protected).
+echo   STEP 3  After Effects is reopened when rendering finishes.
+echo.
+echo   It never force-closes AE and never discards unsaved work.
 echo.
 
 rem In the release zip this bat sits at the package root and the script in tools\.

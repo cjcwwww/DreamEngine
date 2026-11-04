@@ -44,6 +44,11 @@ index.json
 catalog.json
 preset-library.json
 
+# ---- DreamEngine Hub（独立程序）----
+# node_modules 上百 MB 不入库；package-lock.json 必须入库，否则依赖会漂移
+hub/node_modules/
+hub/dist/
+
 # ---- 临时与系统文件 ----
 _tmp/
 *.tmp

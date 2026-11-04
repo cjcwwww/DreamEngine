@@ -691,6 +691,88 @@ var AEV_Library = (function () {
     }
   }
 
+  /* ---------- 外部变更监视 ---------- */
+  /* 面板之外改数据的三条路径：Hub 程序导入预设、一键 bat 渲完写回索引、
+     用户在资源管理器里直接往预设库丢 .ffx。
+     以前这些改完只能「关掉面板再重开」；这里每 3 秒比对一次 mtime 组合戳，
+     变了就静默重载，并保持滚动位置不跳。
+
+     三条自律：
+       1. 只读时间戳，不读文件内容 —— 一次 evalScript 往返仍在 10~50ms 量级；
+       2. 面板不可见、正在批量生成时跳过本轮，不和用户抢 AE 主线程；
+       3. 只在戳真的变了才 refresh，避免无谓重扫 1000+ 条卡片。 */
+  var watchTimer = null;
+  var watchStamp = "";
+  var watchReady = false;
+  var WATCH_INTERVAL = 3000;
+
+  function scheduleWatch() {
+    if (watchTimer) clearTimeout(watchTimer);
+    watchTimer = setTimeout(pollWatch, WATCH_INTERVAL);
+  }
+
+  function pollWatch() {
+    if (!state.extensionPath || !Bridge.isCEP || !Bridge.isCEP()) {
+      scheduleWatch();
+      return;
+    }
+    if (document.hidden || state.generating) {
+      scheduleWatch();
+      return;
+    }
+    Bridge.watchStamp(state.extensionPath, function (stamp) {
+      if (!stamp || stamp.indexOf("ERR") === 0 || stamp === "__NOT_CEP__") {
+        scheduleWatch();
+        return;
+      }
+      if (!watchReady) {
+        // 首次只建立基线，不触发刷新（否则面板一打开就多扫一次）
+        watchStamp = stamp;
+        watchReady = true;
+        scheduleWatch();
+        return;
+      }
+      if (stamp === watchStamp) {
+        scheduleWatch();
+        return;
+      }
+      watchStamp = stamp;
+      reloadFromDisk();
+    });
+  }
+
+  function reloadFromDisk() {
+    var grid = byId("previewGrid");
+    var top = grid ? grid.scrollTop : 0;
+    setStatus(
+      state.lang === "zh" ? "检测到外部更新，正在同步…" : "External change detected, syncing…",
+      false
+    );
+    refresh(function (error) {
+      var again = byId("previewGrid");
+      if (again) again.scrollTop = top;
+      if (error) {
+        var detail = error && error.message ? String(error.message) : String(error);
+        setStatus(
+          (state.lang === "zh" ? "同步外部更新失败：" : "Failed to sync: ") + detail,
+          true
+        );
+      } else {
+        // 预设库、背景、预设索引一起重载：Hub 导入预设走的就是这条链路
+        loadPresetLibrary();
+        setStatus(state.lang === "zh" ? "已同步外部更新" : "Synced external changes", false);
+      }
+      scheduleWatch();
+    }, false);
+  }
+
+  function startWatch() {
+    if (!Bridge.isCEP || !Bridge.isCEP()) return;
+    watchReady = false;
+    watchStamp = "";
+    pollWatch();
+  }
+
   /* ---------- 生成队列：与 engine/*.jsx 的唯一交互面 ---------- */
 
   function parseEngineResult(text) {
@@ -1943,7 +2025,10 @@ var AEV_Library = (function () {
       }, 120);
     });
 
-    refresh();
+    refresh(function () {
+      // 索引就绪后再开监视：extensionPath 在首次 refresh 里才解析出来
+      startWatch();
+    });
   }
 
   document.addEventListener("DOMContentLoaded", boot);
