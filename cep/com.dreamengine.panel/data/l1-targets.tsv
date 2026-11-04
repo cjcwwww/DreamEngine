@@ -184,7 +184,6 @@ CC Radial ScaleWipe
 CC Scatterize
 ADBE CM OpacityFlashRandom
 CC Composite
-ADBE Tile
 CC Scale Wipe
 CC Star Burst
 ADBE CM CropEdges
@@ -198,23 +197,23 @@ ADBE Stroke
 CC WarpoMatic
 ADBE CM AutoscrollVertical
 ADBE Spherize
+CC Mr. Smoothie
 ADBE Write-on
 ADBE CM Throw
 ADBE SubspaceStabilizer
-CC Mr. Smoothie
 APC Radio Waves
 ADBE CM FadeInOutFrames
+CC RepeTile
 APC Vegas
 ADBE CM FadeInOutmsec
-CC RepeTile
+CC Threshold
 CC Glue Gun
 ADBE CM Spin
-CC Threshold
+CC Threshold RGB
 CC Light Burst 2.5
 ADBE CM ScaleBounceMarkers
 ADBE SelectiveColor
 ADBE Upscale
-CC Threshold RGB
 CC Light Rays
 ADBE CM ScaleBounceRandom
 ADBE Vibrance
