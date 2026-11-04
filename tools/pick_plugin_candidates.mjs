@@ -62,18 +62,45 @@ function readText(path) {
   return existsSync(path) ? readFileSync(path, "utf8") : "";
 }
 
-/* 已有预览：L1 主索引 + 插件 L2 索引 */
+/* 已有预览：L1 主索引 + 插件 L2 索引。
+   索引优先读运行时目录（CEP 扩展 Junction → 主工作副本），
+   读不到再退回仓库里的 data/ —— 否则「已生成过」的条目会被重复挑走。 */
+const runtimePanel = resolve(
+  process.env.APPDATA || "",
+  "Adobe/CEP/extensions/com.dreamengine.panel",
+);
+function pickDataDir() {
+  const dirs = [resolve(runtimePanel, "data"), resolve(PANEL, "data")];
+  for (const dir of dirs) {
+    if (existsSync(resolve(dir, "manifest.json"))) return dir;
+  }
+  return dirs[0];
+}
+const dataDir = pickDataDir();
+
 const existing = new Set();
-const l1Path = resolve(PANEL, "data/manifest.json");
+const l1Path = resolve(dataDir, "manifest.json");
 if (existsSync(l1Path)) {
   const manifest = JSON.parse(readFileSync(l1Path, "utf8"));
   for (const item of manifest.items || []) existing.add(item.matchName);
 }
 const done = new Set(
-  pluginState.readEntries(readText(resolve(PANEL, "data/plugin_previews.tsv")))
+  pluginState.readEntries(readText(resolve(dataDir, "plugin_previews.tsv")))
     .map((e) => e.matchName),
 );
 const blacklist = pluginState.readBlacklist(readText(blacklistPath));
+/* 面板那份黑名单是 JSON（面板读不到 TSV），两边合并，避免重复挑中元凶 */
+const panelBlack = resolve(dataDir, "plugin_blacklist.json");
+if (existsSync(panelBlack)) {
+  try {
+    const parsed = JSON.parse(readFileSync(panelBlack, "utf8"));
+    for (const item of parsed.items || []) {
+      if (item.matchName) blacklist[item.matchName] = item.reason || "crash";
+    }
+  } catch (e) {
+    console.warn("忽略无法解析的黑名单文件：" + panelBlack);
+  }
+}
 
 const candidates = readCatalog(catalogPath).filter((effect) => {
   if (!effect.matchName) return false;
@@ -136,6 +163,7 @@ for (const e of picked) {
   byPlugin[key] = (byPlugin[key] || 0) + 1;
 }
 console.log(`活跃插件候选 ${candidates.length} 条；已有 L1 预览 ${existing.size} 条、L2 预览 ${done.size} 条、黑名单 ${Object.keys(blacklist).length} 条`);
+console.log(`  索引目录：${dataDir}`);
 console.log(`本次挑出 ${picked.length} 条（每批最多 ${limit} 条）-> ${outPath}`);
 console.log(`  按包：${Object.entries(byPlugin).map(([k, n]) => `${k} ${n}`).join(" / ") || "无"}`);
 picked.slice(0, 10).forEach((e, i) => {

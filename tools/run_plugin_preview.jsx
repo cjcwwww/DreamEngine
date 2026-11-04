@@ -198,4 +198,10 @@
 
     appendLog("RESULT", "", "ok=" + okCount + " fail=" + failCount +
               " total=" + entries.length);
+
+    // 这是专用实例：渲完直接退出，别把 AE 留在后台占着用户机器。
+    // 真崩了的话 AE 进程已经没了，这句不会执行。
+    try {
+        app.quit(SaveOptions.DO_NOT_SAVE_CHANGES);
+    } catch (eQuit) {}
 })();
