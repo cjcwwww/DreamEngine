@@ -200,6 +200,26 @@ var AEV_Assets = (function () {
         return remember(resolvedKind, resolvedSize, comp);
     }
 
+    /**
+     * 新建一份独立素材（不进缓存）。
+     *
+     * 为什么需要：AE 会缓存嵌套合成 comp 的渲染帧。同一个素材 comp 被反复引用时，
+     * 后一次渲染可能直接复用上一次的缓存帧 —— 表现为「效果明明加上了，
+     * 渲出来的画面却和没加效果一模一样」（实测：singleCell 下带效果与裸素材
+     * 逐像素相同）。
+     *
+     * 逐条渲染插件效果时，每条都用一份独立素材，保证每次都是首次求值。
+     */
+    function getFresh(kind, size) {
+        var resolvedSize = size || 256;
+        var resolvedKind = kind || "photo";
+        if (resolvedKind === "text") return buildText(resolvedSize);
+        if (resolvedKind === "solid") return buildSolid(resolvedSize);
+        if (resolvedKind === "shape") return buildShape(resolvedSize);
+        if (resolvedKind === "pattern") return buildPattern(resolvedSize);
+        return buildPhoto(resolvedSize);
+    }
+
     /** 新工程/换项目后清空缓存 */
     function clear() {
         cache = {};
@@ -209,6 +229,7 @@ var AEV_Assets = (function () {
         VERSION: VERSION,
         fingerprint: fingerprint,
         get: get,
+        getFresh: getFresh,
         clear: clear
     };
 })();

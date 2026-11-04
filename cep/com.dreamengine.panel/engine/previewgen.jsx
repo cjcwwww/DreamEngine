@@ -175,18 +175,30 @@ var AEV_PreviewGen = (function () {
         }
 
         var scenes = {};
+        var freshComps = [];
         var cells = [];
         var cellErrors = [];
         var grid = null;
         var queueItem = null;
         var started = new Date().getTime();
 
+        // freshAssets：每批用一份全新的素材 comp，不复用会话缓存。
+        // AE 会缓存嵌套 comp 的渲染帧，复用同一素材时后一次渲染可能直接吃缓存，
+        // 表现为「效果加上了、画面却没变」。逐条渲染插件效果必须每条独立。
+        var freshAssets = !!(options && options.freshAssets);
+
         /** 按素材类型取（必要时生成）标准素材；同一批内复用同一个 comp */
         function sceneOf(kind) {
             if (!scenes[kind]) {
-                scenes[kind] = (typeof AEV_Assets !== "undefined")
-                    ? AEV_Assets.get(kind, cellSize)
-                    : buildScene(cellSize);
+                if (freshAssets && typeof AEV_Assets !== "undefined") {
+                    var built = AEV_Assets.getFresh(kind, cellSize);
+                    freshComps.push(built);
+                    scenes[kind] = built;
+                } else {
+                    scenes[kind] = (typeof AEV_Assets !== "undefined")
+                        ? AEV_Assets.get(kind, cellSize)
+                        : buildScene(cellSize);
+                }
             }
             return scenes[kind];
         }
@@ -266,8 +278,9 @@ var AEV_PreviewGen = (function () {
                         if (applied && applied.mode === "recipe") {
                             AEV_Recipe.animate(effectGroup, matchName, durationSeconds);
                         } else {
-                            // 走启发式的效果同样要动起来，否则大半缩略图是静止的
-                            AEV_Recipe.animateAny(effectGroup, durationSeconds);
+                            // 走启发式的效果同样要动起来，否则大半缩略图是静止的；
+                            // 插件效果不打关键帧（animateAny 内部会自己跳过）
+                            AEV_Recipe.animateAny(effectGroup, durationSeconds, matchName);
                         }
                     }
                 } catch (eRecipe) {
@@ -342,6 +355,10 @@ var AEV_PreviewGen = (function () {
             try {
                 if (grid) grid.remove();
             } catch (e3) {}
+            // fresh 素材是本次临时新建的，渲完必须删掉，否则工程里越堆越多
+            for (var f = 0; f < freshComps.length; f++) {
+                try { freshComps[f].remove(); } catch (eFresh) {}
+            }
             // 标准素材（scenes）刻意不删：它们由 AEV_Assets 缓存，跨批次复用，
             // 每批重建会让 64 格的批量生成慢上一个数量级。
         }

@@ -160,7 +160,11 @@
             raw = AEV_PreviewGen.renderBatch([item.matchName], sheetIndex, {
                 outputRoot: "extension",
                 extensionPath: EXT,
-                singleCell: true
+                singleCell: true,
+                // 每条用一份全新素材：AE 会缓存嵌套 comp 的渲染帧，
+                // 复用同一素材时后一次渲染可能直接吃缓存帧 —— 表现为
+                // 「效果加上了，渲出来却和裸素材一模一样」。
+                freshAssets: true
             });
         } catch (eRender) {
             raw = '{"status":"error","reason":"throw:' + eRender + '"}';

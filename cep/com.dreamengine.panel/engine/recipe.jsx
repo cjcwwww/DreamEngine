@@ -530,6 +530,24 @@ var AEV_Recipe = (function () {
     }
 
     /**
+     * 内置效果判定：按 matchName 前缀。
+     *
+     * 第三方插件的参数结构千差万别——实测 S_ChannelSwitcher 有 38 个属性，
+     * BCC_AMBIENTLIGHT 有 257 个，里面大量是 Mocha 遮罩、Beat Reactor 音频、
+     * Face ML、Pixel Chooser 之类的附属模块。通用启发式对它们只会「乱改一串
+     * 无关参数」（实测把 Blur Mocha 改成 16383、Mocha Opacity 改成 0.5），
+     * 既让预览失真，也有触发插件内部异常的风险。
+     * 所以插件一律保持默认参数，只挂效果本身。
+     */
+    function isBuiltinMatch(matchName) {
+        var mn = String(matchName || "");
+        return mn.indexOf("ADBE") === 0 ||
+               mn.indexOf("APC") === 0 ||
+               mn.indexOf("CC ") === 0 ||
+               mn.indexOf("CS") === 0;
+    }
+
+    /**
      * 给任意效果的主数值参数打关键帧（不依赖显式配方）。
      *
      * 背景：六成以上的效果没有显式配方，走的是启发式赋值。
@@ -537,8 +555,10 @@ var AEV_Recipe = (function () {
      * 这里取启发式写过的第一个一维数值参数，从 0 渐变到它当前的取值。
      *
      * 颜色与位置类一律跳过：颜色渐变到 0 会变成黑场，位置类单位不统一。
+     * 插件效果不打关键帧：默认参数保持原样更真实，动起来的参数多半是附属模块。
      */
-    function animateAny(effectGroup, durationSeconds) {
+    function animateAny(effectGroup, durationSeconds, matchName) {
+        if (!isBuiltinMatch(matchName)) return false;
         var end = Number(durationSeconds);
         if (!end || end <= 0) return false;
 
@@ -620,11 +640,16 @@ var AEV_Recipe = (function () {
         }
     }
 
-    /** 统一入口：有配方走配方，没有就走启发式 */
+    /** 统一入口：有配方走配方，内置无配方走启发式，插件保持默认参数 */
     function apply(effectGroup, matchName, cellSize) {
         var explicitWrites = applyRecipe(effectGroup, matchName);
         if (explicitWrites > 0) {
             return { mode: "recipe", writes: explicitWrites };
+        }
+        if (!isBuiltinMatch(matchName)) {
+            // 插件：只挂效果，不动参数。参数一动就可能改到附属模块上，
+            // 预览既失真又有触发插件异常的风险。
+            return { mode: "plugin-default", writes: 0 };
         }
         var heuristicWrites = applyHeuristics(effectGroup, cellSize);
         return { mode: heuristicWrites > 0 ? "heuristic" : "none", writes: heuristicWrites };
