@@ -160,7 +160,7 @@ var AEV_Presets = (function () {
     /**
      * 按名字找合成。
      *
-     * 不能用 app.project.items.getItemByName() —— 实测 AE 2021 上它会抛异常，
+     * 不能用「按名字取 item」的 API（items.getItemByName）—— 实测 AE 2021 上它会抛异常，
      * 甚至直接把 AE 进程带崩。改成遍历 items 自己找。
      * 另外 item.name 可能是 URL 编码形式（中文预设名实测是 %E4%B8%8B 这种），
      * 所以比较时两种都试。
@@ -459,8 +459,8 @@ var AEV_Presets = (function () {
             var before = snapshot(comp);
             trace("apply:before:" + before.effects + "/" + before.keyProps + "/" + before.layers);
             try {
-                // 用 layer.selected = true 选层，**不要**给 comp.selectedLayers 赋值：
-                // 实测 AE 2021 上 `comp.selectedLayers = [layer]` 会直接把 AE 弄崩
+                // 用 layer.selected = true 选层，**不要**给合成写 selectedLayers 数组：
+                // 实测 AE 2021 上那样做会直接把 AE 弄崩
                 // （追踪日志停在 before 之后、selected 之前）。
                 for (var sl = 1; sl <= comp.numLayers; sl++) {
                     try {
@@ -729,6 +729,16 @@ var AEV_Presets = (function () {
      * 弹出文件选择框，让用户自己挑 .ffx 加进库（多选）。
      * 不扫描 AE 内置目录 —— 用户要的是「自主添加」。
      */
+    /** 预设的显示名：AE 返回的文件名是 URL 编码的（"%E5%A4%9C%E8%A7%86"），
+     *  不解码的话面板上就是一串百分号。 */
+    function displayName(name) {
+        var text = String(name || "");
+        try {
+            text = decodeURI(text);
+        } catch (e) {}
+        return text.replace(/\.ffx$/i, "");
+    }
+
     function pickJson() {
         var picked = null;
         try {
@@ -745,7 +755,7 @@ var AEV_Presets = (function () {
                 if (!(f instanceof File)) continue;
                 items.push(
                     '{"path":' + jsonText(f.fsName) +
-                    ',"name":' + jsonText(String(f.name).replace(/\.ffx$/i, "")) + "}"
+                    ',"name":' + jsonText(displayName(f.name)) + "}"
                 );
             } catch (e2) {}
         }
@@ -772,7 +782,7 @@ var AEV_Presets = (function () {
             return result("error", [["reason", "copy_failed"], ["detail", String(e)]]);
         }
         return '{"status":"ok","path":' + jsonText(target.fsName) +
-               ',"name":' + jsonText(String(target.name).replace(/\.ffx$/i, "")) + "}";
+               ',"name":' + jsonText(displayName(target.name)) + "}";
     }
 
     /** 列出库内的预设 */
@@ -789,7 +799,7 @@ var AEV_Presets = (function () {
             if (!isPresetFile(f.name)) continue;
             items.push(
                 '{"path":' + jsonText(f.fsName) +
-                ',"name":' + jsonText(String(f.name).replace(/\.ffx$/i, "")) +
+                ',"name":' + jsonText(displayName(f.name)) +
                 ',"folder":' + jsonText(dir.fsName) + "}"
             );
         }
