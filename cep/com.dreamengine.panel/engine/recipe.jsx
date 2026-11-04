@@ -640,16 +640,105 @@ var AEV_Recipe = (function () {
         }
     }
 
-    /** 统一入口：有配方走配方，内置无配方走启发式，插件保持默认参数 */
+    /**
+     * 插件参数里的「附属模块」关键词。
+     *
+     * 第三方插件的一个效果往往带一堆子模块：Mocha 遮罩、Beat Reactor 音频、
+     * Face ML、Pixel Chooser、预设存取、通道映射……这些参数一动就可能触发
+     * 插件内部异常，而且与效果本身的视觉表现无关。改参数时必须绕开。
+     */
+    var PLUGIN_AUX_WORDS = [
+        "mocha", "audio", "beat reactor", "preset", "help", "compare", "host",
+        "graph", "sampler", "watch folder", "matte tool", "depth", "project data",
+        "docs", "face ml", "pixel chooser", "load", "save", "edit", "mask from",
+        "mix with", "blend", "opacity", "alpha", "channel"
+    ];
+
+    function isPluginAuxiliary(name) {
+        var lower = String(name === undefined || name === null ? "" : name).toLowerCase();
+        for (var i = 0; i < PLUGIN_AUX_WORDS.length; i++) {
+            if (lower.indexOf(PLUGIN_AUX_WORDS[i]) >= 0) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 插件的保守启发式：只动一个「看起来是主参数」的滑杆。
+     *
+     * 背景：插件一律保持默认参数时，很多效果默认画面几乎不变，预览等于素材，
+     * 看不出这个效果是干什么的（实测 6 条里只有 2 条看得出差别）。
+     * 这里取「范围最大、且不是附属模块」的一维数值属性，拨到范围的 70%。
+     * 只动一个 —— 动得越多越容易改到附属模块上，风险越大。
+     */
+    function applyPluginHeuristic(effectGroup) {
+        var best = null;
+        var bestMax = -1;
+
+        function walk(group, depth) {
+            if (depth > 2) return;
+            var count = 0;
+            try {
+                count = group.numProperties;
+            } catch (e) {
+                return;
+            }
+            for (var i = 1; i <= count; i++) {
+                var prop = null;
+                try {
+                    prop = group.property(i);
+                } catch (e2) {
+                    continue;
+                }
+                if (!prop) continue;
+                var childCount = 0;
+                try {
+                    childCount = prop.numProperties;
+                } catch (e3) {
+                    childCount = 0;
+                }
+                if (childCount > 0) {
+                    walk(prop, depth + 1);
+                    continue;
+                }
+                if (kindOf(prop) !== "oneD") continue;
+                if (isPluginAuxiliary(prop.name)) continue;
+                var maxValue = 0;
+                try {
+                    if (prop.hasMax) maxValue = Number(prop.maxValue);
+                } catch (e4) {}
+                // 范围小于 5 的是枚举/下拉，改了只是换个通道号，没有视觉意义
+                if (maxValue < 5) continue;
+                if (maxValue > bestMax) {
+                    bestMax = maxValue;
+                    best = prop;
+                }
+            }
+        }
+
+        walk(effectGroup, 0);
+        if (!best) return 0;
+        var minValue = 0;
+        try {
+            if (best.hasMin) minValue = Number(best.minValue);
+        } catch (e5) {}
+        var target = minValue + (bestMax - minValue) * 0.7;
+        return setIfWritable(best, target) ? 1 : 0;
+    }
+
+    /** 统一入口：有配方走配方，内置无配方走启发式，插件走保守启发式 */
     function apply(effectGroup, matchName, cellSize) {
         var explicitWrites = applyRecipe(effectGroup, matchName);
         if (explicitWrites > 0) {
             return { mode: "recipe", writes: explicitWrites };
         }
         if (!isBuiltinMatch(matchName)) {
-            // 插件：只挂效果，不动参数。参数一动就可能改到附属模块上，
-            // 预览既失真又有触发插件异常的风险。
-            return { mode: "plugin-default", writes: 0 };
+            // 插件：只动一个主参数。动一串附属模块（Mocha / 音频 / 通道映射）
+            // 既失真又有触发插件异常的风险。
+            var pluginWrites = applyPluginHeuristic(effectGroup);
+            return {
+                mode: pluginWrites > 0 ? "plugin-heuristic" : "plugin-default",
+                writes: pluginWrites
+            };
         }
         var heuristicWrites = applyHeuristics(effectGroup, cellSize);
         return { mode: heuristicWrites > 0 ? "heuristic" : "none", writes: heuristicWrites };
