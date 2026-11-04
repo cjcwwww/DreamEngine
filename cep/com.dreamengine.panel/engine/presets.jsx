@@ -396,26 +396,45 @@ var AEV_Presets = (function () {
 
     /**
      * AE 内置预设目录的候选路径。
-     * app.path 在不同版本指向的位置不一样（安装目录 / Support Files），
-     * 所以给多个候选，由调用方挑第一个真实存在的。
+     *
+     * 实测 AE 2021 里 **app.path 是 undefined**（网上常见的写法在这版不成立），
+     * 所以改为「扫 Program Files\Adobe 下的 Adobe After Effects * 目录」，
+     * 取其中的 Support Files\Presets；app.path 作为兜底也一并列出。
      */
-    function defaultRootJson() {
-        var candidates = [];
+    function discoverRoots() {
+        var found = [];
+        var bases = ["C:/Program Files/Adobe", "D:/Program Files/Adobe", "C:/Program Files (x86)/Adobe"];
+        for (var b = 0; b < bases.length; b++) {
+            var base = new Folder(bases[b]);
+            if (!base.exists) continue;
+            var entries = [];
+            try {
+                entries = base.getFiles();
+            } catch (e) {
+                continue;
+            }
+            for (var i = 0; i < entries.length; i++) {
+                var entry = entries[i];
+                if (!(entry instanceof Folder)) continue;
+                if (String(entry.name).indexOf("Adobe After Effects") !== 0) continue;
+                var presets = new Folder(entry.fsName + "/Support Files/Presets");
+                if (presets.exists) found.push(presets.fsName);
+            }
+        }
         try {
-            candidates.push(new Folder(app.path + "/Presets").fsName);
-        } catch (e) {}
-        try {
-            candidates.push(new Folder(app.path + "/Support Files/Presets").fsName);
+            if (app.path) {
+                var byApp = new Folder(app.path + "/Presets");
+                if (byApp.exists) found.push(byApp.fsName);
+            }
         } catch (e2) {}
+        return found;
+    }
+
+    function defaultRootJson() {
+        var candidates = discoverRoots();
         var items = [];
         for (var i = 0; i < candidates.length; i++) {
-            var exists = false;
-            try {
-                exists = new Folder(candidates[i]).exists;
-            } catch (e3) {
-                exists = false;
-            }
-            items.push('{"path":' + jsonText(candidates[i]) + ',"exists":' + (exists ? "true" : "false") + "}");
+            items.push('{"path":' + jsonText(candidates[i]) + ',"exists":true}');
         }
         return '{"status":"ok","candidates":[' + items.join(",") + "]}";
     }
