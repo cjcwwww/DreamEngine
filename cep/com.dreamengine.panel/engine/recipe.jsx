@@ -808,12 +808,24 @@ var AEV_Recipe = (function () {
         return true;
     }
 
+    /* 插件调参总开关（诊断用：关掉就能对比「不调参数」的表现） */
+    var TUNING_ENABLED = true;
+
+    function setTuning(enabled) {
+        TUNING_ENABLED = !!enabled;
+        return TUNING_ENABLED;
+    }
+
+    function tuningEnabled() {
+        return TUNING_ENABLED;
+    }
+
     /**
      * 插件的强度微调：只动一个参数，量到「看得见但不夸张」。
      * 返回写入次数（0 表示没动任何参数）。
      */
     function tunePlugin(effectGroup) {
-        var main = pluginMainParam(effectGroup);
+        if (!TUNING_ENABLED) return 0;
         if (!main) return 0;
         var target = paramTarget(main.prop, main.ratio);
         if (target === null) return 0;
@@ -826,6 +838,7 @@ var AEV_Recipe = (function () {
      * 而不是「参数乱跳」。
      */
     function animatePlugin(effectGroup, durationSeconds) {
+        if (!TUNING_ENABLED) return false;
         var end = Number(durationSeconds);
         if (!end || end <= 0) return false;
         var main = pluginMainParam(effectGroup);
