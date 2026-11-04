@@ -139,12 +139,31 @@ var AEV_CurveMath = (function () {
             }
         }
 
-        // 弦斜率为 0（值不变）时 speed 必然为 0，把手水平；m 没有意义，记 0
+        /* 斜率倍率 m 用**位移模长**（而非某一维的弦斜率）：
+           AE 2021 实测 keyInTemporalEase 对多维属性只返回 **1 个** KeyframeEase
+           （长度 2 会直接报「值数组没有 1 元素」），也就是说 temporal ease
+           对所有维度只有一条曲线。对应的速度就是沿路径的模长速度
+           |ΔP|/dt（一维时等于 |dv|/dt），所以 m = speed ÷ 模长速度。 */
+        var mag = 0;
+        for (d = 0; d < dims; d++) {
+            var dv = num(at(b.v, d, 0)) - num(at(a.v, d, 0));
+            mag += dv * dv;
+        }
+        mag = Math.sqrt(mag);
+        var chordMag = dt > 0 ? mag / dt : 0;
+
+        /* speed 的参照基准按维度分两类（实机对照结论，不是猜的）：
+           · 一维属性（滑杆/不透明度/分离后的单轴）：speed 是**带符号的值速度**，
+             基准取有符号弦斜率。100→30 的段上 speed=+100 会让曲线先往上冲。
+           · 多维属性：speed 是**沿路径的模长速度**，基准取 |ΔP|/dt。
+             夹具对照：一维用模长偏差 41px、多维用有符号弦偏差 18–21px。 */
+        var baseOut = dims === 1 ? chord[dominant] : chordMag;
+        var baseIn = baseOut;
         var mOut = 0;
         var mIn = 0;
-        if (best > 1e-9) {
-            mOut = num(at(a.os, dominant, 0)) * CALIBRATION.speedScale / chord[dominant];
-            mIn = num(at(b.is, dominant, 0)) * CALIBRATION.speedScale / chord[dominant];
+        if (Math.abs(baseOut) > 1e-9) {
+            mOut = num(at(a.os, dominant, 0)) * CALIBRATION.speedScale / baseOut;
+            mIn = num(at(b.is, dominant, 0)) * CALIBRATION.speedScale / baseIn;
         }
 
         return {
@@ -155,16 +174,47 @@ var AEV_CurveMath = (function () {
             dims: dims,
             dt: dt,
             // 出发键的插值类型决定这一段怎么算
-            type: num(a.out) || TYPE_BEZIER,
+            type: num(a.tout) || TYPE_BEZIER,
             infOut: clamp(num(at(a.oi, dominant, 33.33)) * CALIBRATION.influenceScale, MIN_INFLUENCE, MAX_INFLUENCE),
             infIn: clamp(num(at(b.ii, dominant, 33.33)) * CALIBRATION.influenceScale, MIN_INFLUENCE, MAX_INFLUENCE),
             mOut: mOut,
             mIn: mIn,
             chord: chord,
+            chordMag: chordMag,
             dominant: dominant,
+            spatial: !!a.sp,
             tanOut: a.ot,
             tanIn: b.it
         };
+    }
+
+    /**
+     * 归一化把手：纵轴用 0→1 的「进度」，与具体维度无关。
+     *
+     * 为什么要有这一层：temporal ease 本质是一条时间重映射，
+     * 各维度的值只是被同一张进度曲线缩放。空间属性的进度还会继续喂给
+     * 路径贝塞尔（见 sampleValue），所以进度必须单独算。
+     */
+    function normalizedHandles(seg) {
+        var fo = (seg.infOut || 0) / 100;
+        var fi = (seg.infIn || 0) / 100;
+        return {
+            p0: { x: seg.tA, y: 0 },
+            p1: { x: seg.tA + seg.dt * fo, y: seg.mOut * fo },
+            p2: { x: seg.tB - seg.dt * fi, y: 1 - seg.mIn * fi },
+            p3: { x: seg.tB, y: 1 }
+        };
+    }
+
+    /** 时刻 t 的归一化进度（0..1），已含 ease */
+    function progress(seg, t) {
+        if (seg.dt <= 0) return 0;
+        var p = clamp((num(t) - seg.tA) / seg.dt, 0, 1);
+        if (seg.type === TYPE_HOLD) return 0;
+        if (seg.type === TYPE_LINEAR) return p;
+        var h = normalizedHandles(seg);
+        var u = solveU(h.p0.x, h.p1.x, h.p2.x, h.p3.x, num(t));
+        return bezier1(h.p0.y, h.p1.y, h.p2.y, h.p3.y, u);
     }
 
     /** 值图上的四个控制点（某一维度） */
@@ -172,27 +222,33 @@ var AEV_CurveMath = (function () {
         var vA = num(at(seg.vA, dim, 0));
         var vB = num(at(seg.vB, dim, 0));
         var dv = vB - vA;
-        var fo = seg.infOut / 100;
-        var fi = seg.infIn / 100;
+        var h = normalizedHandles(seg);
         return {
-            p0: { x: seg.tA, y: vA },
-            p1: { x: seg.tA + seg.dt * fo, y: vA + seg.mOut * dv * fo },
-            p2: { x: seg.tB - seg.dt * fi, y: vB - seg.mIn * dv * fi },
-            p3: { x: seg.tB, y: vB }
+            p0: { x: h.p0.x, y: vA },
+            p1: { x: h.p1.x, y: vA + dv * h.p1.y },
+            p2: { x: h.p2.x, y: vA + dv * h.p2.y },
+            p3: { x: h.p3.x, y: vB }
         };
     }
 
-    /** 线段在时刻 t 的值（某一维度） */
+    /**
+     * 线段在时刻 t 的值（某一维度）。
+     *
+     * 空间属性（位置/3D 点）走的是「进度 → 路径贝塞尔」：
+     * 时间决定走到路径的第几成，几何形状由空间切线决定。只按弦做线性插值
+     * 会与 AE 差出 8–10%（实测），因为 AE 的采样点落在弯曲的路径上。
+     */
     function sampleValue(seg, dim, t) {
         var vA = num(at(seg.vA, dim, 0));
         var vB = num(at(seg.vB, dim, 0));
         if (seg.dt <= 0) return vA;
-        var p = clamp((num(t) - seg.tA) / seg.dt, 0, 1);
+        var p = progress(seg, t);
+        if (seg.spatial && seg.dims >= 2) {
+            var pt = pathPoint(seg, uAtProgress(seg, p));
+            return num(at(pt, dim, vA));
+        }
         if (seg.type === TYPE_HOLD) return vA;
-        if (seg.type === TYPE_LINEAR) return vA + (vB - vA) * p;
-        var h = handles(seg, dim);
-        var u = solveU(h.p0.x, h.p1.x, h.p2.x, h.p3.x, num(t));
-        return bezier1(h.p0.y, h.p1.y, h.p2.y, h.p3.y, u);
+        return vA + (vB - vA) * p;
     }
 
     /** 线段在时刻 t 的瞬时速度（值/秒），用于速度图 */
@@ -202,12 +258,20 @@ var AEV_CurveMath = (function () {
         if (seg.type === TYPE_LINEAR) {
             return (num(at(seg.vB, dim, 0)) - num(at(seg.vA, dim, 0))) / seg.dt;
         }
-        var h = handles(seg, dim);
-        var u = solveU(h.p0.x, h.p1.x, h.p2.x, h.p3.x, num(t));
-        var dx = bezier1d(h.p0.x, h.p1.x, h.p2.x, h.p3.x, u);
-        var dy = bezier1d(h.p0.y, h.p1.y, h.p2.y, h.p3.y, u);
+        if (seg.spatial && seg.dims >= 2) {
+            // 路径是弯的，解析导数要连乘，直接数值微分更稳
+            var h = Math.max(1e-4, seg.dt / 2000);
+            var left = Math.max(seg.tA, num(t) - h);
+            var right = Math.min(seg.tB, num(t) + h);
+            if (right - left < 1e-9) return 0;
+            return (sampleValue(seg, dim, right) - sampleValue(seg, dim, left)) / (right - left);
+        }
+        var nh = normalizedHandles(seg);
+        var u = solveU(nh.p0.x, nh.p1.x, nh.p2.x, nh.p3.x, num(t));
+        var dx = bezier1d(nh.p0.x, nh.p1.x, nh.p2.x, nh.p3.x, u);
+        var dy = bezier1d(nh.p0.y, nh.p1.y, nh.p2.y, nh.p3.y, u);
         if (Math.abs(dx) < 1e-9) return 0;
-        return dy / dx;
+        return (dy / dx) * (num(at(seg.vB, dim, 0)) - num(at(seg.vA, dim, 0)));
     }
 
     /**
@@ -228,6 +292,52 @@ var AEV_CurveMath = (function () {
             out.push(bezier1(vA, vA + tA, vB + tB, vB, u));
         }
         return out;
+    }
+
+    /**
+     * 空间路径的弧长表（缓存到线段对象上）。
+     *
+     * 为什么需要：AE 走运动路径是**按弧长**推进的，不是按贝塞尔参数。
+     * 实测对照（夹具 3d-spatial）：参数法最大偏差 70px，弧长法 3.5px。
+     * 一条弯路径上「时间过了一半」不等于「参数走到 0.5」。
+     */
+    function arcTable(seg) {
+        if (seg.__arc) return seg.__arc;
+        var steps = 128;   // 128 与 512 的残差相同（0.6~3.5px），取小的
+        var cum = [0];
+        var total = 0;
+        var prev = pathPoint(seg, 0);
+        for (var i = 1; i <= steps; i++) {
+            var cur = pathPoint(seg, i / steps);
+            var d = 0;
+            for (var k = 0; k < cur.length; k++) {
+                var dv = cur[k] - prev[k];
+                d += dv * dv;
+            }
+            total += Math.sqrt(d);
+            cum.push(total);
+            prev = cur;
+        }
+        seg.__arc = { cum: cum, total: total, steps: steps };
+        return seg.__arc;
+    }
+
+    /** 归一化进度 p（0..1，按弧长）→ 贝塞尔参数 u */
+    function uAtProgress(seg, p) {
+        if (!seg.spatial || seg.dims < 2) return p;
+        var arc = arcTable(seg);
+        if (arc.total <= 1e-9) return p;
+        var target = clamp(p, 0, 1) * arc.total;
+        var lo = 0;
+        var hi = arc.cum.length - 1;
+        while (lo + 1 < hi) {
+            var mid = (lo + hi) >> 1;
+            if (arc.cum[mid] < target) lo = mid;
+            else hi = mid;
+        }
+        var span = arc.cum[hi] - arc.cum[lo];
+        var frac = span > 1e-12 ? (target - arc.cum[lo]) / span : 0;
+        return (lo + frac) / arc.steps;
     }
 
     /**
@@ -283,6 +393,9 @@ var AEV_CurveMath = (function () {
         bezier1d: bezier1d,
         solveU: solveU,
         segmentOf: segmentOf,
+        normalizedHandles: normalizedHandles,
+        progress: progress,
+        uAtProgress: uAtProgress,
         handles: handles,
         sampleValue: sampleValue,
         speedAt: speedAt,

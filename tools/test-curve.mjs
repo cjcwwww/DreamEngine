@@ -51,7 +51,7 @@ function key(t, v, extra) {
   const fill = (n) => v.map(() => n);
   return Object.assign({
     t, v,
-    in: 2, out: 2,
+    tin: 2, tout: 2,
     os: fill(0), oi: fill(33.33),
     is: fill(0), ii: fill(33.33),
     ot: fill(0), it: fill(0)
@@ -64,8 +64,8 @@ function key(t, v, extra) {
 
 test("线性段：采样值等于等分插值", () => {
   const keys = [
-    key(0, [0], { in: 1, out: 1, os: [100], is: [100] }),
-    key(1, [100], { in: 1, out: 1, os: [100], is: [100] })
+    key(0, [0], { tin: 1, tout: 1, os: [100], is: [100] }),
+    key(1, [100], { tin: 1, tout: 1, os: [100], is: [100] })
   ];
   const seg = C.segmentOf(keys, 0);
   for (const [t, expect] of [[0, 0], [0.25, 25], [0.5, 50], [0.75, 75], [1, 100]]) {
@@ -109,7 +109,7 @@ test("influence=100：把手铺满区间，中点仍是 50", () => {
 
 test("定格插值：区间内值恒为起点值", () => {
   const keys = [
-    key(0, [10], { out: 3 }),
+    key(0, [10], { tout: 3 }),
     key(1, [90])
   ];
   const seg = C.segmentOf(keys, 0);
@@ -146,8 +146,8 @@ test("influence 钳位：拖到区间外不会产生非单调曲线", () => {
 
 test("线性段的速度恒等于弦斜率", () => {
   const seg = C.segmentOf([
-    key(0, [0], { in: 1, out: 1, os: [50], is: [50] }),
-    key(2, [100], { in: 1, out: 1 })
+    key(0, [0], { tin: 1, tout: 1, os: [50], is: [50] }),
+    key(2, [100], { tin: 1, tout: 1 })
   ], 0);
   for (const t of [0.1, 0.5, 1.9]) {
     assert.ok(Math.abs(C.speedAt(seg, 0, t) - 50) < 1e-6);
@@ -196,6 +196,78 @@ test("路径与时间互不串数据：改 ease 不改路径形状", () => {
   const b = C.segmentOf(keys, 0);
   const after = C.pathPoint(b, 0.5);
   assert.ok(Math.abs(before[1] - after[1]) < 1e-9, "路径形状不该被 ease 影响");
+});
+
+test("一维速度是带符号的值速度：正 speed 在下降段会过冲", () => {
+  // 实机教训：100→30 的段上设 speed=+100 / influence=50，AE 会先冲高到 ~110。
+  // 如果按「模长」算基准，符号会被吃掉，曲线反而往下走（偏差 41px）。
+  const keys = [
+    key(0, [100], { os: [100], oi: [50], is: [100], ii: [50] }),
+    key(1, [30], { os: [0], oi: [33.33], is: [0], ii: [33.33] })
+  ];
+  const seg = C.segmentOf(keys, 0);
+  assert.ok(seg.mOut < 0, "下降段的正 speed 应得到负斜率倍率，实际 " + seg.mOut);
+  const v = C.sampleValue(seg, 0, 0.25);
+  assert.ok(v > 100, "应该向上过冲，实际 " + v);
+});
+
+test("多维速度按路径模长解释：各维把手与各自 Δ 成比例", () => {
+  const keys = [
+    key(0, [100, 900], { os: [400, 400], oi: [60, 60] }),
+    key(1, [900, 200], { os: [0, 0], oi: [33.33, 33.33] })
+  ];
+  const seg = C.segmentOf(keys, 0);
+  const chordMag = Math.sqrt(800 * 800 + (-700) * (-700)) / 1;
+  assert.ok(Math.abs(seg.chordMag - chordMag) < 1e-6, "模长速度算错");
+  assert.ok(Math.abs(seg.mOut - 400 / chordMag) < 1e-6, "m 应按模长归一，实际 " + seg.mOut);
+});
+
+test("空间路径按弧长推进，而不是按贝塞尔参数", () => {
+  // 实机对照：参数法偏差 70px，弧长法 3.5px。这里造一条明显弯曲的路径，
+  // 断言「进度 0.5」取到的点不等于「参数 0.5」的点。
+  const keys = [
+    // 两端切线长度不等，弧长中点才会与参数中点错开（对称路径两者相等）
+    key(0, [0, 0], { os: [0, 0], oi: [33.33, 33.33], ot: [0, 800] }),
+    key(1, [1000, 0], { os: [0, 0], oi: [33.33, 33.33], it: [0, 100] })
+  ];
+  const seg = C.segmentOf(keys, 0);
+  assert.equal(seg.spatial, false, "样例没带 sp 标记时应按非空间处理");
+  seg.spatial = true; // 手工标记：这个用例就是要测空间分支
+  const u = M.uAtProgress ? M.uAtProgress(seg, 0.5) : 0.5;
+  const byArc = M.pathPoint(seg, u)[1];
+  const byParam = M.pathPoint(seg, 0.5)[1];
+  assert.notEqual(byArc.toFixed(3), byParam.toFixed(3), "弧长与参数应该不同");
+  const v = C.sampleValue(seg, 1, 0.5);
+  assert.ok(Math.abs(v - byArc) < 1e-6, "采样应走弧长映射");
+});
+
+test("快照里一维值必须是数组，且带 spatial / ease 长度字段", () => {
+  const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
+  assert.match(code, /function valueArr\(/, "缺少 valueArr");
+  assert.match(code, /jfield\("v", jnumArr\(valueArr\(value\)\)\)/, "快照的 v 没有数组化");
+  assert.match(code, /jfield\("sp", jbool/, "快照缺少 spatial 标记");
+  assert.match(code, /jfield\("ne", String\(/, "快照缺少 ease 数组长度");
+});
+
+test("插值枚举按实机值映射（6612 线性 / 6613 贝塞尔 / 6614 定格）", () => {
+  const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
+  assert.match(code, /ENUM_LINEAR = 6612/);
+  assert.match(code, /ENUM_BEZIER = 6613/);
+  assert.match(code, /ENUM_HOLD = 6614/);
+  // 快照与写回都必须过 typeCode，不能把裸枚举塞进模型
+  assert.match(code, /jfield\("tin", String\(typeCode\(/);
+  assert.match(code, /jfield\("tout", String\(typeCode\(/);
+  assert.match(code, /tin: typeCode\(prop\.keyInInterpolationType/);
+});
+
+test("多维 ease 只写 1 个元素，空间切线写 3 个元素", () => {
+  const code = codeOf(read(`${ENGINE}/curvelib.jsx`));
+  // AE 2021 实测：多维 ease 数组长度 >1 直接报「值数组没有 1 元素」
+  assert.match(code, /return \[makeEase\(/, "buildEase 应只返回 1 个 KeyframeEase");
+  assert.doesNotMatch(code, /for \(d = 0; d < dims; d\+\+\) \{\s*out\.push\(makeEase/,
+    "buildEase 仍在按维度展开");
+  // 空间切线对 2D 属性也要求 3 个元素
+  assert.match(code, /var n = dims > 3 \? dims : 3;/, "切线数组没有补到 3");
 });
 
 /* ============================================================

@@ -29,6 +29,13 @@
     var OUT_FILE = new File(OUT_DIR.fsName + "/M4_curve_fixture.json");
     var SAMPLE_COUNT = 17;   // 每个区间 17 点：0%, 6.25%, … 100%
 
+    /* 无人值守模式：由 tools/run_m4_live.jsx 先设 $.global.AEV_SILENT = true。
+       alert 会阻塞 AE 主线程等人点确定 —— 无人值守时等于挂死。 */
+    var SILENT = false;
+    try {
+        SILENT = !!$.global.AEV_SILENT;
+    } catch (eSilent) {}
+
     /* ---------- 极小的 JSON 输出工具（ExtendScript 无 JSON） ---------- */
 
     function jstr(value) {
@@ -74,6 +81,9 @@
     var failures = [];
     var comp = null;
     var createdItems = [];
+    /* layers.addSolid 会在工程里**另建一个纯色素材项**：只删合成会留下素材，
+       工程项数对不上。这里把素材也记下来，收尾一起删。 */
+    var createdSolids = [];
 
     function log(text) {
         $.writeln(text);
@@ -82,6 +92,9 @@
     /** 建一个只给一个样本用的图层，避免样本之间互相干扰 */
     function newLayer(name) {
         var layer = comp.layers.addSolid([0.2, 0.2, 0.2], name, comp.width, comp.height, 1);
+        try {
+            if (layer.source) createdSolids.push(layer.source);
+        } catch (eSrc) {}
         layer.moveToEnd();
         return layer;
     }
@@ -178,12 +191,13 @@
         pos.setValueAtTime(0, [100, 900]);
         pos.setValueAtTime(1, [900, 200]);
         pos.setValueAtTime(2, [1700, 800]);
+        // AE 2021 实测：多维属性的 ease 数组只能有 1 个元素
         pos.setTemporalEaseAtKey(1,
-            [new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33)],
-            [new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33)]);
+            [new KeyframeEase(0, 33.33)],
+            [new KeyframeEase(0, 33.33)]);
         pos.setTemporalEaseAtKey(2,
-            [new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33)],
-            [new KeyframeEase(400, 60), new KeyframeEase(-200, 60)]);
+            [new KeyframeEase(0, 33.33)],
+            [new KeyframeEase(400, 60)]);
         addCase("2d-position", "二维位置未分离：检验各维 speed 是否按弦斜率同比", pos);
     } catch (e2) {
         failures.push("2d-position:" + e2.toString());
@@ -201,8 +215,8 @@
         pos3.setSpatialTangentsAtKey(1, [0, 0, 0], [200, -150, 60]);
         pos3.setSpatialTangentsAtKey(2, [-200, -150, -60], [0, 0, 0]);
         pos3.setTemporalEaseAtKey(1,
-            [new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33)],
-            [new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33)]);
+            [new KeyframeEase(0, 33.33)],
+            [new KeyframeEase(0, 33.33)]);
         addCase("3d-spatial", "三维位置 + 显式空间切线：路径与时间分轨", pos3);
     } catch (e3) {
         failures.push("3d-spatial:" + e3.toString());
@@ -284,8 +298,8 @@
         pos8.setValueAtTime(0, [300, 800]);
         pos8.setValueAtTime(1, [1700, 800]);
         pos8.setTemporalEaseAtKey(1,
-            [new KeyframeEase(0, 0.1), new KeyframeEase(0, 0.1)],
-            [new KeyframeEase(0, 100), new KeyframeEase(0, 100)]);
+            [new KeyframeEase(0, 0.1)],
+            [new KeyframeEase(0, 100)]);
         addCase("extreme-influence", "influence 极值：出侧 100 / 入侧 0.1", pos8);
     } catch (e8) {
         failures.push("extreme-influence:" + e8.toString());
@@ -298,8 +312,8 @@
         pos9.setValueAtTime(0, [300, 800]);
         pos9.setValueAtTime(1, [1700, 800]);
         pos9.setTemporalEaseAtKey(1,
-            [new KeyframeEase(0, 33.33), new KeyframeEase(0, 33.33)],
-            [new KeyframeEase(-900, 60), new KeyframeEase(-900, 60)]);
+            [new KeyframeEase(0, 33.33)],
+            [new KeyframeEase(-900, 60)]);
         addCase("overshoot", "负向 speed：把手反向，曲线过冲", pos9);
     } catch (e9) {
         failures.push("overshoot:" + e9.toString());
@@ -343,11 +357,17 @@
             createdItems[c].remove();
         } catch (e12) {}
     }
+    /* 合成删掉后纯色素材项仍在，必须单独删，否则会在用户工程里留垃圾 */
+    for (var s2 = 0; s2 < createdSolids.length; s2++) {
+        try {
+            createdSolids[s2].remove();
+        } catch (e13) {}
+    }
 
     var summary = "样本 " + cases.length + " 个，失败 " + failures.length + " 项\n" +
         (written ? "已写入：\n" + OUT_FILE.fsName : "写文件失败（检查「允许脚本写入文件」）") +
         (failures.length ? "\n\n" + failures.join("\n") : "") +
         "\n\n下一步：在仓库里跑\nnode tools/check_curve_calibration.mjs";
     log(summary);
-    alert(summary);
+    if (!SILENT) alert(summary);
 })();

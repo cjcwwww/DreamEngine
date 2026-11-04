@@ -139,6 +139,13 @@ var AEV_Curve = (function () {
         return 1;
     }
 
+    /** 快照里的值一律输出成数组：一维属性 AE 返回的是裸数字，
+     *  模型侧按 v[dim] 取会全部变成 0（实机踩过：曲线全平、误差 1e8）。 */
+    function valueArr(value) {
+        if (isArr(value)) return value;
+        return [value];
+    }
+
     function valueText(value) {
         var i;
         if (isArr(value)) {
@@ -274,9 +281,12 @@ var AEV_Curve = (function () {
         return "{" + [
             jfield("i", String(k - 1)),
             jfield("t", jnum(prop.keyTime(k))),
-            jfield("v", valueText(value)),
-            jfield("in", String(num(prop.keyInInterpolationType(k)))),
-            jfield("out", String(num(prop.keyOutInterpolationType(k)))),
+            jfield("v", jnumArr(valueArr(value))),
+            jfield("sp", jbool(!!prop.isSpatial)),
+            // AE 侧 ease 数组的真实长度：实测多维属性也只有 1 个（诊断用）
+            jfield("ne", String(isArr(inEase) ? inEase.length : (inEase ? 1 : 0))),
+            jfield("tin", String(typeCode(prop.keyInInterpolationType(k)))),
+            jfield("tout", String(typeCode(prop.keyOutInterpolationType(k)))),
             jfield("is", jnumArr(inSpeeds)),
             jfield("ii", jnumArr(inInfs)),
             jfield("os", jnumArr(outSpeeds)),
@@ -505,19 +515,35 @@ var AEV_Curve = (function () {
      * 三、AE 侧写
      * ============================================================ */
 
-    var TYPE_CONST = {};
+    /* AE 的插值枚举（实机确认，不是文档猜的）：
+         KeyframeInterpolationType.LINEAR = 6612
+         KeyframeInterpolationType.BEZIER = 6613
+         KeyframeInterpolationType.HOLD   = 6614
+       夹具证据：显式设 HOLD 的关键帧回读 6614；脚本写 ease 之后回读 6613；
+       没动过的关键帧回读 6612。 */
+    var ENUM_LINEAR = 6612;
+    var ENUM_BEZIER = 6613;
+    var ENUM_HOLD = 6614;
+
+    /** AE 枚举 → 内部 1/2/3。快照必须走这一步：
+     *  否则 6612/6613 直接进模型，`type === TYPE_LINEAR(1)` 永远不成立。 */
+    function typeCode(value) {
+        var raw = num(value);
+        if (raw === ENUM_LINEAR) return TYPE_LINEAR;
+        if (raw === ENUM_HOLD) return TYPE_HOLD;
+        if (raw === ENUM_BEZIER) return TYPE_BEZIER;
+        return TYPE_BEZIER;
+    }
 
     function typeConst(code) {
-        if (TYPE_CONST[code]) return TYPE_CONST[code];
         try {
             if (code === TYPE_LINEAR) return KeyframeInterpolationType.LINEAR;
             if (code === TYPE_HOLD) return KeyframeInterpolationType.HOLD;
             return KeyframeInterpolationType.BEZIER;
         } catch (e) {
-            // 极少数环境没有这个全局枚举，退回文档里的数值
-            if (code === TYPE_LINEAR) return 6613;
-            if (code === TYPE_HOLD) return 6615;
-            return 6614;
+            if (code === TYPE_LINEAR) return ENUM_LINEAR;
+            if (code === TYPE_HOLD) return ENUM_HOLD;
+            return ENUM_BEZIER;
         }
     }
 
@@ -546,13 +572,25 @@ var AEV_Curve = (function () {
         for (d = 0; d < dims; d++) {
             chord.push((num(at(b.v, d, 0)) - num(at(a.v, d, 0))) / dt);
         }
+        /* AE 2021 实测：多维属性的 temporal ease 数组必须只有 **1 个**元素
+           （传 2/3 个会报「值数组没有 1 元素」）。所以这里写的是
+           「沿路径的模长速度」= m × |ΔP|/dt，AE 会把它作为统一的
+           时间重映射作用到所有维度上。 */
+        var mag = 0;
+        for (d = 0; d < dims; d++) {
+            var dv = num(at(b.v, d, 0)) - num(at(a.v, d, 0));
+            mag += dv * dv;
+        }
+        mag = Math.sqrt(mag);
+        var chordMag = dt > 0 ? mag / dt : 0;
+
+        /* 与 curve_math.segmentOf 的基准保持一致：
+           一维用有符号弦斜率，多维用路径模长速度。写错基准会让
+           「100→30 的段上设 +100 速度」变成往下冲，而不是往上过冲。 */
+        var base = dims === 1 ? chord[0] : chordMag;
         var aeInf = num(inf) / CALIBRATION.influenceScale;
         var aeM = num(m) / CALIBRATION.speedScale;
-        var out = [];
-        for (d = 0; d < dims; d++) {
-            out.push(makeEase(aeM * chord[d], aeInf));
-        }
-        return out;
+        return [makeEase(aeM * base, aeInf)];
     }
 
     /** 取当前 ease 并原样重建（setTemporalEaseAtKey 要求两侧都给） */
@@ -564,11 +602,8 @@ var AEV_Curve = (function () {
             return null;
         }
         if (!isArr(raw) || raw.length === 0) return null;
-        var out = [];
-        for (var d = 0; d < dims; d++) {
-            out.push(makeEase(easeField(raw, d, "speed"), easeField(raw, d, "influence")));
-        }
-        return out;
+        // 只回 1 个：与 AE 2021 的存储形态一致（多维属性也只有一条 ease）
+        return [makeEase(easeField(raw, 0, "speed"), easeField(raw, 0, "influence"))];
     }
 
     /**
@@ -597,14 +632,10 @@ var AEV_Curve = (function () {
 
         var inType = TYPE_BEZIER;
         var outType = TYPE_BEZIER;
-        var inRaw = 0;
-        var outRaw = 0;
         try {
-            inRaw = num(prop.keyInInterpolationType(aeIndex));
-            outRaw = num(prop.keyOutInterpolationType(aeIndex));
+            inType = typeCode(prop.keyInInterpolationType(aeIndex));
+            outType = typeCode(prop.keyOutInterpolationType(aeIndex));
         } catch (e3) {}
-        inType = inRaw === 6613 ? TYPE_LINEAR : (inRaw === 6615 ? TYPE_HOLD : TYPE_BEZIER);
-        outType = outRaw === 6613 ? TYPE_LINEAR : (outRaw === 6615 ? TYPE_HOLD : TYPE_BEZIER);
         if (side === "in") inType = TYPE_BEZIER;
         else outType = TYPE_BEZIER;
 
@@ -640,16 +671,19 @@ var AEV_Curve = (function () {
     }
 
     function writeTangents(prop, keys, keyIndex, side, coords, dims, aeIndex) {
+        /* AE 2021 实测：setSpatialTangentsAtKey 对 2D 位置也要求 **3 个**元素
+           （传 2 个报「值数组没有 3 元素」），所以按 max(维度, 3) 补齐。 */
+        var n = dims > 3 ? dims : 3;
         var inTans = [];
         var outTans = [];
         var i;
-        for (i = 0; i < dims; i++) {
+        for (i = 0; i < n; i++) {
             inTans.push(0);
             outTans.push(0);
         }
         var key = keys[keyIndex];
         try {
-            for (i = 0; i < dims; i++) {
+            for (i = 0; i < n; i++) {
                 var keepIn = num(at(key.it, i, 0));
                 var keepOut = num(at(key.ot, i, 0));
                 var next = coords.length > i ? num(coords[i]) : 0;
@@ -777,9 +811,9 @@ var AEV_Curve = (function () {
         for (var k = 1; k <= n; k++) {
             keys.push({
                 t: prop.keyTime(k),
-                v: prop.keyValue(k),
-                in: num(prop.keyInInterpolationType(k)),
-                out: num(prop.keyOutInterpolationType(k)),
+                v: valueArr(prop.keyValue(k)),
+                tin: typeCode(prop.keyInInterpolationType(k)),
+                tout: typeCode(prop.keyOutInterpolationType(k)),
                 is: speedsOf(prop, k, "in", dims),
                 ii: infsOf(prop, k, "in", dims),
                 os: speedsOf(prop, k, "out", dims),
@@ -958,7 +992,125 @@ var AEV_Curve = (function () {
     }
 
     /* ============================================================
-     * 五、导出
+     * 五、脚本通道：把预设套到当前选中属性
+     *
+     * 面板走的是「快照 → 逐条 op → applyText」，脚本侧（离线验证、批处理）
+     * 没有面板那层，需要一条等价入口。刻意复用同一套 writePreset /
+     * 指纹校验，这样无人值守的实机验证测到的就是面板真实走的路。
+     * ============================================================ */
+
+    function resultJson(fields) {
+        var parts = [];
+        for (var i = 0; i < fields.length; i++) {
+            parts.push(jfield(fields[i][0], fields[i][1]));
+        }
+        return "{" + parts.join(",") + "}";
+    }
+
+    function skippedArray(list) {
+        var out = [];
+        for (var i = 0; i < list.length; i++) out.push(jstr(list[i]));
+        return "[" + out.join(",") + "]";
+    }
+
+    /**
+     * presetId 为空 = 只读，不写（返回 loc / sig / 关键帧数）。
+     * expectSig 非空时先比指纹，不一致返回 conflict —— 与面板同一逻辑。
+     */
+    function applyPresetToSelectionJson(presetId, expectSig) {
+        var comp = activeComp();
+        if (!comp) {
+            return resultJson([["status", jstr("error")], ["reason", jstr("no_comp")]]);
+        }
+        var list = collect(comp);
+        if (!list.length) {
+            return resultJson([["status", jstr("error")], ["reason", jstr("no_property")]]);
+        }
+
+        var prop = list[0].prop;
+        var loc = list[0].loc;
+        var sig = propSignature(prop);
+        var id = String(presetId === undefined || presetId === null ? "" : presetId);
+        var keysCount = 0;
+        try {
+            keysCount = prop.numKeys;
+        } catch (e0) {}
+
+        if (id && expectSig && String(expectSig) !== sig) {
+            return resultJson([
+                ["status", jstr("conflict")],
+                ["reason", jstr("changed")],
+                ["loc", jstr(loc)],
+                ["sig", jstr(sig)],
+                ["expect", jstr(String(expectSig))]
+            ]);
+        }
+
+        if (!id) {
+            return resultJson([
+                ["status", jstr("ok")],
+                ["loc", jstr(loc)],
+                ["sig", jstr(sig)],
+                ["keys", String(keysCount)],
+                ["applied", "0"]
+            ]);
+        }
+
+        var preset = presetById(id);
+        if (!preset) {
+            return resultJson([
+                ["status", jstr("error")],
+                ["reason", jstr("unknown_preset")],
+                ["preset", jstr(id)]
+            ]);
+        }
+
+        var dims = 1;
+        try {
+            dims = valueDims(prop.value);
+        } catch (e1) {}
+
+        var keys = parseKeyFromSnapshot(prop, dims);
+        var applied = 0;
+        var skipped = [];
+        var started = false;
+
+        try {
+            app.beginUndoGroup("DreamEngine 应用缓动预设");
+            started = true;
+        } catch (e2) {}
+
+        for (var k = 0; k < keys.length; k++) {
+            var r = "failed";
+            try {
+                r = writePreset(prop, keys, k, k + 1, preset, dims);
+            } catch (e3) {
+                r = "failed:" + e3.toString();
+            }
+            if (r === "ok") applied++;
+            else skipped.push(r);
+        }
+
+        if (started) {
+            try {
+                app.endUndoGroup();
+            } catch (e4) {}
+        }
+
+        return resultJson([
+            ["status", jstr("ok")],
+            ["loc", jstr(loc)],
+            ["sig", jstr(propSignature(prop))],
+            ["sigBefore", jstr(sig)],
+            ["keys", String(keys.length)],
+            ["applied", String(applied)],
+            ["preset", jstr(id)],
+            ["skipped", skippedArray(skipped)]
+        ]);
+    }
+
+    /* ============================================================
+     * 六、导出
      * ============================================================ */
 
     return {
@@ -986,6 +1138,8 @@ var AEV_Curve = (function () {
         signatureText: signatureText,
         applyText: applyText,
         presetsJson: presetsJson,
+        // 脚本通道（离线验证 / 批处理）：把预设套到当前选中的第一个动画属性
+        applyPresetToSelectionJson: applyPresetToSelectionJson,
         activeComp: activeComp,
         // 标定夹具用：直接 dump 某个属性，不依赖用户在时间轴上的选中态
         // （脚本改选中态在 AE 2021 上有崩溃风险，夹具一律不碰）

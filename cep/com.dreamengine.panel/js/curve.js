@@ -518,6 +518,10 @@ var AEV_CurveUI = (function () {
     var keys = activeKeys();
     var map = st.map;
     if (!map) return null;
+    var prop = active();
+    /* 空间属性在「值」图里不给把手：曲线形状由空间切线决定，值图上的
+       把手画不进那条弯线里，拖了也对不上。缓动请到速度图或路径图改。 */
+    if (prop && prop.spatial && st.mode === "value") return null;
     var segIndex = side === "out" ? keyIndex : keyIndex - 1;
     var seg = segIndex >= 0 ? M.segmentOf(keys, segIndex) : null;
     if (!seg) return null;
@@ -790,11 +794,11 @@ var AEV_CurveUI = (function () {
       if (side === "out") {
         keys[keyIndex].os[d] = speed;
         keys[keyIndex].oi[d] = inf;
-        keys[keyIndex].out = M.TYPE_BEZIER;
+        keys[keyIndex].tout = M.TYPE_BEZIER;
       } else {
         keys[keyIndex].is[d] = speed;
         keys[keyIndex].ii[d] = inf;
-        keys[keyIndex].in = M.TYPE_BEZIER;
+        keys[keyIndex].tin = M.TYPE_BEZIER;
       }
     }
   }
@@ -1021,12 +1025,20 @@ var AEV_CurveUI = (function () {
     }
     var parts = [
       p.name + (p.n ? " · " + p.n + " 键" : ""),
+      (p.spatial && st.mode === "value")
+        ? t("空间属性：值图只读，缓动请在「速度」或「路径」里改",
+            "Spatial: value view is read-only, edit easing in Speed/Path")
+        : "",
       selectedCount
         ? t("已选 " + selectedCount + " 个关键帧", selectedCount + " key(s) selected")
         : t("点关键帧后可拖它的把手", "Click a keyframe to drag its handles"),
       t("Shift 只改缓动幅度", "Shift = influence only")
     ];
-    setMessage(parts.join(" · "), false);
+    var clean = [];
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i]) clean.push(parts[i]);
+    }
+    setMessage(clean.join(" · "), false);
   }
 
   /* ============================================================

@@ -49,8 +49,8 @@ function keyFrame(i, t, v, opts) {
   const fill = (n) => v.map(() => n);
   return {
     i, t, v,
-    in: o.in === undefined ? 2 : o.in,
-    out: o.out === undefined ? 2 : o.out,
+    tin: o.tin === undefined ? 2 : o.tin,
+    tout: o.tout === undefined ? 2 : o.tout,
     is: o.is || fill(0),
     ii: o.ii || fill(33.33),
     os: o.os || fill(0),
