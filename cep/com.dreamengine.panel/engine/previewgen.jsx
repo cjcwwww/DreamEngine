@@ -211,7 +211,10 @@ var AEV_PreviewGen = (function () {
                     layout = AEV_Recipe.layoutFor(AEV_Recipe.sceneFor(matchName));
                 }
                 if (layout.needBg) {
-                    cell.layers.add(sceneOf("photo"));
+                    // 背景层刻意用「纯色」而不是 photo：遮罩/填充把上层吃掉一部分时，
+                    // 露出来的必须是明显不同的颜色，否则下面垫着同样的画面，
+                    // 透明和透明+相同背景看起来一模一样，等于白垫。
+                    cell.layers.add(sceneOf("solid"));
                 }
                 if (layout.needSource) {
                     var sourceLayer = cell.layers.add(sceneOf("pattern"));

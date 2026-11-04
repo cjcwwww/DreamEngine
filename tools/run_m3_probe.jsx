@@ -121,7 +121,7 @@
     try {
         diag = app.project.items.addComp("DE_diag", 256, 256, 1, 0.2, 30);
         var lay = AEV_Recipe.layoutFor("two-layer-input");
-        diag.layers.add(AEV_Assets.get("photo", 256));
+        diag.layers.add(AEV_Assets.get("solid", 256));
         var src = diag.layers.add(AEV_Assets.get("pattern", 256));
         src.enabled = false;
         diag.layers.add(AEV_Assets.get("photo", 256));

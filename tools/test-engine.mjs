@@ -560,6 +560,10 @@ test("两层输入场景会真的搭出两层：图案层 + 效果层", () => {
   assert.match(code, /if \(layout\.needSource\) \{/);
   assert.match(code, /cell\.layers\.add\(sceneOf\("pattern"\)\)/);
   assert.match(code, /AEV_Recipe\.bindLayers\(effectGroup, 2\)/);
+  // 背景层必须是纯色：遮罩吃掉上层时露出的颜色要和上层明显不同
+  assert.match(code, /cell\.layers\.add\(sceneOf\("solid"\)\)/);
+  // 第二输入层要隐藏，否则会盖住效果结果
+  assert.match(code, /sourceLayer\.enabled = false;/);
 });
 
 test("catalog 参数树带深度与数量上限，且用完即删", () => {
