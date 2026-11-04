@@ -863,6 +863,8 @@ var AEV_Recipe = (function () {
      */
     function tunePlugin(effectGroup) {
         if (!TUNING_ENABLED) return 0;
+        // TEMP: 暂时只做分类不做写入
+        if (true) { trace("tune|skipped_for_probe"); return 0; }
         if (!main) return 0;
         var target = paramTarget(main.prop, main.ratio);
         if (target === null) { trace("tune|no_target"); return 0; }
