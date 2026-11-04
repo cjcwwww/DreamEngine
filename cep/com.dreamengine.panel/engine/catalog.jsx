@@ -67,22 +67,48 @@ var AEV_Catalog = (function () {
     /* 会话内缓存：枚举 app.effects 要走 1371 条，是面板刷新发顿的来源之一。
        缓存到 AE 会话结束；用户点「重新扫描」时传 force=true 重建。 */
     var cacheJson = "";
+    var cacheItems = null;
 
-    function getCatalogJson(force) {
-        if (!force && cacheJson) return cacheJson;
+    function buildItems() {
         var effects = app.effects;
-        var rows = [];
+        var items = [];
         var total = effects.length;
         for (var i = 0; i < total; i++) {
             var effect = effects[i];
+            items.push({
+                matchName: String(effect.matchName || ""),
+                displayName: String(effect.displayName || ""),
+                category: String(effect.category || "")
+            });
+        }
+        return items;
+    }
+
+    function getCatalogJson(force) {
+        if (!force && cacheJson) return cacheJson;
+        var items = buildItems();
+        var rows = [];
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
             rows.push(
-                '{"matchName":' + jsonString(effect.matchName) +
-                ',"displayName":' + jsonString(effect.displayName) +
-                ',"category":' + jsonString(effect.category) + "}"
+                '{"matchName":' + jsonString(item.matchName) +
+                ',"displayName":' + jsonString(item.displayName) +
+                ',"category":' + jsonString(item.category) + "}"
             );
         }
-        cacheJson = '{"version":1,"count":' + total + ',"effects":[' + rows.join(",") + "]}";
+        cacheItems = items;
+        cacheJson = '{"version":1,"count":' + items.length + ',"effects":[' + rows.join(",") + "]}";
         return cacheJson;
+    }
+
+    /** 本机是否装了某个效果（预设依赖检查用；避免整份 JSON 再解析一遍） */
+    function hasEffect(matchName) {
+        if (!cacheItems) getCatalogJson(false);
+        if (!cacheItems) return false;
+        for (var i = 0; i < cacheItems.length; i++) {
+            if (cacheItems[i].matchName === matchName) return true;
+        }
+        return false;
     }
 
     /** 描述单个属性节点；组节点带 children */
@@ -218,6 +244,7 @@ var AEV_Catalog = (function () {
 
     return {
         getCatalogJson: getCatalogJson,
+        hasEffect: hasEffect,
         getParamTreeJson: getParamTreeJson,
         getParamTreesJson: getParamTreesJson
     };
