@@ -221,6 +221,29 @@ test("依赖外部渲染器的效果（CINEMA 4D / Element 3D）不参与预览"
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Glo2", category: "风格化" }), false);
 });
 
+test("插件保持默认参数，只做「0→默认值」的动画（不改最终值）", () => {
+  const src = read("cep/com.dreamengine.panel/engine/recipe.jsx");
+  const code = src
+    .split("\n")
+    .map((line) => line.replace(/^\s*\/\/.*$/, "").replace(/^\s*\*.*$/, ""))
+    .join("\n");
+  // 插件不改参数（用户反馈：拨参数会让预览偏离插件真实表现）
+  assert.match(code, /mode: "plugin-default", writes: 0/);
+  assert.doesNotMatch(code, /applyPluginHeuristic/);
+  // 动画：0 渐变到当前值
+  assert.match(code, /function animatePlugin\(/);
+  assert.match(code, /best\.setValueAtTime\(0, start\)/);
+  assert.match(code, /best\.setValueAtTime\(end, target\)/);
+  // animateAny 对插件分派过去
+  assert.match(code, /return animatePlugin\(effectGroup, durationSeconds\)/);
+});
+
+test("插件预览是 6 帧（要能悬停轮播）", () => {
+  const pick = read("tools/pick_plugin_candidates.mjs");
+  assert.doesNotMatch(pick, /const frames = 1;/);
+  assert.match(pick, /frameCount/);
+});
+
 test("来源下拉包含「其它插件」", () => {
   assert.match(read("cep/com.dreamengine.panel/index.html"), /value="其它插件"/);
 });

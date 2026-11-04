@@ -558,7 +558,10 @@ var AEV_Recipe = (function () {
      * 插件效果不打关键帧：默认参数保持原样更真实，动起来的参数多半是附属模块。
      */
     function animateAny(effectGroup, durationSeconds, matchName) {
-        if (!isBuiltinMatch(matchName)) return false;
+        // 插件：动画但不碰最终值（保持插件默认表现）
+        if (!isBuiltinMatch(matchName)) {
+            return animatePlugin(effectGroup, durationSeconds);
+        }
         var end = Number(durationSeconds);
         if (!end || end <= 0) return false;
 
@@ -663,14 +666,19 @@ var AEV_Recipe = (function () {
     }
 
     /**
-     * 插件的保守启发式：只动一个「看起来是主参数」的滑杆。
+     * 插件的动画：找一个「范围大、不是附属模块、当前值不为 0」的一维数值参数，
+     * 从 0 渐变到它**当前的值**。
      *
-     * 背景：插件一律保持默认参数时，很多效果默认画面几乎不变，预览等于素材，
-     * 看不出这个效果是干什么的（实测 6 条里只有 2 条看得出差别）。
-     * 这里取「范围最大、且不是附属模块」的一维数值属性，拨到范围的 70%。
-     * 只动一个 —— 动得越多越容易改到附属模块上，风险越大。
+     * 关键点：**不修改参数的最终值**。参数保持插件默认，预览因此是插件真实的
+     * 默认表现，只是把「效果逐渐起作用」的过程演出来。
+     *
+     * 为什么不用「把参数拨到 70%」：用户反馈「部分效果与原始状态不符合」——
+     * 拨参数会让预览偏离插件本来的样子（实测 S_Clouds 被拨成一片彩色噪点，
+     * 完全不是它该有的云）。所以插件一律用默认值。
      */
-    function applyPluginHeuristic(effectGroup) {
+    function animatePlugin(effectGroup, durationSeconds) {
+        var end = Number(durationSeconds);
+        if (!end || end <= 0) return false;
         var best = null;
         var bestMax = -1;
 
@@ -706,8 +714,15 @@ var AEV_Recipe = (function () {
                 try {
                     if (prop.hasMax) maxValue = Number(prop.maxValue);
                 } catch (e4) {}
-                // 范围小于 5 的是枚举/下拉，改了只是换个通道号，没有视觉意义
                 if (maxValue < 5) continue;
+                var current = 0;
+                try {
+                    current = Number(prop.value);
+                } catch (e5) {
+                    current = 0;
+                }
+                // 当前值是 0 时 0→0 等于没动画，换下一个候选
+                if (current === 0) continue;
                 if (maxValue > bestMax) {
                     bestMax = maxValue;
                     best = prop;
@@ -716,29 +731,43 @@ var AEV_Recipe = (function () {
         }
 
         walk(effectGroup, 0);
-        if (!best) return 0;
-        var minValue = 0;
+        if (!best) return false;
+        var target = 0;
         try {
-            if (best.hasMin) minValue = Number(best.minValue);
-        } catch (e5) {}
-        var target = minValue + (bestMax - minValue) * 0.7;
-        return setIfWritable(best, target) ? 1 : 0;
+            target = Number(best.value);
+        } catch (e6) {
+            return false;
+        }
+        if (isNaN(target) || target === 0) return false;
+
+        var start = 0;
+        try {
+            if (best.hasMin) {
+                var minValue = Number(best.minValue);
+                if (minValue > 0 && minValue < target) start = minValue;
+            }
+        } catch (e7) {}
+        if (target === start) return false;
+
+        try {
+            best.setValueAtTime(0, start);
+            best.setValueAtTime(end, target);
+            return true;
+        } catch (e8) {
+            return false;
+        }
     }
 
-    /** 统一入口：有配方走配方，内置无配方走启发式，插件走保守启发式 */
+    /** 统一入口：有配方走配方，内置无配方走启发式，插件保持默认参数 */
     function apply(effectGroup, matchName, cellSize) {
         var explicitWrites = applyRecipe(effectGroup, matchName);
         if (explicitWrites > 0) {
             return { mode: "recipe", writes: explicitWrites };
         }
         if (!isBuiltinMatch(matchName)) {
-            // 插件：只动一个主参数。动一串附属模块（Mocha / 音频 / 通道映射）
-            // 既失真又有触发插件异常的风险。
-            var pluginWrites = applyPluginHeuristic(effectGroup);
-            return {
-                mode: pluginWrites > 0 ? "plugin-heuristic" : "plugin-default",
-                writes: pluginWrites
-            };
+            // 插件：只挂效果，参数一律保持默认。
+            // 动参数（哪怕只是拨到 70%）都会让预览偏离插件的真实表现。
+            return { mode: "plugin-default", writes: 0 };
         }
         var heuristicWrites = applyHeuristics(effectGroup, cellSize);
         return { mode: heuristicWrites > 0 ? "heuristic" : "none", writes: heuristicWrites };

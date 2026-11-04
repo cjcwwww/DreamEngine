@@ -138,6 +138,23 @@ test("引擎模块列表包含 presets（面板要能调到它）", () => {
   assert.ok(catalogAt > 0 && presetsAt > catalogAt, "加载顺序：catalog 先于 presets");
 });
 
+test("预设库是用户自建的：自己挑文件复制入库，不再扫 AE 目录", () => {
+  const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
+  const code = codeOf(src);
+  assert.match(code, /function pickJson\(/);
+  assert.match(code, /File\.openDialog\(/);
+  assert.match(code, /function importOneJson\(/);
+  assert.match(code, /function libraryJson\(/);
+  assert.match(code, /src\.copy\(target\)/);
+  // 面板侧：读自建库、走文件选择框，不再调用扫描
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  assert.doesNotMatch(lib, /scanJson\(/);
+  assert.doesNotMatch(lib, /defaultRootJson\(/);
+  assert.match(lib, /AEV_Presets\.libraryJson\(\)/);
+  assert.match(lib, /AEV_Presets\.pickJson\(\)/);
+  assert.match(lib, /AEV_Presets\.importOneJson\(/);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

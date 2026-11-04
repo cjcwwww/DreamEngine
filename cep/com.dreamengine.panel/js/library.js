@@ -21,9 +21,9 @@ var AEV_Library = (function () {
     pluginPreviewCount: 0,
     // 各来源（内置 / BCC / Sapphire…）已有多少张预览
     pluginCounts: {},
-    // 预设库（M3）：扫描到的 .ffx 与搜索词
+    // 预设库（M3）：用户自建库里的 .ffx 与搜索词
     presets: [],
-    presetRoot: "",
+    presetFolder: "",
     presetQuery: "",
     // 排序方式：name = 按名称首字母，category = 按 AE 分类
     sortMode: "name",
@@ -992,35 +992,69 @@ var AEV_Library = (function () {
 
   /* ---------- 预设库（M3） ---------- */
 
-  /** 扫描 AE 内置预设目录（递归找 .ffx） */
-  function scanPresets() {
+  /** 载入用户自建的预设库（我的文档/DreamEngine/presets） */
+  function loadPresetLibrary() {
     if (!state.extensionPath) return;
-    setStatus(state.lang === "zh" ? "正在扫描 AE 预设…" : "Scanning AE presets…", false);
-    engine("AEV_Presets.defaultRootJson()", function (rootResult) {
-      var rootData = parseEngineResult(rootResult);
-      var candidates = (rootData && rootData.candidates) || [];
-      var root = "";
-      for (var i = 0; i < candidates.length; i++) {
-        if (candidates[i].exists) {
-          root = candidates[i].path;
-          break;
-        }
-      }
-      if (!root) {
-        setStatus(state.lang === "zh" ? "没找到 AE 预设目录" : "AE preset folder not found", true);
+    engine("AEV_Presets.libraryJson()", function (result) {
+      var data = parseEngineResult(result);
+      if (!data || data.status !== "ok") {
+        setStatus(
+          state.lang === "zh" ? "读取预设库失败" : "Failed to read preset library",
+          true
+        );
         return;
       }
-      state.presetRoot = root;
-      engine("AEV_Presets.scanJson(" + JSON.stringify(root) + ",800)", function (scanResult) {
-        var data = parseEngineResult(scanResult);
-        if (!data || data.status !== "ok") {
-          setStatus(state.lang === "zh" ? "扫描失败" : "Scan failed", true);
+      state.presets = data.items || [];
+      state.presetFolder = data.folder || "";
+      renderPresetList();
+    });
+  }
+
+  /**
+   * 用户自己挑 .ffx 加进库。
+   * 不再扫描 AE 内置预设目录 —— 那是几百个跟本机无关的文件，
+   * 用户要的是「自主添加」：挑中的文件复制进预设库，之后就能反复用。
+   */
+  function addPresets() {
+    if (!state.extensionPath) return;
+    setStatus(
+      state.lang === "zh" ? "请选择要加入的预设文件…" : "Pick preset files…",
+      false
+    );
+    engine("AEV_Presets.pickJson()", function (result) {
+      var data = parseEngineResult(result);
+      if (!data || data.status !== "ok") {
+        setStatus(state.lang === "zh" ? "选择预设失败" : "Failed to pick presets", true);
+        return;
+      }
+      var items = data.items || [];
+      if (!items.length) {
+        setStatus(state.lang === "zh" ? "没有选择文件" : "No file picked", false);
+        return;
+      }
+      var added = 0;
+      var index = 0;
+
+      function importNext() {
+        if (index >= items.length) {
+          setStatus(
+            state.lang === "zh" ? "已加入 " + added + " 个预设" : "Added " + added + " presets",
+            false
+          );
+          loadPresetLibrary();
           return;
         }
-        state.presets = data.items || [];
-        renderPresetList();
-        setStatus("扫到 " + state.presets.length + " 个预设", false);
-      });
+        var item = items[index++];
+        engine(
+          "AEV_Presets.importOneJson(" + JSON.stringify(item.path) + ")",
+          function (oneResult) {
+            var one = parseEngineResult(oneResult);
+            if (one && one.status === "ok") added++;
+            importNext();
+          }
+        );
+      }
+      importNext();
     });
   }
 
@@ -1058,7 +1092,10 @@ var AEV_Library = (function () {
     var summary = byId("presetSummary");
     if (summary) {
       if (!state.presets.length) {
-        summary.textContent = state.lang === "zh" ? "还没扫描" : "Not scanned yet";
+        summary.textContent =
+          state.lang === "zh"
+            ? "库里还没有预设，点「添加预设」挑 .ffx 文件"
+            : "No presets yet — use “添加预设” to pick .ffx files";
       } else {
         summary.textContent =
           "共 " + state.presets.length + " 个预设" +
@@ -1174,14 +1211,14 @@ var AEV_Library = (function () {
       var drawer = byId("presetDrawer");
       if (!drawer) return;
       drawer.hidden = !drawer.hidden;
-      if (!drawer.hidden && !state.presets.length) scanPresets();
+      if (!drawer.hidden) loadPresetLibrary();
     });
     byId("btnPresetClose").addEventListener("click", function () {
       var drawer = byId("presetDrawer");
       if (drawer) drawer.hidden = true;
     });
-    byId("btnPresetScan").addEventListener("click", function () {
-      scanPresets();
+    byId("btnPresetAdd").addEventListener("click", function () {
+      addPresets();
     });
     byId("presetSearch").addEventListener("input", function () {
       state.presetQuery = this.value;

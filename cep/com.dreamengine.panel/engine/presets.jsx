@@ -707,12 +707,107 @@ var AEV_Presets = (function () {
         return result("ok", [["comp", compName], ["layer", String(layerIndex)]]);
     }
 
+    /* ---------- 用户自建预设库 ---------- */
+
+    /** 预设库目录：我的文档/DreamEngine/presets */
+    function libraryDir() {
+        if (typeof AEV_Store !== "undefined") {
+            try {
+                var dir = AEV_Store.folderAt("presets");
+                if (dir) {
+                    if (!dir.exists) dir.create();
+                    return dir;
+                }
+            } catch (e) {}
+        }
+        var fallback = new Folder(Folder.myDocuments.fsName + "/DreamEngine/presets");
+        if (!fallback.exists) fallback.create();
+        return fallback;
+    }
+
+    /**
+     * 弹出文件选择框，让用户自己挑 .ffx 加进库（多选）。
+     * 不扫描 AE 内置目录 —— 用户要的是「自主添加」。
+     */
+    function pickJson() {
+        var picked = null;
+        try {
+            picked = File.openDialog("选择要加入预设库的 .ffx 文件", "After Effects 预设 (*.ffx)", true);
+        } catch (e) {
+            return result("error", [["reason", "dialog_failed"]]);
+        }
+        if (!picked) return '{"status":"ok","items":[]}';
+        var list = picked instanceof Array ? picked : [picked];
+        var items = [];
+        for (var i = 0; i < list.length; i++) {
+            try {
+                var f = list[i];
+                if (!(f instanceof File)) continue;
+                items.push(
+                    '{"path":' + jsonText(f.fsName) +
+                    ',"name":' + jsonText(String(f.name).replace(/\.ffx$/i, "")) + "}"
+                );
+            } catch (e2) {}
+        }
+        return '{"status":"ok","items":[' + items.join(",") + "]}";
+    }
+
+    /** 把一个 .ffx 复制进库目录；重名时自动加序号 */
+    function importOneJson(path) {
+        var src = new File(String(path || ""));
+        if (!src.exists) {
+            return result("error", [["reason", "no_file"], ["path", String(path || "")]]);
+        }
+        var dir = libraryDir();
+        var target = new File(dir.fsName + "/" + src.name);
+        var n = 1;
+        while (target.exists) {
+            var base = String(src.name).replace(/\.ffx$/i, "");
+            target = new File(dir.fsName + "/" + base + "_" + n + ".ffx");
+            n++;
+        }
+        try {
+            src.copy(target);
+        } catch (e) {
+            return result("error", [["reason", "copy_failed"], ["detail", String(e)]]);
+        }
+        return '{"status":"ok","path":' + jsonText(target.fsName) +
+               ',"name":' + jsonText(String(target.name).replace(/\.ffx$/i, "")) + "}";
+    }
+
+    /** 列出库内的预设 */
+    function libraryJson() {
+        var dir = libraryDir();
+        var files = [];
+        try {
+            files = dir.getFiles();
+        } catch (e) {}
+        var items = [];
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+            if (f instanceof Folder) continue;
+            if (!isPresetFile(f.name)) continue;
+            items.push(
+                '{"path":' + jsonText(f.fsName) +
+                ',"name":' + jsonText(String(f.name).replace(/\.ffx$/i, "")) +
+                ',"folder":' + jsonText(dir.fsName) + "}"
+            );
+        }
+        return '{"status":"ok","count":' + items.length +
+               ',"folder":' + jsonText(dir.fsName) +
+               ',"items":[' + items.join(",") + "]}";
+    }
+
     return {
         scanJson: scanJson,
         applyJson: applyJson,
         dependenciesJson: dependenciesJson,
         defaultRootJson: defaultRootJson,
         contextJson: contextJson,
+        pickJson: pickJson,
+        importOneJson: importOneJson,
+        libraryJson: libraryJson,
+        libraryDir: libraryDir,
         isPresetFile: isPresetFile,
         categoryOf: categoryOf,
         setTrace: setTrace,
