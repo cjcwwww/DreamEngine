@@ -75,6 +75,9 @@ var AEV_ViewModel = (function () {
     // 实测：CC Drizzle 在 2048 整网 × 6 帧下渲染挂起（AE 未响应超过 5 分钟），
     // 逐条测试时也会卡在同一处。先排除，避免单条拖死整批。
     if (matchName === "cc drizzle") return true;
+    // 实测：CC Hair 是毛发模拟，静态渲勉强能过，但给参数打上关键帧后
+    // 每帧都要重新模拟，AE 直接挂死被终止（逐条排查定位到的元凶）。
+    if (matchName === "cc hair") return true;
     // 实测：ADBE Numbers2 / Timecode 这类"文本生成器"在 addProperty 时就会弹出
     // 模态参数对话框（编号设置），脚本会一直等输入，AE 看起来像死机。
     if (/^adbe (numbers|timecode)/.test(matchName)) return true;

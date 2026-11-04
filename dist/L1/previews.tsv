@@ -16,46 +16,18 @@ CC Bubbles	3	3	6	thumbs/batch_003_%04d.png	k7gm24
 CC Particle Systems II	3	4	6	thumbs/batch_003_%04d.png	70pvuz
 CC Star Burst	3	5	6	thumbs/batch_003_%04d.png	w76ltj
 CC Toner	4	0	6		pcjjdh
-CC Twister	4	1	6		kc9b1b
-CC Radial Fast Blur	5	0	6	thumbs/batch_005_%04d.png	805ewt
-CC Lens	5	1	6	thumbs/batch_005_%04d.png	uytuv3
-CC Radial Blur	5	2	6	thumbs/batch_005_%04d.png	yb2433
-CC Color Offset	5	3	6	thumbs/batch_005_%04d.png	38civn
-CC Bender	5	4	6	thumbs/batch_005_%04d.png	gqvecd
-CC Burn Film	5	5	6	thumbs/batch_005_%04d.png	fkv824
+CC Twister	5	0	6	thumbs/batch_005_%04d.png	kc9b1b
+CC Radial Fast Blur	5	1	6	thumbs/batch_005_%04d.png	805ewt
+CC Lens	5	2	6	thumbs/batch_005_%04d.png	uytuv3
+CC Radial Blur	5	3	6	thumbs/batch_005_%04d.png	yb2433
+CC Color Offset	5	4	6	thumbs/batch_005_%04d.png	38civn
+CC Bender	5	5	6	thumbs/batch_005_%04d.png	gqvecd
+CC Burn Film	5	6	6	thumbs/batch_005_%04d.png	fkv824
 CC Glue Gun	6	0	6		i3b804
-VISINF Grain Implant	6	1	6		8s5d3w
-CC Glass Wipe	6	2	6		503xq4
-CC Simple Wire Removal	6	3	6		fgqm10
-ADBE AutoColor	6	4	6		4o1gh7
-CC Cylinder	7	0	6	thumbs/batch_007_%04d.png	8ex7jb
-CC Vector Blur	7	1	6	thumbs/batch_007_%04d.png	w0olbp
-CC Bend It	7	2	6	thumbs/batch_007_%04d.png	c0ffz7
-ADBE Dust & Scratches	8	0	6		64iq7t
-CC Environment	8	1	6		20qeaq
-ADBE Color Difference Key	8	2	6		aub35y
-CC Hair	8	3	6		g181sh
-CC Force Motion Blur	8	4	6		p5pwbr
-CC Glass	9	0	6	thumbs/batch_009_%04d.png	mw1ahz
-CC Light Burst 2.5	9	1	6	thumbs/batch_009_%04d.png	ahkdgq
-CC Grid Wipe	9	2	6	thumbs/batch_009_%04d.png	3p8cp4
-ADBE Matte Choker	10	0	6		7yi4ve
-ADBE Color Swirl	10	1	6		gi8alf
-CC Composite	10	2	6		95tu74
-ADBE Bilateral	10	3	6		v0mg2r
-ADBE AutoContrast	10	4	6		m0klwa
-CC Blobbylize	10	5	6		h557tn
-CC Kaleida	10	6	6		10asuw
-CC Overbrights	11	0	6	thumbs/batch_011_%04d.png	sze2sc
-ADBE Fractal Noise	12	0	6		6jezf2
-CC Image Wipe	12	1	6		dmnumd
-ADBE Color Range	12	2	6		tm11r3
-CC Mr. Mercury	12	3	6		36amkh
-CC Wide Time	12	4	6		jwpsth
-ADBE Simple Choker	12	5	6		8aamhl
-CC Light Rays	13	0	6	thumbs/batch_013_%04d.png	iydres
-CC Sphere	13	1	6	thumbs/batch_013_%04d.png	1ttiz8
-ADBE Getting Jiggy	14	0	6		2zke5b
-ADBE Arithmetic	14	1	6		pl8hx9
-ADBE AutoLevels	14	2	6		n8m1uf
-ADBE Box Blur2	15	0	6	thumbs/batch_015_%04d.png	e055s3
+CC Simple Wire Removal	6	1	6		fgqm10
+ADBE AutoColor	6	2	6		4o1gh7
+VISINF Grain Implant	7	0	6	thumbs/batch_007_%04d.png	8s5d3w
+CC Glass Wipe	7	1	6	thumbs/batch_007_%04d.png	503xq4
+CC Cylinder	7	2	6	thumbs/batch_007_%04d.png	8ex7jb
+CC Vector Blur	7	3	6	thumbs/batch_007_%04d.png	w0olbp
+CC Bend It	7	4	6	thumbs/batch_007_%04d.png	c0ffz7
