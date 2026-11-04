@@ -1335,6 +1335,60 @@ var AEV_Library = (function () {
   }
 
   /**
+   * 搜索框的展开/收起交互。
+   *
+   * 收起靠「点击 search-wrap 之外的地方」判定 —— 用 document 上的
+   * mousedown 监听 + contains 判断，比在 wrap 上挂 click 再看
+   * event.target 可靠得多：点图标时 target 是按钮、点输入框时 target
+   * 是 input，两个条件都不满足，收起逻辑永远不触发。
+   *
+   * 图标本身再点一次是「切换」：展开时收起，收起时展开。
+   */
+  function bindSearchToggle(toggleId, inputId, fieldId, wrapId) {
+    var toggle = byId(toggleId);
+    var input = byId(inputId);
+    var field = byId(fieldId);
+    var wrap = byId(wrapId);
+    if (!toggle || !input || !field || !wrap) return;
+
+    var isOpen = function () {
+      return !field.hidden;
+    };
+
+    toggle.addEventListener("click", function () {
+      if (isOpen()) {
+        setSearchOpen(false, inputId, fieldId, toggleId);
+      } else {
+        setSearchOpen(true, inputId, fieldId, toggleId);
+      }
+    });
+
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" || event.keyCode === 27) {
+        event.stopPropagation();
+        input.value = "";
+        if (inputId === "searchInput") {
+          state.query = "";
+          render();
+        } else {
+          state.presetQuery = "";
+          renderPresetList();
+        }
+        setSearchOpen(false, inputId, fieldId, toggleId);
+      }
+    });
+
+    // 点到包装之外就收起。用 mousedown 而不是 click：
+    // 点击时输入框可能已经失焦，且 mousedown 早于 blur，顺序更稳。
+    document.addEventListener("mousedown", function (event) {
+      if (!isOpen()) return;
+      var target = event.target;
+      if (target && wrap.contains && wrap.contains(target)) return;
+      setSearchOpen(false, inputId, fieldId, toggleId);
+    });
+  }
+
+  /**
    * 主视图切换：效果预览 / 预设预览。
    *
    * 两个视图同级，切换栏固定在面板最上方。
@@ -1365,23 +1419,7 @@ var AEV_Library = (function () {
       state.query = this.value;
       render();
     });
-    byId("searchToggle").addEventListener("click", function () {
-      setSearchOpen(true, "searchInput", "searchField", "searchToggle");
-    });
-    // 输入框里按 Esc 收起；输入框外点击也收起（点别处就不该占着位置）
-    byId("searchInput").addEventListener("keydown", function (event) {
-      if (event.key === "Escape" || event.keyCode === 27) {
-        this.value = "";
-        state.query = "";
-        render();
-        setSearchOpen(false, "searchInput", "searchField", "searchToggle");
-      }
-    });
-    byId("searchWrap").addEventListener("click", function (event) {
-      if (event.target === this) {
-        setSearchOpen(false, "searchInput", "searchField", "searchToggle");
-      }
-    });
+    bindSearchToggle("searchToggle", "searchInput", "searchField", "searchWrap");
     byId("pluginFilter").addEventListener("change", function () {
       state.plugin = this.value;
       render();
@@ -1417,22 +1455,12 @@ var AEV_Library = (function () {
       state.presetQuery = this.value;
       renderPresetList();
     });
-    byId("presetSearchToggle").addEventListener("click", function () {
-      setSearchOpen(true, "presetSearch", "presetSearchField", "presetSearchToggle");
-    });
-    byId("presetSearch").addEventListener("keydown", function (event) {
-      if (event.key === "Escape" || event.keyCode === 27) {
-        this.value = "";
-        state.presetQuery = "";
-        renderPresetList();
-        setSearchOpen(false, "presetSearch", "presetSearchField", "presetSearchToggle");
-      }
-    });
-    byId("presetSearchWrap").addEventListener("click", function (event) {
-      if (event.target === this) {
-        setSearchOpen(false, "presetSearch", "presetSearchField", "presetSearchToggle");
-      }
-    });
+    bindSearchToggle(
+      "presetSearchToggle",
+      "presetSearch",
+      "presetSearchField",
+      "presetSearchWrap"
+    );
     byId("thumbSize").addEventListener("input", function () {
       setThumbSize(this.value);
     });

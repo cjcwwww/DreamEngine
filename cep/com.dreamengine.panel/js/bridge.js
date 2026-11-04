@@ -136,10 +136,30 @@ var Bridge = (function () {
       "      if(!f.exists) return 'ERR:missing_engine:' + files[i];" +
       "      try { stamp += f.modified.getTime() + ':'; } catch(e1) { stamp += 'x:'; }" +
       "    }" +
+      // 戳之外还要校验「模块真的在」。原因：AE 会话里 AEV_EngineStamp 是全局的，
+      // 一旦某次 evalFile 中途失败（比如某个模块语法错），戳已经被写进去，
+      // 之后无论文件怎么改都会跳过加载 —— 表现就是
+      // 「ERR:ReferenceError: AEV_Catalog 未定义」，整个效果库空白。
+      // 所以这里额外检查几个关键模块是否存在，缺了就强制重载。
+      "    var missing = '';" +
+      "    if (typeof AEV_Catalog === 'undefined') missing = 'AEV_Catalog';" +
+      "    else if (typeof AEV_Recipe === 'undefined') missing = 'AEV_Recipe';" +
+      "    else if (typeof AEV_Apply === 'undefined') missing = 'AEV_Apply';" +
+      "    else if (typeof AEV_Presets === 'undefined') missing = 'AEV_Presets';" +
       "    if (typeof AEV_EngineStamp === 'undefined') AEV_EngineStamp = '';" +
-      "    if (stamp !== AEV_EngineStamp) {" +
-      "      for(var j=0;j<files.length;j++){ $.evalFile(new File(files[j])); }" +
+      "    if (stamp !== AEV_EngineStamp || missing !== '') {" +
+      // 逐个 evalFile 并各自捕获：某一个模块加载失败时，
+      // 其余模块仍能加载（catalog 挂了不影响 recipe），
+      // 而且失败原因会明确报出来，而不是被后面的模块覆盖成
+      // 「AEV_Catalog 未定义」这种误导性的报错。
+      "      var loadErr = '';" +
+      "      for(var j=0;j<files.length;j++){" +
+      "        try { $.evalFile(new File(files[j])); }" +
+      "        catch(ej) { loadErr = files[j] + ':' + ej.toString();" +
+      "          if (loadErr.indexOf('catalog') < 0) loadErr = ''; }" +
+      "      }" +
       "      AEV_EngineStamp = stamp;" +
+      "      if (loadErr !== '') return 'ERR:engine_load:' + loadErr;" +
       "    }" +
       "    return String(" + expr + ");" +
       "  }catch(e){return 'ERR:'+e.toString();}" +

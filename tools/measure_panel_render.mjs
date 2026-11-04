@@ -124,7 +124,32 @@ function finish() {
       result.cardsPlugin = countCards();
       result.pluginThumb = firstThumbInfo();
       result.pluginStats = String(document.getElementById("selectionStats").textContent);
-      document.getElementById("out").textContent = JSON.stringify(result);
+
+      /* --- 视图切换：预设视图里不能残留效果墙 --- */
+      document.getElementById("tabPresets").click();
+      setTimeout(function () {
+        var ve = document.getElementById("viewEffects");
+        var vp = document.getElementById("viewPresets");
+        result.viewEffectsHidden = ve ? ve.hidden : null;
+        result.viewPresetsHidden = vp ? vp.hidden : null;
+        // 关键：真的不可见，而不只是 hidden 属性为 true
+        // (.workspace 的 display:flex 会盖掉 [hidden] 的 display:none)
+        result.effectsVisible = ve ? ve.getBoundingClientRect().height > 0 : null;
+        result.presetsVisible = vp ? vp.getBoundingClientRect().height > 0 : null;
+        result.cardsInPresetView = countCards();
+        result.presetCards = document.querySelectorAll(".preset-card").length;
+
+        /* --- 搜索框：点图标展开、再点收起 --- */
+        var toggle = document.getElementById("searchToggle");
+        var field = document.getElementById("searchField");
+        result.searchHiddenInitially = field ? field.hidden : null;
+        toggle.click();
+        result.searchOpenAfterClick = field ? !field.hidden : null;
+        toggle.click();
+        result.searchHiddenAfterSecondClick = field ? field.hidden : null;
+
+        document.getElementById("out").textContent = JSON.stringify(result);
+      }, 500);
     }, 400);
     return;
   }
@@ -236,6 +261,25 @@ check("插件来源的切片是 1×1 单格", () => {
 check("来源下拉标出了各包的预览数量", () => {
   const bcc = (data.byPlugin || {}).BCC || "";
   assert.match(bcc, /\d/, "BCC 一项应带预览数量");
+});
+
+check("切到预设视图后效果墙真的不可见", () => {
+  assert.equal(data.viewEffectsHidden, true, "viewEffects 的 hidden 属性应为 true");
+  assert.equal(data.viewPresetsHidden, false, "viewPresets 应该显示");
+  // 关键断言：不能只是属性为 true，实际还占着位置
+  // （.workspace 的 display:flex 会盖掉 [hidden] 的 display:none）
+  assert.equal(data.effectsVisible, false, "效果视图仍在显示（hidden 被 CSS 盖掉了）");
+  assert.equal(data.presetsVisible, true, "预设视图没有显示");
+});
+
+check("预设视图里不残留效果卡片", () => {
+  assert.equal(data.cardsInPresetView, 0, `预设视图里还有 ${data.cardsInPresetView} 张效果卡片`);
+});
+
+check("搜索框点图标展开、再点收起", () => {
+  assert.equal(data.searchHiddenInitially, true, "初始应是收起的");
+  assert.equal(data.searchOpenAfterClick, true, "点一次图标应展开");
+  assert.equal(data.searchHiddenAfterSecondClick, true, "再点一次应收起");
 });
 
 console.log(`\n${failed === 0 ? "全部通过" : failed + " 项失败"}`);

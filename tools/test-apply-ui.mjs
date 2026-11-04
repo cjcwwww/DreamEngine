@@ -174,11 +174,25 @@ test("搜索框平时是图标，点一下才展开输入框", () => {
   assert.match(html, /id="searchInput"/);
   // 展开逻辑
   assert.match(lib, /function setSearchOpen\(/);
-  assert.match(lib, /byId\("searchToggle"\)\.addEventListener\("click"/);
+  assert.match(lib, /function bindSearchToggle\(/);
+  assert.match(lib, /bindSearchToggle\("searchToggle"/);
   // Esc 收起
   assert.match(lib, /keyCode === 27/);
   // 收起时输入框隐藏
   assert.match(css, /\.search-field\[hidden\]\s*\{\s*display: none/);
+});
+
+test("搜索框能收起：图标再点一次切换、点外部收起、Esc 收起", () => {
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  const code = codeOf(lib);
+  // 图标是「切换」而不是「只展开」——否则点第二次收不起来
+  assert.match(code, /if \(isOpen\(\)\) \{[\s\S]*?setSearchOpen\(false/);
+  // 点外部收起：监听在 document 上，用 contains 判断是否点在包装内。
+  // 旧写法（wrap 上挂 click 再看 event.target === this）永远不成立：
+  // 点图标时 target 是按钮、点输入框时 target 是 input，两个条件都不满足。
+  assert.match(code, /document\.addEventListener\("mousedown"/);
+  assert.match(code, /wrap\.contains\(target\)/);
+  assert.doesNotMatch(code, /event\.target === this/);
 });
 
 test("预设视图的搜索框也是图标形态", () => {
@@ -187,7 +201,49 @@ test("预设视图的搜索框也是图标形态", () => {
   assert.match(html, /id="presetSearchToggle"/);
   assert.match(html, /id="presetSearchField"[^>]*hidden/);
   assert.match(html, /id="presetSearch"/);
-  assert.match(lib, /byId\("presetSearchToggle"\)\.addEventListener\("click"/);
+  assert.match(lib, /bindSearchToggle\(\s*"presetSearchToggle"/);
+});
+
+/* ---------- 6. 引擎加载：AEV_Catalog 未定义的回归 ---------- */
+
+test("engine 加载失败时不会永久卡在坏状态", () => {
+  const bridge = read("cep/com.dreamengine.panel/js/bridge.js");
+  const code = codeOf(bridge);
+  // AEV_EngineStamp 是 AE 会话里的全局变量：一旦某次 evalFile 中途失败，
+  // 戳已经被写进去，之后文件怎么改都会跳过加载 —— 表现就是
+  // 「ERR:ReferenceError: AEV_Catalog 未定义」，整个效果库空白。
+  // 所以除了比对戳，还要校验关键模块是否真的在，缺了就强制重载。
+  assert.match(code, /typeof AEV_Catalog === 'undefined'/);
+  assert.match(code, /typeof AEV_Apply === 'undefined'/);
+  assert.match(code, /missing !== ''/);
+  // 逐个 evalFile 各自捕获：某一个模块挂了不影响其余模块，
+  // 且失败原因能明确报出来，而不是被后面的模块覆盖成误导性报错。
+  assert.match(code, /catch\(ej\)/);
+  assert.match(code, /ERR:engine_load:/);
+});
+
+test("视图隐藏不会被自身的 display 规则盖掉", () => {
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  // .workspace 自带 display:flex，特异性高于 [hidden] 的默认 display:none，
+  // 不显式写这条，隐藏的效果视图会一直显示 —— 预设视图里会露出整面效果墙。
+  assert.match(css, /\.workspace\[hidden\]\s*\{\s*display: none/);
+  assert.match(css, /\.preset-view\[hidden\]\s*\{\s*display: none/);
+});
+
+test("效果墙与预设视图的 DOM 完全分离", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const effectsAt = html.indexOf('id="viewEffects"');
+  const presetsAt = html.indexOf('id="viewPresets"');
+  assert.ok(effectsAt > 0 && presetsAt > effectsAt, "两个视图节点顺序不对");
+  const effectsRegion = html.slice(effectsAt, presetsAt);
+  // 效果相关的东西必须都在效果视图里
+  assert.match(effectsRegion, /id="previewGrid"/);
+  assert.match(effectsRegion, /id="categoryList"/);
+  // 预设视图里不能有效果相关的东西
+  const presetsRegion = html.slice(presetsAt);
+  assert.doesNotMatch(presetsRegion, /id="previewGrid"/);
+  assert.doesNotMatch(presetsRegion, /id="categoryList"/);
+  assert.match(presetsRegion, /id="presetList"/);
 });
 
 test("mark_animated 工具按帧字节比对判定静态，且写独立索引", () => {

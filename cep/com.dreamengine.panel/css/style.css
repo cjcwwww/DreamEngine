@@ -412,6 +412,13 @@ select {
   gap: 16px;
 }
 
+/* 视图切换：.workspace 自己的 display:flex 会盖掉 [hidden] 的默认
+   display:none（属性选择器的特异性低于类选择器），不显式写这条，
+   隐藏的效果视图就会一直显示 —— 预设视图里会露出整面效果墙。 */
+.workspace[hidden] {
+  display: none;
+}
+
 .sidebar {
   /* 侧栏宽度随可用空间收缩：面板拖得很窄时（AE 面板可以任意拖窄），
      固定 168px 会把主区挤到 0，预览墙直接消失。
