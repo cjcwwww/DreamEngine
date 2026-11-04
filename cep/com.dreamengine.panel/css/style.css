@@ -267,6 +267,23 @@ main {
   background: var(--surface-2);
 }
 
+/* 预览过期：图还在但配方/素材变了。用角标而不是隐藏，
+   否则用户会以为自己的效果库突然变空。 */
+.effect-card.stale {
+  border-style: dashed;
+}
+
+.effect-card.stale .thumb::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e0a33a;
+}
+
 .thumb {
   position: relative;
   width: 100%;

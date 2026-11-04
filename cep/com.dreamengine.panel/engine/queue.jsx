@@ -139,8 +139,36 @@ var AEV_Queue = (function () {
         return "{\"marked\":" + marked + "}";
     }
 
-    function countBy(status) {
+    /** 把「有图但已过期」的条目重新打开成 pending。
+     *  与 retryFailed 的区别：这些条目是 cached，不是 failed——配方改了、
+     *  素材换版本了，旧图不再代表当前配方，需要重渲但不算失败。
+     */
+    function reopen(matchNames) {
+        if (!matchNames || matchNames.length === 0) return "{\"reopened\":0}";
         var queue = load();
+        var reopened = 0;
+        for (var i = 0; i < matchNames.length; i++) {
+            var name = matchNames[i];
+            if (!name) continue;
+            var row = queue.byName[name];
+            if (!row) {
+                row = emptyRow(name);
+                queue.rows.push(row);
+                queue.byName[name] = row;
+                reopened++;
+                continue;
+            }
+            if (row.status !== "pending") {
+                setStatus(queue, name, "pending", "stale");
+                row.attempts = 0;
+                reopened++;
+            }
+        }
+        if (reopened > 0) save(queue);
+        return "{\"reopened\":" + reopened + "}";
+    }
+
+    function countBy(status) {        var queue = load();
         var count = 0;
         for (var i = 0; i < queue.rows.length; i++) {
             if (queue.rows[i].status === status) count++;
@@ -173,8 +201,7 @@ var AEV_Queue = (function () {
     }
 
     /** 失败条目重新排队 */
-    function retryFailed() {
-        var queue = load();
+    function retryFailed() {        var queue = load();
         var reset = 0;
         for (var i = 0; i < queue.rows.length; i++) {
             if (queue.rows[i].status === "failed") {
@@ -290,6 +317,7 @@ var AEV_Queue = (function () {
         save: save,
         ensure: ensure,
         markCached: markCached,
+        reopen: reopen,
         countBy: countBy,
         stats: stats,
         nextPending: nextPending,

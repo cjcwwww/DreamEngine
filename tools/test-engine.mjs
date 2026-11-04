@@ -159,20 +159,24 @@ test("配方覆盖常用内置效果，每条都带参数名与值", () => {
   const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
   const recipes = ctx.AEV_Recipe.recipes;
   const keys = Object.keys(recipes);
-  assert.ok(keys.length >= 20, `配方数量应 ≥ 20，实际 ${keys.length}`);
+  assert.ok(keys.length >= 45, `配方数量应 ≥ 45，实际 ${keys.length}`);
   for (const key of keys) {
     const steps = recipes[key];
     assert.ok(Array.isArray(steps) && steps.length > 0, `${key} 配方为空`);
     for (const step of steps) {
       assert.ok(step.names && step.names.length >= 1, `${key} 缺参数名`);
       assert.notEqual(step.value, undefined, `${key} 缺参数值`);
-      // 中文界面的参数名是中文，所以每条都必须带中英双名才跨语言可用
-      assert.ok(
-        step.names.some((n) => /[\u4e00-\u9fa5]/.test(n)) || /^(Amount|Size|Burn)$/.test(step.names[0]),
-        `${key} 的参数名既没有中文也没有已知英文名`,
-      );
+      for (const name of step.names) {
+        assert.equal(typeof name, "string");
+        assert.ok(name.length > 0, `${key} 有空白参数名`);
+      }
     }
   }
+
+  // 参数名必须与本机真实名字一致：
+  //   ADBE 内置效果在中文界面下返回中文，CC 系列是第三方插件风格、始终返回英文。
+  assert.ok(recipes["ADBE Gaussian Blur 2"][0].names.includes("模糊度"));
+  assert.ok(recipes["CC Radial Blur"][0].names.includes("Amount"));
 });
 
 test("previewgen 用合成帧率换算渲染时长，不用面板播放帧率", () => {
@@ -370,6 +374,78 @@ test("recipe 按效果类型推断场景，文本类落 text", () => {
   assert.equal(recipe.sceneFor("Anything", "表达式控制"), "no-preview");
 });
 
+test("两层输入类效果单独识别，不能落到 footage-2d", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+  // 这些效果在单层合成里「加上了但画面不变」，必须补第二图层
+  for (const matchName of [
+    "ADBE Displacement Map",
+    "ADBE Compound Blur",
+    "ADBE Set Matte3",
+    "ADBE Calculations",
+    "CC Composite",
+    "CC Vector Blur",
+    "ADBE Gradient Wipe",
+  ]) {
+    assert.equal(recipe.sceneFor(matchName), "two-layer-input", `${matchName} 应判为两层输入`);
+  }
+  // 只生成部分内容、留白要露出下层画面的
+  for (const matchName of ["ADBE Fill", "ADBE Ramp", "ADBE 4ColorGradient", "ADBE Scribble Fill"]) {
+    assert.equal(recipe.sceneFor(matchName), "adjustment", `${matchName} 应判为调整层`);
+  }
+});
+
+test("场景布局描述准确：两层输入要背景+图案，调整层只要背景", () => {
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
+  const recipe = ctx.AEV_Recipe;
+
+  const two = recipe.layoutFor("two-layer-input");
+  assert.equal(two.needBg, true);
+  assert.equal(two.needSource, true);
+  assert.equal(two.base, "photo");
+
+  const adj = recipe.layoutFor("adjustment");
+  assert.equal(adj.needBg, true);
+  assert.equal(adj.needSource, false);
+
+  const plain = recipe.layoutFor("footage-2d");
+  assert.equal(plain.needBg, false);
+  assert.equal(plain.needSource, false);
+
+  // 未知场景必须退化成最保守的单层布局，不能返回 undefined
+  const unknown = recipe.layoutFor("no-such-scene");
+  assert.equal(unknown.base, "photo");
+  assert.equal(unknown.needBg, false);
+});
+
+test("bindLayers 只碰图层选择器，不动其它参数", () => {
+  const types = { LAYER_INDEX: 6413, OneD: 6410, COLOR: 6411, CHECKBOX: 6416, TWO_D: 6412 };
+  const ctx = loadModules([`${ENGINE}/recipe.jsx`], { PropertyValueType: types });
+  const recipe = ctx.AEV_Recipe;
+
+  const touched = [];
+  function prop(name, type) {
+    return {
+      name,
+      propertyValueType: type,
+      numProperties: 0,
+      setValue: (v) => touched.push(name + "=" + v),
+    };
+  }
+  const group = {
+    numProperties: 2,
+    property: (i) =>
+      [
+        prop("置换图层", types.LAYER_INDEX),
+        prop("最大水平置换", types.OneD),
+      ][i - 1],
+  };
+
+  const bound = recipe.bindLayers(group, 2);
+  assert.equal(bound, 1, "只应绑定 1 个图层选择器");
+  assert.deepEqual(touched, ["置换图层=2"]);
+});
+
 test("recipe 场景到素材类型映射完整", () => {
   const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
   const recipe = ctx.AEV_Recipe;
@@ -385,26 +461,105 @@ test("recipe 场景到素材类型映射完整", () => {
 test("缓存指纹随配方版本与素材版本变化，且不包含 AE 版本", () => {
   const ctx = loadModules([`${ENGINE}/recipe.jsx`]);
   const recipe = ctx.AEV_Recipe;
-  const a = recipe.cacheKey("ADBE Glo2", "photo-v2", 256, 6);
-  const b = recipe.cacheKey("ADBE Glo2", "photo-v2", 256, 6);
-  const c = recipe.cacheKey("ADBE Glo2", "photo-v2", 256, 12);
-  const d = recipe.cacheKey("ADBE Glo2", "photo-v3", 256, 6);
+  const a = recipe.cacheKey("ADBE Glo2", "photo-v3", 256, 6);
+  const b = recipe.cacheKey("ADBE Glo2", "photo-v3", 256, 6);
+  const c = recipe.cacheKey("ADBE Glo2", "photo-v3", 256, 12);
+  const d = recipe.cacheKey("ADBE Glo2", "photo-v4", 256, 6);
   assert.equal(a, b, "同输入必须同指纹");
   assert.notEqual(a, c, "帧数变化要换指纹");
   assert.notEqual(a, d, "素材版本变化要换指纹");
   assert.match(a, /^[0-9a-z]+$/);
 });
 
+/** 只读文件系统的 mock，用于在 node 里跑 previewgen.staleList */
+function makeReadFs(text) {
+  class FileMock {
+    constructor(p) {
+      this.path = p;
+      this.exists = true;
+      this.encoding = "";
+      this._lines = text.split(/\r?\n/);
+      this._cursor = 0;
+    }
+    get fsName() {
+      return this.path;
+    }
+    open() {
+      return true;
+    }
+    get eof() {
+      return this._cursor >= this._lines.length;
+    }
+    readln() {
+      const line = this._lines[this._cursor];
+      this._cursor++;
+      return line;
+    }
+    close() {}
+  }
+  return FileMock;
+}
+
+test("staleList 用指纹判定过期，无指纹的旧条目视为有效", () => {
+  const header = "matchName\tsheet\tcell\tframes\tframeTemplate\tkey";
+  // 先算出一条「当前配方下仍然有效」的真指纹
+  const seed = loadModules([
+    `${ENGINE}/render_config.jsx`,
+    `${ENGINE}/recipe.jsx`,
+    `${ENGINE}/previewgen.jsx`,
+  ]);
+  const goodKey = seed.AEV_PreviewGen.itemKey("CC Lens", 256, 6);
+  assert.ok(goodKey && goodKey.length > 0, "指纹不应为空");
+
+  const tsv = [
+    header,
+    `CC Lens\t1\t0\t6\tthumbs/batch_001_%04d.png\t${goodKey}`,
+    "ADBE Glo2\t1\t1\t6\tthumbs/batch_001_%04d.png\tdeadbeef",
+    "ADBE Twirl\t1\t2\t6\tthumbs/batch_001_%04d.png\t",
+  ].join("\n");
+
+  const ctx = loadModules(
+    [`${ENGINE}/render_config.jsx`, `${ENGINE}/recipe.jsx`, `${ENGINE}/previewgen.jsx`],
+    { File: makeReadFs(tsv) },
+  );
+  const report = JSON.parse(ctx.AEV_PreviewGen.staleList("X:/ext"));
+  assert.equal(report.checked, 3);
+  assert.deepEqual(report.stale, ["ADBE Glo2"], "只应把指纹对不上的那条判为过期");
+});
+
+test("writeManifest 同步写 previews.tsv，供 AE 侧校验缓存", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  // ExtendScript 没有 JSON.parse，校验只能在 AE 侧读 TSV 做
+  assert.match(code, /data\/previews\.tsv/);
+  assert.match(code, /indexRows/);
+  assert.match(code, /function itemKey/);
+  assert.match(code, /function staleList/);
+});
+
 /* ---------- assets / catalog 静态契约 ---------- */
 
-test("assets 按类型生成四套素材并复用缓存", () => {
+test("assets 按类型生成五套素材并复用缓存", () => {
   const code = stripComments(read(`${ENGINE}/assets.jsx`));
-  assert.match(code, /var VERSION = "photo-v2";/);
+  assert.match(code, /var VERSION = "photo-v3";/);
   assert.match(code, /function buildPhoto/);
   assert.match(code, /function buildText/);
   assert.match(code, /function buildSolid/);
   assert.match(code, /function buildShape/);
+  // 两层输入类效果需要高对比图案当第二输入
+  assert.match(code, /function buildPattern/);
+  assert.match(code, /resolvedKind === "pattern"/);
   assert.match(code, /cache\[key\(kind, size\)\] = \{ item: comp \};/);
+});
+
+test("两层输入场景会真的搭出两层：图案层 + 效果层", () => {
+  const code = stripComments(read(`${ENGINE}/previewgen.jsx`));
+  // 顺序必须是「背景 → 图案 → 效果层」，AE 里后加的在上面，
+  // 于是效果层在第 1 层、图案层在第 2 层，图层选择器绑 2 才有意义。
+  assert.match(code, /layout = AEV_Recipe\.layoutFor\(AEV_Recipe\.sceneFor\(matchName\)\)/);
+  assert.match(code, /if \(layout\.needBg\) \{/);
+  assert.match(code, /if \(layout\.needSource\) \{/);
+  assert.match(code, /cell\.layers\.add\(sceneOf\("pattern"\)\)/);
+  assert.match(code, /AEV_Recipe\.bindLayers\(effectGroup, 2\)/);
 });
 
 test("catalog 参数树带深度与数量上限，且用完即删", () => {
@@ -439,6 +594,16 @@ test("queue 的 drain 一次只渲一张网并返回本批名单", () => {
   assert.match(source, /namesJson\.join\(","\)/);
   assert.match(source, /\\"names\\":\[/);
   assert.match(source, /renderBatch\(batch, sheetIndex, options\)/);
+});
+
+test("queue 能重新打开过期条目，且与失败重试区分开", () => {
+  const source = read(`${ENGINE}/queue.jsx`);
+  // 过期 ≠ 失败：配方改了不是渲染出错，重开时 attempts 要归零、不记 reason 为错误
+  assert.match(source, /function reopen/);
+  assert.match(source, /setStatus\(queue, name, "pending", "stale"\)/);
+  assert.match(source, /reopen: reopen,/);
+  // 仍然保留 retryFailed 的语义
+  assert.match(source, /function retryFailed/);
 });
 
 /* ---------- 7. 面板侧 ---------- */
@@ -502,6 +667,36 @@ test("面板对多帧预览按帧序列取图，而不是依赖 sprite 的 sheet
   assert.match(library, /frameSrc/);
   assert.match(library, /replace\("%04d", zeroPad\(index, 4\)\)/);
   assert.match(library, /setInterval/);
+});
+
+test("面板把过期预览排进生成队列，而不是当成已缓存", () => {
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(library, /AEV_PreviewGen\.staleList/);
+  assert.match(library, /AEV_Queue\.reopen/);
+  // 候选过滤：有图但过期 → 仍然算候选
+  assert.match(library, /state\.previews\[effect\.matchName\] && !state\.stale\[effect\.matchName\]/);
+  // 已有且不过期的才标 cached
+  assert.match(library, /if \(state\.stale\[key\]\) staleNames\.push\(key\);/);
+});
+
+test("viewmodel 给过期条目打标记，图仍然照常显示", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const effect = { matchName: "ADBE Glo2", displayName: "Glow", category: "风格化" };
+  const preview = { matchName: "ADBE Glo2", src: "thumbs/batch_000.png", x: 0, y: 0 };
+  const stale = { "ADBE Glo2": true };
+
+  const item = view.buildItem(effect, {}, { "ADBE Glo2": preview }, stale);
+  assert.equal(item.hasPreview, true, "过期也要继续显示旧图");
+  assert.equal(item.stale, true);
+
+  const fresh = view.buildItem(effect, {}, { "ADBE Glo2": preview }, {});
+  assert.equal(fresh.stale, false);
+
+  // 没有预览时谈不上过期
+  const missing = view.buildItem(effect, {}, {}, stale);
+  assert.equal(missing.hasPreview, false);
+  assert.equal(missing.stale, false);
 });
 
 /* ---------- 运行 ---------- */

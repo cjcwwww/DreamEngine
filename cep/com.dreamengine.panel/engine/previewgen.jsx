@@ -201,12 +201,22 @@ var AEV_PreviewGen = (function () {
                     cellSize, cellSize, 1, durationSeconds, CELL_FPS
                 );
 
-                // 场景按效果类型选：文本类必须落在文本层，否则 applyPreset 与文本效果都会静默失效
-                var assetKind = "photo";
+                // 场景决定临时合成怎么搭（设计文档 §4.3 的八类枚举）：
+                //   文本类必须落在文本层，否则文本效果静默失效；
+                //   两层输入类必须在下面垫背景 + 高对比图案，否则效果加上了但画面不变。
+                // AE 里图层 1 在最上面，后 add 的盖在前面，所以按「背景 → 图案 → 效果层」
+                // 的顺序添加，就得到 [effect, pattern, bg] 这个目标叠层。
+                var layout = { base: "photo", needBg: false, needSource: false };
                 if (typeof AEV_Recipe !== "undefined") {
-                    assetKind = AEV_Recipe.assetKindFor(AEV_Recipe.sceneFor(matchName));
+                    layout = AEV_Recipe.layoutFor(AEV_Recipe.sceneFor(matchName));
                 }
-                var layer = cell.layers.add(sceneOf(assetKind));
+                if (layout.needBg) {
+                    cell.layers.add(sceneOf("photo"));
+                }
+                if (layout.needSource) {
+                    cell.layers.add(sceneOf("pattern"));
+                }
+                var layer = cell.layers.add(sceneOf(layout.base));
 
                 // 逐格独立保护：addProperty 与配方各自捕获。
                 // 这样"效果加不上"或"参数设不上"能定位到具体 matchName，
@@ -222,6 +232,11 @@ var AEV_PreviewGen = (function () {
                 try {
                     if (typeof AEV_Recipe !== "undefined") {
                         AEV_Recipe.apply(effectGroup, matchName, cellSize);
+                        // 两层输入类：把「图层」选择器接到第 2 层（图案层），
+                        // 默认值是「无」，不接的话效果等于没加。
+                        if (layout.needSource) {
+                            AEV_Recipe.bindLayers(effectGroup, 2);
+                        }
                     }
                 } catch (eRecipe) {
                     cellErrors.push(matchName + "|recipe|" + eRecipe);
@@ -306,6 +321,20 @@ var AEV_PreviewGen = (function () {
     }
 
     /**
+     * 单条预览的缓存指纹（设计文档 §4.5）。
+     * 参与因子：matchName + 配方版本 + 素材类型与素材版本 + 格子尺寸 + 帧数。
+     * AE 版本号刻意不参与——否则每次升级 AE 都要全量重渲。
+     *
+     * 素材指纹带上 kind：photo 与 pattern 用同一张网时，换素材不会误判命中。
+     */
+    function itemKey(matchName, cellSize, frames) {
+        if (typeof AEV_Recipe === "undefined") return "";
+        var kind = AEV_Recipe.assetKindFor(AEV_Recipe.sceneFor(matchName));
+        var assetVersion = (typeof AEV_Assets !== "undefined") ? AEV_Assets.fingerprint() : "na";
+        return AEV_Recipe.cacheKey(matchName, kind + "@" + assetVersion, cellSize, frames);
+    }
+
+    /**
      * 重写 manifest.json。
      *
      * 为什么由 jsx 来写：CEP 侧没有文件写能力（只有 XHR 读），而 manifest 必须
@@ -315,6 +344,10 @@ var AEV_PreviewGen = (function () {
      * entriesTsv 每行 5 列：
      *   matchName \t sheet \t cell \t frames \t frameTemplate
      * frameTemplate 为空表示单文件预览（src = thumbs/batch_XXX.png）
+     *
+     * 同时把同样的条目写一份 data/previews.tsv（多带 cacheKey 一列）：
+     * json 给 CEF 读，tsv 给 ExtendScript 读——ExtendScript 没有 JSON.parse，
+     * 校验缓存是否过期必须在 AE 侧做，所以需要这份可被 split 的副本。
      */
     function writeManifest(entriesTsv, extensionPath) {
         var conf = config();
@@ -354,20 +387,31 @@ var AEV_PreviewGen = (function () {
         var items = [];
         var sheetsSeen = {};
         var sheets = [];
+        var indexRows = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
         for (var r = 0; r < rows.length; r++) {
             var row = rows[r];
             var fileName = "batch_" + pad(row.sheet, 3) + ".png";
             var src = row.frameTemplate ? "" : ("thumbs/" + fileName);
             var frameSrc = row.frameTemplate || "";
+            var key = itemKey(row.matchName, cellSize, row.frames);
             var parts2 = ['"matchName":' + jsonText(row.matchName)];
             parts2.push('"sheet":' + row.sheet);
             parts2.push('"x":' + ((row.cell % columns) * cellSize));
             parts2.push('"y":' + (Math.floor(row.cell / columns) * cellSize));
             parts2.push('"width":' + cellSize + ',"height":' + cellSize);
             parts2.push('"frames":' + row.frames);
+            if (key) parts2.push('"key":' + jsonText(key));
             if (src) parts2.push('"src":' + jsonText(src));
             if (frameSrc) parts2.push('"frameSrc":' + jsonText(frameSrc));
             items.push("{" + parts2.join(",") + "}");
+            indexRows.push([
+                row.matchName.replace(/\t/g, " "),
+                String(row.sheet),
+                String(row.cell),
+                String(row.frames),
+                row.frameTemplate,
+                key
+            ].join("\t"));
 
             if (!sheetsSeen[String(row.sheet)]) {
                 sheetsSeen[String(row.sheet)] = true;
@@ -393,7 +437,57 @@ var AEV_PreviewGen = (function () {
         }
         target.write(manifest);
         target.close();
+
+        var indexFile = new File(String(extensionPath) + "/data/previews.tsv");
+        indexFile.encoding = "UTF-8";
+        if (indexFile.open("w")) {
+            indexFile.write(indexRows.join("\r\n"));
+            indexFile.close();
+        }
+
         return result("ok", [["items", String(items.length)], ["path", target.fsName]]);
+    }
+
+    /**
+     * 校验缓存：把 previews.tsv 里每条的指纹与当前配方/素材/尺寸重算的结果对比。
+     * 返回 {"checked":N,"stale":["matchName",...]}。
+     *
+     * 这是「改了配方或换素材后旧图自动失效」的实现点。没有指纹的旧条目
+     * （key 列为空）视为有效——它们是在引入指纹之前渲的，不该被一次性清空。
+     */
+    function staleList(extensionPath) {
+        var conf = config();
+        var cellSize = conf.contactSheet.cellSize;
+        var file = new File(String(extensionPath) + "/data/previews.tsv");
+        var stale = [];
+        var checked = 0;
+        if (!file.exists) {
+            return "{\"checked\":0,\"stale\":[]}";
+        }
+        file.encoding = "UTF-8";
+        if (!file.open("r")) {
+            return "{\"checked\":0,\"stale\":[]}";
+        }
+        var first = true;
+        while (!file.eof) {
+            var line = file.readln();
+            if (first) { first = false; continue; }   // 表头
+            if (!line || line.length === 0) continue;
+            var parts = line.split("\t");
+            if (parts.length < 6) continue;
+            var matchName = parts[0];
+            var frames = parseInt(parts[3], 10) || 1;
+            var storedKey = parts[5];
+            checked++;
+            if (!storedKey) continue;
+            var currentKey = itemKey(matchName, cellSize, frames);
+            if (currentKey && currentKey !== storedKey) stale.push(matchName);
+        }
+        file.close();
+
+        var quoted = [];
+        for (var i = 0; i < stale.length; i++) quoted.push(jsonText(stale[i]));
+        return "{\"checked\":" + checked + ",\"stale\":[" + quoted.join(",") + "]}";
     }
 
     return {
@@ -401,8 +495,10 @@ var AEV_PreviewGen = (function () {
         plan: plan,
         pngTemplate: pngTemplate,
         buildScene: buildScene,
+        itemKey: itemKey,
         renderBatch: renderBatch,
         renderOne: renderOne,
-        writeManifest: writeManifest
+        writeManifest: writeManifest,
+        staleList: staleList
     };
 })();

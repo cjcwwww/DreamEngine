@@ -18,7 +18,7 @@ var AEV_Recipe = (function () {
     var MAX_DEPTH = 3;
     var PRESENTATION_TIME_RATIO = 0.5;
     /** 配方版本：改配方语义时 +1，所有缓存随之失效 */
-    var RECIPE_VERSION = 4;
+    var RECIPE_VERSION = 5;
 
     /** 表达式控件族与音频族的分类名（中英文都要认，汉化版分类名是中文） */
     var NO_PREVIEW_CATEGORIES = [
@@ -86,7 +86,105 @@ var AEV_Recipe = (function () {
         "CC Radial Fast Blur": [{ names: ["Amount", "数量"], value: 60 }],
         "CC Lens": [{ names: ["Size", "大小"], value: 145 }],
         "CC Bender": [{ names: ["Amount", "数量"], value: 60 }],
-        "CC Burn Film": [{ names: ["Burn", "燃烧"], value: 50 }]
+        "CC Burn Film": [{ names: ["Burn", "燃烧"], value: 50 }],
+
+        // ---- 第二批：CC 系列（参数名由 dump_param_trees 第二批实测导出）----
+        // 注意：CC 是第三方插件风格，即使中文界面，参数名仍是英文。
+        "CC Radial Blur": [
+            { names: ["Amount"], value: 45 },
+            { names: ["Type"], value: 2 }
+        ],
+        "CC Vector Blur": [{ names: ["Amount"], value: 160 }],
+        "CC Color Offset": [
+            { names: ["Red Phase"], value: 80 },
+            { names: ["Blue Phase"], value: -60 }
+        ],
+        "CC Toner": [{ names: ["Blend w. Original"], value: 0 }],
+        "CC Overbrights": [{ names: ["Channel"], value: 1 }],
+        "CC Threshold": [
+            { names: ["Blend w. Original"], value: 0 },
+            { names: ["Threshold"], value: 0.45 }
+        ],
+        "CC Threshold RGB": [
+            { names: ["Red Threshold"], value: 0.55 },
+            { names: ["Green Threshold"], value: 0.42 },
+            { names: ["Blue Threshold"], value: 0.3 }
+        ],
+        "CC Kaleida": [
+            { names: ["Size"], value: 130 },
+            { names: ["Mirroring"], value: 3 }
+        ],
+        "CC Glass": [
+            { names: ["Height"], value: 60 },
+            { names: ["Displacement"], value: 60 }
+        ],
+        "CC Plastic": [{ names: ["Height"], value: 60 }],
+        "CC RepeTile": [
+            { names: ["Expand Right"], value: 140 },
+            { names: ["Expand Down"], value: 140 }
+        ],
+        "CC Bend It": [{ names: ["Bend"], value: 90 }],
+        "CC Blobbylize": [{ names: ["Softness"], value: 60 }],
+        "CC Flo Motion": [{ names: ["Amount 1"], value: 320 }],
+        "CC Griddler": [
+            { names: ["Horizontal Scale"], value: 700 },
+            { names: ["Vertical Scale"], value: 700 },
+            { names: ["Tile Size"], value: 30 }
+        ],
+        "CC Slant": [{ names: ["Slant"], value: 70 }],
+        "CC Split": [{ names: ["Split"], value: 90 }],
+        "CC Tiler": [{ names: ["Scale"], value: 0.35 }],
+        "CC Light Burst 2.5": [
+            { names: ["Intensity"], value: 140 },
+            { names: ["Ray Length"], value: 160 }
+        ],
+        "CC Light Rays": [
+            { names: ["Intensity"], value: 130 },
+            { names: ["Radius"], value: 240 }
+        ],
+        "CC Light Sweep": [
+            { names: ["Width"], value: 280 },
+            { names: ["Sweep Intensity"], value: 130 }
+        ],
+        "CC Scale Wipe": [{ names: ["Stretch"], value: 70 }],
+        "CC Grid Wipe": [
+            { names: ["Completion"], value: 0.5 },
+            { names: ["Tiles"], value: 6 }
+        ],
+        "CC Star Burst": [{ names: ["Scatter"], value: 180 }],
+        "CC Scatterize": [{ names: ["Scatter"], value: 120 }],
+        "CC Cylinder": [{ names: ["Radius (%)"], value: 70 }],
+        "CC Sphere": [{ names: ["Radius"], value: 140 }],
+        "CC Glue Gun": [
+            { names: ["Stroke Width"], value: 40 },
+            { names: ["Density"], value: 60 }
+        ],
+        "CC Page Turn": [{ names: ["Fold Radius"], value: 60 }],
+
+        // ---- 两层输入 / 调整层（新场景）----
+        "ADBE Displacement Map": [
+            { names: ["最大水平置换"], value: 90 },
+            { names: ["最大垂直置换"], value: 90 }
+        ],
+        "ADBE Compound Blur": [{ names: ["最大模糊"], value: 45 }],
+        "ADBE Set Matte3": [{ names: ["用于遮罩"], value: 4 }],
+        "ADBE Fill": [
+            { names: ["颜色"], value: [0.16, 0.52, 0.82] },
+            { names: ["不透明度"], value: 0.55 }
+        ],
+        "ADBE Ramp": [
+            { names: ["起始颜色"], value: [0.08, 0.18, 0.42] },
+            { names: ["结束颜色"], value: [0.95, 0.55, 0.2] }
+        ],
+        "ADBE Gradient Wipe": [
+            { names: ["过渡完成"], value: 0.5 },
+            { names: ["过渡柔和度"], value: 0.3 }
+        ],
+        "ADBE 4ColorGradient": [
+            { names: ["不透明度"], value: 70 },
+            { names: ["颜色 1"], value: [0.1, 0.3, 0.6] },
+            { names: ["颜色 2"], value: [0.9, 0.4, 0.2] }
+        ]
     };
 
     function lower(value) {
@@ -102,6 +200,22 @@ var AEV_Recipe = (function () {
         return false;
     }
 
+    /** 必须有第二图层才成立的效果（置换图 / 复合模糊 / 设置遮罩 / 图层输入类）。
+     *  名单来自本机实测：这些效果在单层合成里"加上了但画面不变"。
+     */
+    var TWO_LAYER_PATTERNS = [
+        "displacement map", "compound blur", "set matte",
+        "calculations", "compound arithmetic", "arithmetic",
+        "time displacement", "gradient wipe",
+        "cc composite", "cc vector blur", "cc mr. smoothie",
+        "cc image wipe", "cc warpomatic"
+    ];
+
+    /** 需要下层背景的效果：自身只生成部分内容，留白处要露出下面的画面 */
+    var ADJUSTMENT_PATTERNS = [
+        "adbe fill", "adbe ramp", "4colorgradient", "scribble fill", "eyedropper fill"
+    ];
+
     /**
      * 推断场景类型（设计文档 §4.3 的八类枚举）。
      * 只靠 matchName 与可选 category 判断——previewgen 手里只有 matchName，
@@ -115,18 +229,48 @@ var AEV_Recipe = (function () {
         if (cat === "text" || cat === "文本") return "text";
         if (/(^|\W)(text|numbers|typewriter|word)/.test(mn)) return "text";
         if (cat === "3d channel" || cat === "3d 通道") return "3d-camera";
+
+        // 两层输入要排在别的规则前面：这些效果单层时完全看不出变化
+        for (var i = 0; i < TWO_LAYER_PATTERNS.length; i++) {
+            if (mn.indexOf(TWO_LAYER_PATTERNS[i]) >= 0) return "two-layer-input";
+        }
+        for (var j = 0; j < ADJUSTMENT_PATTERNS.length; j++) {
+            if (mn.indexOf(ADJUSTMENT_PATTERNS[j]) >= 0) return "adjustment";
+        }
+
         if (/stroke|trace|outline|wireframe/.test(mn)) return "shape-mask";
-        if (/solid|background|ramp|gradient/.test(mn)) return "solid-2d";
+        if (/solid|background/.test(mn)) return "solid-2d";
         return "footage-2d";
     }
 
-    /** 场景类型 → 标准素材类型（assets.jsx 的 kind） */
+    /**
+     * 场景 → 临时合成的搭法。
+     *   base       效果作用的那一层用哪种素材
+     *   needBg     下面垫一层背景（调整层类：留白处要露出下面的画面）
+     *   needSource 再插一层高对比图案当第二输入（两层输入类）
+     *
+     * 图层顺序（AE 里 1 是最上）：[effect(base), pattern, bg]
+     * 所以第二输入一律绑定到第 2 层。
+     */
+    var LAYOUTS = {
+        "footage-2d": { base: "photo", needBg: false, needSource: false },
+        "solid-2d": { base: "solid", needBg: false, needSource: false },
+        "text": { base: "text", needBg: false, needSource: false },
+        "shape-mask": { base: "shape", needBg: false, needSource: false },
+        "adjustment": { base: "photo", needBg: true, needSource: false },
+        "two-layer-input": { base: "photo", needBg: true, needSource: true },
+        "3d-camera": { base: "photo", needBg: false, needSource: false }
+    };
+
+    function layoutFor(scene) {
+        var layout = LAYOUTS[scene];
+        if (!layout) return { base: "photo", needBg: false, needSource: false };
+        return { base: layout.base, needBg: layout.needBg, needSource: layout.needSource };
+    }
+
+    /** 场景类型 → 标准素材类型（assets.jsx 的 kind），保留给只需要素材类型的调用方 */
     function assetKindFor(scene) {
-        if (scene === "text") return "text";
-        if (scene === "solid-2d") return "solid";
-        if (scene === "shape-mask") return "shape";
-        // footage-2d / adjustment / two-layer-input / 3d-camera 先用复合画面顶上
-        return "photo";
+        return layoutFor(scene).base;
     }
 
     /** djb2 短哈希，用于缓存键 */
@@ -309,11 +453,73 @@ var AEV_Recipe = (function () {
         return { mode: heuristicWrites > 0 ? "heuristic" : "none", writes: heuristicWrites };
     }
 
+    function isLayerIndexProp(prop) {
+        try {
+            return String(prop.propertyValueType) === String(PropertyValueType.LAYER_INDEX);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * 把效果里的「图层」选择器绑到指定图层序号。
+     *
+     * 为什么需要：置换图、复合模糊、设置遮罩这类两层输入效果，图层选择器默认是
+     * 「无」，即使临时合成里摆了两层也不会自己接上，画面就完全没有变化。
+     * 这一步在配方之后执行，只碰 LAYER_INDEX 类型的属性，其它一概不理。
+     *
+     * 返回实际绑定的属性个数。
+     */
+    function bindLayers(effectGroup, layerIndex) {
+        var bound = 0;
+        var index = layerIndex || 2;
+
+        function walk(group, depth) {
+            if (depth > 2) return;
+            var count = 0;
+            try {
+                count = group.numProperties;
+            } catch (e) {
+                return;
+            }
+            for (var i = 1; i <= count; i++) {
+                var prop = null;
+                try {
+                    prop = group.property(i);
+                } catch (e2) {
+                    continue;
+                }
+                if (!prop) continue;
+
+                var childCount = 0;
+                try {
+                    childCount = prop.numProperties;
+                } catch (e3) {
+                    childCount = 0;
+                }
+                if (childCount && childCount > 0) {
+                    walk(prop, depth + 1);
+                    continue;
+                }
+                if (!isLayerIndexProp(prop)) continue;
+                try {
+                    prop.setValue(index);
+                    bound++;
+                } catch (e4) {}
+            }
+        }
+
+        walk(effectGroup, 0);
+        return bound;
+    }
+
     return {
         RECIPE_VERSION: RECIPE_VERSION,
         isNoPreview: isNoPreview,
         sceneFor: sceneFor,
+        layoutFor: layoutFor,
         assetKindFor: assetKindFor,
+        bindLayers: bindLayers,
         cacheKey: cacheKey,
         hashString: hashString,
         presentationTime: presentationTime,

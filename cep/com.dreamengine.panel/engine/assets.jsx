@@ -7,6 +7,7 @@
 //   text   纯文本层 —— 文本类效果专用（文本预设作用在非文本层上会静默失效）
 //   solid  纯色 —— 少数只作用于纯色/背景的效果
 //   shape  形状层（圆 + 星）—— 形状/描边/蒙版类
+//   pattern 高对比黑白图案 —— 两层输入类（置换图/复合模糊/设置遮罩）当第二输入
 //
 // 为什么默认是 photo 而不是设计文档写的 solid-2d：
 //   M1 实测发现纯色层上高斯模糊、锐化、噪波几乎看不出变化，
@@ -18,7 +19,7 @@
 // ============================================================
 
 var AEV_Assets = (function () {
-    var VERSION = "photo-v2";
+    var VERSION = "photo-v3";
     var cache = {};
 
     function key(kind, size) {
@@ -133,8 +134,38 @@ var AEV_Assets = (function () {
         return scene;
     }
 
-    function ellipseAt(cx, cy, rx, ry) {
-        var k = 0.5523;
+    /** 高对比黑白图案：黑底 + 白色竖条 + 白色中心圆。
+     *  用途是给「置换图 / 复合模糊 / 设置遮罩」这类需要第二图层的效果当输入源——
+     *  它按亮度工作，所以用竖条（水平方向高频）+ 中心圆（径向过渡）两种梯度，
+     *  既能看到明显的位移量，也能看到边缘软硬。
+     */
+    function buildPattern(size) {
+        var scene = app.project.items.addComp("DE_asset_pattern_" + size, size, size, 1, 1, 30);
+        var bg = scene.layers.addSolid([0, 0, 0], "black", size, size, 1);
+        bg.moveToEnd();
+
+        var barW = Math.round(size * 0.08);
+        var gap = Math.round(size * 0.14);
+        var x = Math.round(size * 0.06);
+        var barIndex = 0;
+        while (x < size - barW) {
+            var bar = scene.layers.addSolid([1, 1, 1], "bar" + barIndex, barW, size, 1);
+            bar.property("ADBE Transform Group").property("ADBE Position")
+                .setValue([x + Math.round(barW / 2), Math.round(size * 0.5)]);
+            x += barW + gap;
+            barIndex++;
+        }
+
+        // 中心白圆：径向亮暗过渡，让置换/模糊后的边缘更有可读性
+        var disc = scene.layers.addSolid([1, 1, 1], "disc", size, size, 1);
+        var mask = disc.property("ADBE Mask Parade").addProperty("ADBE Mask Atom");
+        var radius = Math.round(size * 0.2);
+        mask.property("ADBE Mask Shape").setValue(ellipseAt(size * 0.5, size * 0.5, radius, radius));
+
+        return scene;
+    }
+
+    function ellipseAt(cx, cy, rx, ry) {        var k = 0.5523;
         var shape = new Shape();
         shape.vertices = [
             [cx, cy - ry], [cx + rx, cy], [cx, cy + ry], [cx - rx, cy]
@@ -151,7 +182,7 @@ var AEV_Assets = (function () {
 
     /**
      * 取（必要时生成）指定类型的标准素材。
-     * kind: "photo" | "text" | "solid" | "shape"
+     * kind: "photo" | "text" | "solid" | "shape" | "pattern"
      */
     function get(kind, size) {
         var resolvedSize = size || 256;
@@ -163,6 +194,7 @@ var AEV_Assets = (function () {
         if (resolvedKind === "text") comp = buildText(resolvedSize);
         else if (resolvedKind === "solid") comp = buildSolid(resolvedSize);
         else if (resolvedKind === "shape") comp = buildShape(resolvedSize);
+        else if (resolvedKind === "pattern") comp = buildPattern(resolvedSize);
         else comp = buildPhoto(resolvedSize);
 
         return remember(resolvedKind, resolvedSize, comp);

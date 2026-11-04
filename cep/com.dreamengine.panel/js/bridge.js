@@ -148,9 +148,12 @@ var Bridge = (function () {
     if (!isCEP()) { cb(out); return; }
     evalAERaw("app.version", function (v) {
       out.aeVersion = v;
+      // AE 里没有 app.settings —— 旧代码那一行恒抛错、被 try/catch 吞掉，
+      // 自检结果永远是 'no_api'，等于没检查。正确入口是 app.preferences。
       evalAERaw(
-        "(app.settings && app.settings.getBoolean) ? " +
-        "app.settings.getBoolean('Allow Scripts to Write Files and Access Network') : 'no_api'",
+        'app.preferences && app.preferences.getPrefAsLong ? ' +
+        'app.preferences.getPrefAsLong("Main Pref Section", "Pref_SCRIPTING_FILE_NETWORK_SECURITY", -1) ' +
+        ': "no_api"',
         function (w) {
           out.writePref = w;
           getDocsPath(function (d) { out.docs = d; cb(out); });

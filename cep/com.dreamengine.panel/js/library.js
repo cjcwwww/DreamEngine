@@ -13,7 +13,9 @@ var AEV_Library = (function () {
     items: [],
     extensionPath: "",
     entries: [],
-    generating: false
+    generating: false,
+    // 有图但配方/素材已变、需要重渲的条目（来自 AEV_PreviewGen.staleList）
+    stale: {}
   };
 
   function byId(id) {
@@ -82,7 +84,7 @@ var AEV_Library = (function () {
       for (i = 0; i < state.catalog.length; i++) {
         if (isActiveEffect(state.catalog[i])) {
           items.push(
-            AEV_ViewModel.buildItem(state.catalog[i], state.names, state.previews)
+            AEV_ViewModel.buildItem(state.catalog[i], state.names, state.previews, state.stale)
           );
         }
       }
@@ -99,7 +101,7 @@ var AEV_Library = (function () {
             category: ""
           };
         }
-        var item = AEV_ViewModel.buildItem(effect, state.names, state.previews);
+        var item = AEV_ViewModel.buildItem(effect, state.names, state.previews, state.stale);
         item.installed = !!installed[matchName];
         items.push(item);
       }
@@ -110,7 +112,7 @@ var AEV_Library = (function () {
   function createCard(item) {
     var card = document.createElement("button");
     card.type = "button";
-    card.className = "effect-card";
+    card.className = "effect-card" + (item.stale ? " stale" : "");
     card.title = item.matchName;
     card.setAttribute("aria-label", AEV_ViewModel.resolveName(item, state.lang));
 
@@ -285,15 +287,22 @@ var AEV_Library = (function () {
             return;
           }
           state.catalog = catalogData.effects;
-          rebuildItems();
-          updateHeader();
-          render();
-          setStatus(
-            state.lang === "zh" ? "效果库已就绪" : "Library ready",
-            false
-          );
-          button.disabled = false;
-          if (done) done(null);
+          checkStale(function () {
+            rebuildItems();
+            updateHeader();
+            render();
+            var staleCount = Object.keys(state.stale).length;
+            var ready = state.lang === "zh" ? "效果库已就绪" : "Library ready";
+            if (staleCount > 0) {
+              ready +=
+                state.lang === "zh"
+                  ? "（" + staleCount + " 张预览待刷新）"
+                  : " (" + staleCount + " previews stale)";
+            }
+            setStatus(ready, false);
+            button.disabled = false;
+            if (done) done(null);
+          });
         });
       });
     });
@@ -319,6 +328,29 @@ var AEV_Library = (function () {
 
   function engine(expr, callback) {
     Bridge.runEngine(state.extensionPath, expr, callback);
+  }
+
+  /** 向 AE 侧核对缓存指纹：哪些预览是「图还在但配方/素材变了」。
+   *  没有这条，改了配方就只能靠人工删图重渲，用户永远不知道旧图已经不代表当前配方。
+   */
+  function checkStale(callback) {
+    state.stale = {};
+    if (!state.extensionPath) {
+      callback();
+      return;
+    }
+    engine(
+      "AEV_PreviewGen.staleList(" + JSON.stringify(state.extensionPath) + ")",
+      function (result) {
+        var data = parseEngineResult(result);
+        if (data && data.stale) {
+          for (var i = 0; i < data.stale.length; i++) {
+            state.stale[data.stale[i]] = true;
+          }
+        }
+        callback();
+      }
+    );
   }
 
   function zeroPad(value, width) {
@@ -381,15 +413,19 @@ var AEV_Library = (function () {
     }
 
     var existingNames = [];
+    var staleNames = [];
     for (var key in state.previews) {
-      if (state.previews.hasOwnProperty(key)) existingNames.push(key);
+      if (!state.previews.hasOwnProperty(key)) continue;
+      if (state.stale[key]) staleNames.push(key);
+      else existingNames.push(key);
     }
 
     var candidates = [];
     for (var i = 0; i < state.catalog.length; i++) {
       var effect = state.catalog[i];
       if (!isActiveEffect(effect)) continue;
-      if (state.previews[effect.matchName]) continue;
+      // 已过期的不算「已有预览」：图留着继续显示，但要重新渲一遍
+      if (state.previews[effect.matchName] && !state.stale[effect.matchName]) continue;
       if (AEV_ViewModel.isNoPreview(effect.category)) continue;
       if (AEV_ViewModel.isPoorPreviewTarget(effect)) continue;
       candidates.push(effect);
@@ -412,7 +448,13 @@ var AEV_Library = (function () {
 
     state.generating = true;
     byId("btnGenerate").disabled = true;
-    setStatus("正在排队 " + queueNames.length + " 个效果…", false);
+    var staleCount = staleNames.length;
+    setStatus(
+      staleCount > 0
+        ? "正在排队 " + queueNames.length + " 个效果（其中 " + staleCount + " 个是刷新过期预览）…"
+        : "正在排队 " + queueNames.length + " 个效果…",
+      false
+    );
 
     var totalAdded = 0;
     var guard = 0;
@@ -426,12 +468,11 @@ var AEV_Library = (function () {
     engine(
       "AEV_Queue.markCached(" + JSON.stringify(existingNames) + ")",
       function () {
-        engine(
-          "AEV_Queue.ensure(" + JSON.stringify(queueNames) + ")",
-          function () {
+        engine("AEV_Queue.reopen(" + JSON.stringify(staleNames) + ")", function () {
+          engine("AEV_Queue.ensure(" + JSON.stringify(queueNames) + ")", function () {
             pump();
-          }
-        );
+          });
+        });
       }
     );
 

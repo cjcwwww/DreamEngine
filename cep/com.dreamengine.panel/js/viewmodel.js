@@ -191,9 +191,10 @@ var AEV_ViewModel = (function () {
     return category || "未收录";
   }
 
-  function buildItem(effect, namesByName, previewByMatchName) {
+  function buildItem(effect, namesByName, previewByMatchName, staleByName) {
     var nameRecord = namesByName[effect.matchName] || {};
     var preview = previewByMatchName[effect.matchName] || null;
+    var hasPreview = !!(preview && (preview.src || preview.frameSrc));
     return {
       matchName: effect.matchName,
       displayName: effect.displayName,
@@ -203,7 +204,9 @@ var AEV_ViewModel = (function () {
       nameZh: nameRecord.nameZh,
       nameEn: nameRecord.nameEn,
       plugin: inferPlugin(effect),
-      hasPreview: !!(preview && (preview.src || preview.frameSrc)),
+      hasPreview: hasPreview,
+      // 图还在，但配方/素材变了 —— 继续显示旧图，同时排进下一次生成
+      stale: !!(hasPreview && staleByName && staleByName[effect.matchName]),
       preview: preview
     };
   }
