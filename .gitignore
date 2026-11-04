@@ -23,6 +23,11 @@ logs/
 !cep/com.dreamengine.panel/data/thumbs/
 !cep/com.dreamengine.panel/data/thumbs/*.png
 
+# ---- L1 内置包（可分发的预生成预览，已做帧间去重，必须入库）----
+!dist/
+!dist/**
+!dist/L1/thumbs/*.png
+
 # ---- 用户数据（本机私有，不入库）----
 library/
 settings.json
