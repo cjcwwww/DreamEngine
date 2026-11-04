@@ -17,7 +17,9 @@ const LOG = resolve(
   process.argv[2] ||
     `${process.env.USERPROFILE || process.env.HOME}/Documents/DreamEngineProbe/batch_generate.txt`,
 );
-const HUNT = resolve(ROOT, "tools/run_crash_hunt.jsx");
+const TARGETS_FILE = resolve(
+  `${process.env.USERPROFILE || process.env.HOME}/Documents/DreamEngineProbe/hunt_targets.tsv`,
+);
 
 if (!existsSync(LOG)) {
   console.error("找不到日志：" + LOG);
@@ -48,10 +50,7 @@ if (!pending.length) {
 console.log(`崩溃批次 #${lastBegin.sheet}，共 ${pending.length} 个：`);
 pending.forEach((n, i) => console.log(`  ${i + 1}. ${n}`));
 
-/* 写进排查脚本 */
-let hunt = readFileSync(HUNT, "utf8");
-const list = pending.map((n) => `        ${JSON.stringify(n)}`).join(",\n");
-hunt = hunt.replace(/    var TARGETS = \[[\s\S]*?\n    \];/, `    var TARGETS = [\n${list}\n    ];`);
-writeFileSync(HUNT, hunt, "utf8");
-console.log(`\n已写入 ${HUNT}`);
-console.log(`运行：AfterFX.exe -r tools/run_crash_hunt.jsx`);
+/* 写进排查用的名单文件：排查脚本运行时读它，不改代码 */
+writeFileSync(TARGETS_FILE, pending.join("\n") + "\n", "utf8");
+console.log(`已写入 ${TARGETS_FILE}`);
+console.log("运行：AfterFX.exe -r tools/run_crash_hunt.jsx");

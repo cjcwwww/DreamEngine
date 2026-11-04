@@ -35,24 +35,21 @@
         }
     }
 
-    var TARGETS = [
-        "ADBE Playgnd",
-        "ADBE Difference",
-        "ADBE Cineon Converter2",
-        "ADBE Matte Choker",
-        "ADBE Color Swirl",
-        "ADBE AutoContrast",
-        "ADBE Cartoonify",
-        "ADBE Cell Pattern",
-        "ADBE Bevel Edges",
-        "ADBE Gradient Wipe",
-        "ADBE Color Range",
-        "APC CardDanceCam",
-        "ADBE Echo",
-        "ADBE Compander",
-        "ADBE Simple Choker",
-        "ADBE Getting Jiggy"
-    ];
+    // 目标名单从 hunt_targets.tsv 读（由 tools/hunt_crash.mjs 写入），
+    // 不写在代码里，避免每次排查都要改代码再同步。
+    var TARGETS = [];
+    var targetFile = new File(OUT.fsName + "/hunt_targets.tsv");
+    if (targetFile.exists) {
+        targetFile.encoding = "UTF-8";
+        if (targetFile.open("r")) {
+            while (!targetFile.eof) {
+                var line = targetFile.readln();
+                if (!line || line.charAt(0) === "#") continue;
+                TARGETS.push(line);
+            }
+            targetFile.close();
+        }
+    }
 
     for (var t = 0; t < TARGETS.length; t++) {
         var name = TARGETS[t];
