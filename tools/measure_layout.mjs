@@ -22,7 +22,8 @@ import assert from "node:assert/strict";
 const ROOT = resolve(import.meta.dirname, "..");
 const TMP = resolve(ROOT, ".workbuddy/layout-test");
 const PANEL_WIDTHS = [200, 260, 320, 420, 600, 900, 1400, 2000];
-const THUMB_SIZES = [96, 132, 180, 240, 280];
+/* 滑块 range 固定 48–180px，这里覆盖下限、默认档和上限 */
+const THUMB_SIZES = [48, 64, 96, 132, 160, 180];
 
 /* ---- 找浏览器 ---- */
 function findChrome() {
@@ -64,17 +65,19 @@ const page = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <pre id="out"></pre>
 <script>
 /* 复刻面板侧的滑块限制逻辑（library.js 的 setThumbSize），
-   验证「滑块标多少、格子就是多少」。 */
+   验证「滑块标多少、格子就是多少」。范围固定 48–180px，
+   实际值按可用宽度收敛并对齐到 step=2。 */
 function availableWidth() {
   const main = document.getElementById("main");
   const style = getComputedStyle(main);
   const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
   const w = main.clientWidth - pad;
-  return (!w || w <= 0) ? 280 : Math.floor(w);
+  return (!w || w <= 0) ? 180 : Math.floor(w);
 }
 function applyThumb(requested) {
-  const limit = Math.max(96, Math.min(280, availableWidth()));
-  const value = Math.max(96, Math.min(requested, limit));
+  const limit = Math.max(48, Math.min(180, availableWidth()));
+  let value = Math.max(48, Math.min(requested, limit));
+  value = 48 + Math.floor((value - 48) / 2) * 2;
   document.documentElement.style.setProperty("--thumb-size", value + "px");
   return { value, limit };
 }
@@ -154,7 +157,7 @@ function check(name, fn) {
 
 check("格子宽度由滑块决定，不随面板宽度变化", () => {
   for (const thumb of THUMB_SIZES) {
-    // 挑出「滑块未被迫降档」的宽度（>=600px 时可用宽度足够放下最大档 280px）
+    // 挑出「滑块未被迫降档」的宽度（>=600px 时可用宽度足够放下最大档 180px）
     const wide = rows.filter(
       (r) => r.thumb === thumb && r.panel >= 600 && r.cardW > 0,
     );
@@ -176,7 +179,7 @@ check("格子宽度由滑块决定，不随面板宽度变化", () => {
   }
 });
 
-check("滑块标多少，格子就是多少（不允许标 280 实际 276）", () => {
+check("滑块标多少，格子就是多少（不允许标 180 实际 150）", () => {
   for (const r of rows) {
     // 极窄面板下 CSS 的 min(…,100%) 兜底会进一步压缩格子（否则横向溢出），
     // 这是预期行为；只要不超过滑块值即可。

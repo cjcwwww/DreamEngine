@@ -330,15 +330,19 @@ var AEV_Library = (function () {
    * 1fr 会把卡片拉宽到不同的实际像素宽度——同一张预览在宽面板上
    * 显得比窄面板上小，细节看不清。滑块让用户自己定一个合适的尺寸。
    *
-   * 关键约束：**滑块能设的值必须在当前面板宽度下放得下**。
-   * 设一个放不下的值（比如面板可用 276px 却要 280px 的格子），
-   * grid 会把格子压到 276px，于是滑块标 280 而实际是 276 —— 对不上。
-   * 所以这里按可用宽度动态限制滑块上限，并且：
-   *   · 面板变窄时自动把当前尺寸收敛到能放下的最大值
+   * 滑块范围固定 48–180px（与 index.html 一致），**不随窗口比例变化**。
+   *
+   * 关键约束：**滑块标的值必须等于实际格子宽度**。
+   * 设一个放不下的值（比如面板可用 150px 却要 180px 的格子），
+   * grid 会把格子压到 150px，于是滑块标 180 而实际是 150 —— 对不上。
+   * 所以按可用宽度收敛实际尺寸，并把收敛后的值写回滑块：
+   *   · 面板变窄时自动把尺寸收敛到能放下的最大值，滑块同步回弹
    *   · 面板变宽时恢复用户原本选的尺寸
    */
-  var THUMB_MIN = 96;
-  var THUMB_MAX = 280;
+  var THUMB_MIN = 48;
+  var THUMB_MAX = 180;
+  var THUMB_STEP = 2;
+  var THUMB_COMPACT = 80;
   var thumbPreferred = 132;
 
   /** 侧栏 + 间距 + 主区内边距之外，预览区实际能用的宽度 */
@@ -353,7 +357,7 @@ var AEV_Library = (function () {
     return Math.floor(width);
   }
 
-  function setThumbSize(size, options) {
+  function setThumbSize(size) {
     var requested = Number(size);
     if (!isNaN(requested) && requested > 0) {
       thumbPreferred = Math.max(THUMB_MIN, Math.min(THUMB_MAX, requested));
@@ -363,14 +367,24 @@ var AEV_Library = (function () {
 
     var value = Math.min(thumbPreferred, limit);
     value = Math.max(THUMB_MIN, value);
+    // 对齐到滑块的 step 刻度（向下取整，保证不超过可用宽度），
+    // 否则 range 会自动吸附 slider.value，标称与实际又会差 1px。
+    value = THUMB_MIN + Math.floor((value - THUMB_MIN) / THUMB_STEP) * THUMB_STEP;
 
     state.thumbSize = value;
     document.documentElement.style.setProperty("--thumb-size", value + "px");
 
+    var grid = byId("previewGrid");
+    if (grid) grid.classList.toggle("compact", value < THUMB_COMPACT);
+
     var slider = byId("thumbSize");
     if (slider) {
-      slider.max = String(Math.max(THUMB_MIN, limit));
-      if (options && options.fromUser) slider.value = String(value);
+      // 范围恒定 48–180：面板比例只影响「能否放到该尺寸」，不改变滑块刻度
+      slider.min = String(THUMB_MIN);
+      slider.max = String(THUMB_MAX);
+      slider.step = String(THUMB_STEP);
+      // 收敛后把实际生效值写回，避免「标 180、实际 150」的错位
+      slider.value = String(value);
     }
     var output = byId("thumbSizeValue");
     if (output) output.textContent = String(value);
@@ -803,12 +817,12 @@ var AEV_Library = (function () {
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
     byId("thumbSize").addEventListener("input", function () {
-      setThumbSize(this.value, { fromUser: true });
+      setThumbSize(this.value);
     });
     setThumbSize(byId("thumbSize").value);
 
-    /* 面板被拖宽或拖窄时，滑块上限要跟着变。
-       否则会出现「滑块标 280、实际只有 276」的错位。 */
+    /* 面板被拖宽或拖窄时重新收敛实际尺寸（滑块范围始终 48–180，不变）。
+       否则会出现「滑块标 180、实际只有 150」的错位。 */
     var resizeTimer = null;
     window.addEventListener("resize", function () {
       if (resizeTimer) clearTimeout(resizeTimer);

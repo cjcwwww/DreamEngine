@@ -990,15 +990,27 @@ test("侧栏宽度随面板收缩，窄面板下主区不被挤没", () => {
   assert.match(mainBlock, /min-width: \d+px/);
 });
 
-test("滑块上限跟随面板可用宽度，不允许标一个放不下的值", () => {
+test("滑块范围固定 48–180px，窄面板下收敛实际尺寸并同步回滑块", () => {
   const library = read("cep/com.dreamengine.panel/js/library.js");
-  // 必须按可用宽度收敛
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  // 范围固定：HTML 与 JS 都不能出现别的上下限
+  assert.match(html, /id="thumbSize" type="range" min="48" max="180" step="2"/);
+  assert.match(library, /var THUMB_MIN = 48;/);
+  assert.match(library, /var THUMB_MAX = 180;/);
+  assert.match(library, /var THUMB_STEP = 2;/);
+  // 必须按可用宽度收敛，且滑块自身的 min/max 恒定（不随窗口比例改变）
   assert.match(library, /availableThumbWidth/);
   assert.match(library, /Math\.min\(thumbPreferred, limit\)/);
-  // 滑块自身的 max 要跟着变
-  assert.match(library, /slider\.max = /);
+  assert.match(library, /slider\.min = String\(THUMB_MIN\)/);
+  assert.match(library, /slider\.max = String\(THUMB_MAX\)/);
+  // 收敛后写回实际值，避免「标 180、实际 150」的错位
+  assert.match(library, /slider\.value = String\(value\)/);
   // 面板尺寸变化时要重新收敛
   assert.match(library, /addEventListener\("resize"/);
+  // 下限 48px 时文字区要收紧
+  assert.match(library, /classList\.toggle\("compact"/);
+  assert.match(css, /\.grid\.compact \.card-name/);
 });
 
 /* ---------- 运行 ---------- */

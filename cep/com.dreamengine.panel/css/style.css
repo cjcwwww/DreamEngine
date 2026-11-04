@@ -368,8 +368,8 @@ main {
    面板一变宽卡片就跟着变大，滑块形同虚设。
    固定列宽下：格子大小只由滑块决定，面板比例只影响每行放几张。
 
-   滑块的上限由 JS 按可用宽度动态限制（setThumbSize），
-   保证「滑块标多少、格子就是多少」，不会出现标 280 实际 276 的错位。
+   滑块范围固定 48–180px，不随窗口比例改变；JS 会在极窄面板下把
+   实际格子收敛到能放下的宽度并同步写回滑块，保证「标多少、格子就是多少」。
    CSS 这边的 min() 只是最后一道兜底：极端窄面板下至少让预览可见。 */
 .grid {
   display: grid;
@@ -473,6 +473,15 @@ main {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* 滑块下限 48px 时卡片很窄：收紧文字区，别让名称被挤成几个点。
+   setThumbSize 在小于 80px 时给 .grid 加 compact 类。 */
+.grid.compact { gap: 6px; }
+.grid.compact .effect-card { border-radius: 5px; }
+.grid.compact .card-copy { padding: 4px 5px 5px; }
+.grid.compact .card-name { font-size: 10px; line-height: 1.25; }
+.grid.compact .card-meta { display: none; }
+.grid.compact .thumb-placeholder { font-size: 9px; }
 
 .empty-state {
   padding: 64px 16px;

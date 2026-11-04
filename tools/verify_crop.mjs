@@ -67,7 +67,8 @@ const samples = [
   manifest.items[manifest.items.length - 1],
 ].filter(Boolean);
 
-const containerSizes = [96, 132, 180, 240, 280];
+/* 与滑块范围 48–180px 对齐，覆盖下限、默认档与上限 */
+const containerSizes = [48, 64, 96, 132, 160, 180];
 
 let checked = 0;
 let wrong = 0;
