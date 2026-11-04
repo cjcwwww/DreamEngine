@@ -89,6 +89,17 @@ const probe = `
 function countCards() {
   return document.querySelectorAll(".effect-card").length;
 }
+
+/* 只数真正看得见的卡片：被隐藏的祖先（display:none）不算 */
+function countVisibleCards() {
+  var cards = document.querySelectorAll(".effect-card");
+  var n = 0;
+  for (var i = 0; i < cards.length; i++) {
+    var r = cards[i].getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) n++;
+  }
+  return n;
+}
 function firstThumbInfo() {
   var t = document.querySelector(".effect-card .thumb");
   if (!t) return null;
@@ -136,7 +147,11 @@ function finish() {
         // (.workspace 的 display:flex 会盖掉 [hidden] 的 display:none)
         result.effectsVisible = ve ? ve.getBoundingClientRect().height > 0 : null;
         result.presetsVisible = vp ? vp.getBoundingClientRect().height > 0 : null;
-        result.cardsInPresetView = countCards();
+        // 卡片是否「可见」：隐藏的元素不算。
+        // countCards() 统计 DOM 节点数，隐藏的元素也算 —— 那是另一个问题
+        // （DOM 里留着卡片不影响显示，但会让「还剩多少效果」这类统计失真）。
+        result.cardsInPresetView = countVisibleCards();
+        result.cardsTotalInDom = countCards();
         result.presetCards = document.querySelectorAll(".preset-card").length;
 
         /* --- 搜索框：点图标展开、再点收起 --- */
@@ -272,8 +287,12 @@ check("切到预设视图后效果墙真的不可见", () => {
   assert.equal(data.presetsVisible, true, "预设视图没有显示");
 });
 
-check("预设视图里不残留效果卡片", () => {
-  assert.equal(data.cardsInPresetView, 0, `预设视图里还有 ${data.cardsInPresetView} 张效果卡片`);
+check("预设视图里看不到任何效果卡片", () => {
+  assert.equal(data.cardsInPresetView, 0, `预设视图里还看得见 ${data.cardsInPresetView} 张效果卡片`);
+});
+
+check("切到预设视图时效果卡片已从 DOM 摘掉", () => {
+  assert.equal(data.cardsTotalInDom, 0, `DOM 里还留着 ${data.cardsTotalInDom} 张效果卡片`);
 });
 
 check("搜索框点图标展开、再点收起", () => {

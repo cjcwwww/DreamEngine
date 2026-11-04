@@ -1405,7 +1405,16 @@ var AEV_Library = (function () {
     byId("tabPresets").setAttribute("aria-selected", !isEffects ? "true" : "false");
     // 效果墙专属的工具条在预设视图下没有意义（搜索的是效果不是预设）
     byId("effectControls").hidden = !isEffects;
-    if (!isEffects) loadPresetLibrary();
+    if (isEffects) {
+      // 切回来时重建效果墙：离开时把 DOM 清空了
+      render();
+    } else {
+      // 离开效果墙时把几百张卡片从 DOM 里摘掉 —— 留着虽然看不见，
+      // 但每次切回来都要重建，白白浪费一次建 hundreds 个节点的开销。
+      var grid = byId("previewGrid");
+      if (grid) grid.textContent = "";
+      loadPresetLibrary();
+    }
   }
 
   function boot() {
