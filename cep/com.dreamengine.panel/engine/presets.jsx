@@ -394,10 +394,68 @@ var AEV_Presets = (function () {
                '],"missing":[' + missingList.join(",") + "]}";
     }
 
+    /**
+     * AE 内置预设目录的候选路径。
+     * app.path 在不同版本指向的位置不一样（安装目录 / Support Files），
+     * 所以给多个候选，由调用方挑第一个真实存在的。
+     */
+    function defaultRootJson() {
+        var candidates = [];
+        try {
+            candidates.push(new Folder(app.path + "/Presets").fsName);
+        } catch (e) {}
+        try {
+            candidates.push(new Folder(app.path + "/Support Files/Presets").fsName);
+        } catch (e2) {}
+        var items = [];
+        for (var i = 0; i < candidates.length; i++) {
+            var exists = false;
+            try {
+                exists = new Folder(candidates[i]).exists;
+            } catch (e3) {
+                exists = false;
+            }
+            items.push('{"path":' + jsonText(candidates[i]) + ',"exists":' + (exists ? "true" : "false") + "}");
+        }
+        return '{"status":"ok","candidates":[' + items.join(",") + "]}";
+    }
+
+    /**
+     * 当前上下文：活动合成名 + 选中图层序号。
+     * 应用预设必须知道往哪个合成的哪一层上加（T0.4：没有选中层时
+     * applyPreset 会自己新建图层，把工程弄脏）。
+     */
+    function contextJson() {
+        var compName = "";
+        var layerIndex = 0;
+        try {
+            var comp = app.project.activeItem;
+            if (comp && String(comp.typeName) === "Composition") {
+                compName = String(comp.name);
+                var selected = null;
+                try {
+                    selected = comp.selectedLayers;
+                } catch (e) {
+                    selected = null;
+                }
+                if (selected && selected.length > 0) {
+                    try {
+                        layerIndex = selected[0].index;
+                    } catch (e2) {
+                        layerIndex = 0;
+                    }
+                }
+            }
+        } catch (e3) {}
+        return result("ok", [["comp", compName], ["layer", String(layerIndex)]]);
+    }
+
     return {
         scanJson: scanJson,
         applyJson: applyJson,
         dependenciesJson: dependenciesJson,
+        defaultRootJson: defaultRootJson,
+        contextJson: contextJson,
         isPresetFile: isPresetFile,
         categoryOf: categoryOf,
         MAX_FILES: MAX_FILES,

@@ -21,6 +21,10 @@ var AEV_Library = (function () {
     pluginPreviewCount: 0,
     // 各来源（内置 / BCC / Sapphire…）已有多少张预览
     pluginCounts: {},
+    // 预设库（M3）：扫描到的 .ffx 与搜索词
+    presets: [],
+    presetRoot: "",
+    presetQuery: "",
     // 排序方式：name = 按名称首字母，category = 按 AE 分类
     sortMode: "name",
     // 左侧栏选中的分类键（空 = 全部）
@@ -986,6 +990,149 @@ var AEV_Library = (function () {
     });
   }
 
+  /* ---------- 预设库（M3） ---------- */
+
+  /** 扫描 AE 内置预设目录（递归找 .ffx） */
+  function scanPresets() {
+    if (!state.extensionPath) return;
+    setStatus(state.lang === "zh" ? "正在扫描 AE 预设…" : "Scanning AE presets…", false);
+    engine("AEV_Presets.defaultRootJson()", function (rootResult) {
+      var rootData = parseEngineResult(rootResult);
+      var candidates = (rootData && rootData.candidates) || [];
+      var root = "";
+      for (var i = 0; i < candidates.length; i++) {
+        if (candidates[i].exists) {
+          root = candidates[i].path;
+          break;
+        }
+      }
+      if (!root) {
+        setStatus(state.lang === "zh" ? "没找到 AE 预设目录" : "AE preset folder not found", true);
+        return;
+      }
+      state.presetRoot = root;
+      engine("AEV_Presets.scanJson(" + JSON.stringify(root) + ",800)", function (scanResult) {
+        var data = parseEngineResult(scanResult);
+        if (!data || data.status !== "ok") {
+          setStatus(state.lang === "zh" ? "扫描失败" : "Scan failed", true);
+          return;
+        }
+        state.presets = data.items || [];
+        renderPresetList();
+        setStatus("扫到 " + state.presets.length + " 个预设", false);
+      });
+    });
+  }
+
+  function renderPresetList() {
+    var list = byId("presetList");
+    if (!list) return;
+    var query = String(state.presetQuery || "").toLowerCase();
+    list.textContent = "";
+    var shown = 0;
+    for (var i = 0; i < state.presets.length; i++) {
+      var item = state.presets[i];
+      if (query && String(item.name + " " + item.category).toLowerCase().indexOf(query) === -1) {
+        continue;
+      }
+      shown++;
+      var li = document.createElement("li");
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "preset-item";
+      button.title = item.path;
+      var name = document.createElement("span");
+      name.className = "preset-name";
+      name.textContent = item.name;
+      var category = document.createElement("span");
+      category.className = "preset-category";
+      category.textContent = item.category;
+      button.appendChild(name);
+      button.appendChild(category);
+      bindPresetItem(button, item);
+      li.appendChild(button);
+      list.appendChild(li);
+      // 一次最多渲染 400 行：622 个预设全量建 DOM 会让面板明显卡顿
+      if (shown >= 400) break;
+    }
+    var summary = byId("presetSummary");
+    if (summary) {
+      if (!state.presets.length) {
+        summary.textContent = state.lang === "zh" ? "还没扫描" : "Not scanned yet";
+      } else {
+        summary.textContent =
+          "共 " + state.presets.length + " 个预设" +
+          (shown < state.presets.length ? "（显示 " + shown + "）" : "") +
+          " · 点一个应用到当前合成";
+      }
+    }
+  }
+
+  function bindPresetItem(button, item) {
+    button.addEventListener("click", function () {
+      applyPreset(item);
+    });
+  }
+
+  /**
+   * 把预设应用到 AE 当前合成。
+   * 走 engine 侧的安全包装：只选目标层、比对效果数、按类型顺序重试、
+   * 自动新建的图层用 remove() 删掉（依据 T0.4 实测结论）。
+   */
+  function applyPreset(item) {
+    if (!state.extensionPath) return;
+    engine("AEV_Presets.contextJson()", function (ctxResult) {
+      var ctx = parseEngineResult(ctxResult);
+      if (!ctx || !ctx.comp) {
+        setStatus(
+          state.lang === "zh" ? "请先在 AE 里选中一个合成" : "Select a composition in AE first",
+          true
+        );
+        return;
+      }
+      setStatus(state.lang === "zh" ? "正在应用预设…" : "Applying preset…", false);
+      engine(
+        "AEV_Presets.applyJson(" +
+          JSON.stringify(ctx.comp) + "," +
+          JSON.stringify(item.path) + "," +
+          (Number(ctx.layer) || 0) + ")",
+        function (applyResult) {
+          var data = parseEngineResult(applyResult);
+          if (data && data.status === "ok" && data.best) {
+            setStatus(
+              "已应用「" + item.name + "」（图层类型 " + data.best.kind +
+                "，新增效果 " + data.best.effects + "）",
+              false
+            );
+            checkPresetDependencies(ctx.comp);
+          } else {
+            var attempts = (data && data.attempts) || [];
+            setStatus(
+              "预设没有生效：" + (attempts.join(" | ") || "未知原因"),
+              true
+            );
+          }
+        }
+      );
+    });
+  }
+
+  /** 依赖检查：合成里用到但本机没装的效果（通常是缺插件） */
+  function checkPresetDependencies(compName) {
+    engine("AEV_Presets.dependenciesJson(" + JSON.stringify(compName) + ")", function (result) {
+      var data = parseEngineResult(result);
+      if (!data || data.status !== "ok") return;
+      var missing = data.missing || [];
+      if (missing.length) {
+        setStatus(
+          "缺少 " + missing.length + " 个插件效果：" + missing.slice(0, 3).join("、") +
+            (missing.length > 3 ? " 等" : ""),
+          true
+        );
+      }
+    });
+  }
+
   function boot() {
     byId("langZh").addEventListener("click", function () { setLanguage("zh"); });
     byId("langEn").addEventListener("click", function () { setLanguage("en"); });
@@ -1022,6 +1169,23 @@ var AEV_Library = (function () {
     });
     byId("btnQueueRetry").addEventListener("click", function () {
       retryFailed();
+    });
+    byId("btnPresets").addEventListener("click", function () {
+      var drawer = byId("presetDrawer");
+      if (!drawer) return;
+      drawer.hidden = !drawer.hidden;
+      if (!drawer.hidden && !state.presets.length) scanPresets();
+    });
+    byId("btnPresetClose").addEventListener("click", function () {
+      var drawer = byId("presetDrawer");
+      if (drawer) drawer.hidden = true;
+    });
+    byId("btnPresetScan").addEventListener("click", function () {
+      scanPresets();
+    });
+    byId("presetSearch").addEventListener("input", function () {
+      state.presetQuery = this.value;
+      renderPresetList();
     });
     byId("thumbSize").addEventListener("input", function () {
       setThumbSize(this.value);

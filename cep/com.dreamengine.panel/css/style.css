@@ -566,7 +566,8 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-.queue-drawer {
+.queue-drawer,
+.preset-drawer {
   position: fixed;
   top: 0;
   right: 0;
@@ -582,7 +583,8 @@ main {
   box-shadow: -12px 0 24px rgba(0, 0, 0, 0.35);
 }
 
-.queue-drawer[hidden] {
+.queue-drawer[hidden],
+.preset-drawer[hidden] {
   display: none;
 }
 
@@ -653,6 +655,67 @@ main {
   padding: 18px 0;
   color: var(--muted);
   text-align: center;
+}
+
+/* 预设库抽屉 */
+.preset-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preset-tools input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.preset-summary {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.preset-list {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 4px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset-item:hover {
+  background: var(--surface-2);
+}
+
+.preset-item .preset-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-item .preset-category {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 10px;
 }
 
 @media (max-width: 520px) {
