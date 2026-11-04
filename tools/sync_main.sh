@@ -21,6 +21,15 @@ BACKUP_DIR="$HOME/Documents/DreamEngineProbe"
 
 cd "$MAIN"
 
+# 0. 工作区有未提交改动时，合并会静默中止（主仓库拿到旧代码）。
+#    这里显式拦一道：先提交，再同步。
+cd "$HERE"
+if [ -n "$(git status --porcelain)" ]; then
+  echo "工作区有未提交改动，先提交再同步："
+  git status --short | head -10
+  exit 1
+fi
+
 # 1. 备份并清掉会被合并覆盖的运行时文件
 if [ -f "$DATA_REL/manifest.json" ]; then
   mkdir -p "$BACKUP_DIR"
@@ -28,6 +37,7 @@ if [ -f "$DATA_REL/manifest.json" ]; then
   cp "$DATA_REL/manifest.json" "$BACKUP_DIR/manifest-runtime-$STAMP.json"
   echo "运行时索引已备份 -> $BACKUP_DIR/manifest-runtime-$STAMP.json"
 fi
+cd "$MAIN"
 git checkout -- "$DATA_REL/manifest.json" 2>/dev/null || true
 rm -f "$DATA_REL/previews.tsv"
 rm -f "$DATA_REL"/manifest.json.backup-*

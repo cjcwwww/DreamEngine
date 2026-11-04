@@ -43,7 +43,7 @@
         "ADBE Color Swirl",
         "ADBE AutoContrast",
         "ADBE Cartoonify",
-        "ADBE AudWave",
+        "ADBE Cell Pattern",
         "ADBE Bevel Edges",
         "ADBE Gradient Wipe",
         "ADBE Color Range",

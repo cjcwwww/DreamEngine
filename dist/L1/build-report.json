@@ -1,11 +1,11 @@
 {
   "source": "D:\\workqwen\\DreamEngine-1\\cep\\com.dreamengine.panel\\data",
-  "items": 20,
+  "items": 32,
   "staticItems": 0,
-  "animatedItems": 20,
-  "sheetsBefore": 5,
-  "sheetsAfter": 5,
-  "bytesBefore": 1773545,
-  "bytesAfter": 2010723,
-  "ratio": 113.4
+  "animatedItems": 32,
+  "sheetsBefore": 8,
+  "sheetsAfter": 8,
+  "bytesBefore": 3139408,
+  "bytesAfter": 3353365,
+  "ratio": 106.8
 }
