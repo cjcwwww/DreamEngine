@@ -122,6 +122,19 @@
     var entries = readEntries();
     push("EXISTING_ENTRIES=" + entries.length);
 
+    /** 某条索引对应的帧文件是否都在 */
+    function framesExist(entry) {
+        if (!entry.frameTemplate) {
+            var single = new File(EXT + "/data/" + "thumbs/batch_" + pad3(entry.sheet) + ".png");
+            return single.exists;
+        }
+        for (var f = 0; f < entry.frames; f++) {
+            var name = entry.frameTemplate.replace("%04d", (f < 10 ? "000" + f : "00" + f));
+            if (!new File(EXT + "/data/" + name).exists) return false;
+        }
+        return true;
+    }
+
     var nextSheet = 0;
     for (var e = 0; e < entries.length; e++) {
         if (entries[e].sheet >= nextSheet) nextSheet = entries[e].sheet + 1;
@@ -163,6 +176,32 @@
     }
     push("TODO=" + todo.length);
     flush();
+
+    // 跳过已经渲好的条目：中途崩溃后重跑不用从头再来。
+    // 判据是「索引里有、且帧文件真实存在」。
+    if (!replaceAll) {
+        var skipped = 0;
+        var kept = [];
+        for (var t = 0; t < todo.length; t++) {
+            var item = todo[t];
+            var row = null;
+            for (var e = 0; e < entries.length; e++) {
+                if (entries[e].matchName === item.matchName) {
+                    row = entries[e];
+                    break;
+                }
+            }
+            if (row && framesExist(row)) {
+                skipped++;
+                continue;
+            }
+            kept.push(item);
+        }
+        todo = kept;
+        push("SKIPPED_DONE=" + skipped);
+        push("TODO_REMAINING=" + todo.length);
+        flush();
+    }
 
     if (todo.length === 0) {
         push("RESULT=NOTHING_TO_DO");

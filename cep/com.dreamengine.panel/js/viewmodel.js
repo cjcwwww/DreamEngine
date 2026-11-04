@@ -91,6 +91,22 @@ var AEV_ViewModel = (function () {
     return false;
   }
 
+  /**
+   * 一个效果是否应当被整体排除。
+   *
+   * 合并了三处判断（面板、离线清单生成、批量渲染共用这一份）：
+   *   · Pseudo/ 占位项
+   *   · 已过时（_Obsolete / 过时）
+   *   · 渲不出有意义结果的一批（3D 通道、弹框类、挂起类、CS 旧命名）
+   */
+  function isExcludable(effect) {
+    var matchName = String((effect && effect.matchName) || "");
+    var category = String((effect && effect.category) || "");
+    if (matchName.indexOf("Pseudo/") === 0) return true;
+    if (/Obsolete|过时/i.test(category)) return true;
+    return isPoorPreviewTarget(effect);
+  }
+
   /** 生成优先级：数值越小越先渲 */
   function previewRank(effect) {
     if (isPoorPreviewTarget(effect)) return 1000;
@@ -246,6 +262,7 @@ var AEV_ViewModel = (function () {
   return {
     isNoPreview: isNoPreview,
     isPoorPreviewTarget: isPoorPreviewTarget,
+    isExcludable: isExcludable,
     previewRank: previewRank,
     interleaveByCategory: interleaveByCategory,
     inferPlugin: inferPlugin,

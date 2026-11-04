@@ -5,9 +5,9 @@ var DREAM_ENGINE_RENDER_CONFIG = {
     version: 1,
     contactSheet: {
         columns: 8,
-        cellSize: 256,
-        width: 2048,
-        height: 2048,
+        cellSize: 128,
+        width: 1024,
+        height: 1024,
         effectsPerSheet: 64
     },
     animatedPreview: {

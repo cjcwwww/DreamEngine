@@ -508,7 +508,8 @@ test("staleList 用指纹判定过期，无指纹的旧条目视为有效", () =
     `${ENGINE}/recipe.jsx`,
     `${ENGINE}/previewgen.jsx`,
   ]);
-  const goodKey = seed.AEV_PreviewGen.itemKey("CC Lens", 256, 6);
+  const cellSize = seed.AEV_PreviewGen.config().contactSheet.cellSize;
+  const goodKey = seed.AEV_PreviewGen.itemKey("CC Lens", cellSize, 6);
   assert.ok(goodKey && goodKey.length > 0, "指纹不应为空");
 
   const tsv = [

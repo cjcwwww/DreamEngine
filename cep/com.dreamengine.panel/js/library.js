@@ -66,10 +66,9 @@ var AEV_Library = (function () {
     });
   }
 
+  // 排除规则统一放在 viewmodel，面板与离线清单生成共用同一份判断
   function isActiveEffect(effect) {
-    if (effect.matchName.indexOf("Pseudo/") === 0) return false;
-    if (/Obsolete|过时/i.test(effect.category)) return false;
-    return true;
+    return !AEV_ViewModel.isExcludable(effect);
   }
 
   function rebuildItems() {

@@ -1,61 +1,316 @@
-# L1 内置包的目标效果清单（入库，作为渲染与索引的唯一来源）
+# L1 内置包目标清单 —— 由 tools/build_l1_targets.mjs 从本机 catalog 导出
+# 覆盖本机绝大多数常用内置效果；顺序即预览墙顺序（热门分类在前）
 # matchName
 ADBE Gaussian Blur 2
-ADBE Drop Shadow
-APC Colorama
-ADBE Turbulent Displace
-ADBE Tint
-ADBE Invert
-ADBE Glo2
+ADBE Box Blur2
+ADBE Radial Blur
 ADBE Motion Blur
-ADBE Ripple
+ADBE Sharpen
+ADBE Unsharp Mask2
+CC Radial Fast Blur
+CC Radial Blur
+CC Vector Blur
+ADBE Brightness & Contrast 2
+ADBE CurvesCustom
+ADBE Easy Levels2
+ADBE Pro Levels2
+ADBE HUE SATURATION
+ADBE Tint
+ADBE Color Balance 2
+ADBE Lumetri
+APC Colorama
+ADBE Black&White
+ADBE PhotoFilterPS
+ADBE CHANNEL MIXER
+ADBE Tritone
+ADBE Leave Color
+ADBE Change Color
+ADBE Threshold2
+ADBE Exposure2
+ADBE Equalize
+ADBE Turbulent Displace
 ADBE Wave Warp
+ADBE Ripple
+ADBE Bulge
+ADBE Twirl
+ADBE Corner Pin
+ADBE WRPMESH
+ADBE BEZMESH
+ADBE Displacement Map
+ADBE Mirror
+ADBE Offset
+ADBE Polar Coordinates
+ADBE Geometry2
+ADBE Glo2
+ADBE Drop Shadow
+ADBE Bevel Alpha
+ADBE Posterize
 ADBE Mosaic
 ADBE Find Edges
-CC Ball Action
-CC Bubbles
-CC Particle Systems II
-CC Star Burst
-CC Toner
-CC Radial Fast Blur
-CC Lens
-CC Twister
-CC Radial Blur
-CC Color Offset
-CC Bender
+CC Kaleida
+CC Plastic
 CC Burn Film
-CC Glue Gun
-VISINF Grain Implant
-CC Cylinder
-CC Glass Wipe
-CC Simple Wire Removal
-CC Vector Blur
-ADBE AutoColor
-CC Bend It
 CC Glass
-CC Light Burst 2.5
+CC Slant
+ADBE Ramp
+ADBE Fill
+ADBE 4ColorGradient
+ADBE Fractal Noise
 ADBE Dust & Scratches
-CC Environment
-CC Grid Wipe
 ADBE Color Difference Key
+ADBE Linear Color Key2
+ADBE Set Matte3
+ADBE Compound Blur
+ADBE Calculations
+ADBE Arithmetic
+ADBE Timewarp
 CC Force Motion Blur
-CC Overbrights
+ADBE Bilateral
+ADBE AutoColor
+ADBE Brush Strokes
+ADBE AudSpect
+ADBE Block Dissolve
+ADBE Playgnd
+ADBE Difference
+ADBE Cineon Converter2
 ADBE Matte Choker
 ADBE Color Swirl
-CC Composite
-ADBE Bilateral
 ADBE AutoContrast
-CC Blobbylize
-CC Kaleida
-CC Light Rays
-ADBE Fractal Noise
-CC Sphere
-CC Image Wipe
+ADBE Cartoonify
+ADBE AudWave
+ADBE Bevel Edges
+ADBE Gradient Wipe
 ADBE Color Range
-CC Mr. Mercury
-CC Wide Time
+APC CardDanceCam
+ADBE Echo
+ADBE Compander
 ADBE Simple Choker
 ADBE Getting Jiggy
-ADBE Arithmetic
-ADBE Box Blur2
+ADBE Blend
+ADBE Channel Blur
 ADBE AutoLevels
+ADBE Color Emboss
+ADBE Laser
+ADBE Median
+ADBE IRIS_WIPE
+ADBE Difference Matte2
+APC Caustics
+ADBE Posterize Time
+ADBE GROW BOUNDS
+ADBE RefineRBMatte
+ADBE Separate XYZ Position
+ADBE Broadcast Colors
+ADBE Emboss
+ADBE Cell Pattern
+ADBE Noise2
+ADBE Radial Shadow
+ADBE Linear Wipe
+ADBE Extract
+APC Foam
+ADBE OFMotionBlur
+ADBE ProfileToProfile
+ADBE RefineMatte2
+ADBE CM InsetVideoFramed
+ADBE Channel Combiner
+ADBE Change To Color
+ADBE Checkerboard
+ADBE Noise Alpha2
+CC Cylinder
+ADBE Radial Wipe
+ADBE ATG Extract
+APC Shatter
+ADBE HDR ToneMap
+ADBE CM InsetVideoTorn
+ADBE Compound Arithmetic
+ADBE LIQUIFY
+ADBE Circle
+ADBE Noise HLS2
+CC Environment
+ADBE Venetian Blinds
+ADBE KeyCleaner
+APC Wave World
+ADBE Time Displacement
+CC Overbrights
+ADBE CM MoodLightAmorph
+ADBE Invert
+ADBE Magnify
+ADBE Noise HLS Auto2
+CC Sphere
+APC CardWipeCam
+CC Ball Action
+ADBE CM MoodLightDigital
+ADBE Minimax
+ADBE Color Link
+ADBE ELLIPSE
+ADBE PS Median
+CC Spotlight
+CC Glass Wipe
+ADBE Spill2
+CC Bubbles
+CC Wide Time
+ADBE CM MoodLightStreaks
+ADBE Set Channels
+ADBE Smart Blur
+ADBE MESH WARP
+ADBE Roughen Edges
+ADBE Eyedropper Fill
+ADBE AIF Perlin Noise 3D
+CC Grid Wipe
+CC Simple Wire Removal
+CC Mr. Mercury
+ADBE CM CrackedTiles
+ADBE Color Balance (HLS)
+ADBE Scatter
+CC Image Wipe
+CC Particle Systems II
+ADBE CM LightLeaksMarkers
+ADBE Shift Channels
+ADBE Optics Compensation
+ADBE Strobe
+ADBE Fractal
+CC Jaws
+CC Pixel Polly
+ADBE CM LightLeaksRandom
+ADBE Solid Composite
+ADBE Deflicker
+ADBE Texturize
+ADBE Grid
+CC Light Wipe
+CC Particle World
+ADBE CM OpacityFlashMarkers
+ADBE Remove Color Matting
+ADBE RESHAPE
+ADBE Lens Flare
+CC Radial ScaleWipe
+CC Scatterize
+ADBE CM OpacityFlashRandom
+CC Composite
+ADBE Tile
+ADBE Lightning 2
+CC Scale Wipe
+CC Star Burst
+ADBE CM CropEdges
+ADBE Gamma/Pedestal/Gain2
+ADBE Rolling Shutter
+ADBE Paint Bucket
+CC Twister
+ADBE CM AutoscrollHorizontal
+ADBE SCHMEAR
+CC WarpoMatic
+ADBE CM AutoscrollVertical
+ADBE Spherize
+ADBE Scribble Fill
+ADBE CM Throw
+ADBE SubspaceStabilizer
+CC Mr. Smoothie
+ADBE Stroke
+ADBE CM FadeInOutFrames
+ADBE Write-on
+ADBE CM FadeInOutmsec
+CC RepeTile
+APC Radio Waves
+ADBE CM Spin
+CC Threshold
+APC Vegas
+ADBE CM ScaleBounceMarkers
+ADBE SelectiveColor
+ADBE Upscale
+CC Threshold RGB
+CC Glue Gun
+ADBE CM ScaleBounceRandom
+ADBE Vibrance
+CC Light Burst 2.5
+ADBE CM WiggleGelatin
+CC Bender
+CC Light Rays
+ADBE CM WigglePosition
+CC Bend It
+CC Light Sweep
+ADBE CM WiggleRotation
+ADBE PS Arbitrary Map
+CC Blobbylize
+ADBE CM WiggleScale
+ADBE ShadowHighlight
+CC Flo Motion
+ADBE CM WiggleShear
+CC Griddler
+ADBE CM Wigglerama
+CC Lens
+ADBE CM DissolveUnmelt
+ADBE DigitalVideoLimiter
+CC Page Turn
+ADBE CM Zoom2DSpin
+CC Power Pin
+ADBE CM Zoom3DTumble
+CC Color Offset
+CC Ripple Pulse
+ADBE CM ZoomWobble
+CC Toner
+ADBE CM ZoomBubble
+CC Smear
+ADBE CM ZoomSpiral
+CC Split
+ADBE CM SlideVariable
+CC Split 2
+ADBE CM FlyToInset
+CC Tiler
+ADBE CM CornerReveal
+ADBE CM GridWipe
+ADBE CM TransComplete
+ADBE CM TransStretch
+ADBE CM TransDissolve
+ADBE CM TransFade
+ADBE CM TransFadeMask
+ADBE CM TransWipe
+ADBE CM TransWipeFeath
+ADBE CM TransCard
+ADBE CM TransSlide
+ADBE CM TransCorner
+ADBE CM TransDirection
+ADBE CM TransIris
+ADBE CM TransRadial
+ADBE DE Jiggle
+ADBE DE Jiggle At Marker
+ADBE DE Jiggle On Beat
+ADBE DE Jiggle Random
+ADBE DE Pulse
+ADBE DE Pulse At Marker
+ADBE DE Pulse On Beat
+ADBE DE Pulse Random
+ADBE DE Bounce
+ADBE DE Bounce At Marker
+ADBE DE Bounce On Beat
+ADBE DE Bounce Random
+ADBE DE Opacity Pulse
+ADBE DE Opacity Pulse At Marker
+ADBE DE Opacity Pulse On Beat
+ADBE DE Opacity Pulse Random
+ADBE DE Oscillate
+ADBE DE Oscillate At Marker
+ADBE DE Oscillate On Beat
+ADBE DE Oscillate Random
+ADBE DE Pendulum
+ADBE DE Pendulum At Marker
+ADBE DE Pendulum On Beat
+ADBE DE Pendulum Random
+ADBE DE Swarm
+ADBE DE Follow
+ADBE DE Orbit
+ADBE DE Orbit 3D
+ADBE DE Random Motion 1D
+ADBE DE Random Motion
+ADBE DE Random Rotation
+ADBE DE Random Rotation 3D
+ADBE DE Random Opacity
+ADBE DE Random Scale
+ADBE DE Random Fill Color
+ADBE DE Z Spring
+ADBE DE Z Spring At Marker
+ADBE DE Wobble Bounce
+ADBE DE Wobble Bounce At Marker
+ADBE DE Wobble Bounce On Beat
+ADBE DE Wobble Bounce Random
+ADBE CM Animated Shape Control
+ADBE CM Animated Shape 2
+ADBE CM Animated Shape 3
+ADBE Sample Image
