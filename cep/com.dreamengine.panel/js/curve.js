@@ -843,7 +843,7 @@ var AEV_CurveUI = (function () {
     chip.type = "button";
     chip.className = "preset-chip";
     chip.setAttribute("data-pid", preset.id);
-    chip.title = preset.zh + " · " + preset.en;
+    chip.title = t(preset.zh, preset.en);
 
     var cv = document.createElement("canvas");
     cv.width = 92;
@@ -947,7 +947,9 @@ var AEV_CurveUI = (function () {
     el.modeMenu.hidden = !st.modeMenuOpen;
     if (el.modeBtn) {
       el.modeBtn.setAttribute("aria-expanded", st.modeMenuOpen ? "true" : "false");
-      el.modeBtn.textContent = st.mode === "value" ? "值" : (st.mode === "speed" ? "速" : "路");
+      el.modeBtn.textContent = st.mode === "value"
+        ? t("值", "V")
+        : (st.mode === "speed" ? t("速", "S") : t("路", "P"));
     }
     var items = [[el.modeValue, "value"], [el.modeSpeed, "speed"], [el.modePath, "path"]];
     for (var i = 0; i < items.length; i++) {
@@ -1047,8 +1049,18 @@ var AEV_CurveUI = (function () {
     updateHint();
 
     if (window.ResizeObserver && el.stage) {
+      /* 回调里 draw() 会重设画布尺寸 → 可能再次触发布局观察。
+         推到下一帧再画，避免同一帧内自触发（浏览器会报 RO 循环警告）。 */
+      var pending = false;
       try {
-        new ResizeObserver(function () { draw(); }).observe(el.stage);
+        new ResizeObserver(function () {
+          if (pending) return;
+          pending = true;
+          window.requestAnimationFrame(function () {
+            pending = false;
+            draw();
+          });
+        }).observe(el.stage);
       } catch (e) {}
     } else {
       window.addEventListener("resize", function () { draw(); });
@@ -1059,6 +1071,24 @@ var AEV_CurveUI = (function () {
   function enter() {
     renderPresets();
     draw();
+  }
+
+  /**
+   * 语言切换后重新生成本地文案。
+   *
+   * HTML 上标了 data-i18n 的那部分由 i18n.js 管；这里管 JS 自己生成的：
+   * 预设卡片的名字、模式按钮、应用按钮、提示语。
+   */
+  function relang() {
+    // 清空再建：卡片的名字是创建时写进去的，不重建就换不掉
+    if (el.presets) el.presets.textContent = "";
+    renderPresets();
+    setBusy(st.busy);
+    renderMode();
+    st.msg = "";
+    st.msgError = false;
+    draw();
+    updateHint();
   }
 
   /** 调试/自动化用（无头浏览器实测靠它断言） */
@@ -1101,6 +1131,7 @@ var AEV_CurveUI = (function () {
   return {
     init: init,
     enter: enter,
+    relang: relang,
     draw: draw,
     apply: apply,
     snapshot: snapshot,
