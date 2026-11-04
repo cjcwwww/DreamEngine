@@ -758,8 +758,8 @@ var AEV_Recipe = (function () {
         }
 
         walk(effectGroup, 0);
-        if (intensityProp) return { prop: intensityProp, ratio: 0.15 };
-        if (builtinOpacity) return { prop: builtinOpacity, ratio: 0.7 };
+        if (intensityProp) return { prop: intensityProp, ratio: 0.15, kind: "intensity" };
+        if (builtinOpacity) return { prop: builtinOpacity, ratio: 0.7, kind: "opacity" };
         return null;
     }
 
@@ -831,11 +831,82 @@ var AEV_Recipe = (function () {
         if (target === null) return 0;
         return setNumberSafely(main.prop, target) ? 1 : 0;
     }
+    /**
+     * 找「可以做动画」的线性形态参数。
+     *
+     * 为什么要另找：AE 内置的「效果不透明度」**不能打关键帧** —— 实测一打，
+     * 渲染就报「需要数字、数组或属性的位置找到类型为 Error 的对象」，
+     * 整条效果直接废掉（setValue 本身是安全的，只有关键帧会坏）。
+     * 所以动画只能打在插件自己的普通数值参数上。
+     *
+     * 候选：细节层数 / 数量类（Octaves、Detail、Count、Segments…），
+     * 它们是线性尺度（log 尺度的 Frequency / Radius 之类不能碰）。
+     */
+    var ANIM_WORDS = ["octave", "detail", "count", "segment", "level", "iterations", "samples"];
+
+    function pluginAnimParam(effectGroup) {
+        var found = null;
+        function walk(group, depth) {
+            if (depth > 2 || found) return;
+            var count = 0;
+            try {
+                count = group.numProperties;
+            } catch (e) {
+                return;
+            }
+            for (var i = 1; i <= count; i++) {
+                var prop = null;
+                try {
+                    prop = group.property(i);
+                } catch (e2) {
+                    continue;
+                }
+                if (!prop) continue;
+                var childCount = 0;
+                try {
+                    childCount = prop.numProperties;
+                } catch (e3) {
+                    childCount = 0;
+                }
+                if (childCount > 0) {
+                    walk(prop, depth + 1);
+                    continue;
+                }
+                if (kindOf(prop) !== "oneD") continue;
+                var name = "";
+                try {
+                    name = String(prop.name || "");
+                } catch (e4) {}
+                if (!name || isPluginAuxiliary(name)) continue;
+                var lower = name.toLowerCase();
+                var matched = false;
+                for (var w = 0; w < ANIM_WORDS.length; w++) {
+                    if (lower.indexOf(ANIM_WORDS[w]) >= 0) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) continue;
+                var minValue = 0;
+                var maxValue = 0;
+                try {
+                    if (prop.hasMin) minValue = Number(prop.minValue);
+                    if (prop.hasMax) maxValue = Number(prop.maxValue);
+                } catch (e5) {}
+                // 线性尺度的普通数值（枚举与 log 尺度都排除）
+                if (!(maxValue > minValue) || maxValue > 1000) continue;
+                found = prop;
+                return;
+            }
+        }
+        walk(effectGroup, 0);
+        return found;
+    }
 
     /**
-     * 插件的动画：同一个强度参数从 0 渐变到目标值。
-     * 形态参数不动，所以动起来时看到的是「效果逐渐显现」，
-     * 而不是「参数乱跳」。
+     * 插件的动画：强度参数从 0 渐变到目标值；
+     * 强度参数不可用（AE 内置不透明度不能打关键帧）时，
+     * 退而用「细节层数 / 数量类」线性形态参数做动态。
      */
     function animatePlugin(effectGroup, durationSeconds) {
         if (!TUNING_ENABLED) return false;
@@ -843,40 +914,65 @@ var AEV_Recipe = (function () {
         if (!end || end <= 0) return false;
         var main = pluginMainParam(effectGroup);
         if (!main) return false;
-        var target = paramTarget(main.prop, main.ratio);
-        if (target === null || target === 0) return false;
+
+        var prop = null;
+        var target = null;
+        if (main.kind === "intensity") {
+            // 强度参数：0 → 目标值（从「还没生效」渐变到「轻微生效」）
+            prop = main.prop;
+            target = paramTarget(main.prop, main.ratio);
+            if (target === null || target === 0) return false;
+        } else {
+            // 内置「效果不透明度」：只能 setValue，不能打关键帧
+            prop = pluginAnimParam(effectGroup);
+            if (!prop) return false;
+            var current = 0;
+            var minValue = 0;
+            var maxValue = 0;
+            try {
+                current = Number(prop.value);
+                if (prop.hasMin) minValue = Number(prop.minValue);
+                if (prop.hasMax) maxValue = Number(prop.maxValue);
+            } catch (e) {
+                return false;
+            }
+            if (typeof current !== "number" || isNaN(current)) return false;
+            // 从当前值走到另一个端点：动态幅度才看得见
+            target = (maxValue - current) >= (current - minValue) ? maxValue : minValue;
+            if (target === current) return false;
+        }
 
         var start = 0;
         var oldValue = null;
         try {
-            oldValue = main.prop.value;
+            oldValue = prop.value;
             if (typeof oldValue !== "number" || isNaN(oldValue)) return false;
-            if (main.prop.hasMin) {
-                var minValue = Number(main.prop.minValue);
-                if (minValue > 0 && minValue < target) start = minValue;
+            if (prop.hasMin) {
+                var minProp = Number(prop.minValue);
+                if (minProp > 0 && minProp < target) start = minProp;
             }
-        } catch (e) {
+        } catch (e2) {
             return false;
         }
         if (target === start) return false;
 
         try {
-            main.prop.setValueAtTime(0, start);
-            main.prop.setValueAtTime(end, target);
-        } catch (e2) {
+            prop.setValueAtTime(0, start);
+            prop.setValueAtTime(end, target);
+        } catch (e3) {
             return false;
         }
         // 校验打完之后值还是不是数字（有些参数不接受关键帧会写坏）
         try {
-            var check = main.prop.value;
+            var check = prop.value;
             if (typeof check !== "number" || isNaN(check)) {
                 try {
-                    main.prop.setValueAtTime(0, oldValue);
-                    main.prop.setValueAtTime(end, oldValue);
-                } catch (e3) {}
+                    prop.setValueAtTime(0, oldValue);
+                    prop.setValueAtTime(end, oldValue);
+                } catch (e4) {}
                 return false;
             }
-        } catch (e4) {
+        } catch (e5) {
             return false;
         }
         return true;
