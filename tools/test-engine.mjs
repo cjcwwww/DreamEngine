@@ -857,6 +857,106 @@ test("分类计数用于侧栏", () => {
   assert.equal(stats.counts["扭曲"], 1);
 });
 
+/* ---------- sprite 切片：固定画面裁切 ---------- */
+
+test("sprite 切片用百分比而不是固定像素，保证一格正好等于一个预览框", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const manifest = { cellSize: 128, columns: 8, width: 1024, height: 1024 };
+
+  const slice = view.spriteSlice({ x: 0, y: 0 }, manifest);
+  // 整网被放大到「格数 × 100%」，一格就等于预览框
+  assert.equal(slice.size, "800.0000% 800.0000%", "background-size 应按格数放大");
+  // 左上角格：偏移 0
+  assert.equal(slice.position, "0.0000% 0.0000%");
+
+  // 百分比定位的换算：offset = 百分比 × (容器 - 图片)，
+  // 图片放大后比容器大，所以分母是 (格数 - 1)。
+  const check = (cellX, cellY) => {
+    const s = view.spriteSlice({ x: cellX * 128, y: cellY * 128 }, manifest);
+    const [px, py] = s.position.split(" ").map((v) => Number(v.replace("%", "")));
+    // 图片被放大 8 倍，容器宽 = 1 格；定位后目标格左上角应落在容器左上角
+    const containerW = 1;
+    const imageW = 8;
+    const offsetX = (px / 100) * (containerW - imageW);
+    const offsetY = (py / 100) * (containerW - imageW);
+    assert.ok(
+      Math.abs(offsetX + cellX) < 0.001,
+      `第 ${cellX} 列横向偏移应为 -${cellX} 格，实际 ${offsetX}`,
+    );
+    assert.ok(
+      Math.abs(offsetY + cellY) < 0.001,
+      `第 ${cellY} 行纵向偏移应为 -${cellY} 格，实际 ${offsetY}`,
+    );
+  };
+
+  check(0, 0);
+  check(3, 0);
+  check(7, 0);
+  check(0, 5);
+  check(7, 7);
+  check(4, 2);
+});
+
+test("sprite 切片对最后一格也正确（百分比定位的边界）", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const manifest = { cellSize: 128, columns: 8, width: 1024, height: 1024 };
+  const slice = view.spriteSlice({ x: 7 * 128, y: 7 * 128 }, manifest);
+  assert.equal(slice.position, "100.0000% 100.0000%");
+});
+
+test("sprite 切片在列数为 1 时不除以零", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  const slice = view.spriteSlice({ x: 0, y: 0 }, { cellSize: 128, columns: 1, width: 128, height: 128 });
+  assert.equal(slice.size, "100.0000% 100.0000%");
+  assert.equal(slice.position, "0.0000% 0.0000%");
+});
+
+test("面板不再按数组位置取 sheet（数组顺序与 index 字段不一致）", () => {
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  // 必须按 index 建索引表
+  assert.match(library, /sheetByIndex\[sheetList\[sh\]\.index\] = sheetList\[sh\]/);
+  assert.match(library, /sheetByIndex\[preview\.sheet\]/);
+  // 不能再用 sheets[preview.sheet] 取值（注释里提到不算）
+  const code = library.replace(/\/\/[^\n]*/g, "");
+  assert.doesNotMatch(code, /sheets\[preview\.sheet\]/);
+});
+
+test("未分类的效果被排除（用户要求不要）", () => {
+  const ctx = loadModules(["cep/com.dreamengine.panel/js/viewmodel.js"], { window: {} });
+  const view = ctx.AEV_ViewModel;
+  // AE 对一批效果不返回分类字段
+  assert.equal(view.isExcludable({ matchName: "ADBE CM MoodLightAmorph", category: "" }), true);
+  assert.equal(view.isExcludable({ matchName: "ADBE Color Swirl", category: "  " }), true);
+  // 有分类的正常效果不受影响
+  assert.equal(view.isExcludable({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" }), false);
+});
+
+test("面板的缩略图用 spriteSlice 而不是固定像素定位", () => {
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(library, /AEV_ViewModel\.spriteSlice\(preview, state\.manifest\)/);
+  assert.match(library, /thumb\.style\.backgroundSize = slice\.size/);
+  assert.match(library, /thumb\.style\.backgroundPosition = slice\.position/);
+  // 固定像素定位会把相邻格子带进来
+  assert.doesNotMatch(library, /backgroundPosition = "-" \+ preview\.x/);
+});
+
+test("面板提供预览格尺寸滑块，并写进 CSS 变量", () => {
+  const library = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(library, /byId\("thumbSize"\)\.addEventListener/);
+  assert.match(library, /--thumb-size/);
+  const html = read("cep/com.dreamengine.panel/index.html");
+  assert.match(html, /id="thumbSize"/);
+  assert.match(html, /type="range"/);
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  // 网格列宽跟随滑块
+  assert.match(css, /--thumb-size/);
+  // 左侧栏与右侧各自独立滚动：body 固定高度 + overflow hidden
+  assert.match(css, /body \{[^}]*height: 100vh[^}]*overflow: hidden/s);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

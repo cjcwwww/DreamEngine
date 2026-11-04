@@ -21,7 +21,9 @@ var AEV_Library = (function () {
     // 左侧栏选中的分类键（空 = 全部）
     category: "",
     // AE 菜单里的分类顺序（从 catalog 首次出现顺序推导）
-    categoryOrder: []
+    categoryOrder: [],
+    // 预览格尺寸（px）。面板比例不同、卡片实际渲染大小不同时可手动调。
+    thumbSize: 132
   };
 
   function byId(id) {
@@ -125,6 +127,9 @@ var AEV_Library = (function () {
     thumb.className = "thumb";
     if (item.hasPreview) {
       var preview = item.preview;
+      // 切片参数用百分比而不是固定像素——缩略框渲染多大，
+      // 一格都精确等于一个框，不会把相邻格子的画面带进来。
+      var slice = AEV_ViewModel.spriteSlice(preview, state.manifest);
       if (preview.frameSrc) {
         var frameCount = preview.frames || 1;
         var frameIndex = 0;
@@ -149,11 +154,8 @@ var AEV_Library = (function () {
             showFrame(frameIndex);
           }, 83);
         };
-        // 帧文件同样是 2048 整网，必须和 sprite 一样按坐标切片；
-        // 之前用 100% 100% 会把整张网压进卡片，结果只看到左上角一小块黑。
-        thumb.style.backgroundSize =
-          state.manifest.width + "px " + state.manifest.height + "px";
-        thumb.style.backgroundPosition = "-" + preview.x + "px -" + preview.y + "px";
+        thumb.style.backgroundSize = slice.size;
+        thumb.style.backgroundPosition = slice.position;
         // 静止时显示最后一帧：关键帧动画从 0 渐变到满效果，
         // 停在第 0 帧等于「完全没上效果」，网格里会一片素模。
         showFrame(frameCount - 1);
@@ -161,9 +163,8 @@ var AEV_Library = (function () {
         card.addEventListener("mouseleave", stop);
       } else {
         thumb.style.backgroundImage = 'url("data/' + preview.src + '")';
-        thumb.style.backgroundSize =
-          state.manifest.width + "px " + state.manifest.height + "px";
-        thumb.style.backgroundPosition = "-" + preview.x + "px -" + preview.y + "px";
+        thumb.style.backgroundSize = slice.size;
+        thumb.style.backgroundPosition = slice.position;
       }
     } else {
       var placeholder = document.createElement("span");
@@ -321,6 +322,22 @@ var AEV_Library = (function () {
     render();
   }
 
+  /**
+   * 预览格尺寸。
+   *
+   * 为什么需要手动调：格子里的画面是按「整网等分」切出来的，
+   * 一格永远精确等于一个预览框（不会串格）。但面板比例变化时，
+   * 1fr 会把卡片拉宽到不同的实际像素宽度——同一张预览在宽面板上
+   * 显得比窄面板上小，细节看不清。滑块让用户自己定一个合适的尺寸。
+   */
+  function setThumbSize(size) {
+    var value = Math.max(96, Math.min(280, Number(size) || 132));
+    state.thumbSize = value;
+    document.documentElement.style.setProperty("--thumb-size", value + "px");
+    var output = byId("thumbSizeValue");
+    if (output) output.textContent = String(value);
+  }
+
   function setSortMode(mode) {
     state.sortMode = mode;
     byId("sortName").className = "segment" + (mode === "name" ? " active" : "");
@@ -360,10 +377,17 @@ var AEV_Library = (function () {
         state.entries = [];
         var columns = manifestData.columns || 8;
         var cellSize = manifestData.cellSize || 256;
+        // sheets 数组的顺序不等于它的 index 字段（打包器按落盘顺序追加），
+        // 所以必须按 index 建索引，不能直接用 sheets[preview.sheet]。
+        var sheetByIndex = {};
+        var sheetList = manifestData.sheets || [];
+        for (var sh = 0; sh < sheetList.length; sh++) {
+          sheetByIndex[sheetList[sh].index] = sheetList[sh];
+        }
         for (var p = 0; p < manifestData.items.length; p++) {
           var preview = manifestData.items[p];
           if (!preview.src) {
-            var sheet = manifestData.sheets[preview.sheet] || {};
+            var sheet = sheetByIndex[preview.sheet] || {};
             preview.src = sheet.src || "";
           }
           state.previews[preview.matchName] = preview;
@@ -740,6 +764,10 @@ var AEV_Library = (function () {
     byId("btnRefresh").addEventListener("click", refresh);
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
+    byId("thumbSize").addEventListener("input", function () {
+      setThumbSize(this.value);
+    });
+    setThumbSize(byId("thumbSize").value);
     refresh();
   }
 

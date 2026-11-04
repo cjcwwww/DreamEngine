@@ -1,11 +1,11 @@
 {
-  "items": 307,
-  "staticItems": 164,
+  "items": 211,
+  "staticItems": 68,
   "animatedItems": 143,
-  "sheetsBefore": 6,
-  "sheetsAfter": 6,
-  "bytesBefore": 4566883,
-  "bytesAfter": 4566883,
-  "ratio": 100,
-  "pruned": 0
+  "sheetsBefore": 5,
+  "sheetsAfter": 5,
+  "bytesBefore": 4553038,
+  "bytesAfter": 4537376,
+  "ratio": 99.7,
+  "pruned": 1
 }

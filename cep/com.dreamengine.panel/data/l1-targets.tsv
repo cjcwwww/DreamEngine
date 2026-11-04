@@ -74,7 +74,6 @@ ADBE Playgnd
 ADBE Difference
 ADBE Cineon Converter2
 ADBE Matte Choker
-ADBE Color Swirl
 ADBE AutoContrast
 ADBE Cartoonify
 ADBE Cell Pattern
@@ -85,7 +84,6 @@ APC CardDanceCam
 ADBE Posterize Time
 ADBE Compander
 ADBE Simple Choker
-ADBE Getting Jiggy
 ADBE Blend
 ADBE Channel Blur
 ADBE AutoLevels
@@ -98,7 +96,6 @@ APC Caustics
 ADBE OFMotionBlur
 ADBE GROW BOUNDS
 ADBE RefineRBMatte
-ADBE Separate XYZ Position
 ADBE Broadcast Colors
 ADBE Emboss
 ADBE Circle
@@ -109,7 +106,6 @@ ADBE Extract
 APC Foam
 ADBE ProfileToProfile
 ADBE RefineMatte2
-ADBE CM InsetVideoFramed
 ADBE Channel Combiner
 ADBE Change To Color
 ADBE Noise Alpha2
@@ -119,7 +115,6 @@ ADBE ATG Extract
 APC Shatter
 ADBE Time Displacement
 ADBE HDR ToneMap
-ADBE CM InsetVideoTorn
 ADBE Compound Arithmetic
 ADBE LIQUIFY
 ADBE ELLIPSE
@@ -129,7 +124,6 @@ ADBE Venetian Blinds
 ADBE KeyCleaner
 APC Wave World
 CC Overbrights
-ADBE CM MoodLightAmorph
 ADBE Invert
 ADBE Magnify
 ADBE Eyedropper Fill
@@ -138,7 +132,6 @@ CC Sphere
 APC CardWipeCam
 CC Ball Action
 CC Wide Time
-ADBE CM MoodLightDigital
 ADBE Minimax
 ADBE Color Link
 ADBE PS Median
@@ -146,7 +139,6 @@ CC Spotlight
 CC Glass Wipe
 ADBE Spill2
 CC Bubbles
-ADBE CM MoodLightStreaks
 ADBE Set Channels
 ADBE Smart Blur
 ADBE MESH WARP
@@ -156,155 +148,67 @@ ADBE AIF Perlin Noise 3D
 CC Grid Wipe
 CC Simple Wire Removal
 CC Mr. Mercury
-ADBE CM CrackedTiles
 ADBE Color Balance (HLS)
 ADBE Scatter
 ADBE Lens Flare
 CC Image Wipe
 CC Particle Systems II
-ADBE CM LightLeaksMarkers
 ADBE Shift Channels
 ADBE Optics Compensation
 ADBE Strobe
 ADBE Lightning 2
 CC Jaws
 CC Pixel Polly
-ADBE CM LightLeaksRandom
 ADBE Solid Composite
 ADBE Deflicker
 ADBE Texturize
 ADBE Paint Bucket
 CC Light Wipe
 CC Particle World
-ADBE CM OpacityFlashMarkers
 ADBE Remove Color Matting
 ADBE RESHAPE
 CC Radial ScaleWipe
 CC Scatterize
-ADBE CM OpacityFlashRandom
 CC Composite
 ADBE Scribble Fill
 CC Scale Wipe
 CC Star Burst
-ADBE CM CropEdges
 ADBE Gamma/Pedestal/Gain2
 ADBE Rolling Shutter
 ADBE Stroke
 CC Twister
-ADBE CM AutoscrollHorizontal
 ADBE SCHMEAR
 ADBE Write-on
 CC WarpoMatic
-ADBE CM AutoscrollVertical
 ADBE Spherize
 CC Mr. Smoothie
 APC Radio Waves
-ADBE CM Throw
 ADBE SubspaceStabilizer
 APC Vegas
-ADBE CM FadeInOutFrames
 CC RepeTile
 CC Glue Gun
-ADBE CM FadeInOutmsec
 CC Threshold
 CC Light Burst 2.5
-ADBE CM Spin
 CC Threshold RGB
 CC Light Rays
-ADBE CM ScaleBounceMarkers
 ADBE SelectiveColor
 CC Light Sweep
-ADBE CM ScaleBounceRandom
 ADBE Vibrance
 CC Bender
-ADBE CM WiggleGelatin
 CC Bend It
-ADBE CM WigglePosition
 CC Blobbylize
-ADBE CM WiggleRotation
 ADBE PS Arbitrary Map
 CC Flo Motion
-ADBE CM WiggleScale
 ADBE ShadowHighlight
 CC Griddler
-ADBE CM WiggleShear
 CC Lens
-ADBE CM Wigglerama
 CC Page Turn
-ADBE CM DissolveUnmelt
 ADBE DigitalVideoLimiter
 CC Power Pin
-ADBE CM Zoom2DSpin
 CC Ripple Pulse
-ADBE CM Zoom3DTumble
 CC Color Offset
-ADBE CM ZoomWobble
 CC Toner
 CC Smear
-ADBE CM ZoomBubble
 CC Split
-ADBE CM ZoomSpiral
 CC Split 2
-ADBE CM SlideVariable
 CC Tiler
-ADBE CM FlyToInset
-ADBE CM CornerReveal
-ADBE CM GridWipe
-ADBE CM TransComplete
-ADBE CM TransStretch
-ADBE CM TransDissolve
-ADBE CM TransFade
-ADBE CM TransFadeMask
-ADBE CM TransWipe
-ADBE CM TransWipeFeath
-ADBE CM TransCard
-ADBE CM TransSlide
-ADBE CM TransCorner
-ADBE CM TransDirection
-ADBE CM TransIris
-ADBE CM TransRadial
-ADBE DE Jiggle
-ADBE DE Jiggle At Marker
-ADBE DE Jiggle On Beat
-ADBE DE Jiggle Random
-ADBE DE Pulse
-ADBE DE Pulse At Marker
-ADBE DE Pulse On Beat
-ADBE DE Pulse Random
-ADBE DE Bounce
-ADBE DE Bounce At Marker
-ADBE DE Bounce On Beat
-ADBE DE Bounce Random
-ADBE DE Opacity Pulse
-ADBE DE Opacity Pulse At Marker
-ADBE DE Opacity Pulse On Beat
-ADBE DE Opacity Pulse Random
-ADBE DE Oscillate
-ADBE DE Oscillate At Marker
-ADBE DE Oscillate On Beat
-ADBE DE Oscillate Random
-ADBE DE Pendulum
-ADBE DE Pendulum At Marker
-ADBE DE Pendulum On Beat
-ADBE DE Pendulum Random
-ADBE DE Swarm
-ADBE DE Follow
-ADBE DE Orbit
-ADBE DE Orbit 3D
-ADBE DE Random Motion 1D
-ADBE DE Random Motion
-ADBE DE Random Rotation
-ADBE DE Random Rotation 3D
-ADBE DE Random Opacity
-ADBE DE Random Scale
-ADBE DE Random Fill Color
-ADBE DE Z Spring
-ADBE DE Z Spring At Marker
-ADBE DE Wobble Bounce
-ADBE DE Wobble Bounce At Marker
-ADBE DE Wobble Bounce On Beat
-ADBE DE Wobble Bounce Random
-ADBE CM Animated Shape Control
-ADBE CM Animated Shape 2
-ADBE CM Animated Shape 3
-ADBE Sample Image

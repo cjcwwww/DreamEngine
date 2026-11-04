@@ -109,6 +109,8 @@ var AEV_ViewModel = (function () {
    * 合并了三处判断（面板、离线清单生成、批量渲染共用这一份）：
    *   · Pseudo/ 占位项
    *   · 已过时（_Obsolete / 过时）
+   *   · AE 里没有分类的效果（分类字段为空）—— 它们在 AE 菜单里没有归属，
+   *     预览墙的左侧分类栏也放不下，只能落进「未分类」这一堆，没有意义
    *   · 渲不出有意义结果的一批（3D 通道、弹框类、挂起类、CS 旧命名）
    */
   function isExcludable(effect) {
@@ -116,6 +118,9 @@ var AEV_ViewModel = (function () {
     var category = String((effect && effect.category) || "");
     if (matchName.indexOf("Pseudo/") === 0) return true;
     if (/Obsolete|过时/i.test(category)) return true;
+    // AE 对一批效果不返回分类（实测 97 个，多是 ADBE CM * 与 3D 通道族）。
+    // 用户明确要求「未分类的效果不要」，这里直接排除。
+    if (!category.trim()) return true;
     return isPoorPreviewTarget(effect);
   }
 
@@ -270,6 +275,51 @@ var AEV_ViewModel = (function () {
     return firstText(item.categoryEn, item.category, item.categoryZh, "Uncategorized");
   }
 
+  /**
+   * 计算 sprite 切片参数。
+   *
+   * 为什么不用固定像素：缩略框的实际渲染宽度随面板宽度变化（132px 到几百 px），
+   * 而整张网是固定像素尺寸。用 `background-size: 1024px` + `background-position: -x -y`
+   * 的话，缩略框一旦大于格子尺寸（128px），就会把相邻格子的画面带进来。
+   *
+   * 改用百分比：
+   *   background-size     = 每行格数 × 100%（横向）、每列格数 × 100%（纵向）
+   *   background-position = 格位在整网中的百分比偏移
+   * 这样无论缩略框渲染成多大，**一格永远精确等于一个缩略框**，不会串格。
+   *
+   * 返回 { size: "...", position: "..." }，可直接写进 style。
+   */
+  function spriteSlice(preview, manifest) {
+    var cellSize = (manifest && manifest.cellSize) || 128;
+    var columns = (manifest && manifest.columns) || 8;
+    var width = (manifest && manifest.width) || cellSize * columns;
+    var height = (manifest && manifest.height) || cellSize * columns;
+    var rows = Math.max(1, Math.round(height / cellSize));
+
+    var x = (preview && preview.x) || 0;
+    var y = (preview && preview.y) || 0;
+
+    // 整网被放大到「格数 × 100%」，一格就正好是缩略框的 1/格数
+    var size =
+      (columns * 100).toFixed(4) + "% " + (rows * 100).toFixed(4) + "%";
+
+    // 百分比定位：偏移量 = 百分比 × (容器尺寸 - 图片尺寸)。
+    // 图片放大后比容器大很多，所以要用 (格数-1) 而不是格数来归一。
+    var posX = 0;
+    var posY = 0;
+    if (columns > 1) {
+      posX = ((x / cellSize) / (columns - 1)) * 100;
+    }
+    if (rows > 1) {
+      posY = ((y / cellSize) / (rows - 1)) * 100;
+    }
+
+    return {
+      size: size,
+      position: posX.toFixed(4) + "% " + posY.toFixed(4) + "%",
+    };
+  }
+
   function inferPlugin(item) {
     var matchName = String(item.matchName || "");
     var category = String(item.category || "");
@@ -357,6 +407,7 @@ var AEV_ViewModel = (function () {
     inferPlugin: inferPlugin,
     resolveName: resolveName,
     resolveCategory: resolveCategory,
+    spriteSlice: spriteSlice,
     categoryKey: categoryKey,
     categoryLabel: categoryLabel,
     categoryOrder: categoryOrder,
