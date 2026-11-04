@@ -239,7 +239,7 @@ test("渲染在临时合成里做，插件预设跳过，临时对象全部回�
   assert.doesNotMatch(src, /getItemByName/);
   assert.match(src, /Layer\.applyPreset\(file\)/);
   // 含第三方插件效果的预设不渲染
-  assert.match(src, /function pluginMatchName\(/);
+  assert.match(src, /function pluginMatchNames\(/);
   assert.match(src, /result\("plugin_preset"/);
   // 渲染队列项 / 临时合成 / 素材 / raw 帧都要删
   assert.match(src, /queueItem\.remove\(\)/);
@@ -278,6 +278,49 @@ test("面板有背景选择/上传/生成入口，卡片区分静态与动态", 
   assert.match(lib, /preview\.animated !== false/);
   assert.match(css, /\.preset-thumb\s*\{/);
   assert.match(css, /\.preset-badge/);
+});
+
+/* ---------- 含第三方插件的预设：离线专用通道 ---------- */
+
+test("引擎有 allowPlugins 开关：面板默认跳过，离线实例放行", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  assert.match(src, /var allowPlugins = !!opts\.allowPlugins/);
+  assert.match(src, /if \(plugins\.length > 0 && !allowPlugins\)/);
+  assert.match(src, /result\("plugin_preset"/);
+  // 结果里要把插件名单带出来，索引才能标「离线生成」
+  assert.match(src, /\["plugins", plugins\.join\(","\)\]/);
+});
+
+test("离线脚本逐条隔离、心跳与崩溃黑名单一样不少", () => {
+  const src = read("tools/run_plugin_preset_preview.jsx");
+  assert.match(src, /PS\.parseLog\(/);
+  assert.match(src, /PS\.mergeBlacklist\(blacklist, crashed, "crash"\)/);
+  assert.match(src, /appendLog\("BEGIN", presetPath/);
+  assert.match(src, /appendLog\("OK", presetPath/);
+  assert.match(src, /allowPlugins: true/);
+  // 每条成功立刻追加 TSV，崩溃不丢已渲结果
+  assert.match(src, /appendText\(ENTRIES, rowOut/);
+  assert.match(src, /preset_plugin_previews\.tsv/);
+  assert.match(src, /preset_plugin_blacklist\.tsv/);
+  assert.match(src, /app\.quit\(SaveOptions\.DO_NOT_SAVE_CHANGES\)/);
+});
+
+test("批量驱动会拒绝在用户 AE 开着时启动，并跳过已完成/黑名单条目", () => {
+  const src = read("tools/run_plugin_preset_batches.mjs");
+  assert.match(src, /if \(aeRunning\(\)\) \{[\s\S]*?process\.exit\(1\)/);
+  assert.match(src, /!done\.has\(p\) && !black\.has\(p\) && !panelDone\.has\(p\)/);
+  assert.match(src, /buildPluginIndex\(\)/);
+  assert.match(src, /preset_plugin_manifest\.json/);
+  assert.match(src, /taskkill/);
+  assert.match(src, /--background/);
+});
+
+test("面板合并离线索引，插件预设明确提示走离线脚本", () => {
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(lib, /loadOptionalJson\("data\/preset_plugin_manifest\.json"/);
+  assert.match(lib, /pluginSkipped/);
+  assert.match(lib, /run_plugin_preset_batches\.mjs/);
+  assert.match(lib, /preview\.plugin/);
 });
 
 /* ---------- 运行 ---------- */

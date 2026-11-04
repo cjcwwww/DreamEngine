@@ -10,8 +10,9 @@
 //   · 全程在**临时合成**里做，渲完 remove()，绝不碰用户工程
 //   · 用 layer.applyPreset + layer.selected = true；应用级 applyPreset 与
 //     给 comp.selectedLayers 赋值都会直接把 AE 弄崩
-//   · 含第三方插件效果的预设**跳过渲染**（插件混渲会杀掉宿主 AE，
-//     面板与 AE 同进程）。这条链路只负责内置效果预设
+//   · 含第三方插件效果的预设在面板里**跳过**（面板与 AE 同进程），
+//     改由 tools/run_plugin_preset_preview.jsx 在专用 AE 实例里逐条隔离渲染；
+//     传 options.allowPlugins=true 即放行
 //   · 索引写独立的 data/preset_manifest.json，不碰 L1 的 manifest.json
 //     （后者会被引擎 writeManifest 整份重写）
 //
@@ -230,8 +231,9 @@ var AEV_PresetPreview = (function () {
         return out;
     }
 
-    /** 含第三方插件效果的预设不渲染（插件混渲会杀掉宿主 AE） */
-    function pluginMatchName(comp) {
+    /** 收集预设用到的第三方插件效果 matchName（只读名字，不碰参数值） */
+    function pluginMatchNames(comp) {
+        var found = [];
         var total = 0;
         try { total = comp.numLayers; } catch (e) { total = 0; }
         for (var i = 1; i <= total; i++) {
@@ -251,11 +253,11 @@ var AEV_PresetPreview = (function () {
                 try { mn = String(group.matchName || ""); } catch (e6) {}
                 if (!mn) continue;
                 if (typeof AEV_Recipe !== "undefined" && AEV_Recipe.isBuiltinMatch) {
-                    if (!AEV_Recipe.isBuiltinMatch(mn)) return mn;
+                    if (!AEV_Recipe.isBuiltinMatch(mn)) found.push(mn);
                 }
             }
         }
-        return "";
+        return found;
     }
 
     function selectOnly(comp, layer) {
@@ -318,6 +320,7 @@ var AEV_PresetPreview = (function () {
         var conf = config();
         var size = Number(opts.cellSize) || conf.contactSheet.cellSize || 128;
         var background = String(opts.background || "photo");
+        var allowPlugins = !!opts.allowPlugins;
         var extensionPath = String(opts.extensionPath || "");
         var file = new File(String(presetPath || ""));
         if (!file.exists) return result("error", [["reason", "no_preset"]]);
@@ -390,10 +393,14 @@ var AEV_PresetPreview = (function () {
                 return result("no_effect", [["reason", "preset_did_not_apply"]]);
             }
 
-            // 插件预设不渲染：混渲会杀掉宿主 AE（面板和 AE 是同一个进程）
-            var plugin = pluginMatchName(comp);
-            if (plugin) {
-                return result("plugin_preset", [["reason", "third_party_plugin"], ["matchName", plugin]]);
+            // 面板里默认不渲插件预设（面板和 AE 同进程，混渲会杀宿主）；
+            // 离线专用 AE 实例传 allowPlugins=true，逐条隔离渲染就安全。
+            var plugins = pluginMatchNames(comp);
+            if (plugins.length > 0 && !allowPlugins) {
+                return result("plugin_preset", [
+                    ["reason", "third_party_plugin"],
+                    ["matchName", plugins.join(",")]
+                ]);
             }
 
             var range = keyRange(comp);
@@ -460,6 +467,7 @@ var AEV_PresetPreview = (function () {
                 ["keyEnd", String(Math.round(keyEnd * 1000) / 1000)],
                 ["truncated", truncated ? "true" : "false"],
                 ["background", background],
+                ["plugins", plugins.join(",")],
                 ["files", kept.join(",")]
             ]);
         } catch (e) {

@@ -1151,7 +1151,8 @@ var AEV_Library = (function () {
 
   /* ---------- 预设库（M3） ---------- */
 
-  /* 预设预览的独立索引（不进 L1 的 manifest.json —— 它会被 writeManifest 重写） */
+  /* 预设预览的独立索引（不进 L1 的 manifest.json —— 它会被 writeManifest 重写）。
+     面板生成的内置预设 + 离线脚本生成的插件预设，两份合并；离线条目优先。 */
   function loadPresetIndex(done) {
     loadOptionalJson("data/preset_manifest.json", function (data) {
       state.presetPreviews = {};
@@ -1159,7 +1160,13 @@ var AEV_Library = (function () {
       for (var i = 0; i < items.length; i++) {
         state.presetPreviews[items[i].name] = items[i];
       }
-      if (done) done();
+      loadOptionalJson("data/preset_plugin_manifest.json", function (pluginData) {
+        var pluginItems = (pluginData && pluginData.items) || [];
+        for (var q = 0; q < pluginItems.length; q++) {
+          state.presetPreviews[pluginItems[q].name] = pluginItems[q];
+        }
+        if (done) done();
+      });
     });
   }
 
@@ -1260,16 +1267,23 @@ var AEV_Library = (function () {
     var button = byId("btnPresetPreview");
     if (button) button.disabled = true;
     var index = 0;
-    var ok = 0, skipped = 0, failed = 0;
+    var ok = 0, skipped = 0, failed = 0, pluginSkipped = 0;
 
     function next() {
       if (index >= list.length) {
         state.generatingPreviews = false;
         if (button) button.disabled = false;
+        // 含插件的预设不能在面板里渲（会杀 AE）：明确告诉用户走离线通道
+        var offlineHint = pluginSkipped > 0
+          ? (state.lang === "zh"
+              ? " · 含插件 " + pluginSkipped + " 条请关 AE 后跑 node tools/run_plugin_preset_batches.mjs"
+              : " · with AE closed, run run_plugin_preset_batches.mjs for " + pluginSkipped + " plugin presets")
+          : "";
         setStatus(
-          state.lang === "zh"
+          (state.lang === "zh"
             ? "预设预览：成功 " + ok + " · 跳过 " + skipped + " · 失败 " + failed
-            : "Preset previews: " + ok + " ok · " + skipped + " skipped · " + failed + " failed",
+            : "Preset previews: " + ok + " ok · " + skipped + " skipped · " + failed + " failed") +
+            offlineHint,
           failed > 0
         );
         renderPresetList();
@@ -1322,6 +1336,7 @@ var AEV_Library = (function () {
             ok++;
           } else if (data && data.status === "plugin_preset") {
             skipped++;
+            pluginSkipped++;
           } else if (data && data.status === "no_effect") {
             skipped++;
           } else {
@@ -1562,6 +1577,9 @@ var AEV_Library = (function () {
             : (state.lang === "zh" ? "静态" : "Static"));
       if (preview && preview.truncated) {
         badge.textContent += state.lang === "zh" ? "（截取前 6 秒）" : " (first 6s)";
+      }
+      if (preview && preview.plugin) {
+        badge.textContent += state.lang === "zh" ? " · 离线生成" : " · offline";
       }
 
       var name = document.createElement("span");
