@@ -61,6 +61,13 @@ var AEV_PresetPreview = (function () {
         return "{" + parts.join(",") + "}";
     }
 
+    /** AE 返回的文件名是 URL 编码的（"%E8%83%8C%E6%99%AF"），不解码面板会显示乱码 */
+    function displayName(name) {
+        var text = String(name || "");
+        try { text = decodeURI(text); } catch (e) {}
+        return text;
+    }
+
     function backgroundDir() {
         var dir = new Folder(Folder.myDocuments.fsName + "/DreamEngine/backgrounds");
         if (!dir.exists) dir.create();
@@ -92,7 +99,7 @@ var AEV_PresetPreview = (function () {
             var lower = String(file.name).toLowerCase();
             if (!/\.(png|jpg|jpeg|tif|tiff|bmp|psd|ai)$/.test(lower)) continue;
             items.push('{"id":' + jsonText(file.fsName) +
-                       ',"name":' + jsonText(String(file.name)) + ',"builtin":false}');
+                       ',"name":' + jsonText(displayName(file.name)) + ',"builtin":false}');
         }
         return '{"status":"ok","items":[' + items.join(",") + "]}";
     }
@@ -117,7 +124,7 @@ var AEV_PresetPreview = (function () {
             return result("error", [["reason", "copy_failed"], ["detail", String(e)]]);
         }
         return '{"status":"ok","id":' + jsonText(target.fsName) +
-               ',"name":' + jsonText(target.name) + "}";
+               ',"name":' + jsonText(displayName(target.name)) + "}";
     }
 
     /** 面板把整份索引文本写盘（引擎侧不解析 JSON，避免 ES3 没有 JSON.parse） */
