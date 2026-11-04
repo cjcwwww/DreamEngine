@@ -32,7 +32,11 @@ var AEV_Library = (function () {
     // AE 菜单里的分类顺序（从 catalog 首次出现顺序推导）
     categoryOrder: [],
     // 预览格尺寸（px）。面板比例不同、卡片实际渲染大小不同时可手动调。
-    thumbSize: 132
+    thumbSize: 132,
+    // 当前主视图：effects = 效果预览，presets = 预设预览
+    view: "effects",
+    // 已知「帧内容完全相同」的预览：这些是静态效果，不该轮播（会闪）
+    staticPreviews: {}
   };
 
   function byId(id) {
@@ -173,7 +177,7 @@ var AEV_Library = (function () {
     var card = document.createElement("button");
     card.type = "button";
     card.className = "effect-card" + (item.stale ? " stale" : "");
-    card.title = item.matchName;
+    card.title = item.matchName + "（双击添加到 AE 选中图层）";
     card.setAttribute("aria-label", AEV_ViewModel.resolveName(item, state.lang));
 
     var thumb = document.createElement("div");
@@ -187,6 +191,11 @@ var AEV_Library = (function () {
         var frameCount = preview.frames || 1;
         var frameIndex = 0;
         var playTimer = null;
+        // 静态预览（各帧内容完全相同）不播：播放它只会让浏览器反复
+        // 重解码同一张图 —— 视觉上是「闪几下」，而且毫无信息量。
+        // 判定来自 data/animated.json（由 tools/mark_animated.mjs 生成）。
+        var isAnimated = state.staticPreviews[item.matchName] !== true &&
+          frameCount > 1;
         var showFrame = function (index) {
           thumb.style.backgroundImage =
             'url("' + framePath(preview.frameSrc, index) + '")';
@@ -196,8 +205,8 @@ var AEV_Library = (function () {
           clearInterval(playTimer);
           playTimer = null;
         };
-        var play = function () {
-          if (playTimer || frameCount < 2) return;
+        var startPlaying = function () {
+          if (playTimer) return;
           // 动画从第 0 帧开始：那一帧是「效果尚未完全施加」的状态，
           // 正好把效果的变化过程演出来。
           frameIndex = 0;
@@ -207,13 +216,33 @@ var AEV_Library = (function () {
             showFrame(frameIndex);
           }, 83);
         };
+        var play = function () {
+          if (!isAnimated || playTimer) return;
+          // 帧没预加载完就先不播：直接切 background-image 会让浏览器
+          // 撤掉旧背景、等新图解码，中间那一瞬只剩容器底色 —— 看上去
+          // 就是「闪」。等预加载完成再开播就没有空档了。
+          if (preview.__ready) {
+            startPlaying();
+            return;
+          }
+          var urls = [];
+          for (var f = 0; f < frameCount; f++) {
+            urls.push(framePath(preview.frameSrc, f));
+          }
+          preloadFrames(urls, function () {
+            preview.__ready = true;
+            if (card.matches(":hover")) startPlaying();
+          });
+        };
         thumb.style.backgroundSize = slice.size;
         thumb.style.backgroundPosition = slice.position;
         // 静止时显示最后一帧：关键帧动画从 0 渐变到满效果，
         // 停在第 0 帧等于「完全没上效果」，网格里会一片素模。
         showFrame(frameCount - 1);
-        card.addEventListener("mouseenter", play);
-        card.addEventListener("mouseleave", stop);
+        if (isAnimated) {
+          card.addEventListener("mouseenter", play);
+          card.addEventListener("mouseleave", stop);
+        }
       } else {
         thumb.style.backgroundImage = 'url("data/' + preview.src + '")';
         thumb.style.backgroundSize = slice.size;
@@ -262,7 +291,66 @@ var AEV_Library = (function () {
     copy.appendChild(meta);
     card.appendChild(thumb);
     card.appendChild(copy);
+    // 双击 = 把这个效果加到 AE 当前选中的图层。
+    // 单击不做任何事：效果墙是浏览用的，误加效果会污染用户的工程。
+    card.addEventListener("dblclick", function () {
+      applyToSelectedLayer(item);
+    });
     return card;
+  }
+
+  /**
+   * 把效果加到 AE 里当前选中的图层。
+   *
+   * 走引擎侧的 AEV_Apply.addToSelectedJson：那边负责找合成与选中层、
+   * 挂效果、内置效果套显式配方（插件效果一个参数都不碰）。
+   */
+  function applyToSelectedLayer(item) {
+    if (!state.extensionPath) {
+      setStatus(state.lang === "zh" ? "扩展路径未知，请先点「重新扫描」" : "Unknown extension path", true);
+      return;
+    }
+    var label = AEV_ViewModel.resolveName(item, state.lang);
+    engine(
+      "AEV_Apply.addToSelectedJson(" + JSON.stringify(item.matchName) + ")",
+      function (result) {
+        var data = parseEngineResult(result);
+        if (!data || data.status !== "ok") {
+          var reason = (data && data.reason) || "";
+          var message;
+          if (reason === "no_layer") {
+            message = state.lang === "zh"
+              ? "请先在 AE 里选中一个图层，再双击效果"
+              : "Select a layer in AE first, then double-click an effect";
+          } else if (reason === "no_comp") {
+            message = state.lang === "zh"
+              ? "AE 里没有打开的合成"
+              : "No composition open in AE";
+          } else {
+            message = state.lang === "zh"
+              ? "添加失败：" + reason
+              : "Failed to add: " + reason;
+          }
+          setStatus(message, true);
+          return;
+        }
+        var modeNote = "";
+        if (data.mode === "recipe") {
+          modeNote = state.lang === "zh" ? "（已套用预览参数）" : " (with preview parameters)";
+        } else if (data.mode === "plugin-default") {
+          modeNote = state.lang === "zh" ? "（插件效果，用默认参数）" : " (plugin effect, default parameters)";
+        }
+        setStatus(
+          (state.lang === "zh" ? "已把「" : "Added ") +
+            label +
+            (state.lang === "zh" ? "」加到图层「" : "\" to layer \"") +
+            (data.layer || "?") +
+            (state.lang === "zh" ? "」" : "\"") +
+            modeNote,
+          false
+        );
+      }
+    );
   }
 
   function render() {
@@ -544,38 +632,44 @@ var AEV_Library = (function () {
               state.pluginPreviewCount++;
             }
 
-            getCatalog(function (catalogError, catalogData) {
-              if (catalogError) {
-                finish(catalogError);
-                return;
+            // 静态预览名单：这些条目各帧内容完全相同，播起来只会闪。
+            // 由 tools/mark_animated.mjs 生成；没有这个文件时全部当动态。
+            loadOptionalJson("data/animated.json", function (animData) {
+              state.staticPreviews = {};
+              var animItems = (animData && animData.items) || [];
+              for (var an = 0; an < animItems.length; an++) {
+                if (animItems[an].animated === false) {
+                  state.staticPreviews[animItems[an].matchName] = true;
+                }
               }
-              state.catalog = catalogData.effects;
-              // 分类顺序 = AE 菜单里的顺序（catalog 里各类首次出现的次序）
-              state.categoryOrder = AEV_ViewModel.categoryOrder(state.catalog);
-              checkStale(function () {
-                rebuildItems();
-                updateHeader();
-                render();
-                var staleCount = Object.keys(state.stale).length;
-                var ready = state.lang === "zh" ? "效果库已就绪" : "Library ready";
-                if (staleCount > 0) {
-                  ready +=
-                    state.lang === "zh"
-                      ? "（" + staleCount + " 张预览待刷新）"
-                      : " (" + staleCount + " previews stale)";
+
+              getCatalog(function (catalogError, catalogData) {
+                if (catalogError) {
+                  finish(catalogError);
+                  return;
                 }
-                if (state.pluginPreviewCount > 0) {
-                  ready +=
-                    state.lang === "zh"
-                      ? " · 插件预览 " + state.pluginPreviewCount + " 张"
-                      : " · " + state.pluginPreviewCount + " plugin previews";
-                }
-                setStatus(ready, false);
-                button.disabled = false;
-                refreshQueue();
-                if (done) done(null);
-              });
-            }, force);
+                state.catalog = catalogData.effects;
+                // 分类顺序 = AE 菜单里的顺序（catalog 里各类首次出现的次序）
+                state.categoryOrder = AEV_ViewModel.categoryOrder(state.catalog);
+                checkStale(function () {
+                  rebuildItems();
+                  updateHeader();
+                  render();
+                  var staleCount = Object.keys(state.stale).length;
+                  var ready = state.lang === "zh" ? "效果库已就绪" : "Library ready";
+                  if (staleCount > 0) {
+                    ready +=
+                      state.lang === "zh"
+                        ? "（" + staleCount + " 张预览待刷新）"
+                        : " (" + staleCount + " previews stale)";
+                  }
+                  setStatus(ready, false);
+                  button.disabled = false;
+                  refreshQueue();
+                  if (done) done(null);
+                });
+              }, force);
+            });
           });
         });
       });
@@ -636,6 +730,56 @@ var AEV_Library = (function () {
   /** 帧序列模板 "thumbs/batch_000_%04d.png" -> "data/thumbs/batch_000_0001.png" */
   function framePath(template, index) {
     return "data/" + String(template).replace("%04d", zeroPad(index, 4));
+  }
+
+  /* ---------- 帧预加载（消除首次悬停的闪烁） ---------- */
+
+  /**
+   * 预加载一串帧图，全部就绪后回调。
+   *
+   * 为什么必须预加载：切 background-image 到一个还没加载完的 URL 时，
+   * 浏览器会先把旧背景撤掉、新的还没画上 —— 中间那一瞬只剩容器的底色，
+   * 看上去就是「闪一下」。第一��悬停时 6 帧全都没缓存，于是连闪 6 下
+   * （用户反馈：首次预览效果时会闪几下）。预加载后切换走的是已解码的
+   * 缓存，不再有空档。
+   *
+   * 预加载用的 Image 与 CSS background-image 用同一个 URL，共享同一份
+   * HTTP 缓存，所以两者不会各拉一份。
+   */
+  var frameImages = {};
+
+  function frameImage(url) {
+    var img = frameImages[url];
+    if (img) return img;
+    img = new Image();
+    img.src = url;
+    frameImages[url] = img;
+    return img;
+  }
+
+  function preloadFrames(urls, callback) {
+    var pending = urls.length;
+    if (pending === 0) {
+      callback();
+      return;
+    }
+    var done = false;
+    function settle() {
+      pending--;
+      if (pending <= 0 && !done) {
+        done = true;
+        callback();
+      }
+    }
+    for (var i = 0; i < urls.length; i++) {
+      var img = frameImage(urls[i]);
+      if (img.complete) {
+        settle();
+      } else {
+        img.addEventListener("load", settle, { once: true });
+        img.addEventListener("error", settle, { once: true });
+      }
+    }
   }
 
   function entriesToTsv(entries) {
@@ -1070,23 +1214,24 @@ var AEV_Library = (function () {
         continue;
       }
       shown++;
-      var li = document.createElement("li");
-      var button = document.createElement("button");
-      button.type = "button";
-      button.className = "preset-item";
-      button.title = item.path;
+      var card = document.createElement("button");
+      card.type = "button";
+      card.className = "preset-card";
+      card.title = item.path;
+
       var name = document.createElement("span");
       name.className = "preset-name";
       name.textContent = item.name;
+
       var category = document.createElement("span");
       category.className = "preset-category";
-      category.textContent = item.category;
-      button.appendChild(name);
-      button.appendChild(category);
-      bindPresetItem(button, item);
-      li.appendChild(button);
-      list.appendChild(li);
-      // 一次最多渲染 400 行：622 个预设全量建 DOM 会让面板明显卡顿
+      category.textContent = item.category || "预设";
+
+      card.appendChild(name);
+      card.appendChild(category);
+      bindPresetItem(card, item);
+      list.appendChild(card);
+      // 一次最多渲染 400 张：几百个预设全量建 DOM 会让面板明显卡顿
       if (shown >= 400) break;
     }
     var summary = byId("presetSummary");
@@ -1170,9 +1315,31 @@ var AEV_Library = (function () {
     });
   }
 
+  /**
+   * 主视图切换：效果预览 / 预设预览。
+   *
+   * 两个视图同级，切换栏固定在面板最上方。
+   * 切到预设视图时才去读预设库 —— 效果视图用不到它。
+   */
+  function setView(view) {
+    state.view = view;
+    var isEffects = view === "effects";
+    byId("viewEffects").hidden = !isEffects;
+    byId("viewPresets").hidden = isEffects;
+    byId("tabEffects").className = "view-tab" + (isEffects ? " active" : "");
+    byId("tabPresets").className = "view-tab" + (!isEffects ? " active" : "");
+    byId("tabEffects").setAttribute("aria-selected", isEffects ? "true" : "false");
+    byId("tabPresets").setAttribute("aria-selected", !isEffects ? "true" : "false");
+    // 效果墙专属的工具条在预设视图下没有意义（搜索的是效果不是预设）
+    byId("effectControls").hidden = !isEffects;
+    if (!isEffects) loadPresetLibrary();
+  }
+
   function boot() {
     byId("langZh").addEventListener("click", function () { setLanguage("zh"); });
     byId("langEn").addEventListener("click", function () { setLanguage("en"); });
+    byId("tabEffects").addEventListener("click", function () { setView("effects"); });
+    byId("tabPresets").addEventListener("click", function () { setView("presets"); });
     byId("sortName").addEventListener("click", function () { setSortMode("name"); });
     byId("sortCategory").addEventListener("click", function () { setSortMode("category"); });
     byId("searchInput").addEventListener("input", function () {
@@ -1206,16 +1373,6 @@ var AEV_Library = (function () {
     });
     byId("btnQueueRetry").addEventListener("click", function () {
       retryFailed();
-    });
-    byId("btnPresets").addEventListener("click", function () {
-      var drawer = byId("presetDrawer");
-      if (!drawer) return;
-      drawer.hidden = !drawer.hidden;
-      if (!drawer.hidden) loadPresetLibrary();
-    });
-    byId("btnPresetClose").addEventListener("click", function () {
-      var drawer = byId("presetDrawer");
-      if (drawer) drawer.hidden = true;
     });
     byId("btnPresetAdd").addEventListener("click", function () {
       addPresets();

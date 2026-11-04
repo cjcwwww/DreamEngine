@@ -44,6 +44,135 @@ button {
   color: inherit;
 }
 
+/* 顶部的视图切换栏：效果预览 / 预设预览。
+   两个视图同级，切换栏固定在面板最上方——之前预设藏在右上角的
+   抽屉里，等级比效果墙低一层，用起来要来回找。 */
+.view-switch {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.view-tab {
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.view-tab:hover {
+  color: var(--text);
+}
+
+.view-tab.active {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* 预设视图：与效果墙同级的整块区域 */
+.preset-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+
+.preset-view[hidden] {
+  display: none;
+}
+
+.preset-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.preset-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.preset-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preset-tools input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 120px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.preset-summary {
+  flex: none;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+
+.preset-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.preset-card .preset-name {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-card .preset-category {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .topbar {
   flex: none;
   display: flex;
@@ -194,6 +323,11 @@ button {
   padding: 8px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+}
+
+/* 预设视图下，效果墙专属的筛选工具条没有意义 */
+.controls[hidden] {
+  display: none;
 }
 
 .search-field {
@@ -510,6 +644,17 @@ main {
   font-size: 10px;
 }
 
+/* 状态文案可能很长（生成进度、错误详情）。面板比例一变窄，
+   长文案会把底栏撑成两行、显得又高又挤 —— 这里让它单行省略，
+   底栏高度恒定。 */
+#statusText {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .statusbar .error {
   color: var(--danger);
 }
@@ -566,8 +711,7 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-.queue-drawer,
-.preset-drawer {
+.queue-drawer {
   position: fixed;
   top: 0;
   right: 0;
@@ -583,8 +727,7 @@ main {
   box-shadow: -12px 0 24px rgba(0, 0, 0, 0.35);
 }
 
-.queue-drawer[hidden],
-.preset-drawer[hidden] {
+.queue-drawer[hidden] {
   display: none;
 }
 
@@ -657,71 +800,31 @@ main {
   text-align: center;
 }
 
-/* 预设库抽屉 */
-.preset-tools {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.preset-tools input[type="search"] {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text);
-}
-
-.preset-summary {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.preset-list {
-  flex: 1 1 auto;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  list-style: none;
-}
-
-.preset-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 5px 4px;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  background: none;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.preset-item:hover {
-  background: var(--surface-2);
-}
-
-.preset-item .preset-name {
-  flex: 1 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.preset-item .preset-category {
-  flex: 0 0 auto;
-  color: var(--muted);
-  font-size: 10px;
-}
+/* 预设视图里的卡片样式见上面的 .preset-card */
 
 @media (max-width: 520px) {
   .topbar {
     padding-right: 10px;
     padding-left: 10px;
+  }
+
+  .view-switch {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .view-tab {
+    flex: 1 1 auto;
+    padding: 0 8px;
+  }
+
+  .preset-view {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 
   .controls {

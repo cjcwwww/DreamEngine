@@ -95,6 +95,7 @@ var Bridge = (function () {
     "engine/names.jsx",
     "engine/assets.jsx",
     "engine/recipe.jsx",
+    "engine/apply.jsx",
     "engine/previewgen.jsx",
     "engine/queue.jsx",
     "engine/plugin_state.jsx",

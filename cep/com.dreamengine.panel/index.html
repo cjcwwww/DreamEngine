@@ -8,6 +8,15 @@
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
+  <nav class="view-switch" role="tablist" aria-label="主视图切换">
+    <button class="view-tab active" id="tabEffects" type="button" role="tab" aria-selected="true">
+      效果预览
+    </button>
+    <button class="view-tab" id="tabPresets" type="button" role="tab" aria-selected="false">
+      预设预览
+    </button>
+  </nav>
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">DE</span>
@@ -24,9 +33,6 @@
       <button class="action-button" id="btnGenerate" type="button" title="在当前合成环境下渲染缺失的预览">
         生成缺失预览
       </button>
-      <button class="action-button" id="btnPresets" type="button" title="预设库">
-        预设
-      </button>
       <button class="action-button" id="btnRetry" type="button" hidden title="重新排队失败的条目">
         重试失败
       </button>
@@ -41,7 +47,7 @@
     </div>
   </header>
 
-  <section class="controls">
+  <section class="controls" id="effectControls">
     <label class="search-field">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="8"/>
@@ -69,7 +75,7 @@
     </label>
   </section>
 
-  <div class="workspace">
+  <div class="workspace" id="viewEffects">
     <aside class="sidebar">
       <h2 class="sidebar-title">分类</h2>
       <ul class="category-list" id="categoryList"></ul>
@@ -82,6 +88,18 @@
       </div>
     </main>
   </div>
+
+  <section class="preset-view" id="viewPresets" hidden aria-label="预设预览">
+    <div class="preset-head">
+      <h2>预设库</h2>
+      <div class="preset-tools">
+        <input id="presetSearch" type="search" placeholder="搜索预设" autocomplete="off"/>
+        <button class="action-button" id="btnPresetAdd" type="button" title="选择 .ffx 文件加入预设库">添加预设</button>
+      </div>
+    </div>
+    <div class="preset-summary" id="presetSummary"></div>
+    <div class="preset-grid" id="presetList"></div>
+  </section>
 
   <footer class="statusbar">
     <span id="statusText">准备扫描</span>
@@ -110,23 +128,6 @@
       <span class="queue-summary" id="queueSummary"></span>
     </div>
     <ul class="queue-list" id="queueList"></ul>
-  </aside>
-
-  <aside class="preset-drawer" id="presetDrawer" hidden aria-label="预设库">
-    <div class="queue-head">
-      <h3>预设库</h3>
-      <button class="icon-button" id="btnPresetClose" type="button" aria-label="关闭预设库">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6l12 12M18 6L6 18"/>
-        </svg>
-      </button>
-    </div>
-    <div class="preset-tools">
-      <input id="presetSearch" type="search" placeholder="搜索预设" autocomplete="off"/>
-      <button class="action-button" id="btnPresetAdd" type="button" title="选择 .ffx 文件加入预设库">添加预设</button>
-    </div>
-    <div class="preset-summary" id="presetSummary"></div>
-    <ul class="preset-list" id="presetList"></ul>
   </aside>
 
   <script src="js/bridge.js"></script>

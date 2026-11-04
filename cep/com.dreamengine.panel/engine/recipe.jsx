@@ -1067,6 +1067,7 @@ var AEV_Recipe = (function () {
         setTrace: setTrace,
         pluginMainParam: pluginMainParam,
         isIntensityName: isIntensityName,
+        isBuiltinMatch: isBuiltinMatch,
         recipes: RECIPES,
         effectNameFor: effectNameFor,
         stepsFor: stepsFor,
