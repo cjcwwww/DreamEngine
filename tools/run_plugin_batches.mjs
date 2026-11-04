@@ -65,10 +65,22 @@ let totalOk = 0;
 let totalFail = 0;
 
 for (let round = 1; round <= maxRounds; round++) {
-  // AE 已在运行的话，新实例会被转发过去，脚本根本不会执行（表现为日志不动）
+  // 上一轮的 AE 可能还在退出（脚本渲完会 app.quit，但退出要几秒）。
+  // 直接起下一轮会被转发到旧实例，脚本根本不执行。等它退干净；
+  // 等不掉就强制结束——能走到这里说明 AE 是本脚本拉起来的。
   if (aeRunning()) {
-    console.log("AE 正在运行，请先关闭 AE 再跑批量（否则脚本会被转发到现有实例）。");
-    process.exit(1);
+    let waited = 0;
+    while (aeRunning() && waited < 30) {
+      sleep(2000);
+      waited += 2;
+    }
+    if (aeRunning()) {
+      console.log("上一轮的 AE 没有自行退出，强制结束。");
+      try {
+        execFileSync("taskkill", ["/IM", "AfterFX.exe", "/F"], { stdio: "ignore" });
+      } catch (e) {}
+      sleep(2000);
+    }
   }
 
   // 1) 挑名单（复用 pick_plugin_candidates 的规则）
