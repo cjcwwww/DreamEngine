@@ -106,9 +106,14 @@
           </label>
         </div>
         <button class="action-button" id="btnPresetAdd" type="button" title="选择 .ffx 文件加入预设库">添加预设</button>
+        <!-- 用面板（CEF）自己的文件框，不用 AE 的 File.openDialog：
+             后者是 AE 主进程的模态框，在 CEP 面板里常被挡住/过滤器把 .ffx 全滤掉。
+             CEF 的 File 对象带 path 属性（T0.6b 实机验证过），可直接拿到绝对路径。 -->
+        <input id="presetFileInput" type="file" accept=".ffx" multiple hidden/>
       </div>
     </div>
     <div class="preset-summary" id="presetSummary"></div>
+    <p class="preset-hint">也可以直接把 .ffx 文件拖进这个页面</p>
     <div class="preset-grid" id="presetList"></div>
   </section>
 

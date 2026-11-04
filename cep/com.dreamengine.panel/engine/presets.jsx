@@ -741,10 +741,27 @@ var AEV_Presets = (function () {
 
     function pickJson() {
         var picked = null;
+        var filter = null;
+        /* Windows 的 filter 是「描述:*.ext」（或干脆 "*.ext"）。
+           之前误用了「描述 (*.ext)」这种括号写法 —— 没有冒号，Windows 会把
+           整串当成描述、扩展名为空，对话框里一个 .ffx 都看不到。
+           M0 的 T0.6 实机验证过：多选 + "*.ffx" 能正常返回 30 个文件。
+           macOS 则用函数式 filter。 */
         try {
-            picked = File.openDialog("选择要加入预设库的 .ffx 文件", "After Effects 预设 (*.ffx)", true);
+            if (String($.os || "").indexOf("Win") >= 0) {
+                filter = "*.ffx";
+            } else {
+                filter = function (f) {
+                    return (f instanceof Folder) || isPresetFile(f.name);
+                };
+            }
+        } catch (eOs) {
+            filter = "*.ffx";
+        }
+        try {
+            picked = File.openDialog("选择要加入预设库的 .ffx 文件（可多选）", filter, true);
         } catch (e) {
-            return result("error", [["reason", "dialog_failed"]]);
+            return result("error", [["reason", "dialog_failed"], ["detail", String(e)]]);
         }
         if (!picked) return '{"status":"ok","items":[]}';
         var list = picked instanceof Array ? picked : [picked];
@@ -753,6 +770,8 @@ var AEV_Presets = (function () {
             try {
                 var f = list[i];
                 if (!(f instanceof File)) continue;
+                // 对话框的过滤器在某些版本会被忽略，代码里再判一次
+                if (!isPresetFile(f.name)) continue;
                 items.push(
                     '{"path":' + jsonText(f.fsName) +
                     ',"name":' + jsonText(displayName(f.name)) + "}"

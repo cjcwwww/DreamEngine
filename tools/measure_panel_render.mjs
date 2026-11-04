@@ -53,6 +53,7 @@ if (!existsSync(resolve(runtimeData, "manifest.json"))) {
 const stub = `
 <script>
 window.__SIM_ERRORS = [];
+window.__SIM_IMPORTS = [];
 window.addEventListener("error", function (e) { window.__SIM_ERRORS.push(String(e.message)); });
 (function () {
   var root = ${JSON.stringify(RUNTIME_PANEL)};
@@ -71,6 +72,9 @@ window.addEventListener("error", function (e) { window.__SIM_ERRORS.push(String(
         out = '{"total":0,"pending":0,"rendering":0,"cached":0,"failed":0}';
       } else if (expr.indexOf("AEV_Queue.listJson") === 0) {
         out = '{"total":0,"items":[]}';
+      } else if (expr.indexOf("AEV_Presets.importOneJson") === 0) {
+        window.__SIM_IMPORTS.push(expr);
+        out = '{"status":"ok","name":"sim"}';
       } else {
         out = '{"status":"ok"}';
       }
@@ -201,7 +205,25 @@ function finish() {
         st.textContent = oldStatus;
         qc.textContent = oldQueue;
 
-        document.getElementById("out").textContent = JSON.stringify(result);
+        /* --- 添加预设：模拟 CEF 文件框选中「1 个 .ffx + 1 个 .txt」 --- */
+        var fileInput = document.getElementById("presetFileInput");
+        result.presetFileInputFound = !!fileInput;
+        result.presetImportsBefore = window.__SIM_IMPORTS.length;
+        if (fileInput) {
+          var fake = [
+            { name: "夜视.ffx", path: "C:////Users////me////夜视.ffx" },
+            { name: "notes.txt", path: "C:////Users////me////notes.txt" }
+          ];
+          Object.defineProperty(fileInput, "files", { value: fake, configurable: true });
+          var ev2 = document.createEvent("HTMLEvents");
+          ev2.initEvent("change", true, false);
+          fileInput.dispatchEvent(ev2);
+        }
+        setTimeout(function () {
+          result.presetImports = window.__SIM_IMPORTS.slice();
+          result.presetStatus = String(document.getElementById("statusText").textContent);
+          document.getElementById("out").textContent = JSON.stringify(result);
+        }, 600);
       }, 500);
     }, 400);
     return;
@@ -360,6 +382,17 @@ check("底栏在最长文案下高度恒定、内容不竖排", () => {
   assert.equal(data.statusbarHeightWorst, 32, "长文案把底栏撑高了：" + data.statusbarHeightWorst);
   assert.ok(data.queueCountsHeightWorst <= 20, "队列计数被压成竖排：" + data.queueCountsHeightWorst);
   assert.ok(data.statusHeightWorst <= 20, "状态文字被压成竖排：" + data.statusHeightWorst);
+});
+
+check("添加预设：选中的 .ffx 真正走入库，非 .ffx 被过滤", () => {
+  assert.equal(data.presetFileInputFound, true, "面板里没有 CEF 文件选择框");
+  const imports = data.presetImports || [];
+  assert.equal(imports.length - data.presetImportsBefore, 1, "应该只入库 1 个 .ffx，实际：" + JSON.stringify(imports));
+  assert.match(imports[0], /夜视\.ffx/, "入库的不是那个 .ffx");
+  assert.doesNotMatch(imports[0], /notes\.txt/, ".txt 不该被入库");
+  // Windows 反斜杠路径要归一成正斜杠，否则 ExtendScript 侧会当转义符
+  assert.doesNotMatch(imports[0], /\\\\Users/, "路径里的反斜杠没归一化：" + imports[0]);
+  assert.match(data.presetStatus, /已加入 1 个预设/, "状态栏没报结果：" + data.presetStatus);
 });
 
 console.log(`\n${failed === 0 ? "全部通过" : failed + " 项失败"}`);

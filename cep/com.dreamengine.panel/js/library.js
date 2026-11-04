@@ -1165,20 +1165,103 @@ var AEV_Library = (function () {
   }
 
   /**
-   * 用户自己挑 .ffx 加进库。
-   * 不再扫描 AE 内置预设目录 —— 那是几百个跟本机无关的文件，
-   * 用户要的是「自主添加」：挑中的文件复制进预设库，之后就能反复用。
+   * 把选中的 .ffx 复制进预设库。
+   * paths 是 CEP 面板拿到的绝对路径；统一成正斜杠，按扩展名过滤。
+   */
+  function importPresetPaths(paths) {
+    var clean = [];
+    for (var i = 0; i < paths.length; i++) {
+      var p = String(paths[i] || "").replace(/\\/g, "/");
+      if (!/\.ffx$/i.test(p)) continue;
+      clean.push(p);
+    }
+    if (!clean.length) {
+      setStatus(
+        state.lang === "zh"
+          ? "没有 .ffx 文件（预设库只接受 .ffx）"
+          : "No .ffx files selected",
+        true
+      );
+      return;
+    }
+    setStatus(
+      state.lang === "zh"
+        ? "正在加入 " + clean.length + " 个预设…"
+        : "Adding " + clean.length + " presets…",
+      false
+    );
+    var added = 0;
+    var skipped = 0;
+    var index = 0;
+
+    function importNext() {
+      if (index >= clean.length) {
+        setStatus(
+          state.lang === "zh"
+            ? "已加入 " + added + " 个预设" + (skipped ? "（" + skipped + " 个失败）" : "")
+            : "Added " + added + " presets" + (skipped ? " (" + skipped + " failed)" : ""),
+          skipped > 0
+        );
+        loadPresetLibrary();
+        return;
+      }
+      var path = clean[index++];
+      engine(
+        "AEV_Presets.importOneJson(" + JSON.stringify(path) + ")",
+        function (oneResult) {
+          var one = parseEngineResult(oneResult);
+          if (one && one.status === "ok") added++;
+          else skipped++;
+          importNext();
+        }
+      );
+    }
+    importNext();
+  }
+
+  /**
+   * 「添加预设」主通道：面板（CEF）自己的原生文件框。
+   *
+   * 为什么不用 AE 的 File.openDialog：那是 AE 主进程的模态对话框，
+   * 在 CEP 面板里常被主窗口挡住；而且它的 filter 参数格式在 Windows 上是
+   * "描述:*.ext"，写错就会把 .ffx 全部过滤掉、对话框里一个文件都看不到。
+   * CEF 的 File 对象带 path 属性（M0 的 T0.6b 实机验证过），能直接拿到绝对路径。
    */
   function addPresets() {
+    var input = byId("presetFileInput");
+    if (!input) {
+      pickPresetsViaEngine();
+      return;
+    }
+    // 先清空，否则连续选同一个文件不会触发 change
+    input.value = "";
+    setStatus(
+      state.lang === "zh" ? "请选择要加入的 .ffx 预设…" : "Pick .ffx presets…",
+      false
+    );
+    try {
+      input.click();
+    } catch (e) {
+      pickPresetsViaEngine();
+    }
+  }
+
+  /** 回退通道：CEF 文件框不可用或拿不到路径时，才走 AE 的文件对话框 */
+  function pickPresetsViaEngine() {
     if (!state.extensionPath) return;
     setStatus(
-      state.lang === "zh" ? "请选择要加入的预设文件…" : "Pick preset files…",
+      state.lang === "zh" ? "请在 AE 文件框里选择 .ffx…" : "Pick .ffx in the AE dialog…",
       false
     );
     engine("AEV_Presets.pickJson()", function (result) {
       var data = parseEngineResult(result);
       if (!data || data.status !== "ok") {
-        setStatus(state.lang === "zh" ? "选择预设失败" : "Failed to pick presets", true);
+        setStatus(
+          state.lang === "zh"
+            ? "选择预设失败：" + ((data && data.reason) || "未知原因")
+            : "Failed to pick presets",
+          true
+        );
         return;
       }
       var items = data.items || [];
@@ -1186,30 +1269,62 @@ var AEV_Library = (function () {
         setStatus(state.lang === "zh" ? "没有选择文件" : "No file picked", false);
         return;
       }
-      var added = 0;
-      var index = 0;
+      var paths = [];
+      for (var i = 0; i < items.length; i++) paths.push(items[i].path);
+      importPresetPaths(paths);
+    });
+  }
 
-      function importNext() {
-        if (index >= items.length) {
-          setStatus(
-            state.lang === "zh" ? "已加入 " + added + " 个预设" : "Added " + added + " presets",
-            false
-          );
-          loadPresetLibrary();
-          return;
-        }
-        var item = items[index++];
-        engine(
-          "AEV_Presets.importOneJson(" + JSON.stringify(item.path) + ")",
-          function (oneResult) {
-            var one = parseEngineResult(oneResult);
-            if (one && one.status === "ok") added++;
-            importNext();
-          }
+  /** 文件框选完：取 CEF 暴露的 path，交给入库流程 */
+  function onPresetFilesChosen(event) {
+    var input = event.target || byId("presetFileInput");
+    var files = input.files || [];
+    if (!files.length) return; // 用户点了取消
+    var paths = [];
+    var ffxWithoutPath = 0;
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].path) {
+        paths.push(files[i].path);
+      } else if (/\.ffx$/i.test(String(files[i].name || ""))) {
+        ffxWithoutPath++;
+      }
+    }
+    if (!paths.length) {
+      // 某些 CEP 版本不给 path —— 退回 AE 的文件框（它返回 fsName）
+      if (ffxWithoutPath) pickPresetsViaEngine();
+      else {
+        setStatus(
+          state.lang === "zh" ? "没有选到 .ffx 预设" : "No .ffx preset selected",
+          true
         );
       }
-      importNext();
-    });
+      return;
+    }
+    importPresetPaths(paths);
+  }
+
+  /** 拖 .ffx 进预设页面也能入库（T0.6b 验证过 dataTransfer.files[i].path） */
+  function onPresetDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var view = byId("viewPresets");
+    if (view) view.className = "preset-view";
+    var dt = event.dataTransfer;
+    var files = dt && dt.files ? dt.files : [];
+    var paths = [];
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].path) paths.push(files[i].path);
+    }
+    if (!paths.length) {
+      setStatus(
+        state.lang === "zh"
+          ? "拖入的文件拿不到路径，请点「添加预设」"
+          : "Could not read dropped paths — use “添加预设”",
+        true
+      );
+      return;
+    }
+    importPresetPaths(paths);
   }
 
   function renderPresetList() {
@@ -1519,6 +1634,19 @@ var AEV_Library = (function () {
     byId("btnPresetAdd").addEventListener("click", function () {
       addPresets();
     });
+    byId("presetFileInput").addEventListener("change", onPresetFilesChosen);
+    var presetView = byId("viewPresets");
+    if (presetView) {
+      presetView.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        presetView.className = "preset-view drop-over";
+      });
+      presetView.addEventListener("dragleave", function (event) {
+        event.preventDefault();
+        presetView.className = "preset-view";
+      });
+      presetView.addEventListener("drop", onPresetDrop);
+    }
     byId("presetSearch").addEventListener("input", function () {
       state.presetQuery = this.value;
       renderPresetList();

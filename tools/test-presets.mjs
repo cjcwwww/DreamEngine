@@ -24,6 +24,7 @@ function test(name, fn) { tests.push({ name, fn }); }
 /** 只看代码行：注释里常会提到被禁用的写法（说明「不要用它」） */
 function codeOf(src) {
   return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
     .split("\n")
     .map((line) => line.replace(/^\s*\/\/.*$/, "").replace(/^\s*\*.*$/, ""))
     .join("\n");
@@ -153,6 +154,51 @@ test("预设库是用户自建的：自己挑文件复制入库，不再扫 AE �
   assert.match(lib, /AEV_Presets\.libraryJson\(\)/);
   assert.match(lib, /AEV_Presets\.pickJson\(\)/);
   assert.match(lib, /AEV_Presets\.importOneJson\(/);
+});
+
+/* ---------- 添加预设：文件选择框必须真能选到 .ffx ---------- */
+
+test("File.openDialog 的 Windows 过滤器用 *.ffx，不再用没有冒号的错误格式", () => {
+  const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
+  const code = codeOf(src);
+  // 之前写成 "After Effects 预设 (*.ffx)" —— Windows 会把整串当描述、
+  // 扩展名为空，对话框里一个 .ffx 都看不到（用户实测「根本没法选」）
+  const pick = code.slice(code.indexOf("function pickJson()"), code.indexOf("function importOneJson("));
+  assert.doesNotMatch(pick, /"After Effects 预设 \(\*\.ffx\)"/);
+  assert.match(pick, /filter = "\*\.ffx"/);
+  // 按平台分支：macOS 用函数式 filter
+  assert.match(pick, /\$\.os/);
+  assert.match(pick, /f instanceof Folder/);
+  // 对话框过滤器可能被忽略，代码里还要按后缀再判一次
+  assert.match(pick, /isPresetFile\(f\.name\)/);
+});
+
+test("添加预设主通道走 CEF 原生文件框，不走 AE 模态对话框", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  const code = codeOf(lib);
+  assert.match(html, /id="presetFileInput"[^>]*type="file"/);
+  assert.match(html, /accept="\.ffx"/);
+  assert.match(html, /multiple/);
+  const add = code.slice(code.indexOf("function addPresets()"), code.indexOf("function pickPresetsViaEngine()"));
+  assert.match(add, /input\.click\(\)/);
+  assert.doesNotMatch(add, /AEV_Presets\.pickJson\(\)/);
+  // CEF 的 File 对象带 path（T0.6b 实机验证过）
+  assert.match(code, /files\[i\]\.path/);
+  // 拿不到 path 时要能退回 AE 的文件框
+  assert.match(code, /function pickPresetsViaEngine\(\)/);
+  assert.match(code, /if \(ffxWithoutPath\) pickPresetsViaEngine\(\)/);
+});
+
+test("拖入 .ffx 也能入库；入库前过滤后缀并统一路径分隔符", () => {
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  const code = codeOf(lib);
+  assert.match(code, /function onPresetDrop\(event\)/);
+  assert.match(code, /dataTransfer/);
+  assert.match(code, /addEventListener\("drop", onPresetDrop\)/);
+  assert.match(code, /function importPresetPaths\(paths\)/);
+  assert.match(code, /replace\(\/\\\\\/g, "\/"\)/);
+  assert.match(code, /\\\.ffx\$\/i\.test\(p\)/);
 });
 
 /* ---------- 运行 ---------- */

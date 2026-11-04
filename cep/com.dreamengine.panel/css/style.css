@@ -131,6 +131,21 @@ button {
   font-size: 10px;
 }
 
+.preset-hint {
+  flex: none;
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* 拖 .ffx 进预设页面时的落点提示 */
+.preset-view.drop-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -6px;
+  background: var(--accent-soft);
+}
+
 .preset-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
