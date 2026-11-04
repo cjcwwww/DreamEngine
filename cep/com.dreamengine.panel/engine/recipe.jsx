@@ -738,7 +738,7 @@ var AEV_Recipe = (function () {
                 // 只认「强度/占比」类参数。
                 // AE 内置的「效果不透明度」绝不碰：实测对它 setValue 或打关键帧，
                 // 整条效果都会报同样的错，直接渲不出来。
-                if (isIntensityName(name)) {
+                if (isIntensityName(name) || true) {   // TEMP: 任意 oneD 都试
                     candidate = prop;
                     return;
                 }
@@ -863,8 +863,7 @@ var AEV_Recipe = (function () {
      */
     function tunePlugin(effectGroup) {
         if (!TUNING_ENABLED) return 0;
-        // TEMP: 暂时只做分类不做写入
-        if (true) { trace("tune|skipped_for_probe"); return 0; }
+
         if (!main) return 0;
         var target = paramTarget(main.prop, main.ratio);
         if (target === null) { trace("tune|no_target"); return 0; }
