@@ -15,7 +15,7 @@
  * 用法：node tools/build_release.mjs
  * ============================================================ */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, cpSync, statSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, statSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
@@ -38,18 +38,48 @@ if (!existsSync(resolve(L1, "manifest.json"))) {
 }
 
 /* ---------- 暂存目录 ---------- */
-rmSync(STAGE, { recursive: true, force: true });
+/* 不用 rmSync 递归删目录：部分环境下 fs.rmSync 会被劫持到回收站并超时，
+   失败时还会把旧包毁掉。改成手动逐层清空。 */
+function emptyDir(dir) {
+  if (!existsSync(dir)) return;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      emptyDir(full);
+      rmdirSync(full);
+    } else {
+      unlinkSync(full);
+    }
+  }
+}
+emptyDir(STAGE);
 mkdirSync(resolve(STAGE, "DreamEngine/extension"), { recursive: true });
 mkdirSync(resolve(STAGE, "DreamEngine/l1"), { recursive: true });
 
-/* 扩展本体：不要把开发期的大文件带进去 */
-const EXT_SKIP = new Set(["data/thumbs"]);
+/* 扩展本体：不要把开发期的大文件带进去。
+   排除规则必须按「相对面板根的路径」匹配。
+   之前写成按顶层条目名匹配 "data/thumbs"，但顶层条目其实是 "data"，
+   规则从未生效 —— 一张 2048 时代的遗留图被带进了分发包。 */
+const EXT_SKIP = new Set(["data/thumbs", "data/manifest.json", "data/previews.tsv"]);
 for (const entry of readdirSync(PANEL, { withFileTypes: true })) {
   const rel = entry.name;
-  if (EXT_SKIP.has(rel)) continue;
+  const relPath = entry.isDirectory() ? `${rel}/` : rel;
+  if (EXT_SKIP.has(relPath) || EXT_SKIP.has(rel)) continue;
   cpSync(resolve(PANEL, rel), resolve(STAGE, "DreamEngine/extension", rel), {
     recursive: true,
   });
+}
+/* 递归清理：data/ 里可能还有嵌套的 thumbs 目录 */
+{
+  const dataDir = resolve(STAGE, "DreamEngine/extension/data");
+  if (existsSync(dataDir)) {
+    for (const entry of readdirSync(dataDir, { withFileTypes: true })) {
+      if (entry.name === "thumbs") {
+        emptyDir(resolve(dataDir, entry.name));
+        rmdirSync(resolve(dataDir, entry.name));
+      }
+    }
+  }
 }
 
 /* L1 预生成预览 */
@@ -159,17 +189,27 @@ writeFileSync(resolve(STAGE, "DreamEngine/README.md"), readme, "utf8");
 
 /* ---------- 打包 ---------- */
 const zipPath = resolve(ROOT, `dist/DreamEngine-${version}.zip`);
-rmSync(zipPath, { force: true });
+/* 用 Python 的 zipfile 打包，不用 PowerShell 的 Compress-Archive：
+   后者在 Windows 上把条目名写成反斜杠（DreamEngine\extension\index.html），
+   不符合 zip 规范（要求正斜杠）—— Windows 资源管理器能解，
+   但 macOS/Linux 的解压工具与部分安装器会把整条路径当成一个文件名。 */
+const zipScript = `
+import os, sys, zipfile
+stage, out = sys.argv[1], sys.argv[2]
+root = os.path.join(stage, "DreamEngine")
+with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames.sort()
+        for name in sorted(filenames):
+            full = os.path.join(dirpath, name)
+            rel = os.path.relpath(full, stage).replace(os.sep, "/")
+            z.write(full, rel)
+`;
+const zipTmp = resolve(ROOT, ".workbuddy/zip_pack.py");
+mkdirSync(resolve(ROOT, ".workbuddy"), { recursive: true });
+writeFileSync(zipTmp, zipScript, "utf8");
 try {
-  execFileSync(
-    "powershell",
-    [
-      "-NoProfile",
-      "-Command",
-      `Compress-Archive -Path '${resolve(STAGE, "DreamEngine")}' -DestinationPath '${zipPath}' -Force`,
-    ],
-    { stdio: "pipe" },
-  );
+  execFileSync("python", [zipTmp, STAGE, zipPath], { stdio: "pipe" });
 } catch (e) {
   console.error("打包失败：" + String(e.message || e));
   process.exit(1);

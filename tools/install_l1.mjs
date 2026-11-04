@@ -33,11 +33,11 @@ if (!existsSync(resolve(PKG_DIR, "manifest.json"))) {
 
 mkdirSync(resolve(TARGET, "thumbs"), { recursive: true });
 
-/* 备份旧索引 */
+/* 备份旧索引。用固定文件名覆盖，不要按时间戳堆文件——
+   扩展数据目录里堆几十个 backup 文件既占地方又会被误当成运行时产物。 */
 const oldManifest = resolve(TARGET, "manifest.json");
 if (existsSync(oldManifest)) {
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const backup = resolve(TARGET, `manifest.json.backup-${stamp}`);
+  const backup = resolve(TARGET, "manifest.json.bak");
   copyFileSync(oldManifest, backup);
   console.log("已备份旧索引 → " + backup);
 }
