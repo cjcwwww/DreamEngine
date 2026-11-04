@@ -73,6 +73,24 @@ for (const item of manifest.items) {
   if (!existsSync(resolve(TARGET, file))) missing++;
 }
 
+/* 同步 previews.tsv：它与 manifest 必须是同一份条目的两种表示，
+   staleList 靠它判过期，两边不一致会得出错误的过期结论。 */
+const indexLines = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
+for (const item of manifest.items) {
+  indexLines.push(
+    [
+      item.matchName,
+      String(item.sheet),
+      String(Math.floor(item.y / manifest.cellSize) * manifest.columns +
+        Math.floor(item.x / manifest.cellSize)),
+      String(item.frames || 1),
+      item.frameSrc || "",
+      item.key || "",
+    ].join("\t"),
+  );
+}
+writeFileSync(resolve(TARGET, "previews.tsv"), indexLines.join("\r\n"), "utf8");
+
 console.log("L1 安装完成");
 console.log(`  预览图 ${copied} 个（${(bytes / 1024 / 1024).toFixed(2)} MB）`);
 console.log(`  索引条目 ${manifest.items.length} 条，缺图 ${missing} 个`);

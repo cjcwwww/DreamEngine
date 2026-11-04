@@ -299,6 +299,8 @@ BCC_POLARWARP	BCC+Polar Warp		BCC Warp	BCC 弯曲	BCC	community
 BCC_RIPPLE	BCC+Ripple		BCC Warp	BCC 弯曲	BCC	community
 BCC_STMAP	BCC+ST Map		BCC Warp	BCC 弯曲	BCC	community
 BCC_VECTORDISPLACEMENT	BCC+Vector Displacement		BCC Warp	BCC 弯曲	BCC	community
+ADBE Color Swirl	Color Swirl	彩色旋绕			内置	official
+ADBE Getting Jiggy	Getting Jiggy	开始活跃			内置	official
 ADBE AUX CHANNEL EXTRACT	3D Channel Extract	3D 通道提取	3D Channel	3D 通道	内置	helpx
 ADBE DEPTH MATTE	Depth Matte	深度遮罩	3D Channel	3D 通道	内置	helpx
 ADBE DEPTH FIELD	Depth of Field	场深度	3D Channel	3D 通道	内置	helpx

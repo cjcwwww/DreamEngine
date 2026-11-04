@@ -4,7 +4,7 @@
     "names/names-firstparty.tsv",
     "names/joined-names-bcc.tsv"
   ],
-  "count": 566,
+  "count": 568,
   "items": [
     {
       "matchName": "ScriptEP",
@@ -3005,6 +3005,26 @@
       "pluginHint": "BCC",
       "nameZhSource": "community",
       "review": "conflict"
+    },
+    {
+      "matchName": "ADBE Color Swirl",
+      "nameEn": "Color Swirl",
+      "nameZh": "彩色旋绕",
+      "categoryEn": "",
+      "categoryZh": "",
+      "pluginHint": "内置",
+      "nameZhSource": "official",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Getting Jiggy",
+      "nameEn": "Getting Jiggy",
+      "nameZh": "开始活跃",
+      "categoryEn": "",
+      "categoryZh": "",
+      "pluginHint": "内置",
+      "nameZhSource": "official",
+      "review": "ok"
     },
     {
       "matchName": "ADBE AUX CHANNEL EXTRACT",
