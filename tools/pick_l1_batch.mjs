@@ -25,6 +25,8 @@ const OUT_DIR = resolve(
 );
 const OUT = resolve(OUT_DIR, "next_batch.tsv");
 const FRAMES = Number(process.argv[2]) || 6;
+// --keep：不在名单首行写 #replace，配合脚本的「跳过已完成」续跑
+const KEEP = process.argv.includes("--keep");
 
 const lines = readFileSync(TARGETS, "utf8")
   .replace(/\r/g, "")

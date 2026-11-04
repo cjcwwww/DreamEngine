@@ -17,7 +17,6 @@ ADBE Pro Levels2
 ADBE HUE SATURATION
 ADBE Tint
 ADBE Color Balance 2
-ADBE Lumetri
 APC Colorama
 ADBE Black&White
 ADBE PhotoFilterPS
@@ -210,42 +209,42 @@ ADBE CM FadeInOutmsec
 CC RepeTile
 APC Radio Waves
 ADBE CM Spin
+ADBE SelectiveColor
 CC Threshold
 APC Vegas
 ADBE CM ScaleBounceMarkers
-ADBE SelectiveColor
+ADBE Vibrance
 ADBE Upscale
 CC Threshold RGB
 CC Glue Gun
 ADBE CM ScaleBounceRandom
-ADBE Vibrance
 CC Light Burst 2.5
 ADBE CM WiggleGelatin
 CC Bender
 CC Light Rays
 ADBE CM WigglePosition
+ADBE PS Arbitrary Map
 CC Bend It
 CC Light Sweep
 ADBE CM WiggleRotation
-ADBE PS Arbitrary Map
+ADBE ShadowHighlight
 CC Blobbylize
 ADBE CM WiggleScale
-ADBE ShadowHighlight
 CC Flo Motion
 ADBE CM WiggleShear
 CC Griddler
 ADBE CM Wigglerama
+ADBE DigitalVideoLimiter
 CC Lens
 ADBE CM DissolveUnmelt
-ADBE DigitalVideoLimiter
 CC Page Turn
 ADBE CM Zoom2DSpin
+CC Color Offset
 CC Power Pin
 ADBE CM Zoom3DTumble
-CC Color Offset
+CC Toner
 CC Ripple Pulse
 ADBE CM ZoomWobble
-CC Toner
 ADBE CM ZoomBubble
 CC Smear
 ADBE CM ZoomSpiral
