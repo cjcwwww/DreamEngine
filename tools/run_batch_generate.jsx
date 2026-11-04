@@ -199,10 +199,28 @@
                 rendered++;
             }
             sheetIndex++;
+            // 每成功一批就落盘一次。整批跑完才写的话，中途 AE 崩溃会把前面
+            // 已经渲好的几十张全丢掉（实测踩过：10~12 张网渲完但索引没写）。
+            AEV_PreviewGen.writeManifest(entriesToTsv(entries), EXT);
         } else {
             failed += chunk.length;
         }
         flush();
+    }
+
+    function entriesToTsv(list) {
+        var rows = [];
+        for (var i = 0; i < list.length; i++) {
+            var it = list[i];
+            rows.push([
+                it.matchName,
+                String(it.sheet),
+                String(it.cell),
+                String(it.frames),
+                it.frameTemplate || ""
+            ].join("\t"));
+        }
+        return rows.join("\r\n");
     }
 
     function pad3(value) {
@@ -212,20 +230,7 @@
     }
 
     // ---- 重写索引（同时产出 previews.tsv 给 staleList 用）----
-    var rows = [];
-    for (var r = 0; r < entries.length; r++) {
-        var it = entries[r];
-        rows.push([
-            it.matchName,
-            String(it.sheet),
-            String(it.cell),
-            String(it.frames),
-            it.frameTemplate || "",
-            ""
-        ].join("\t"));
-    }
-    // writeManifest 只取前 5 列，第 6 列由它自己按当前配方重算
-    var result = AEV_PreviewGen.writeManifest(rows.join("\r\n"), EXT);
+    var result = AEV_PreviewGen.writeManifest(entriesToTsv(entries), EXT);
     push("MANIFEST=" + result);
     push("RENDERED=" + rendered + "|FAILED=" + failed);
     push("STALE_AFTER=" + AEV_PreviewGen.staleList(EXT));

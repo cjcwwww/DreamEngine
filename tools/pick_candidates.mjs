@@ -61,6 +61,9 @@ const candidates = catalog.filter((effect) => {
   if (existing.has(effect.matchName)) return false;
   if (view.isNoPreview(effect.category)) return false;
   if (view.isPoorPreviewTarget(effect)) return false;
+  // 只挑内置效果。实测：BCC / Sapphire / Universe 混在整网里会让 AE 硬崩溃
+  // （进程直接消失，日志断在该批），而 L1 本来就该由内置效果构成。
+  if (view.inferPlugin(effect) !== "内置") return false;
   return true;
 });
 
