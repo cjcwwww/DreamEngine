@@ -44,6 +44,7 @@ const stub = `
 <pre id="out"></pre>
 <script>
 window.__SIM_ERRORS = [];
+window.__SIM = { catalog: 0, lastExpr: "" };
 window.addEventListener("error", function (e) { window.__SIM_ERRORS.push(String(e.message)); });
 
 Bridge.getExtensionPath = function (cb) { cb("file:///sim/panel"); };
@@ -54,7 +55,10 @@ Bridge.watchStamp = function (p, cb) { if (cb) cb("x"); };
 Bridge.runEngine = function (path, expr, cb) {
   var out = '{"status":"ok"}';
   try {
+    window.__SIM.lastExpr = expr;
+    window.__SIM.lastExpr = expr;
     if (expr.indexOf("AEV_Catalog.getCatalogJson") === 0) {
+      window.__SIM.catalog++;
       out = '{"status":"ok","effects":[],"categories":[]}';
     } else if (expr.indexOf("AEV_Curve.snapshotJson") === 0) {
       out = '{"status":"ok","props":[],"comp":"","time":0}';
@@ -172,9 +176,12 @@ function run() {
       click("btnSettingsClose");
 
       wait(200, function () {
-        /* 效果墙（默认视图，带空态） */
+        /* 效果墙（默认视图） */
         document.getElementById("tabEffects").click();
-        wait(200, function () {
+        wait(250, function () {
+          /* 分支里没有 data/previews.tsv，卡片渲染不出来 —— 卡片上的文案
+             由主工作副本（有真实索引）跑同一个脚本覆盖。这里记数只为佐证。 */
+          R.cardCount = document.querySelectorAll(".effect-card").length;
           scan("效果墙");
 
           /* 队列抽屉 */
@@ -271,6 +278,7 @@ for (const step of data.steps) {
     console.log("    [" + f.kind + "] " + f.where + "  →  " + f.text);
   }
 }
+console.log("效果卡片：" + data.cardCount + " 张（分支无运行时索引时为空，卡片文案由主副本覆盖）");
 console.log("切回中文：" + JSON.stringify(data.backToZh));
 console.log("页面错误：" + JSON.stringify(data.errorsFinal || []));
 console.log("");

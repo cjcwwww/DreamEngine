@@ -238,6 +238,13 @@ var AEV_Library = (function () {
     }
   }
 
+  /** 插件名：数据层是中文 key，显示时按语言换 */
+  function pluginLabel(plugin) {
+    if (plugin === "内置") return L("filter.builtin");
+    if (plugin === "其它插件") return L("filter.other");
+    return plugin;
+  }
+
   function createCard(item) {
     var card = document.createElement("button");
     card.type = "button";
@@ -285,10 +292,12 @@ var AEV_Library = (function () {
     if (item.installed === false) {
       categoryText = state.lang === "zh" ? "当前机器未安装" : "Not installed";
     }
+    /* item.plugin 是数据层的 key（"内置" / "其它插件"），过滤逻辑依赖它，
+       所以不能改数据；只在显示时换成当前语言。 */
     category.textContent =
       categoryText.indexOf(item.plugin) === 0
         ? categoryText
-        : item.plugin + " · " + categoryText;
+        : pluginLabel(item.plugin) + " · " + categoryText;
 
     meta.appendChild(dot);
     meta.appendChild(category);

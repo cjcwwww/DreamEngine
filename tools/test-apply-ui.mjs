@@ -278,6 +278,19 @@ test("mark_animated 工具按帧字节比对判定静态，且写独立索引", 
   assert.doesNotMatch(tool, /writeFileSync\(path, JSON\.stringify\(manifest/);
 });
 
+test("插件名在英文下显示 Built-in，数据层仍是中文 key", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/library.js"));
+  assert.ok(code.includes("function pluginLabel("), "缺少 pluginLabel");
+  assert.ok(code.includes('if (plugin === "内置") return L("filter.builtin")'),
+    "内置没有映射到字典");
+  assert.ok(code.includes('if (plugin === "其它插件") return L("filter.other")'),
+    "其它插件没有映射到字典");
+  // 显示时过 pluginLabel；数据层保持中文 key（过滤逻辑依赖它）
+  assert.ok(code.includes('pluginLabel(item.plugin) + " · " + categoryText'),
+    "分类文本没用 pluginLabel");
+  assert.ok(code.includes('item.plugin !== "内置"'), "数据层的插件 key 被改动了");
+});
+
 /* ---------- 4. 设置页与底部栏 ---------- */
 
 test("顶栏只留设置入口，四个按钮搬进设置页", () => {
