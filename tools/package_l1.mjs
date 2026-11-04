@@ -366,7 +366,7 @@ for (const name of readdirSync(resolve(OUT_DIR, "thumbs"))) {
 
 const animatedCount = outItems.filter((i) => (i.frames || 1) > 1).length;
 const report = {
-  builtAt: new Date().toISOString(),
+  // 不记构建时间：时间戳会让每次打包都产生一次无意义的版本差异
   source: DATA_DIR,
   items: outItems.length,
   staticItems: outItems.length - animatedCount,
