@@ -146,9 +146,11 @@ test("面板对静态预览不播动画", () => {
   // 静态名单来自独立索引 animated.json
   assert.match(code, /data\/animated\.json/);
   assert.match(code, /state\.staticPreviews\[/);
-  // 静态的不挂 mouseenter 播放
-  assert.match(code, /if \(isAnimated\) \{/);
+  // 静态的不挂 mouseenter 播放（效果卡与预设卡共用 attachPreview）
+  assert.match(code, /function attachPreview\(/);
+  assert.match(code, /if \(isAnimated && frameCount > 1\) \{/);
   assert.match(code, /card\.addEventListener\("mouseenter", play\)/);
+  assert.match(code, /attachPreview\(thumb, card, preview, animated/);
 });
 
 test("状态栏不再拼接插件预览数量（避免窄面板下底栏被撑大）", () => {

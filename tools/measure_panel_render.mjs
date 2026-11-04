@@ -75,6 +75,18 @@ window.addEventListener("error", function (e) { window.__SIM_ERRORS.push(String(
       } else if (expr.indexOf("AEV_Presets.importOneJson") === 0) {
         window.__SIM_IMPORTS.push(expr);
         out = '{"status":"ok","name":"sim"}';
+      } else if (expr.indexOf("AEV_Presets.libraryJson") === 0) {
+        out = '{"status":"ok","count":2,"folder":"C:/sim","items":[' +
+          '{"path":"C:/sim/a.ffx","name":"静态预设","folder":"C:/sim"},' +
+          '{"path":"C:/sim/b.ffx","name":"动画预设","folder":"C:/sim"},' +
+          '{"path":"C:/sim/c.ffx","name":"插件预设","folder":"C:/sim"}]}';
+      } else if (expr.indexOf("AEV_PresetPreview.backgroundsJson") === 0) {
+        out = '{"status":"ok","items":[' +
+          '{"id":"photo","name":"标准","builtin":true},' +
+          '{"id":"text","name":"文字","builtin":true},' +
+          '{"id":"solid","name":"纯色","builtin":true},' +
+          '{"id":"shape","name":"形状","builtin":true},' +
+          '{"id":"pattern","name":"条纹","builtin":true}]}';
       } else {
         out = '{"status":"ok"}';
       }
@@ -157,6 +169,18 @@ function finish() {
         result.cardsInPresetView = countVisibleCards();
         result.cardsTotalInDom = countCards();
         result.presetCards = document.querySelectorAll(".preset-card").length;
+        result.presetThumbs = document.querySelectorAll(".preset-thumb").length;
+        result.presetBadges = [].map.call(
+          document.querySelectorAll(".preset-badge"),
+          function (b) { return String(b.textContent); }
+        );
+        result.presetThumbImages = [].map.call(
+          document.querySelectorAll(".preset-thumb"),
+          function (t) { return String(t.style.backgroundImage || "").slice(0, 90); }
+        );
+        var bgSelect = document.getElementById("presetBackground");
+        result.backgroundOptions = bgSelect ? bgSelect.options.length : 0;
+        result.presetSummaryText = String(document.getElementById("presetSummary").textContent);
 
         /* --- 搜索框：点图标展开、再点收起 --- */
         var toggle = document.getElementById("searchToggle");
@@ -265,23 +289,70 @@ const html = readFileSync(resolve(PANEL, "index.html"), "utf8")
   );
 writeFileSync(SIM, html, "utf8");
 
-const dom = execFileSync(
-  browser,
-  [
-    "--headless",
-    "--disable-gpu",
-    // 面板用 XHR 读同目录的 data/*.json；file:// 下默认被同源策略挡住
-    "--allow-file-access-from-files",
-    "--dump-dom",
-    "--virtual-time-budget=8000",
-    "file:///" + SIM.replace(/\\/g, "/"),
+/* 模拟「已经生成过预览」：一条静态（1 帧）、一条动态（6 帧覆盖关键帧区间）。
+   跑完立刻恢复现场，不污染用户真实的预设索引。 */
+const presetIndexPath = resolve(runtimeData, "preset_manifest.json");
+const hadPresetIndex = existsSync(presetIndexPath);
+const originalPresetIndex = hadPresetIndex ? readFileSync(presetIndexPath, "utf8") : null;
+const baseEntry = {
+  sliceColumns: 1, sliceCellSize: 128, sliceWidth: 128, sliceHeight: 128,
+  x: 0, y: 0, width: 128, height: 128, background: "photo", truncated: false,
+};
+writeFileSync(presetIndexPath, JSON.stringify({
+  version: 1,
+  items: [
+    Object.assign({}, baseEntry, {
+      name: "静态预设", path: "C:/sim/a.ffx", sheet: 0,
+      src: "thumbs/preset_000_0000.png", frameSrc: "thumbs/preset_000_%04d.png",
+      frames: 1, animated: false, keyStart: 0, keyEnd: 0,
+    }),
+    Object.assign({}, baseEntry, {
+      name: "动画预设", path: "C:/sim/b.ffx", sheet: 1,
+      src: "thumbs/preset_001_0000.png", frameSrc: "thumbs/preset_001_%04d.png",
+      frames: 6, animated: true, keyStart: 0, keyEnd: 2.5,
+    }),
   ],
-  { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] },
-);
+}), "utf8");
 
+const pluginIndexPath = resolve(runtimeData, "preset_plugin_manifest.json");
+const hadPluginIndex = existsSync(pluginIndexPath);
+const originalPluginIndex = hadPluginIndex ? readFileSync(pluginIndexPath, "utf8") : null;
+writeFileSync(pluginIndexPath, JSON.stringify({
+  version: 1,
+  items: [Object.assign({}, baseEntry, {
+    name: "插件预设", path: "C:/sim/c.ffx", sheet: 1000,
+    src: "thumbs/preset_1000_0000.png", frameSrc: "thumbs/preset_1000_%04d.png",
+    frames: 6, animated: true, keyStart: 0, keyEnd: 2.0,
+    plugins: ["S_Glow"], plugin: true,
+  })],
+}), "utf8");
+
+let dom;
 try {
-  unlinkSync(SIM);
-} catch (e) {}
+  dom = execFileSync(
+    browser,
+    [
+      "--headless",
+      "--disable-gpu",
+      // 面板用 XHR 读同目录的 data/*.json；file:// 下默认被同源策略挡住
+      "--allow-file-access-from-files",
+      "--dump-dom",
+      "--virtual-time-budget=8000",
+      "file:///" + SIM.replace(/\\/g, "/"),
+    ],
+    { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] },
+  );
+} finally {
+  try { unlinkSync(SIM); } catch (e) {}
+  try {
+    if (hadPresetIndex) writeFileSync(presetIndexPath, originalPresetIndex, "utf8");
+    else unlinkSync(presetIndexPath);
+  } catch (e2) {}
+  try {
+    if (hadPluginIndex) writeFileSync(pluginIndexPath, originalPluginIndex, "utf8");
+    else unlinkSync(pluginIndexPath);
+  } catch (e3) {}
+}
 
 const block = dom.match(/<pre id="out">([\s\S]*?)<\/pre>/);
 if (!block) {
@@ -393,6 +464,24 @@ check("添加预设：选中的 .ffx 真正走入库，非 .ffx 被过滤", () =
   // Windows 反斜杠路径要归一成正斜杠，否则 ExtendScript 侧会当转义符
   assert.doesNotMatch(imports[0], /\\\\Users/, "路径里的反斜杠没归一化：" + imports[0]);
   assert.match(data.presetStatus, /已加入 1 个预设/, "状态栏没报结果：" + data.presetStatus);
+});
+
+check("预设预览：静态/动态卡片都显示缩略图，背景可选", () => {
+  assert.equal(data.presetCards, 3, "预设卡片数不对：" + data.presetCards);
+  assert.equal(data.presetThumbs, 3, "缩略图数量不对：" + data.presetThumbs);
+  const badges = data.presetBadges || [];
+  assert.ok(badges.some((b) => /静态/.test(b)), "没有静态角标：" + JSON.stringify(badges));
+  assert.ok(badges.some((b) => /动态/.test(b)), "没有动态角标：" + JSON.stringify(badges));
+  assert.ok(badges.some((b) => /离线生成/.test(b)), "离线插件预设没合并进来：" + JSON.stringify(badges));
+  const images = data.presetThumbImages || [];
+  assert.equal(images.length, 3);
+  assert.ok(images.some((i) => /preset_1000_/.test(i)), "离线条目的帧没挂上：" + JSON.stringify(images));
+  for (const img of images) {
+    // 面板生成的编号是 3 位，离线通道从 1000 起（4 位）
+    assert.match(img, /preset_\d+_\d{4}\.png/, "缩略图没挂上预览帧：" + img);
+  }
+  assert.ok(data.backgroundOptions >= 5, "背景下拉少于 5 项：" + data.backgroundOptions);
+  assert.match(data.presetSummaryText, /已生成 3 张预览/, "统计没更新：" + data.presetSummaryText);
 });
 
 console.log(`\n${failed === 0 ? "全部通过" : failed + " 项失败"}`);

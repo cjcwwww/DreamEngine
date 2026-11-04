@@ -139,6 +139,73 @@ button {
   opacity: 0.8;
 }
 
+/* 预览背景与生成工具条 */
+.preset-preview-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-preview-tools label {
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.preset-preview-tools select {
+  min-width: 0;
+  max-width: 190px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11px;
+}
+
+.preset-preview-tools input[hidden] {
+  display: none;
+}
+
+/* 预设卡片的缩略图：固定正方形，保证百分比切片不被拉伸 */
+.preset-thumb {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--surface-2);
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.preset-thumb .thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.preset-badge {
+  align-self: flex-start;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 9px;
+}
+
+.preset-badge.static {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
 /* 拖 .ffx 进预设页面时的落点提示 */
 .preset-view.drop-over {
   outline: 2px dashed var(--accent);

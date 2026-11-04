@@ -201,6 +201,161 @@ test("拖入 .ffx 也能入库；入库前过滤后缀并统一路径分隔符",
   assert.match(code, /\\\.ffx\$\/i\.test\(p\)/);
 });
 
+/* ---------- 预设预览生成（静态 / 关键帧区间 / 用户背景） ---------- */
+
+test("预设预览引擎已接入 bridge 的加载清单", () => {
+  const bridge = read("cep/com.dreamengine.panel/js/bridge.js");
+  assert.match(bridge, /engine\/preset_preview\.jsx/);
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(lib, /AEV_PresetPreview\.renderJson\(/);
+  assert.match(lib, /AEV_PresetPreview\.backgroundsJson\(/);
+});
+
+test("静态预设出 1 帧；含关键帧的覆盖首末关键帧再均匀抽帧", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  // 关键帧范围靠遍历属性树读 numKeys / keyTime，不读参数值（读值会崩 AE）
+  assert.match(src, /function walkKeys\(/);
+  assert.match(src, /p\.numKeys/);
+  assert.match(src, /p\.keyTime\(1\)/);
+  assert.doesNotMatch(src, /\.maxValue/);
+  // 无关键帧 → 静态 1 帧
+  assert.match(src, /var animated = range\.keys > 0/);
+  assert.match(src, /var span = 1 \/ FPS/);
+  // 有关键帧 → 渲染整个区间（timeSpanStart / Duration），再抽最多 6 帧
+  assert.match(src, /queueItem\.timeSpanStart = start/);
+  assert.match(src, /queueItem\.timeSpanDuration = span/);
+  assert.match(src, /Math\.min\(MAX_FRAMES, rawFiles\.length\)/);
+  assert.match(src, /var wanted = animated \?/);
+  // comp 时长必须覆盖到最后一个关键帧
+  assert.match(src, /comp\.duration = Math\.max/);
+});
+
+test("渲染在临时合成里做，插件预设跳过，临时对象全部回收", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  assert.match(src, /app\.project\.items\.addComp\(\s*"DE_preset_cell_/);
+  // AE 2021 上会崩的写法一个都不能用
+  assert.doesNotMatch(src, /app\.applyPreset\(/);
+  assert.doesNotMatch(src, /comp\.selectedLayers\s*=/);
+  assert.doesNotMatch(src, /getItemByName/);
+  assert.match(src, /Layer\.applyPreset\(file\)/);
+  // 含第三方插件效果的预设不渲染
+  assert.match(src, /function pluginMatchNames\(/);
+  assert.match(src, /result\("plugin_preset"/);
+  // 渲染队列项 / 临时合成 / 素材 / raw 帧都要删
+  assert.match(src, /queueItem\.remove\(\)/);
+  assert.match(src, /comp\.remove\(\)/);
+  assert.match(src, /rawFiles\[i\]\.remove\(\)/);
+});
+
+test("预览背景可选内置 5 种或用户上传，索引写独立文件", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  assert.match(src, /BUILTIN_BACKGROUNDS = \[/);
+  assert.match(src, /"photo"/);
+  assert.match(src, /"text"/);
+  assert.match(src, /"solid"/);
+  assert.match(src, /"shape"/);
+  assert.match(src, /"pattern"/);
+  assert.match(src, /function importBackgroundJson\(/);
+  assert.match(src, /function addBackground\(/);
+  assert.match(src, /AEV_Assets\.getFresh\(id, size\)/);
+  // 独立索引，绝不写 L1 的 manifest.json
+  assert.match(src, /preset_manifest\.json/);
+  assert.doesNotMatch(src, /data\/manifest\.json/);
+});
+
+test("面板有背景选择/上传/生成入口，卡片区分静态与动态", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  const lib = codeOf(read("cep/com.dreamengine.panel/js/library.js"));
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  assert.match(html, /id="presetBackground"/);
+  assert.match(html, /id="btnBackgroundAdd"/);
+  assert.match(html, /id="btnPresetPreview"/);
+  assert.match(html, /id="presetBackgroundFile"[^>]*type="file"/);
+  assert.match(lib, /function generatePresetPreviews\(/);
+  assert.match(lib, /function loadPresetIndex\(/);
+  assert.match(lib, /function savePresetIndex\(/);
+  assert.match(lib, /function attachPreview\(/);
+  assert.match(lib, /preview\.animated !== false/);
+  assert.match(css, /\.preset-thumb\s*\{/);
+  assert.match(css, /\.preset-badge/);
+});
+
+/* ---------- 含第三方插件的预设：离线专用通道 ---------- */
+
+test("引擎有 allowPlugins 开关：面板默认跳过，离线实例放行", () => {
+  const src = codeOf(read("cep/com.dreamengine.panel/engine/preset_preview.jsx"));
+  assert.match(src, /var allowPlugins = !!opts\.allowPlugins/);
+  assert.match(src, /if \(plugins\.length > 0 && !allowPlugins\)/);
+  assert.match(src, /result\("plugin_preset"/);
+  // 结果里要把插件名单带出来，索引才能标「离线生成」
+  assert.match(src, /\["plugins", plugins\.join\(","\)\]/);
+});
+
+test("离线脚本逐条隔离、心跳与崩溃黑名单一样不少", () => {
+  const src = read("tools/run_plugin_preset_preview.jsx");
+  assert.match(src, /PS\.parseLog\(/);
+  assert.match(src, /PS\.mergeBlacklist\(blacklist, crashed, "crash"\)/);
+  assert.match(src, /appendLog\("BEGIN", presetPath/);
+  assert.match(src, /appendLog\("OK", presetPath/);
+  assert.match(src, /allowPlugins: true/);
+  // 每条成功立刻追加 TSV，崩溃不丢已渲结果
+  assert.match(src, /appendText\(ENTRIES, rowOut/);
+  assert.match(src, /preset_plugin_previews\.tsv/);
+  assert.match(src, /preset_plugin_blacklist\.tsv/);
+  assert.match(src, /app\.quit\(SaveOptions\.DO_NOT_SAVE_CHANGES\)/);
+});
+
+test("批量驱动会拒绝在用户 AE 开着时启动，并跳过已完成/黑名单条目", () => {
+  const src = read("tools/run_plugin_preset_batches.mjs");
+  assert.match(src, /if \(aeRunning\(\)\) \{[\s\S]*?process\.exit\(1\)/);
+  assert.match(src, /!done\.has\(p\) && !black\.has\(p\) && !panelDone\.has\(p\)/);
+  assert.match(src, /buildPluginIndex\(\)/);
+  assert.match(src, /preset_plugin_manifest\.json/);
+  assert.match(src, /taskkill/);
+  assert.match(src, /--background/);
+});
+
+test("面板合并离线索引，插件预设明确提示走离线脚本", () => {
+  const lib = read("cep/com.dreamengine.panel/js/library.js");
+  assert.match(lib, /loadOptionalJson\("data\/preset_plugin_manifest\.json"/);
+  assert.match(lib, /pluginSkipped/);
+  assert.match(lib, /生成插件预设预览\.bat/);
+  assert.match(lib, /preview\.plugin/);
+});
+
+test("给其他用户的一键工具：零 Node 依赖、温和关开 AE、索引无 BOM", () => {
+  const ps1 = read("tools/generate_plugin_presets.ps1");
+  assert.match(ps1, /param\(/);
+  assert.match(ps1, /Read-Host/);              // 关 AE 前必须让用户确认并保存
+  assert.match(ps1, /CloseMainWindow\(\)/);    // 温和关闭，不强制结束
+  assert.match(ps1, /Start-Process -FilePath \$AE \| Out-Null/);
+  assert.match(ps1, /New-Object System\.Text\.UTF8Encoding\(\$false\)/);
+  assert.match(ps1, /ConvertTo-Json/);
+  assert.match(ps1, /preset_plugin_manifest\.json/);
+  // 代码里不能依赖 Node / Python（注释里提到"不需要"不算）
+  const ps1Code = ps1.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n");
+  assert.doesNotMatch(ps1Code, /\bnode\b|\.mjs|python/i);
+  const bat = read("tools/生成插件预设预览.bat");
+  assert.match(bat, /-File "%PS1%"/);
+  assert.match(bat, /%~dp0tools\\generate_plugin_presets\.ps1/); // 分发包里 bat 在根目录
+  assert.match(bat, /pause/);
+});
+
+test("分发包会把一键工具带上，安装脚本与 README 都有说明", () => {
+  const build = read("tools/build_release.mjs");
+  assert.match(build, /DreamEngine\/tools/);
+  for (const name of [
+    "generate_plugin_presets.ps1",
+    "生成插件预设预览.bat",
+    "run_plugin_preset_preview.jsx",
+  ]) {
+    assert.ok(build.includes(`"${name}"`), `打包清单缺 ${name}`);
+  }
+  assert.match(build, /Copy-Item -Force \(Join-Path \$here "tools/);
+  assert.match(build, /生成插件预设预览\.bat/);
+  assert.match(build, /不需要 Node/);
+});
+
 /* ---------- 运行 ---------- */
 
 let failed = 0;

@@ -21,10 +21,14 @@ var AEV_Library = (function () {
     pluginPreviewCount: 0,
     // 各来源（内置 / BCC / Sapphire…）已有多少张预览
     pluginCounts: {},
-    // 预设库（M3）：用户自建库里的 .ffx 与搜索词
+    // 预设库（M3）：用户自建库里的 .ffx、预览索引、背景选择
     presets: [],
     presetFolder: "",
     presetQuery: "",
+    presetPreviews: {},
+    presetBackgrounds: [],
+    presetBackground: "photo",
+    generatingPreviews: false,
     // 排序方式：name = 按名称首字母，category = 按 AE 分类
     sortMode: "name",
     // 左侧栏选中的分类键（空 = 全部）
@@ -173,6 +177,67 @@ var AEV_Library = (function () {
     }
   }
 
+  /**
+   * 给缩略框挂预览 —— 效果卡与预设卡共用同一套逻辑。
+   *
+   * 两个实机踩过的点都在这里：
+   *   · 帧没预加载完就切 background-image，浏览器会先撤掉旧背景 →「闪几下」
+   *   · 各帧内容相同的静态预览不该轮播，否则只会反复重解码同一张图
+   *
+   * stillIndex：静止时显示第几帧，默认最后一帧（关键帧动画的末态）。
+   */
+  function attachPreview(thumb, card, preview, isAnimated, stillIndex) {
+    var slice = AEV_ViewModel.spriteSlice(preview, state.manifest);
+    thumb.style.backgroundSize = slice.size;
+    thumb.style.backgroundPosition = slice.position;
+    if (!preview.frameSrc) {
+      thumb.style.backgroundImage = 'url("data/' + preview.src + '")';
+      return;
+    }
+    var frameCount = preview.frames || 1;
+    var frameIndex = 0;
+    var playTimer = null;
+    var showFrame = function (index) {
+      thumb.style.backgroundImage =
+        'url("' + framePath(preview.frameSrc, index) + '")';
+    };
+    var stop = function () {
+      if (!playTimer) return;
+      clearInterval(playTimer);
+      playTimer = null;
+    };
+    var startPlaying = function () {
+      if (playTimer) return;
+      frameIndex = 0;
+      showFrame(frameIndex);
+      playTimer = setInterval(function () {
+        frameIndex = (frameIndex + 1) % frameCount;
+        showFrame(frameIndex);
+      }, 83);
+    };
+    var play = function () {
+      if (!isAnimated || playTimer || frameCount < 2) return;
+      if (preview.__ready) {
+        startPlaying();
+        return;
+      }
+      var urls = [];
+      for (var f = 0; f < frameCount; f++) urls.push(framePath(preview.frameSrc, f));
+      preloadFrames(urls, function () {
+        preview.__ready = true;
+        if (card.matches(":hover")) startPlaying();
+      });
+    };
+    var still = stillIndex === undefined ? frameCount - 1 : stillIndex;
+    if (still < 0) still = 0;
+    if (still > frameCount - 1) still = frameCount - 1;
+    showFrame(still);
+    if (isAnimated && frameCount > 1) {
+      card.addEventListener("mouseenter", play);
+      card.addEventListener("mouseleave", stop);
+    }
+  }
+
   function createCard(item) {
     var card = document.createElement("button");
     card.type = "button";
@@ -184,70 +249,10 @@ var AEV_Library = (function () {
     thumb.className = "thumb";
     if (item.hasPreview) {
       var preview = item.preview;
-      // 切片参数用百分比而不是固定像素——缩略框渲染多大，
-      // 一格都精确等于一个框，不会把相邻格子的画面带进来。
-      var slice = AEV_ViewModel.spriteSlice(preview, state.manifest);
-      if (preview.frameSrc) {
-        var frameCount = preview.frames || 1;
-        var frameIndex = 0;
-        var playTimer = null;
-        // 静态预览（各帧内容完全相同）不播：播放它只会让浏览器反复
-        // 重解码同一张图 —— 视觉上是「闪几下」，而且毫无信息量。
-        // 判定来自 data/animated.json（由 tools/mark_animated.mjs 生成）。
-        var isAnimated = state.staticPreviews[item.matchName] !== true &&
-          frameCount > 1;
-        var showFrame = function (index) {
-          thumb.style.backgroundImage =
-            'url("' + framePath(preview.frameSrc, index) + '")';
-        };
-        var stop = function () {
-          if (!playTimer) return;
-          clearInterval(playTimer);
-          playTimer = null;
-        };
-        var startPlaying = function () {
-          if (playTimer) return;
-          // 动画从第 0 帧开始：那一帧是「效果尚未完全施加」的状态，
-          // 正好把效果的变化过程演出来。
-          frameIndex = 0;
-          showFrame(frameIndex);
-          playTimer = setInterval(function () {
-            frameIndex = (frameIndex + 1) % frameCount;
-            showFrame(frameIndex);
-          }, 83);
-        };
-        var play = function () {
-          if (!isAnimated || playTimer) return;
-          // 帧没预加载完就先不播：直接切 background-image 会让浏览器
-          // 撤掉旧背景、等新图解码，中间那一瞬只剩容器底色 —— 看上去
-          // 就是「闪」。等预加载完成再开播就没有空档了。
-          if (preview.__ready) {
-            startPlaying();
-            return;
-          }
-          var urls = [];
-          for (var f = 0; f < frameCount; f++) {
-            urls.push(framePath(preview.frameSrc, f));
-          }
-          preloadFrames(urls, function () {
-            preview.__ready = true;
-            if (card.matches(":hover")) startPlaying();
-          });
-        };
-        thumb.style.backgroundSize = slice.size;
-        thumb.style.backgroundPosition = slice.position;
-        // 静止时显示最后一帧：关键帧动画从 0 渐变到满效果，
-        // 停在第 0 帧等于「完全没上效果」，网格里会一片素模。
-        showFrame(frameCount - 1);
-        if (isAnimated) {
-          card.addEventListener("mouseenter", play);
-          card.addEventListener("mouseleave", stop);
-        }
-      } else {
-        thumb.style.backgroundImage = 'url("data/' + preview.src + '")';
-        thumb.style.backgroundSize = slice.size;
-        thumb.style.backgroundPosition = slice.position;
-      }
+      var isAnimated =
+        state.staticPreviews[item.matchName] !== true &&
+        (!preview.frameSrc || (preview.frames || 1) > 1);
+      attachPreview(thumb, card, preview, isAnimated);
     } else {
       var placeholder = document.createElement("span");
       placeholder.className = "thumb-placeholder";
@@ -1148,6 +1153,204 @@ var AEV_Library = (function () {
 
   /* ---------- 预设库（M3） ---------- */
 
+  /* 预设预览的独立索引（不进 L1 的 manifest.json —— 它会被 writeManifest 重写）。
+     面板生成的内置预设 + 离线脚本生成的插件预设，两份合并；离线条目优先。 */
+  function loadPresetIndex(done) {
+    loadOptionalJson("data/preset_manifest.json", function (data) {
+      state.presetPreviews = {};
+      var items = (data && data.items) || [];
+      for (var i = 0; i < items.length; i++) {
+        state.presetPreviews[items[i].name] = items[i];
+      }
+      loadOptionalJson("data/preset_plugin_manifest.json", function (pluginData) {
+        var pluginItems = (pluginData && pluginData.items) || [];
+        for (var q = 0; q < pluginItems.length; q++) {
+          state.presetPreviews[pluginItems[q].name] = pluginItems[q];
+        }
+        if (done) done();
+      });
+    });
+  }
+
+  /** 每生成一条就整份写盘：中途 AE 崩了也不丢已渲好的条目 */
+  function savePresetIndex() {
+    var items = [];
+    for (var key in state.presetPreviews) {
+      if (state.presetPreviews.hasOwnProperty(key)) items.push(state.presetPreviews[key]);
+    }
+    items.sort(function (a, b) { return a.sheet - b.sheet; });
+    var text = JSON.stringify({ version: 1, items: items });
+    engine(
+      "AEV_PresetPreview.writeIndexJson(" +
+        JSON.stringify(text) + "," +
+        JSON.stringify(state.extensionPath) + ")",
+      function () {}
+    );
+  }
+
+  /** 背景下拉：内置 5 种 + 用户上传的图片 */
+  var BUILTIN_PRESET_BACKGROUNDS = [
+    { id: "photo", name: "标准（色块＋文字＋细线）", builtin: true },
+    { id: "text", name: "文字（Dream / Engine）", builtin: true },
+    { id: "solid", name: "纯色", builtin: true },
+    { id: "shape", name: "形状（圆形）", builtin: true },
+    { id: "pattern", name: "高对比条纹", builtin: true }
+  ];
+
+  function loadBackgrounds(done) {
+    var items = BUILTIN_PRESET_BACKGROUNDS.slice();
+    engine("AEV_PresetPreview.backgroundsJson()", function (res) {
+      var data = parseEngineResult(res);
+      if (data && data.items && data.items.length) items = data.items;
+      state.presetBackgrounds = items;
+      var select = byId("presetBackground");
+      if (select) {
+        select.textContent = "";
+        for (var i = 0; i < items.length; i++) {
+          var option = document.createElement("option");
+          option.value = items[i].id;
+          option.textContent = items[i].builtin ? items[i].name : "自定义 · " + items[i].name;
+          select.appendChild(option);
+        }
+        select.value = state.presetBackground;
+      }
+      if (done) done();
+    });
+  }
+
+  function uploadBackground() {
+    var input = byId("presetBackgroundFile");
+    if (!input) return;
+    input.value = "";
+    setStatus(state.lang === "zh" ? "请选择一张背景图片…" : "Pick a background image…", false);
+    try { input.click(); } catch (e) {}
+  }
+
+  function onBackgroundChosen(event) {
+    var files = event.target.files || [];
+    if (!files.length) return;
+    var path = files[0].path;
+    if (!path) {
+      setStatus(
+        state.lang === "zh" ? "拿不到图片路径，请把文件拖进来" : "Could not read image path",
+        true
+      );
+      return;
+    }
+    engine(
+      "AEV_PresetPreview.importBackgroundJson(" + JSON.stringify(path) + ")",
+      function (res) {
+        var data = parseEngineResult(res);
+        if (!data || data.status !== "ok") {
+          setStatus(state.lang === "zh" ? "背景导入失败" : "Failed to import background", true);
+          return;
+        }
+        state.presetBackground = data.id;
+        loadBackgrounds();
+        setStatus(state.lang === "zh" ? "背景已加入：" + data.name : "Background added: " + data.name, false);
+      }
+    );
+  }
+
+  /**
+   * 为库内预设逐个生成预览。
+   *
+   * 引擎侧会自己判定：没关键帧 → 1 帧静态图；有关键帧 → 渲染首末关键帧之间
+   * 的完整区间，再均匀抽 6 帧。含第三方插件的预设会跳过（插件混渲会杀 AE）。
+   */
+  function generatePresetPreviews() {
+    if (state.generatingPreviews || !state.extensionPath) return;
+    var list = state.presets.slice();
+    if (!list.length) {
+      setStatus(state.lang === "zh" ? "库里还没有预设" : "No presets in library", true);
+      return;
+    }
+    state.generatingPreviews = true;
+    var button = byId("btnPresetPreview");
+    if (button) button.disabled = true;
+    var index = 0;
+    var ok = 0, skipped = 0, failed = 0, pluginSkipped = 0;
+
+    function next() {
+      if (index >= list.length) {
+        state.generatingPreviews = false;
+        if (button) button.disabled = false;
+        // 含插件的预设不能在面板里渲（会杀 AE）：明确告诉用户走离线通道
+        var offlineHint = pluginSkipped > 0
+          ? (state.lang === "zh"
+              ? " · 含插件 " + pluginSkipped + " 条：保存工程后双击「生成插件预设预览.bat」"
+              : " · " + pluginSkipped + " plugin presets: save your project, then run Generate Plugin Preset Previews.bat")
+          : "";
+        setStatus(
+          (state.lang === "zh"
+            ? "预设预览：成功 " + ok + " · 跳过 " + skipped + " · 失败 " + failed
+            : "Preset previews: " + ok + " ok · " + skipped + " skipped · " + failed + " failed") +
+            offlineHint,
+          failed > 0
+        );
+        renderPresetList();
+        return;
+      }
+      var pos = index++;
+      var item = list[pos];
+      setStatus(
+        (state.lang === "zh" ? "正在生成预览 " : "Rendering preset ") +
+          (pos + 1) + "/" + list.length + "：" + item.name,
+        false
+      );
+      var options = {
+        extensionPath: state.extensionPath,
+        background: state.presetBackground,
+        cellSize: 128
+      };
+      engine(
+        "AEV_PresetPreview.renderJson(" +
+          JSON.stringify(item.path) + "," + pos + "," +
+          JSON.stringify(options) + ")",
+        function (res) {
+          var data = parseEngineResult(res);
+          if (data && data.status === "ok") {
+            var sheetName = "preset_" + zeroPad(pos, 3);
+            var frames = Number(data.frames) || 1;
+            var animated = String(data.animated) === "true";
+            state.presetPreviews[item.name] = {
+              name: item.name,
+              path: item.path,
+              sheet: pos,
+              src: "thumbs/" + sheetName + "_0000.png",
+              frameSrc: "thumbs/" + sheetName + "_%04d.png",
+              frames: frames,
+              animated: animated,
+              sliceColumns: 1,
+              sliceCellSize: 128,
+              sliceWidth: 128,
+              sliceHeight: 128,
+              x: 0,
+              y: 0,
+              width: 128,
+              height: 128,
+              background: state.presetBackground,
+              keyStart: Number(data.keyStart) || 0,
+              keyEnd: Number(data.keyEnd) || 0,
+              truncated: String(data.truncated) === "true"
+            };
+            savePresetIndex();
+            ok++;
+          } else if (data && data.status === "plugin_preset") {
+            skipped++;
+            pluginSkipped++;
+          } else if (data && data.status === "no_effect") {
+            skipped++;
+          } else {
+            failed++;
+          }
+          next();
+        }
+      );
+    }
+    next();
+  }
+
   /** 载入用户自建的预设库（我的文档/DreamEngine/presets） */
   function loadPresetLibrary() {
     if (!state.extensionPath) return;
@@ -1162,7 +1365,8 @@ var AEV_Library = (function () {
       }
       state.presets = data.items || [];
       state.presetFolder = data.folder || "";
-      renderPresetList();
+      loadPresetIndex(renderPresetList);
+      loadBackgrounds();
     });
   }
 
@@ -1335,8 +1539,10 @@ var AEV_Library = (function () {
     var query = String(state.presetQuery || "").toLowerCase();
     list.textContent = "";
     var shown = 0;
+    var withPreview = 0;
     for (var i = 0; i < state.presets.length; i++) {
       var item = state.presets[i];
+      if (state.presetPreviews[item.name]) withPreview++;
       if (query && String(item.name + " " + item.category).toLowerCase().indexOf(query) === -1) {
         continue;
       }
@@ -1344,7 +1550,39 @@ var AEV_Library = (function () {
       var card = document.createElement("button");
       card.type = "button";
       card.className = "preset-card";
-      card.title = item.path;
+      card.title = item.path + "（点一下应用到当前合成）";
+
+      var thumb = document.createElement("div");
+      thumb.className = "preset-thumb";
+      var preview = state.presetPreviews[item.name];
+      var animated = !!(
+        preview && preview.animated !== false && (preview.frames || 1) > 1
+      );
+      if (preview) {
+        // 静态预设就显示第 0 帧、不绑 hover；动态预设沿用效果卡的
+        // 预加载 + 轮播逻辑（静止时停在最后一帧）。
+        attachPreview(thumb, card, preview, animated, animated ? undefined : 0);
+      } else {
+        var placeholder = document.createElement("span");
+        placeholder.className = "thumb-placeholder";
+        placeholder.textContent = state.lang === "zh" ? "无预览" : "No preview";
+        thumb.appendChild(placeholder);
+      }
+
+      var badge = document.createElement("span");
+      badge.className = "preset-badge" + (animated ? "" : " static");
+      badge.textContent = !preview
+        ? (state.lang === "zh" ? "未生成" : "No preview")
+        : (animated
+            ? (state.lang === "zh" ? "动态 · " : "Animated · ") + (preview.frames || 1) +
+              (state.lang === "zh" ? " 帧" : " frames")
+            : (state.lang === "zh" ? "静态" : "Static"));
+      if (preview && preview.truncated) {
+        badge.textContent += state.lang === "zh" ? "（截取前 6 秒）" : " (first 6s)";
+      }
+      if (preview && preview.plugin) {
+        badge.textContent += state.lang === "zh" ? " · 离线生成" : " · offline";
+      }
 
       var name = document.createElement("span");
       name.className = "preset-name";
@@ -1354,6 +1592,8 @@ var AEV_Library = (function () {
       category.className = "preset-category";
       category.textContent = item.category || "预设";
 
+      card.appendChild(thumb);
+      card.appendChild(badge);
       card.appendChild(name);
       card.appendChild(category);
       bindPresetItem(card, item);
@@ -1370,9 +1610,9 @@ var AEV_Library = (function () {
             : "No presets yet — use “添加预设” to pick .ffx files";
       } else {
         summary.textContent =
-          "共 " + state.presets.length + " 个预设" +
+          "共 " + state.presets.length + " 个预设 · 已生成 " + withPreview + " 张预览" +
           (shown < state.presets.length ? "（显示 " + shown + "）" : "") +
-          " · 点一个应用到当前合成";
+          " · 点卡片应用到当前合成";
       }
     }
   }
@@ -1649,6 +1889,12 @@ var AEV_Library = (function () {
       addPresets();
     });
     byId("presetFileInput").addEventListener("change", onPresetFilesChosen);
+    byId("btnPresetPreview").addEventListener("click", generatePresetPreviews);
+    byId("btnBackgroundAdd").addEventListener("click", uploadBackground);
+    byId("presetBackgroundFile").addEventListener("change", onBackgroundChosen);
+    byId("presetBackground").addEventListener("change", function () {
+      state.presetBackground = this.value;
+    });
     var presetView = byId("viewPresets");
     if (presetView) {
       presetView.addEventListener("dragover", function (event) {

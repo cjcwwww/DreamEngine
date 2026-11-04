@@ -350,6 +350,19 @@ test("index.html：第三个视图与冲突按钮齐全，且与预设视图同�
   }
   // 数学脚本必须在 curve.js 之前
   assert.ok(html.indexOf('src="engine/curve_math.js"') < html.indexOf('src="js/curve.js"'));
+
+  // 三个视图必须在**同一个**顶部切换栏里（效果预览 / 预设预览 / 曲线编辑），
+  // 不能把曲线做成抽屉或二级入口 —— 合并分支时最容易被拆散的一条。
+  const navStart = html.indexOf('<nav class="view-switch"');
+  const navEnd = html.indexOf("</nav>", navStart);
+  assert.ok(navStart > 0 && navEnd > navStart, "缺少顶部切换栏");
+  const nav = html.slice(navStart, navEnd);
+  for (const id of ["tabEffects", "tabPresets", "tabCurve"]) {
+    assert.match(nav, new RegExp(`id="${id}"`), id + " 不在切换栏里");
+  }
+  assert.equal((html.match(/class="view-switch"/g) || []).length, 1, "切换栏只能有一个");
+  assert.ok(nav.indexOf("tabEffects") < nav.indexOf("tabPresets"), "顺序应为 效果 → 预设");
+  assert.ok(nav.indexOf("tabPresets") < nav.indexOf("tabCurve"), "顺序应为 预设 → 曲线");
 });
 
 test("CSS：视图与对话框的 [hidden] 都要显式覆盖", () => {
