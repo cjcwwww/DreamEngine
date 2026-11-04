@@ -135,6 +135,10 @@ var AEV_Library = (function () {
         };
         var play = function () {
           if (playTimer || frameCount < 2) return;
+          // 动画从第 0 帧开始：那一帧是「效果尚未完全施加」的状态，
+          // 正好把效果的变化过程演出来。
+          frameIndex = 0;
+          showFrame(frameIndex);
           playTimer = setInterval(function () {
             frameIndex = (frameIndex + 1) % frameCount;
             showFrame(frameIndex);
@@ -145,7 +149,9 @@ var AEV_Library = (function () {
         thumb.style.backgroundSize =
           state.manifest.width + "px " + state.manifest.height + "px";
         thumb.style.backgroundPosition = "-" + preview.x + "px -" + preview.y + "px";
-        showFrame(0);
+        // 静止时显示最后一帧：关键帧动画从 0 渐变到满效果，
+        // 停在第 0 帧等于「完全没上效果」，网格里会一片素模。
+        showFrame(frameCount - 1);
         card.addEventListener("mouseenter", play);
         card.addEventListener("mouseleave", stop);
       } else {

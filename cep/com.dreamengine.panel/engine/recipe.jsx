@@ -443,6 +443,55 @@ var AEV_Recipe = (function () {
         return writes;
     }
 
+    /**
+     * 给配方的主参数打关键帧，让预览「动起来」。
+     *
+     * 为什么需要：AE 效果默认不随时间变化——不设关键帧的话，
+     * 6 帧渲染出来逐像素相同，缩略图轮播等于静止画面（实测 60 条里 59 条如此）。
+     * 这里把主参数从 0 渐变到配方值，于是缩略图展示的是「效果逐渐起作用」，
+     * 既能看出动，也能看出这个效果到底改变了什么。
+     *
+     * 只对数值型参数生效；颜色、位置类不参与（颜色渐变会变成黑场，位置类单位不统一）。
+     * 返回是否成功打上关键帧。
+     */
+    function animate(effectGroup, matchName, durationSeconds) {
+        var steps = RECIPES[matchName];
+        if (!steps || !steps.length) return false;
+
+        var prop = null;
+        var target = null;
+        for (var i = 0; i < steps.length; i++) {
+            var candidate = findByName(effectGroup, steps[i].names);
+            if (!candidate) continue;
+            var type = kindOf(candidate);
+            // 只处理一维数值：颜色渐变到 0 会变成黑场，位置类语义不统一
+            if (type !== "oneD") continue;
+            prop = candidate;
+            target = steps[i].value;
+            break;
+        }
+        if (!prop) return false;
+
+        var start = 0;
+        try {
+            if (prop.hasMin) {
+                var minValue = Number(prop.minValue);
+                // 有些参数 0 不合法（最小值是 1 之类），那就从最小值起步
+                if (minValue > 0 && minValue < Number(target)) start = minValue;
+            }
+        } catch (e) {}
+
+        var end = Number(durationSeconds);
+        if (!end || end <= 0) return false;
+        try {
+            prop.setValueAtTime(0, start);
+            prop.setValueAtTime(end, target);
+            return true;
+        } catch (e2) {
+            return false;
+        }
+    }
+
     /** 统一入口：有配方走配方，没有就走启发式 */
     function apply(effectGroup, matchName, cellSize) {
         var explicitWrites = applyRecipe(effectGroup, matchName);
@@ -526,6 +575,7 @@ var AEV_Recipe = (function () {
         heuristicValue: heuristicValue,
         applyRecipe: applyRecipe,
         applyHeuristics: applyHeuristics,
+        animate: animate,
         apply: apply,
         recipes: RECIPES
     };

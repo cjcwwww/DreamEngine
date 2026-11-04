@@ -239,11 +239,17 @@ var AEV_PreviewGen = (function () {
                 }
                 try {
                     if (typeof AEV_Recipe !== "undefined") {
-                        AEV_Recipe.apply(effectGroup, matchName, cellSize);
+                        var applied = AEV_Recipe.apply(effectGroup, matchName, cellSize);
                         // 两层输入类：把「图层」选择器接到第 2 层（图案层），
                         // 默认值是「无」，不接的话效果等于没加。
                         if (layout.needSource) {
                             AEV_Recipe.bindLayers(effectGroup, 2);
+                        }
+                        // 给主参数打关键帧，让 6 帧真正有差异。
+                        // AE 效果默认不随时间变化，不打关键帧的话 6 帧逐像素相同，
+                        // 缩略图轮播就是静止画面（实测 60 条里 59 条如此）。
+                        if (applied && applied.mode === "recipe") {
+                            AEV_Recipe.animate(effectGroup, matchName, durationSeconds);
                         }
                     }
                 } catch (eRecipe) {
