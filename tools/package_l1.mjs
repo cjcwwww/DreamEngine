@@ -14,7 +14,7 @@
  * 用法：node tools/package_l1.mjs [--data 面板数据目录] [--out dist/L1]
  * ============================================================ */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync, copyFileSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync, copyFileSync, readdirSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
@@ -137,12 +137,17 @@ const outSheets = [];
 let bytesBefore = 0;
 let bytesAfter = 0;
 
-rmSync(OUT_DIR, { recursive: true, force: true });
+/* 先写后清理：不清空输出目录。
+   实测踩过——先 rmSync 整个目录再写，一旦中途失败（而且 rmSync 目录会被
+   环境劫持到回收站、可能超时），旧包已经被删掉，只剩半截。
+   现在写完再按「本次产出的文件清单」删多余文件，失败时旧包仍然完整。 */
 mkdirSync(resolve(OUT_DIR, "thumbs"), { recursive: true });
+const written = new Set();
 
 function writeSheet(name, rgb) {
   const buf = png.encode(WIDTH, HEIGHT, rgb);
   writeFileSync(resolve(OUT_DIR, "thumbs", name), buf);
+  written.add(name);
   bytesAfter += buf.length;
   return buf.length;
 }
@@ -158,6 +163,7 @@ for (const sheetIndex of sheetOrder) {
     const src = resolve(DATA_DIR, items[0].src);
     const name = `batch_${String(outSheetIndex).padStart(3, "0")}.png`;
     copyFileSync(src, resolve(OUT_DIR, "thumbs", name));
+    written.add(name);
     bytesBefore += statSync(src).size;
     bytesAfter += statSync(resolve(OUT_DIR, "thumbs", name)).size;
     outSheets.push({ index: outSheetIndex, src: `thumbs/${name}`, width: WIDTH, height: HEIGHT });
@@ -345,6 +351,19 @@ if (existsSync(namesSource)) {
 } else if (existsSync(resolve(DATA_DIR, "names.json"))) {
   copyFileSync(resolve(DATA_DIR, "names.json"), resolve(OUT_DIR, "names.json"));
 }
+/* ---------- 清理本次没产出的旧文件 ---------- */
+
+let pruned = 0;
+for (const name of readdirSync(resolve(OUT_DIR, "thumbs"))) {
+  if (written.has(name)) continue;
+  try {
+    unlinkSync(resolve(OUT_DIR, "thumbs", name));
+    pruned++;
+  } catch (e) {
+    /* 删不掉就留着，不影响使用 */
+  }
+}
+
 const animatedCount = outItems.filter((i) => (i.frames || 1) > 1).length;
 const report = {
   builtAt: new Date().toISOString(),
