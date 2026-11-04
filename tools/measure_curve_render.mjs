@@ -71,7 +71,9 @@ const sliderProp = {
   sig: "sig-a",
   keys: [
     keyFrame(0, 0, [0]),
-    keyFrame(1, 1, [100]),
+    // 第二段给足 out 缓动（x1=0.85）：归一化后两段形状明显不同，
+    // 截图里才看得出「灰度显示其余段」确实画了东西
+    keyFrame(1, 1, [100], { os: [0], oi: [85] }),
     keyFrame(2, 2, [30]),
   ],
 };
@@ -172,13 +174,14 @@ function mouseAt(type, x, y) {
 
 function drag() {
   var snap = AEV_CurveUI.snapshot();
-  var key = snap.keyPoints[1];
-  if (!key) { R.error = "没有第二把关键帧"; return false; }
-  mouseAt("mousedown", key.x, key.y);
-  mouseAt("mouseup", key.x, key.y);
+  /* 单位方块：点曲线上的一点 = 把该段设为编辑对象 */
+  var seg = snap.segPoints && snap.segPoints.length ? snap.segPoints[0] : null;
+  if (!seg) { R.error = "没有段代表点（segPoints 为空）"; return false; }
+  mouseAt("mousedown", seg.x, seg.y);
+  mouseAt("mouseup", seg.x, seg.y);
   var after = AEV_CurveUI.snapshot();
-  R.afterClick = { selected: after.selected, handle: after.handle, key: key };
-  if (!after.handle) { R.error = "选中关键帧后没有拿到把手坐标"; return false; }
+  R.afterClick = { selected: after.selected, handle: after.handle, seg: seg, unit: after.unit, targets: after.targets };
+  if (!after.handle) { R.error = "选中段后没有拿到把手坐标"; return false; }
   R.handleBefore = after.handle;
   // 真正的拖拽：必须先在把手上按下，才算进入拖拽（点关键帧只是选中）
   mouseAt("mousedown", after.handle.x, after.handle.y);
@@ -263,12 +266,13 @@ function run() {
           R.pathDisabledOnScalar = document.getElementById("curveModePath").disabled;
           R.modeAfterScalar = AEV_CurveUI.snapshot().mode;
 
-          /* 收尾：选中中间那把关键帧，让截图里能看到把手 */
+          /* 收尾：选中第一段，让截图里能看到把手 */
           var endSnap = AEV_CurveUI.snapshot();
-          if (endSnap.keyPoints[1]) {
-            mouseAt("mousedown", endSnap.keyPoints[1].x, endSnap.keyPoints[1].y);
-            mouseAt("mouseup", endSnap.keyPoints[1].x, endSnap.keyPoints[1].y);
+          if (endSnap.segPoints && endSnap.segPoints.length) {
+            mouseAt("mousedown", endSnap.segPoints[0].x, endSnap.segPoints[0].y);
+            mouseAt("mouseup", endSnap.segPoints[0].x, endSnap.segPoints[0].y);
           }
+          R.unitAfterScalar = AEV_CurveUI.snapshot().unit;
           R.finalSelected = AEV_CurveUI.snapshot().selected;
 
           finish();
@@ -354,10 +358,23 @@ check("画布真的画出了东西", () => {
   assert.ok(data.painted > 200, "画布几乎没有着色像素：" + data.painted);
 });
 
-check("关键帧被画在画布内", () => {
-  assert.equal(data.keyCount, 3, "关键帧像素坐标数量不对：" + data.keyCount);
-  assert.ok(data.afterClick && data.afterClick.handle, "点关键帧后没算出把手坐标");
-  assert.deepEqual(data.afterClick.selected, [1], "点关键帧没有选中它");
+check("单位方块：只有两个角，每段一个代表点", () => {
+  assert.equal(data.snap.unit, true, "一维属性的值图应走单位方块");
+  assert.equal(data.keyCount, 2, "单位方块里只应有两个角，实际 " + data.keyCount);
+  assert.ok(data.snap.segPoints.length === 2, "两段应各有一个代表点：" + data.snap.segPoints.length);
+});
+
+check("点曲线即选中该段，并算出两端把手", () => {
+  assert.ok(data.afterClick && data.afterClick.handle, "选段后没算出把手坐标");
+  assert.deepEqual(data.afterClick.selected, [0], "点第一段没有选中它：" + JSON.stringify(data.afterClick.selected));
+  assert.deepEqual(data.afterClick.targets, [0], "目标段不是刚点的那个：" + JSON.stringify(data.afterClick.targets));
+  assert.equal(data.afterClick.unit, true, "断言时已不在单位方块模式");
+});
+
+check("切到速度图后回到时间轴（不再是单位方块）", () => {
+  assert.equal(data.modeAfterSpeed, "speed");
+  assert.equal(data.unitAfterScalar, true, "切回一维属性后应回到单位方块");
+  assert.equal(data.modeAfterScalar, "value", "切回一维属性后模式应回到值图");
 });
 
 check("拖拽过程中不过桥，松手才写", () => {

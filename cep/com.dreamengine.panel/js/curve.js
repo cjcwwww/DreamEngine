@@ -94,6 +94,17 @@ var AEV_CurveUI = (function () {
     return !!(p && p.spatial && p.dims >= 2);
   }
 
+  /**
+   * 值图是否走「单位方块」。
+   *
+   * 空间属性的值图不走：它的形状由空间切线决定，归一化成 0→1 之后
+   * 方块里那条曲线跟时间没有对应关系，容易误导；那种情况仍按时间轴显示并只读。
+   */
+  function unitMode() {
+    var p = active();
+    return st.mode === "value" && !(p && p.spatial);
+  }
+
   function fmt(value, span) {
     var n = Number(value);
     if (!isFinite(n)) return "0";
@@ -287,6 +298,25 @@ var AEV_CurveUI = (function () {
     return { x: 46, y: 14, w: Math.max(20, w - 62), h: Math.max(20, h - 42) };
   }
 
+  /**
+   * 单位方块：0→1 的正方形编辑区（Flow 的做法）。
+   *
+   * 归一化之后每条段的曲线都是 (0,0)→(1,1)，与属性的实际值域、时间段都无关，
+   * 所以不同段可以**叠在同一块方格里对比**。方块缩到可用空间的 86%，
+   * 四周留出的 7% 给回弹/过冲的把手 —— back 族会跑到 0..1 之外。
+   */
+  function unitSquare(w, h) {
+    var padTop = 18;
+    var padBottom = 22;
+    var padSide = 18;
+    var availW = Math.max(40, w - padSide * 2);
+    var availH = Math.max(40, h - padTop - padBottom);
+    var size = Math.min(availW, availH) * 0.86;
+    var cx = padSide + availW / 2;
+    var cy = padTop + availH / 2;
+    return { x: cx - size / 2, y: cy - size / 2, w: size, h: size };
+  }
+
   function computeRange() {
     var keys = activeKeys();
     var d = st.dim;
@@ -420,7 +450,19 @@ var AEV_CurveUI = (function () {
     }
 
     var rect = plotRect(w, h);
-    var range = computeRange();
+    var range;
+
+    if (unitMode()) {
+      // 单位方块：(0,0)→(1,1)，横轴是段内进度而不是时间
+      rect = unitSquare(w, h);
+      range = { t0: 0, t1: 1, lo: 0, hi: 1 };
+      st.map = makeMap(rect, range);
+      drawUnitView(ctx, keys, rect);
+      updateReadout();
+      return;
+    }
+
+    range = computeRange();
     if (st.mode === "path") range = equalizeAspect(rect, range);
     st.map = makeMap(rect, range);
 
@@ -446,6 +488,163 @@ var AEV_CurveUI = (function () {
       h / 2
     );
     ctx.textAlign = "left";
+  }
+
+  /* ---------- 单位方块视图（Flow 式） ---------- */
+
+  /** 归一化贝塞尔上的点：p0=(0,0)、p1=(x1,y1)、p2=(x2,y2)、p3=(1,1) */
+  function unitBezierPoint(b, u) {
+    var mt = 1 - u;
+    var w0 = mt * mt * mt;
+    var w1 = 3 * mt * mt * u;
+    var w2 = 3 * mt * u * u;
+    var w3 = u * u * u;
+    return {
+      x: w1 * b.x1 + w2 * b.x2 + w3,
+      y: w1 * b.y1 + w2 * b.y2 + w3
+    };
+  }
+
+  function strokeUnitBezier(ctx, b, color, width) {
+    var map = st.map;
+    var steps = 56;
+    ctx.beginPath();
+    for (var i = 0; i <= steps; i++) {
+      var pt = unitBezierPoint(b, i / steps);
+      var px = map.X(pt.x);
+      var py = map.Y(pt.y);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+
+  function drawUnitGrid(ctx, rect) {
+    ctx.fillStyle = "rgba(255,255,255,0.018)";
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+
+    // 四等分细网格
+    ctx.strokeStyle = "rgba(255,255,255,0.045)";
+    ctx.lineWidth = 1;
+    for (var i = 1; i < 4; i++) {
+      var gx = Math.round(rect.x + (rect.w * i) / 4) + 0.5;
+      var gy = Math.round(rect.y + (rect.h * i) / 4) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(gx, rect.y);
+      ctx.lineTo(gx, rect.y + rect.h);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(rect.x, gy);
+      ctx.lineTo(rect.x + rect.w, gy);
+      ctx.stroke();
+    }
+
+    // 线性参考（左下 → 右上）
+    ctx.save();
+    ctx.setLineDash([3, 4]);
+    ctx.strokeStyle = "rgba(255,255,255,0.10)";
+    ctx.beginPath();
+    ctx.moveTo(rect.x, rect.y + rect.h);
+    ctx.lineTo(rect.x + rect.w, rect.y);
+    ctx.stroke();
+    ctx.restore();
+
+    // 0..1 的边界
+    ctx.strokeStyle = "rgba(160,190,195,0.28)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, Math.max(1, rect.w - 1), Math.max(1, rect.h - 1));
+  }
+
+  /** 角点：单位方块的两个端点，画成方框（其余段的关键帧都缩在这两点上） */
+  function drawCorner(ctx, x, y, selected) {
+    ctx.beginPath();
+    ctx.rect(x - 4.5, y - 4.5, 9, 9);
+    ctx.fillStyle = selected ? "#cfe3e5" : "#16191c";
+    ctx.fill();
+    ctx.strokeStyle = selected ? "#cfe3e5" : "#7fa6aa";
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  }
+
+  /**
+   * 单位方块主绘制。
+   *
+   * 图层顺序（从后往前）：网格 → 其余段（灰度）→ 目标段（亮）→ 两角 → 把手。
+   * 灰度段既是「前后文」，也是**切换编辑对象**的点击目标 —— 点哪条就编哪一段。
+   */
+  function drawUnitView(ctx, keys, rect) {
+    drawUnitGrid(ctx, rect);
+
+    var targets = targetSegments();
+    var i, b;
+
+    for (i = 0; i + 1 < keys.length; i++) {
+      if (indexOf(targets, i) >= 0) continue;
+      b = segmentBezier(i);
+      if (b) strokeUnitBezier(ctx, b, "rgba(127,166,170,0.22)", 1.2);
+    }
+
+    for (i = 0; i < targets.length; i++) {
+      b = segmentBezier(targets[i]);
+      if (b) strokeUnitBezier(ctx, b, "#cfe3e5", 2);
+    }
+
+    drawCorner(ctx, rect.x, rect.y + rect.h, true);
+    drawCorner(ctx, rect.x + rect.w, rect.y, true);
+
+    drawUnitHandles(ctx);
+
+    // 右下角标出「第几段 / 共几段」，多段时用户才知道自己在改哪一段
+    if (keys.length > 2) {
+      ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+      ctx.fillStyle = "#5d666c";
+      ctx.textAlign = "right";
+      var segIndex = activeSegmentIndex();
+      ctx.fillText(t("段 " + (segIndex + 1) + " / " + (keys.length - 1),
+        "seg " + (segIndex + 1) + " / " + (keys.length - 1)),
+        rect.x + rect.w - 10, rect.y - 6);
+      ctx.textAlign = "left";
+    }
+  }
+
+  function drawUnitHandles(ctx) {
+    var segIndex = activeSegmentIndex();
+    var b = segmentBezier(segIndex);
+    if (!b) return;
+    var map = st.map;
+    var origin = { x: map.X(0), y: map.Y(0) };
+    var end = { x: map.X(1), y: map.Y(1) };
+    var p1 = { x: map.X(b.x1), y: map.Y(b.y1) };
+    var p2 = { x: map.X(b.x2), y: map.Y(b.y2) };
+    drawHandlePair(ctx, origin, p1, "out");
+    drawHandlePair(ctx, end, p2, "in");
+  }
+
+  /** 一条把手线 + 端点 + 控制点（值图与速度图共用） */
+  function drawHandlePair(ctx, base, tip, side) {
+    var hot = st.hoverHandle && st.hoverHandle.side === side;
+
+    ctx.beginPath();
+    ctx.moveTo(base.x, base.y);
+    ctx.lineTo(tip.x, tip.y);
+    ctx.strokeStyle = hot ? "#f0c469" : "rgba(240,196,105,0.75)";
+    ctx.lineWidth = hot ? 1.8 : 1.2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(base.x, base.y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = "#cfe3e5";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, hot ? 6 : 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = hot ? "#ffe1a3" : "#f0c469";
+    ctx.fill();
+    ctx.strokeStyle = "#0f1113";
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
 
   function drawGrid(ctx, rect, range) {
@@ -548,6 +747,13 @@ var AEV_CurveUI = (function () {
     var map = st.map;
     var k = keys[index];
     if (!k || !map) return null;
+    if (unitMode()) {
+      // 单位方块里所有关键帧都缩到两个角：只有首末两把有位置，
+      // 中间的键此时没有独立坐标（选段靠点曲线，不靠点键）
+      if (index === 0) return { x: map.X(0), y: map.Y(0) };
+      if (index === keys.length - 1) return { x: map.X(1), y: map.Y(1) };
+      return null;
+    }
     if (st.mode === "path") {
       return { x: map.X(Number(k.v[0] || 0)), y: map.Y(Number(k.v[1] || 0)) };
     }
@@ -620,6 +826,18 @@ var AEV_CurveUI = (function () {
       };
     }
 
+    if (unitMode()) {
+      var ub = segmentBezier(segIndex);
+      if (!ub) return null;
+      return {
+        seg: seg,
+        p0: { x: map.X(0), y: map.Y(0) },
+        p1: { x: map.X(ub.x1), y: map.Y(ub.y1) },
+        p2: { x: map.X(ub.x2), y: map.Y(ub.y2) },
+        p3: { x: map.X(1), y: map.Y(1) }
+      };
+    }
+
     var hnd = M.handles(seg, d);
     return {
       seg: seg,
@@ -644,35 +862,8 @@ var AEV_CurveUI = (function () {
     if (!px) return;
 
     // 起点 → P1、终点 → P2：两条线，与 Flow 的呈现一致
-    var pairs = [[px.p0, px.p1, "out"], [px.p3, px.p2, "in"]];
-    for (var i = 0; i < pairs.length; i++) {
-      var base = pairs[i][0];
-      var tip = pairs[i][1];
-      var side = pairs[i][2];
-      var hot = st.hoverHandle && st.hoverHandle.side === side;
-
-      ctx.beginPath();
-      ctx.moveTo(base.x, base.y);
-      ctx.lineTo(tip.x, tip.y);
-      ctx.strokeStyle = hot ? "#f0c469" : "rgba(240,196,105,0.75)";
-      ctx.lineWidth = hot ? 1.8 : 1.2;
-      ctx.stroke();
-
-      // 端点
-      ctx.beginPath();
-      ctx.arc(base.x, base.y, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = "#cfe3e5";
-      ctx.fill();
-
-      // 控制点
-      ctx.beginPath();
-      ctx.arc(tip.x, tip.y, hot ? 6 : 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = hot ? "#ffe1a3" : "#f0c469";
-      ctx.fill();
-      ctx.strokeStyle = "#0f1113";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
+    drawHandlePair(ctx, px.p0, px.p1, "out");
+    drawHandlePair(ctx, px.p3, px.p2, "in");
   }
 
   function drawPathHandles(ctx, keys) {
@@ -802,22 +993,38 @@ var AEV_CurveUI = (function () {
     return null;
   }
 
+  /**
+   * 点在哪一段的曲线上（只用于单位方块）。
+   *
+   * 单位空间里各段是同一条 0→1 的曲线，靠「离哪条采样线最近」判断，
+   * 阈值 10px —— 比关键帧的 7px 稍松，因为细线不好点中。
+   */
+  function segmentAt(px, py) {
+    var keys = activeKeys();
+    var map = st.map;
+    if (!map || keys.length < 2) return -1;
+    var best = -1;
+    var bestD = 100;   // 10px 平方
+    for (var i = 0; i + 1 < keys.length; i++) {
+      var b = segmentBezier(i);
+      if (!b) continue;
+      for (var s = 0; s <= 36; s++) {
+        var pt = unitBezierPoint(b, s / 36);
+        var dx = px - map.X(pt.x);
+        var dy = py - map.Y(pt.y);
+        var d2 = dx * dx + dy * dy;
+        if (d2 < bestD) { bestD = d2; best = i; }
+      }
+    }
+    return best;
+  }
+
   function onMouseDown(event) {
     if (event.button !== 0) return;
     var pt = localPoint(event);
-    var hitKey = keyAt(pt.x, pt.y);
 
-    if (hitKey >= 0) {
-      var additive = event.shiftKey;
-      if (!additive) st.selected = {};
-      st.selected[hitKey] = additive ? !st.selected[hitKey] : true;
-      if (!st.selected[hitKey]) delete st.selected[hitKey];
-      st.hoverHandle = null;
-      draw();
-      updateHint();
-      return;
-    }
-
+    /* 把手优先：它的命中半径比关键帧小，放在后面判的话在角上永远点不到把手
+       （单位方块里两个把手基点正好就是两个角）。 */
     var hitHandle = handleAt(pt.x, pt.y);
     if (hitHandle) {
       st.backup = JSON.stringify(activeKeys());
@@ -833,6 +1040,42 @@ var AEV_CurveUI = (function () {
         m0: seg0 ? (hitHandle.side === "out" ? seg0.mOut : seg0.mIn) : 0
       };
       event.preventDefault();
+      updateHint();
+      return;
+    }
+
+    /* 单位方块：点曲线 = 把那段设为编辑对象 */
+    if (unitMode()) {
+      var hitKeys = activeKeys();
+      var segHit = segmentAt(pt.x, pt.y);
+      if (segHit >= 0) {
+        /* 多段形状完全重合时（都套过同一条缓动），点哪儿都命中同一条。
+           Shift + 点已选中的那条 → 轮到下一段，这样重合的段也能选到。 */
+        if (event.shiftKey && st.selected[segHit] && hitKeys.length > 2) {
+          segHit = (segHit + 1) % (hitKeys.length - 1);
+        }
+        st.selected = {};
+        st.selected[segHit] = true;
+        st.hoverHandle = null;
+        draw();
+        updateHint();
+        return;
+      }
+      st.selected = {};
+      st.hoverHandle = null;
+      draw();
+      updateHint();
+      return;
+    }
+
+    var hitKey = keyAt(pt.x, pt.y);
+    if (hitKey >= 0) {
+      var additive = event.shiftKey;
+      if (!additive) st.selected = {};
+      st.selected[hitKey] = additive ? !st.selected[hitKey] : true;
+      if (!st.selected[hitKey]) delete st.selected[hitKey];
+      st.hoverHandle = null;
+      draw();
       updateHint();
       return;
     }
@@ -898,6 +1141,25 @@ var AEV_CurveUI = (function () {
       draw();
       updateHint(t("influence " + inf.toFixed(1) + "% · 斜率 " + m.toFixed(2) + "×",
         "influence " + inf.toFixed(1) + "% · slope " + m.toFixed(2) + "×"));
+      return;
+    }
+
+    // 单位方块：横轴已经是段内进度、纵轴已经是归一化值，直接落成 bezier 参数
+    if (unitMode()) {
+      var ub = segmentBezier(drag.segIndex);
+      if (!ub) return;
+      var unx = M.clamp(time, 0.001, 1);
+      var uny = map.V(pt.y);
+      if (drag.shift) uny = drag.side === "out" ? ub.y1 : ub.y2;
+      if (drag.side === "out") { ub.x1 = unx; ub.y1 = uny; }
+      else { ub.x2 = unx; ub.y2 = uny; }
+      writeLocalSegment(keys, drag.segIndex, bezierToEase(ub));
+      draw();
+      updateHint(t(
+        "cubic-bezier(" + ub.x1.toFixed(2) + ", " + ub.y1.toFixed(2) + ", " +
+          ub.x2.toFixed(2) + ", " + ub.y2.toFixed(2) + ")",
+        "cubic-bezier(" + ub.x1.toFixed(2) + ", " + ub.y1.toFixed(2) + ", " +
+          ub.x2.toFixed(2) + ", " + ub.y2.toFixed(2) + ")"));
       return;
     }
 
@@ -1239,11 +1501,11 @@ var AEV_CurveUI = (function () {
       parts.push(t("空间属性：值图只读，缓动请在「速/路」里改",
         "Spatial: value view is read-only, edit in Speed/Path"));
     } else if (st.mode === "value") {
-      parts.push(t("拖动两端把手改曲线", "Drag either handle"));
+      parts.push(t("点曲线选段 · 拖两端把手改曲线", "Click a curve to pick a segment · drag a handle"));
       parts.push(selectedCount
         ? t("作用于 " + segs.length + " 段（已选 " + selectedCount + " 键）",
           "Applies to " + segs.length + " segment(s)")
-        : t("未选关键帧：作用于全部 " + segs.length + " 段", "No selection: all segments"));
+        : t("未选：作用于全部 " + segs.length + " 段", "No selection: all segments"));
     } else if (st.mode === "speed") {
       parts.push(t("拖把手改速度", "Drag handle to change speed"));
       parts.push(t("Shift 只改缓动幅度", "Shift = influence only"));
@@ -1411,15 +1673,29 @@ var AEV_CurveUI = (function () {
       if (pt) keyPoints.push({ i: i, x: pt.x, y: pt.y });
     }
     var hp = st.map ? segmentHandlePixels(segIndex, st.dim) : null;
+
+    /* 单位方块里各段的代表点（曲线上 u=0.5 处）：无头浏览器靠它点选段 */
+    var segPoints = [];
+    if (st.map && unitMode()) {
+      for (var s = 0; s + 1 < p.keys.length; s++) {
+        var sb = segmentBezier(s);
+        if (!sb) continue;
+        var mid = unitBezierPoint(sb, 0.5);
+        segPoints.push({ i: s, x: st.map.X(mid.x), y: st.map.Y(mid.y) });
+      }
+    }
+
     return {
       active: st.active,
       loc: p.loc,
       mode: st.mode,
+      unit: unitMode(),
       dim: st.dim,
       keys: p.keys.length,
       selected: selectedIndexes(),
       targets: targetSegments(),
       keyPoints: keyPoints,
+      segPoints: segPoints,
       handle: hp ? { x: hp.p1.x, y: hp.p1.y } : null,
       handleIn: hp ? { x: hp.p2.x, y: hp.p2.y } : null,
       bezier: segmentBezier(segIndex),

@@ -400,6 +400,47 @@ test("值图是「两端各一条把手线」，且只作用于选中的段", ()
     "拖拽没有把范围收敛到单段");
 });
 
+test("值图走单位方块：0→1 的正方形，其余段用灰度叠在同一空间", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
+  for (const fn of ["unitMode", "unitSquare", "drawUnitGrid", "drawUnitView", "unitBezierPoint", "segmentAt", "drawCorner"]) {
+    assert.ok(code.includes("function " + fn + "("), "缺少 " + fn);
+  }
+  // 单位方块只在「值图 + 非空间属性」时启用
+  assert.ok(code.includes("return st.mode === \"value\" && !(p && p.spatial);"),
+    "unitMode 的启用条件不对");
+  // 归一化贝塞尔的 p0/p3 必须固定在 (0,0) 与 (1,1)，否则方块里的形状跟 AE 对不上
+  assert.ok(code.includes("x: w1 * b.x1 + w2 * b.x2 + w3"), "unitBezierPoint 的 x 没按 p0=0/p3=1 展开");
+  assert.ok(code.includes("y: w1 * b.y1 + w2 * b.y2 + w3"), "unitBezierPoint 的 y 没按 p0=0/p3=1 展开");
+  // 灰度段：非目标段用低透明度画，目标段亮色
+  const view = code.slice(code.indexOf("function drawUnitView("), code.indexOf("function drawUnitHandles("));
+  assert.ok(view.includes('indexOf(targets, i) >= 0) continue'), "没有跳过目标段");
+  assert.ok(/rgba\(127,166,170,0\.\d+\)/.test(view), "其余段没有用灰度画");
+  assert.ok(view.includes('"#cfe3e5", 2'), "目标段没有用亮色画");
+  // 单位模式下不再画时间轴网格与播放头
+  const draw = code.slice(code.indexOf("function draw() {"), code.indexOf("function drawEmpty("));
+  const unitAt = draw.indexOf("if (unitMode()) {");
+  assert.ok(unitAt > 0, "draw() 里没有单位方块分支");
+  const unitBlock = draw.slice(unitAt, draw.indexOf("return;", unitAt));
+  assert.ok(unitBlock.includes("drawUnitView"), "单位分支没调 drawUnitView");
+  assert.ok(!unitBlock.includes("drawGrid"), "单位分支不该再画时间轴网格");
+});
+
+test("单位方块里点曲线选段，且把手优先于关键帧", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
+  const down = code.slice(code.indexOf("function onMouseDown("), code.indexOf("function onMouseMove("));
+  // 先判把手：单位方块的两个把手基点正好落在两个角上，顺序错了就点不到把手
+  const handleAt = down.indexOf("var hitHandle = handleAt(");
+  const segAt = down.indexOf("var segHit = segmentAt(");
+  const keyAt2 = down.indexOf("var hitKey = keyAt(");
+  assert.ok(handleAt > 0 && segAt > 0 && keyAt2 > 0, "onMouseDown 缺少某条命中分支");
+  assert.ok(handleAt < segAt, "把手判定必须早于点曲线");
+  assert.ok(segAt < keyAt2, "单位方块分支必须早于关键帧判定");
+  // 点空白 = 回到「作用于全部段」
+  assert.ok(down.includes("st.selected = {};"), "点空白没有清空选区");
+  // Shift + 点已选中的段要能轮到下一段（形状重合时唯一的选法）
+  assert.ok(down.includes("segHit = (segHit + 1) % (hitKeys.length - 1)"), "没有轮换逻辑");
+});
+
 test("拖拽过程中不过桥，松手才写", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
   const drag = code.slice(code.indexOf("function applyDrag("), code.indexOf("function writeLocal("));
