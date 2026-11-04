@@ -337,10 +337,14 @@ for (const item of outItems) {
 }
 writeFileSync(resolve(OUT_DIR, "previews.tsv"), indexLines.join("\r\n"), "utf8");
 
-if (existsSync(resolve(DATA_DIR, "names.json"))) {
+/* 名字表取仓库里的版本（它是源数据），而不是运行时目录里的那份——
+   运行时那份可能是上一轮安装的旧包，拿它打包会形成循环依赖。 */
+const namesSource = resolve(arg("--names", resolve(ROOT, "cep/com.dreamengine.panel/data/names.json")));
+if (existsSync(namesSource)) {
+  copyFileSync(namesSource, resolve(OUT_DIR, "names.json"));
+} else if (existsSync(resolve(DATA_DIR, "names.json"))) {
   copyFileSync(resolve(DATA_DIR, "names.json"), resolve(OUT_DIR, "names.json"));
 }
-
 const animatedCount = outItems.filter((i) => (i.frames || 1) > 1).length;
 const report = {
   builtAt: new Date().toISOString(),
