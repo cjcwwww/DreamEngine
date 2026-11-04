@@ -695,10 +695,13 @@ var AEV_Recipe = (function () {
      * 返回 {prop, ratio} 或 null（不动任何参数）。
      */
     function pluginMainParam(effectGroup) {
-        var intensityProp = null;
+        var candidate = null;
 
+        // 第一步：只读参数**名字**（读名字是安全的）。
+        // 实测在遍历过程中读 prop.hasMin / prop.maxValue / prop.value 会让 AE
+        // 直接崩掉——所以取值一律延后到「已经锁定唯一候选」之后。
         function walk(group, depth) {
-            if (depth > 2) return;
+            if (depth > 2 || candidate) return;
             var count = 0;
             try {
                 count = group.numProperties;
@@ -723,48 +726,50 @@ var AEV_Recipe = (function () {
                     walk(prop, depth + 1);
                     continue;
                 }
-                if (kindOf(prop) !== "oneD") continue;
                 var name = "";
                 try {
                     name = String(prop.name || "");
                 } catch (e4) {}
                 if (!name || isPluginAuxiliary(name)) continue;
-
-                var minValue = 0;
-                var maxValue = 0;
-                try {
-                    if (prop.hasMin) minValue = Number(prop.minValue);
-                    if (prop.hasMax) maxValue = Number(prop.maxValue);
-                } catch (e5) {}
-                // 枚举/开关（0-1、1-3 之类）与 log 尺度的形态参数都不碰
-                if (maxValue < 5 || maxValue > 1000) continue;
-
                 // 只认「强度/占比」类参数。
                 // AE 内置的「效果不透明度」绝不碰：实测对它 setValue 或打关键帧，
                 // 整条效果都会报「需要数字、数组或属性的位置找到类型为 Error 的
                 // 对象」直接渲不出来。
-                if (isIntensityName(name) && !intensityProp) {
-                    intensityProp = prop;
+                if (isIntensityName(name)) {
+                    candidate = prop;
+                    return;
                 }
             }
         }
 
         walk(effectGroup, 0);
-        if (!intensityProp) return null;
+        if (!candidate) return null;
+
+        // 第二步：锁定候选后才取值（每个读取都单独兜住）
+        var minValue = 0;
+        var maxValue = 0;
+        var current = 0;
+        try {
+            if (candidate.hasMin) minValue = Number(candidate.minValue);
+            if (candidate.hasMax) maxValue = Number(candidate.maxValue);
+        } catch (e5) {
+            return null;
+        }
+        // 枚举/开关（0-1、1-3）与 log 尺度的形态参数都不碰
+        if (!(maxValue > minValue) || maxValue < 5 || maxValue > 1000) return null;
+        try {
+            current = Number(candidate.value);
+        } catch (e6) {
+            current = 0;
+        }
 
         // 分档：按参数**当前值**决定用小值还是大值
         //   · 当前值已经不小（默认就是满效果）→ 拨到 15%，预览是「轻微生效」的样子
         //   · 当前值几乎为 0（这类参数 0=满效果或本来就没生效）→ 15% 几乎看不出，
         //     改用 70%，保证效果看得见
-        var current = 0;
-        var maxValue = 0;
-        try {
-            current = Number(intensityProp.value);
-            if (intensityProp.hasMax) maxValue = Number(intensityProp.maxValue);
-        } catch (e) {}
         var ratio = 0.15;
         if (maxValue > 0 && current / maxValue <= 0.2) ratio = 0.7;
-        return { prop: intensityProp, ratio: ratio, kind: "intensity" };
+        return { prop: candidate, ratio: ratio, kind: "intensity" };
     }
 
     /** 按范围比例算出目标值 */
@@ -891,12 +896,15 @@ var AEV_Recipe = (function () {
                     }
                 }
                 if (!matched) continue;
+                // 锁定候选后再读范围（读属性值必须最后做）
                 var minValue = 0;
                 var maxValue = 0;
                 try {
                     if (prop.hasMin) minValue = Number(prop.minValue);
                     if (prop.hasMax) maxValue = Number(prop.maxValue);
-                } catch (e5) {}
+                } catch (e5) {
+                    continue;
+                }
                 // 线性尺度的普通数值（枚举与 log 尺度都排除）
                 if (!(maxValue > minValue) || maxValue > 1000) continue;
                 found = prop;
