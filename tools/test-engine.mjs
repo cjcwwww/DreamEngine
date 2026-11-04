@@ -631,6 +631,8 @@ test("面板优先渲染看得出差异的分类，并跳过 3D 通道族", () =
   // 文本生成器在 addProperty 时弹模态对话框，会卡死批量渲染
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Numbers2", category: "文本" }), true);
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Timecode", category: "文本" }), true);
+  // Apply Color LUT2 渲染时弹「选择 LUT 文件」对话框，整批卡死
+  assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Apply Color LUT2", category: "颜色校正" }), true);
   assert.equal(view.isPoorPreviewTarget({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" }), false);
 
   const blur = view.previewRank({ matchName: "ADBE Gaussian Blur 2", category: "模糊和锐化" });
