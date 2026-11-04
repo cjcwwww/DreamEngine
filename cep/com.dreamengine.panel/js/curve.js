@@ -1,10 +1,18 @@
 /* ============================================================
- * curve.js —— M4 曲线编辑视图
+ * curve.js —— M4 曲线编辑视图（Flow 式两把手）
  *
  * 分层（设计文档 §2）：
  *   · 纯数学：engine/curve_math.js（与 AE 侧共用同一份，唯一实现）
  *   · AE 读写：engine/curvelib.jsx（快照 / 写回 / 并发指纹），本文件只发文本协议
  *   · 本文件：画布、命中测试、拖拽、预设、冲突处理
+ *
+ * 交互模型（参照 Flow）：
+ *   **一段曲线由两端各一条把手线决定**——起点引出 P1，终点引出 P2，
+ *   两个控制点之间就是这段的值曲线。拖 P1 / P2 改的是这段的
+ *   cubic-bezier(x1, y1, x2, y2)；换算关系：
+ *     x1 = infOut/100,  y1 = mOut · x1
+ *     x2 = 1 - infIn/100, y2 = 1 - mIn · (1 - x2)
+ *   只对「选中的关键帧」生效：选中 N 个键就把同一条缓动铺到它们各自的段上。
  *
  * 为什么面板要自己算曲线：拖拽要逐帧重绘，不可能每动一下鼠标就过一次
  * evalScript（一次往返 10~50ms，体验直接崩）。所以参数一落盘就本地重算，
@@ -14,16 +22,26 @@
  * ============================================================ */
 
 var AEV_CurveUI = (function () {
-  /* 与 engine/curvelib.jsx 的 PRESETS 一一对应（tools/test-curve.mjs 会校验 id） */
+  /**
+   * 缓动库：全部用 cubic-bezier(x1,y1,x2,y2) 表达，与 Flow / CSS 同一套语义。
+   * 应用时换算成 AE 的 (influence, speed)，走的是与拖拽完全相同的写回路径。
+   */
   var PRESETS = [
-    { id: "linear", zh: "线性", en: "Linear" },
-    { id: "ease", zh: "缓动", en: "Easy Ease" },
-    { id: "ease-in", zh: "缓入", en: "Ease In" },
-    { id: "ease-out", zh: "缓出", en: "Ease Out" },
-    { id: "strong", zh: "强缓动", en: "Strong Ease" },
-    { id: "strong-in", zh: "强缓入", en: "Strong In" },
-    { id: "strong-out", zh: "强缓出", en: "Strong Out" },
-    { id: "hold", zh: "定格", en: "Hold" }
+    { id: "linear", zh: "线性", en: "Linear", b: [0, 0, 1, 1] },
+    { id: "ease", zh: "缓动", en: "Ease", b: [0.25, 0.1, 0.25, 1] },
+    { id: "ease-in", zh: "缓入", en: "Ease In", b: [0.42, 0, 1, 1] },
+    { id: "ease-out", zh: "缓出", en: "Ease Out", b: [0, 0, 0.58, 1] },
+    { id: "ease-in-out", zh: "缓入缓出", en: "Ease In Out", b: [0.42, 0, 0.58, 1] },
+    { id: "quad-in", zh: "二次缓入", en: "Quad In", b: [0.11, 0, 0.5, 0] },
+    { id: "quad-out", zh: "二次缓出", en: "Quad Out", b: [0.5, 1, 0.89, 1] },
+    { id: "cubic-in", zh: "三次缓入", en: "Cubic In", b: [0.32, 0, 0.67, 0] },
+    { id: "cubic-out", zh: "三次缓出", en: "Cubic Out", b: [0.33, 1, 0.68, 1] },
+    { id: "cubic-in-out", zh: "三次进出", en: "Cubic In Out", b: [0.65, 0, 0.35, 1] },
+    { id: "expo-in", zh: "指数缓入", en: "Expo In", b: [0.7, 0, 0.84, 0] },
+    { id: "expo-out", zh: "指数缓出", en: "Expo Out", b: [0.16, 1, 0.3, 1] },
+    { id: "back-in", zh: "回拉缓入", en: "Back In", b: [0.36, 0, 0.66, -0.56] },
+    { id: "back-out", zh: "回弹缓出", en: "Back Out", b: [0.34, 1.56, 0.64, 1] },
+    { id: "back-in-out", zh: "回弹进出", en: "Back In Out", b: [0.68, -0.6, 0.32, 1.6] }
   ];
 
   var deps = { engine: null, parse: null, status: null, lang: null };
@@ -45,7 +63,8 @@ var AEV_CurveUI = (function () {
     hoverHandle: null,
     message: "",
     loaded: false,
-    busy: false
+    busy: false,
+    modeMenuOpen: false
   };
 
   function t(zh, en) {
@@ -86,6 +105,19 @@ var AEV_CurveUI = (function () {
     return n.toFixed(3);
   }
 
+  function numText(value) {
+    var n = Number(value);
+    if (!isFinite(n)) n = 0;
+    return String(Math.round(n * 10000) / 10000);
+  }
+
+  function indexOf(list, value) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] === value) return i;
+    }
+    return -1;
+  }
+
   /* ============================================================
    * 一、载入：把 AE 侧的选中快照拉过来
    * ============================================================ */
@@ -121,7 +153,7 @@ var AEV_CurveUI = (function () {
 
       var data = deps.parse ? deps.parse(text) : null;
       if (!data || data.status !== "ok") {
-        var reason = (data && data.reason) || String(text).slice(0, 120);
+        var reason = (data && data.reason) || String(text).slice(0, 160);
         st.props = [];
         st.active = -1;
         st.selected = {};
@@ -141,7 +173,6 @@ var AEV_CurveUI = (function () {
       st.props = data.props || [];
       st.loaded = true;
 
-      // 属性列表变了（换了选中对象）→ 重新定位当前属性
       var nextIndex = -1;
       if (keepLoc) {
         for (var i = 0; i < st.props.length; i++) {
@@ -150,7 +181,6 @@ var AEV_CurveUI = (function () {
       }
       if (nextIndex < 0 && st.props.length) nextIndex = 0;
 
-      // 换了属性就清空关键帧选择：旧序号对新属性没有意义
       if (!st.props.length || st.props[nextIndex].loc !== prevLoc) st.selected = {};
       st.active = nextIndex;
 
@@ -167,7 +197,6 @@ var AEV_CurveUI = (function () {
       if (st.mode === "path" && !isPathCapable()) st.mode = "value";
 
       renderAll();
-      // 写回后的提示优先：read 会把「已写入 N 处」覆盖成「已读取 N 个属性」
       var message = st.afterRead;
       st.afterRead = "";
       setMessage(message || t("已读取 " + st.props.length + " 个属性（合成 " + st.comp + "）",
@@ -176,7 +205,66 @@ var AEV_CurveUI = (function () {
   }
 
   /* ============================================================
-   * 二、视图映射
+   * 二、选区与段：Flow 的编辑单位是「一段」
+   * ============================================================ */
+
+  function selectedIndexes() {
+    var out = [];
+    for (var k in st.selected) {
+      if (st.selected.hasOwnProperty(k)) out.push(Number(k));
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  }
+
+  /** 当前会被写入的段（0 基，段 i = 关键帧 i → i+1） */
+  function targetSegments() {
+    var keys = activeKeys();
+    var segs = [];
+    if (keys.length < 2) return segs;
+    var sel = selectedIndexes();
+    if (sel.length) {
+      for (var i = 0; i < sel.length; i++) {
+        if (sel[i] + 1 < keys.length) segs.push(sel[i]);
+      }
+      // 只选了最后一个键：把前一段算进来，否则「选了却改不动」
+      if (!segs.length) segs.push(Math.max(0, sel[0] - 1));
+      return segs;
+    }
+    for (var j = 0; j + 1 < keys.length; j++) segs.push(j);
+    return segs;
+  }
+
+  function activeSegmentIndex() {
+    var segs = targetSegments();
+    return segs.length ? segs[0] : -1;
+  }
+
+  /** 段在归一化空间里的 cubic-bezier(0..1) 参数 */
+  function segmentBezier(segIndex) {
+    var keys = activeKeys();
+    var seg = M.segmentOf(keys, segIndex);
+    if (!seg) return null;
+    var x1 = M.clamp(seg.infOut / 100, 0, 1);
+    var x2 = M.clamp(1 - seg.infIn / 100, 0, 1);
+    var y1 = seg.mOut * x1;
+    var y2 = 1 - seg.mIn * (1 - x2);
+    return { x1: x1, y1: y1, x2: x2, y2: y2 };
+  }
+
+  /** bezier → AE 的 (influence, 斜率倍率) */
+  function bezierToEase(b) {
+    var x1 = M.clamp(b.x1, 0.001, 1);
+    var x2 = M.clamp(b.x2, 0, 0.999);
+    var infOut = x1 * 100;
+    var infIn = (1 - x2) * 100;
+    var mOut = x1 > 1e-4 ? M.clamp(b.y1 / x1, M.MIN_M, M.MAX_M) : 0;
+    var mIn = (1 - x2) > 1e-4 ? M.clamp((1 - b.y2) / (1 - x2), M.MIN_M, M.MAX_M) : 0;
+    return { infOut: infOut, infIn: infIn, mOut: mOut, mIn: mIn };
+  }
+
+  /* ============================================================
+   * 三、视图映射
    * ============================================================ */
 
   function setupCanvas() {
@@ -199,10 +287,8 @@ var AEV_CurveUI = (function () {
     return { x: 46, y: 14, w: Math.max(20, w - 62), h: Math.max(20, h - 42) };
   }
 
-  /** 值图 / 速度图的时间与纵轴范围 */
   function computeRange() {
     var keys = activeKeys();
-    var p = active();
     var d = st.dim;
     var t0 = keys.length ? keys[0].t : 0;
     var t1 = keys.length ? keys[keys.length - 1].t : 1;
@@ -222,7 +308,6 @@ var AEV_CurveUI = (function () {
           minX = Math.min(minX, pt[0]); maxX = Math.max(maxX, pt[0]);
           minY = Math.min(minY, pt[1]); maxY = Math.max(maxY, pt[1]);
         }
-        // 切线把手也要能画出来
         var tOutX = Number(keys[i].v[0] || 0) + Number(keys[i].ot[0] || 0);
         var tOutY = Number(keys[i].v[1] || 0) + Number(keys[i].ot[1] || 0);
         minX = Math.min(minX, tOutX); maxX = Math.max(maxX, tOutX);
@@ -295,7 +380,6 @@ var AEV_CurveUI = (function () {
     };
   }
 
-  /** 让 X/Y 的「每像素单位数」一致，否则路径形状会被拉扁 */
   function equalizeAspect(rect, range) {
     var cx = (range.t0 + range.t1) / 2;
     var cy = (range.lo + range.hi) / 2;
@@ -308,7 +392,7 @@ var AEV_CurveUI = (function () {
   }
 
   /* ============================================================
-   * 三、绘制
+   * 四、绘制
    * ============================================================ */
 
   function draw() {
@@ -323,6 +407,7 @@ var AEV_CurveUI = (function () {
     var p = active();
     if (!p) {
       drawEmpty(ctx, w, h);
+      updateReadout();
       return;
     }
 
@@ -330,13 +415,12 @@ var AEV_CurveUI = (function () {
     if (!keys || keys.length < 2) {
       drawEmpty(ctx, w, h, t("这个属性只有一个关键帧，没有可编辑的曲线",
         "Only one keyframe — no curve to edit"));
+      updateReadout();
       return;
     }
 
     var rect = plotRect(w, h);
     var range = computeRange();
-    // 路径图必须等比：X/Y 用不同的「每像素代表多少单位」，画出来的
-    // 弯曲方向就是假的（这一点在空间切线编辑里是硬伤）。
     if (st.mode === "path") range = equalizeAspect(rect, range);
     st.map = makeMap(rect, range);
 
@@ -346,6 +430,7 @@ var AEV_CurveUI = (function () {
     drawKeys(ctx, keys);
     drawHandles(ctx, keys);
     drawPlayhead(ctx, rect, range);
+    updateReadout();
   }
 
   function drawEmpty(ctx, w, h, text) {
@@ -363,7 +448,7 @@ var AEV_CurveUI = (function () {
     ctx.textAlign = "left";
   }
 
-  function drawGrid(ctx, rect, range, p) {
+  function drawGrid(ctx, rect, range) {
     ctx.strokeStyle = "rgba(255,255,255,0.06)";
     ctx.lineWidth = 1;
     ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
@@ -399,106 +484,101 @@ var AEV_CurveUI = (function () {
     }
     ctx.textAlign = "left";
 
-    // 图表类型提示（面板很窄，靠左上角一行小字说明当前坐标含义）
     ctx.fillStyle = "#5d666c";
     var modeLabel = st.mode === "speed"
       ? t("速度（值/秒）", "Speed (units/s)")
       : (st.mode === "path" ? t("路径（顶视图 X/Y）", "Path (top view X/Y)") : t("值", "Value"));
-    ctx.fillText(modeLabel + " · " + dimLabel(p, st.dim), rect.x + 2, rect.y - 4);
+    ctx.fillText(modeLabel + " · " + dimLabel(), rect.x + 2, rect.y - 4);
   }
 
-  function dimLabel(p, d) {
+  function dimLabel() {
+    var p = active();
     if (!p || p.dims <= 1) return t("标量", "scalar");
     var names = ["X", "Y", "Z", "W"];
-    return "dim " + (names[d] || String(d + 1));
+    return "dim " + (names[st.dim] || String(st.dim + 1));
   }
 
   function drawCurve(ctx, keys) {
     var map = st.map;
     var d = st.dim;
-    ctx.strokeStyle = "#7fa6aa";
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
+    var targets = targetSegments();
 
-    var started = false;
     for (var i = 0; i + 1 < keys.length; i++) {
       var seg = M.segmentOf(keys, i);
       if (!seg) continue;
+      var isTarget = indexOf(targets, i) >= 0;
+      ctx.strokeStyle = isTarget ? "#cfe3e5" : "rgba(127,166,170,0.55)";
+      ctx.lineWidth = isTarget ? 2 : 1.2;
+      ctx.beginPath();
       var steps = Math.max(8, Math.min(120, Math.round(map.rect.w / 3)));
       for (var s = 0; s <= steps; s++) {
         var time = seg.tA + (seg.dt * s) / steps;
         var value = M.sampleValue(seg, d, time);
         var px = map.X(time);
         var py = map.Y(value);
-        if (!started) { ctx.moveTo(px, py); started = true; }
+        if (s === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       }
+      ctx.stroke();
     }
-    ctx.stroke();
   }
 
   function drawPath(ctx, keys) {
     var map = st.map;
-    ctx.strokeStyle = "#7fa6aa";
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    var started = false;
+    var targets = targetSegments();
     for (var i = 0; i + 1 < keys.length; i++) {
       var seg = M.segmentOf(keys, i);
       if (!seg) continue;
+      ctx.strokeStyle = indexOf(targets, i) >= 0 ? "#cfe3e5" : "rgba(127,166,170,0.55)";
+      ctx.lineWidth = indexOf(targets, i) >= 0 ? 2 : 1.2;
+      ctx.beginPath();
       for (var s = 0; s <= 48; s++) {
         var pt = M.pathPoint(seg, s / 48);
         var px = map.X(pt[0]);
         var py = map.Y(pt[1]);
-        if (!started) { ctx.moveTo(px, py); started = true; }
+        if (s === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       }
+      ctx.stroke();
     }
-    ctx.stroke();
+  }
+
+  function keyPixel(index) {
+    var keys = activeKeys();
+    var map = st.map;
+    var k = keys[index];
+    if (!k || !map) return null;
+    if (st.mode === "path") {
+      return { x: map.X(Number(k.v[0] || 0)), y: map.Y(Number(k.v[1] || 0)) };
+    }
+    if (st.mode === "speed") {
+      return { x: map.X(k.t), y: map.Y(speedAtKey(index, st.dim)) };
+    }
+    return { x: map.X(k.t), y: map.Y(Number(k.v[st.dim] || 0)) };
   }
 
   function drawKeys(ctx, keys) {
-    var map = st.map;
-    var d = st.dim;
     for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
-      var px, py;
-      if (st.mode === "path") {
-        px = map.X(Number(key.v[0] || 0));
-        py = map.Y(Number(key.v[1] || 0));
-      } else if (st.mode === "speed") {
-        px = map.X(key.t);
-        py = map.Y(speedAtKey(i, d));
-      } else {
-        px = map.X(key.t);
-        py = map.Y(Number(key.v[d] || 0));
-      }
-
+      var pt = keyPixel(i);
+      if (!pt) continue;
       var selected = !!st.selected[i];
       ctx.beginPath();
-      ctx.rect(px - 4, py - 4, 8, 8);
-      if (selected) {
-        ctx.fillStyle = "#cfe3e5";
-        ctx.fill();
-      } else {
-        ctx.fillStyle = "#16191c";
-        ctx.fill();
-      }
+      ctx.rect(pt.x - 4, pt.y - 4, 8, 8);
+      ctx.fillStyle = selected ? "#cfe3e5" : "#16191c";
+      ctx.fill();
       ctx.strokeStyle = selected ? "#cfe3e5" : "#7fa6aa";
       ctx.lineWidth = 1.4;
       ctx.stroke();
 
-      // roving 键：时间由 AE 排布，画成空心菱形提醒不可拖时间
-      if (key.rv) {
+      if (keys[i].rv) {
         ctx.beginPath();
-        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
         ctx.strokeStyle = "#a36d65";
         ctx.stroke();
       }
     }
   }
 
-  /** 关键帧处的速度（速度图上用来摆关键帧标记） */
   function speedAtKey(index, d) {
     var keys = activeKeys();
     var seg;
@@ -513,81 +593,118 @@ var AEV_CurveUI = (function () {
     return 0;
   }
 
-  /** 当前关键帧的把手位置（值图 / 速度图 / 路径图各不相同） */
-  function handlePoints(keyIndex, side, d) {
+  /**
+   * 段的两条把手（像素坐标）。
+   *
+   * 值图里 P1 由**起点**引出、P2 由**终点**引出 —— 与 Flow 一致：
+   * 两条线各自决定曲线离开起点、进入终点的走向。
+   * 空间属性的值图不给把手（形状由空间切线决定），缓动去速度图或路径图改。
+   */
+  function segmentHandlePixels(segIndex, d) {
     var keys = activeKeys();
     var map = st.map;
-    if (!map) return null;
-    var prop = active();
-    /* 空间属性在「值」图里不给把手：曲线形状由空间切线决定，值图上的
-       把手画不进那条弯线里，拖了也对不上。缓动请到速度图或路径图改。 */
-    if (prop && prop.spatial && st.mode === "value") return null;
-    var segIndex = side === "out" ? keyIndex : keyIndex - 1;
-    var seg = segIndex >= 0 ? M.segmentOf(keys, segIndex) : null;
+    if (!map || segIndex < 0) return null;
+    var seg = M.segmentOf(keys, segIndex);
     if (!seg) return null;
 
-    if (st.mode === "path") {
-      if (side === "out") {
-        return {
-          x: map.X(Number(keys[keyIndex].v[0] || 0) + Number(keys[keyIndex].ot[0] || 0)),
-          y: map.Y(Number(keys[keyIndex].v[1] || 0) + Number(keys[keyIndex].ot[1] || 0)),
-          base: { x: map.X(keys[keyIndex].v[0]), y: map.Y(keys[keyIndex].v[1]) }
-        };
-      }
-      return {
-        x: map.X(Number(keys[keyIndex].v[0] || 0) + Number(keys[keyIndex].it[0] || 0)),
-        y: map.Y(Number(keys[keyIndex].v[1] || 0) + Number(keys[keyIndex].it[1] || 0)),
-        base: { x: map.X(keys[keyIndex].v[0]), y: map.Y(keys[keyIndex].v[1]) }
-      };
-    }
-
     if (st.mode === "speed") {
-      // 速度图：横轴仍是时间，纵轴是该侧的速度
-      var speed = side === "out"
-        ? Number(M.at(keys[keyIndex].os, d, 0))
-        : Number(M.at(keys[keyIndex].is, d, 0));
-      var inf = side === "out"
-        ? Number(M.at(keys[keyIndex].oi, d, 33.33))
-        : Number(M.at(keys[keyIndex].ii, d, 33.33));
-      var t = side === "out"
-        ? seg.tA + (seg.dt * inf) / 100
-        : seg.tB - (seg.dt * inf) / 100;
+      var h = M.normalizedHandles(seg);
+      var speedOut = Number((keys[segIndex].os || [])[0] || 0);
+      var speedIn = Number((keys[segIndex + 1].is || [])[0] || 0);
       return {
-        x: map.X(t),
-        y: map.Y(speed),
-        base: { x: map.X(side === "out" ? seg.tA : seg.tB), y: map.Y(speed) }
+        seg: seg,
+        p0: { x: map.X(seg.tA), y: map.Y(speedOut) },
+        p3: { x: map.X(seg.tB), y: map.Y(speedIn) },
+        p1: { x: map.X(h.p1.x), y: map.Y(speedOut) },
+        p2: { x: map.X(h.p2.x), y: map.Y(speedIn) }
       };
     }
 
     var hnd = M.handles(seg, d);
-    if (side === "out") {
-      return { x: map.X(hnd.p1.x), y: map.Y(hnd.p1.y), base: { x: map.X(hnd.p0.x), y: map.Y(hnd.p0.y) } };
-    }
-    return { x: map.X(hnd.p2.x), y: map.Y(hnd.p2.y), base: { x: map.X(hnd.p3.x), y: map.Y(hnd.p3.y) } };
+    return {
+      seg: seg,
+      p0: { x: map.X(hnd.p0.x), y: map.Y(hnd.p0.y) },
+      p1: { x: map.X(hnd.p1.x), y: map.Y(hnd.p1.y) },
+      p2: { x: map.X(hnd.p2.x), y: map.Y(hnd.p2.y) },
+      p3: { x: map.X(hnd.p3.x), y: map.Y(hnd.p3.y) }
+    };
   }
 
   function drawHandles(ctx, keys) {
-    var activeKey = firstSelected();
-    if (activeKey < 0) return;
-    var d = st.dim;
+    var p = active();
+    if (!p) return;
+    if (st.mode === "path") {
+      drawPathHandles(ctx, keys);
+      return;
+    }
+    if (st.mode === "value" && p.spatial) return;   // 空间属性的值图只读
 
-    var sides = ["in", "out"];
-    for (var s = 0; s < sides.length; s++) {
-      var side = sides[s];
-      var hp = handlePoints(activeKey, side, d);
-      if (!hp) continue;
-      var hot = st.hoverHandle && st.hoverHandle.key === activeKey && st.hoverHandle.side === side;
+    var segIndex = activeSegmentIndex();
+    var px = segmentHandlePixels(segIndex, st.dim);
+    if (!px) return;
+
+    // 起点 → P1、终点 → P2：两条线，与 Flow 的呈现一致
+    var pairs = [[px.p0, px.p1, "out"], [px.p3, px.p2, "in"]];
+    for (var i = 0; i < pairs.length; i++) {
+      var base = pairs[i][0];
+      var tip = pairs[i][1];
+      var side = pairs[i][2];
+      var hot = st.hoverHandle && st.hoverHandle.side === side;
 
       ctx.beginPath();
-      ctx.moveTo(hp.base.x, hp.base.y);
-      ctx.lineTo(hp.x, hp.y);
-      ctx.strokeStyle = "rgba(127,166,170,0.55)";
+      ctx.moveTo(base.x, base.y);
+      ctx.lineTo(tip.x, tip.y);
+      ctx.strokeStyle = hot ? "#f0c469" : "rgba(240,196,105,0.75)";
+      ctx.lineWidth = hot ? 1.8 : 1.2;
+      ctx.stroke();
+
+      // 端点
+      ctx.beginPath();
+      ctx.arc(base.x, base.y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#cfe3e5";
+      ctx.fill();
+
+      // 控制点
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, hot ? 6 : 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = hot ? "#ffe1a3" : "#f0c469";
+      ctx.fill();
+      ctx.strokeStyle = "#0f1113";
       ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  function drawPathHandles(ctx, keys) {
+    var segIndex = activeSegmentIndex();
+    if (segIndex < 0) return;
+    var map = st.map;
+    var key = keys[segIndex];
+    var next = keys[segIndex + 1];
+    if (!key || !next) return;
+
+    var points = [
+      { k: key, side: "out", tan: key.ot },
+      { k: next, side: "in", tan: next.it }
+    ];
+    for (var i = 0; i < points.length; i++) {
+      var item = points[i];
+      var bx = map.X(Number(item.k.v[0] || 0));
+      var by = map.Y(Number(item.k.v[1] || 0));
+      var tx = map.X(Number(item.k.v[0] || 0) + Number(item.tan[0] || 0));
+      var ty = map.Y(Number(item.k.v[1] || 0) + Number(item.tan[1] || 0));
+      var hot = st.hoverHandle && st.hoverHandle.side === item.side;
+
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(tx, ty);
+      ctx.strokeStyle = hot ? "#f0c469" : "rgba(240,196,105,0.75)";
+      ctx.lineWidth = hot ? 1.8 : 1.2;
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(hp.x, hp.y, hot ? 6 : 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = hot ? "#dff0f2" : "#7fa6aa";
+      ctx.arc(tx, ty, hot ? 6 : 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = hot ? "#ffe1a3" : "#f0c469";
       ctx.fill();
       ctx.strokeStyle = "#0f1113";
       ctx.lineWidth = 1;
@@ -596,7 +713,6 @@ var AEV_CurveUI = (function () {
   }
 
   function drawPlayhead(ctx, rect, range) {
-    // 路径图的横轴是空间 X，不是时间，画时间游标没有意义
     if (st.mode === "path") return;
     if (!st.time) return;
     if (st.time < range.t0 || st.time > range.t1) return;
@@ -611,15 +727,27 @@ var AEV_CurveUI = (function () {
     ctx.restore();
   }
 
-  function firstSelected() {
-    for (var k in st.selected) {
-      if (st.selected.hasOwnProperty(k)) return Number(k);
+  /** 图下方的四个数：cubic-bezier(x1, y1, x2, y2)，与 Flow 的读数一致 */
+  function updateReadout() {
+    if (!el.readout) return;
+    var p = active();
+    if (!p || st.mode !== "value") {
+      el.readout.textContent = st.mode === "value" ? "—" : (st.mode === "speed" ? t("速度图", "speed") : t("路径图", "path"));
+      return;
     }
-    return -1;
+    var segIndex = activeSegmentIndex();
+    var b = segmentBezier(segIndex);
+    if (!b) {
+      el.readout.textContent = "—";
+      return;
+    }
+    el.readout.textContent =
+      b.x1.toFixed(2) + ", " + b.y1.toFixed(2) + ", " +
+      b.x2.toFixed(2) + ", " + b.y2.toFixed(2);
   }
 
   /* ============================================================
-   * 四、命中测试与拖拽
+   * 五、命中测试与拖拽
    * ============================================================ */
 
   function localPoint(event) {
@@ -629,38 +757,47 @@ var AEV_CurveUI = (function () {
 
   function keyAt(px, py) {
     var keys = activeKeys();
-    var map = st.map;
-    if (!map) return -1;
-    var d = st.dim;
     for (var i = 0; i < keys.length; i++) {
-      var kx, ky;
-      if (st.mode === "path") {
-        kx = map.X(Number(keys[i].v[0] || 0));
-        ky = map.Y(Number(keys[i].v[1] || 0));
-      } else if (st.mode === "speed") {
-        kx = map.X(keys[i].t);
-        ky = map.Y(speedAtKey(i, d));
-      } else {
-        kx = map.X(keys[i].t);
-        ky = map.Y(Number(keys[i].v[d] || 0));
-      }
-      if (Math.abs(px - kx) <= 7 && Math.abs(py - ky) <= 7) return i;
+      var pt = keyPixel(i);
+      if (!pt) continue;
+      if (Math.abs(px - pt.x) <= 7 && Math.abs(py - pt.y) <= 7) return i;
     }
     return -1;
   }
 
   function handleAt(px, py) {
-    var activeKey = firstSelected();
-    if (activeKey < 0) return null;
-    var sides = ["out", "in"];
-    for (var i = 0; i < sides.length; i++) {
-      var hp = handlePoints(activeKey, sides[i], st.dim);
-      if (!hp) continue;
-      var dx = px - hp.x;
-      var dy = py - hp.y;
-      if (dx * dx + dy * dy <= 64) {
-        return { key: activeKey, side: sides[i] };
+    var p = active();
+    if (!p) return null;
+    if (st.mode === "value" && p.spatial) return null;
+    var segIndex = activeSegmentIndex();
+    var seg = M.segmentOf(activeKeys(), segIndex);
+    if (!seg) return null;
+
+    if (st.mode === "path") {
+      var map = st.map;
+      var key = activeKeys()[segIndex];
+      var next = activeKeys()[segIndex + 1];
+      var cands = [
+        { side: "out", k: key, tan: key.ot },
+        { side: "in", k: next, tan: next.it }
+      ];
+      for (var c = 0; c < cands.length; c++) {
+        var tx = map.X(Number(cands[c].k.v[0] || 0) + Number(cands[c].tan[0] || 0));
+        var ty = map.Y(Number(cands[c].k.v[1] || 0) + Number(cands[c].tan[1] || 0));
+        var dx = px - tx;
+        var dy = py - ty;
+        if (dx * dx + dy * dy <= 64) return { key: segIndex, side: cands[c].side };
       }
+      return null;
+    }
+
+    var px4 = segmentHandlePixels(segIndex, st.dim);
+    if (!px4) return null;
+    var options = [{ side: "out", p: px4.p1 }, { side: "in", p: px4.p2 }];
+    for (var i = 0; i < options.length; i++) {
+      var ddx = px - options[i].p.x;
+      var ddy = py - options[i].p.y;
+      if (ddx * ddx + ddy * ddy <= 64) return { key: segIndex, side: options[i].side };
     }
     return null;
   }
@@ -684,14 +821,15 @@ var AEV_CurveUI = (function () {
     var hitHandle = handleAt(pt.x, pt.y);
     if (hitHandle) {
       st.backup = JSON.stringify(activeKeys());
-      var segIndex0 = hitHandle.side === "out" ? hitHandle.key : hitHandle.key - 1;
-      var seg0 = segIndex0 >= 0 ? M.segmentOf(activeKeys(), segIndex0) : null;
+      var segIndex0 = st.mode === "path"
+        ? Math.min(hitHandle.key, activeKeys().length - 2)
+        : activeSegmentIndex();
+      var seg0 = M.segmentOf(activeKeys(), segIndex0);
       st.drag = {
-        key: hitHandle.key,
+        segIndex: segIndex0,
         side: hitHandle.side,
         dim: st.dim,
         shift: event.shiftKey,
-        // 拖拽前的斜率：Shift 拖动时保持它不变（只改缓动幅度）
         m0: seg0 ? (hitHandle.side === "out" ? seg0.mOut : seg0.mIn) : 0
       };
       event.preventDefault();
@@ -699,7 +837,6 @@ var AEV_CurveUI = (function () {
       return;
     }
 
-    // 空白处：只清选择，不动曲线
     st.selected = {};
     st.hoverHandle = null;
     draw();
@@ -707,7 +844,6 @@ var AEV_CurveUI = (function () {
   }
 
   function onMouseMove(event) {
-    // 视图不可见时不处理：canvas 尺寸为 0，坐标换算全是垃圾值
     var view = byId("viewCurve");
     if (view && view.hidden) return;
 
@@ -731,20 +867,13 @@ var AEV_CurveUI = (function () {
     el.canvas.style.cursor = hit ? "grab" : (keyAt(pt.x, pt.y) >= 0 ? "pointer" : "default");
   }
 
-  /**
-   * 拖拽中：把像素坐标换成 (influence, m)，只更新本地模型并重绘。
-   *
-   * Shift = 只改水平（influence），不动速度 —— AE 里的常用手法。
-   * 时间轴方向钳在区间内：把手超出区间会让 x(u) 不单调，曲线会回折。
-   */
   function applyDrag(pt) {
     var keys = activeKeys();
     var map = st.map;
     var drag = st.drag;
     if (!map || !keys.length) return;
 
-    var segIndex = drag.side === "out" ? drag.key : drag.key - 1;
-    var seg = segIndex >= 0 ? M.segmentOf(keys, segIndex) : null;
+    var seg = M.segmentOf(keys, drag.segIndex);
     if (!seg) return;
 
     if (st.mode === "path") {
@@ -753,50 +882,103 @@ var AEV_CurveUI = (function () {
     }
 
     var time = map.T(pt.x);
-    var value = map.V(pt.y);
-    var inf, m;
 
     if (st.mode === "speed") {
-      inf = drag.side === "out"
+      var value = map.V(pt.y);
+      var inf = drag.side === "out"
         ? ((time - seg.tA) / seg.dt) * 100
         : ((seg.tB - time) / seg.dt) * 100;
       inf = M.clamp(inf, M.MIN_INFLUENCE, M.MAX_INFLUENCE);
       var chord = Number(seg.chord[drag.dim] || 0);
-      m = Math.abs(chord) < 1e-9 ? 0 : value / chord;
+      var speed = value;
+      var m = Math.abs(chord) < 1e-9 ? 0 : speed / chord;
       m = M.clamp(m, M.MIN_M, M.MAX_M);
-    } else {
-      // 值图：水平 → influence，垂直 → 斜率
-      var clampedTime = M.clamp(time, seg.tA + seg.dt * 0.001, seg.tB - seg.dt * 0.001);
-      var res = M.easeFromHandle(seg, drag.side, drag.dim, clampedTime, value);
-      inf = res.inf;
-      m = res.m;
+      if (drag.shift) m = drag.m0;
+      writeLocal(keys, drag.segIndex, drag.side, inf, m);
+      draw();
+      updateHint(t("influence " + inf.toFixed(1) + "% · 斜率 " + m.toFixed(2) + "×",
+        "influence " + inf.toFixed(1) + "% · slope " + m.toFixed(2) + "×"));
+      return;
     }
 
-    // Shift = 只改缓动幅度（水平拖动），斜率保持拖拽前的值
-    if (drag.shift) m = drag.m0;
+    // 值图：把手位置直接换算成归一化 (x, y)
+    var clampedTime = M.clamp(time, seg.tA + seg.dt * 0.001, seg.tB - seg.dt * 0.001);
+    var b = segmentBezier(drag.segIndex);
+    if (!b) return;
 
-    writeLocal(keys, drag.key, drag.side, segIndex, inf, m);
+    var vA = Number(seg.vA[drag.dim] || 0);
+    var vB = Number(seg.vB[drag.dim] || 0);
+    var dv = vB - vA;
+
+    var nx = M.clamp((clampedTime - seg.tA) / seg.dt, 0.001, 1);
+    var ny;
+    if (Math.abs(dv) > 1e-9) {
+      ny = (map.V(pt.y) - vA) / dv;      // 允许超出 0..1（回弹/过冲）
+    } else {
+      ny = drag.side === "out" ? b.y1 : b.y2;
+    }
+    if (drag.shift) {
+      // Shift：只改水平（时间），高度保持原样
+      ny = drag.side === "out" ? b.y1 : b.y2;
+    }
+
+    if (drag.side === "out") {
+      b.x1 = nx;
+      b.y1 = ny;
+    } else {
+      b.x2 = nx;
+      b.y2 = ny;
+    }
+
+    var e = bezierToEase(b);
+    writeLocalSegment(keys, drag.segIndex, e);
     draw();
     updateHint(
-      t("influence " + inf.toFixed(1) + "% · 斜率 " + m.toFixed(2) + "×",
-        "influence " + inf.toFixed(1) + "% · slope " + m.toFixed(2) + "×")
+      t("cubic-bezier(" + b.x1.toFixed(2) + ", " + b.y1.toFixed(2) + ", " +
+        b.x2.toFixed(2) + ", " + b.y2.toFixed(2) + ")",
+        "cubic-bezier(" + b.x1.toFixed(2) + ", " + b.y1.toFixed(2) + ", " +
+        b.x2.toFixed(2) + ", " + b.y2.toFixed(2) + ")")
     );
   }
 
-  /** 把 (inf, m) 落到本地关键帧模型：m 按各维弦斜率展开成 speed */
-  function writeLocal(keys, keyIndex, side, segIndex, inf, m) {
+  /** 把一段的 (inf, m) 落到本地模型 */
+  function writeLocalSegment(keys, segIndex, e) {
+    var a = keys[segIndex];
+    var b = keys[segIndex + 1];
+    if (!a || !b) return;
+    a.oi = [e.infOut];
+    a.os = [e.mOut * (Number(b.v[0] || 0) - Number(a.v[0] || 0))];
+    a.tout = M.TYPE_BEZIER;
+    b.ii = [e.infIn];
+    b.is = [e.mIn * (Number(b.v[0] || 0) - Number(a.v[0] || 0))];
+    b.tin = M.TYPE_BEZIER;
+    // 多维：模型只用单条 ease，speed 由模长还原，这里给各维同值即可
+    var dimsN = Math.max(a.v.length, b.v.length);
+    var chordMag = 0;
+    for (var d = 0; d < dimsN; d++) {
+      var dv = Number(b.v[d] || 0) - Number(a.v[d] || 0);
+      chordMag += dv * dv;
+    }
+    chordMag = Math.sqrt(chordMag);
+    for (var k = 0; k < dimsN; k++) {
+      a.os[k] = e.mOut * chordMag;
+      b.is[k] = e.mIn * chordMag;
+    }
+  }
+
+  /** 兼容旧路径：按 key/side 写本地模型（速度图与路径图仍用） */
+  function writeLocal(keys, keyIndex, side, inf, m) {
+    var segIndex = side === "out" ? keyIndex : keyIndex - 1;
     var seg = M.segmentOf(keys, segIndex);
     if (!seg) return;
-    var d;
-    for (d = 0; d < seg.dims; d++) {
+    for (var d = 0; d < seg.dims; d++) {
       var chord = Number(seg.chord[d] || 0);
-      var speed = m * chord;
       if (side === "out") {
-        keys[keyIndex].os[d] = speed;
+        keys[keyIndex].os[d] = m * chord;
         keys[keyIndex].oi[d] = inf;
         keys[keyIndex].tout = M.TYPE_BEZIER;
       } else {
-        keys[keyIndex].is[d] = speed;
+        keys[keyIndex].is[d] = m * chord;
         keys[keyIndex].ii[d] = inf;
         keys[keyIndex].tin = M.TYPE_BEZIER;
       }
@@ -805,18 +987,19 @@ var AEV_CurveUI = (function () {
 
   function dragPath(pt, drag, keys) {
     var map = st.map;
-    var key = keys[drag.key];
-    if (!key) return;
+    var segIndex = drag.segIndex;
+    var target = drag.side === "out" ? keys[segIndex] : keys[segIndex + 1];
+    if (!target) return;
     var vx = map.T(pt.x);
     var vy = map.V(pt.y);
-    var dx = vx - Number(key.v[0] || 0);
-    var dy = vy - Number(key.v[1] || 0);
+    var dx = vx - Number(target.v[0] || 0);
+    var dy = vy - Number(target.v[1] || 0);
     if (drag.side === "out") {
-      key.ot[0] = dx;
-      key.ot[1] = dy;
+      target.ot[0] = dx;
+      target.ot[1] = dy;
     } else {
-      key.it[0] = dx;
-      key.it[1] = dy;
+      target.it[0] = dx;
+      target.it[1] = dy;
     }
     draw();
     updateHint(t("空间切线 " + dx.toFixed(1) + ", " + dy.toFixed(1),
@@ -829,48 +1012,76 @@ var AEV_CurveUI = (function () {
     st.drag = null;
     el.canvas.style.cursor = "default";
 
-    var keys = activeKeys();
     var p = active();
     if (!p) return;
-    var key = keys[drag.key];
-    if (!key) return;
-
-    var segIndex = drag.side === "out" ? drag.key : drag.key - 1;
-    // 用当前关键帧算弦斜率：拖拽只改 ease，不改时间与值，所以弦不变
-    var seg = segIndex >= 0 ? M.segmentOf(keys, segIndex) : null;
-
-    var lines = ["expect\t" + p.loc + "\t" + p.sig];
+    var keys = activeKeys();
+    st.backup = null;
 
     if (st.mode === "path") {
-      if (drag.side === "out") {
-        lines.push(["tan", p.loc, String(drag.key), "out",
-          numText(key.ot[0]), numText(key.ot[1]), numText(key.ot[2] || 0)].join("\t"));
-      } else {
-        lines.push(["tan", p.loc, String(drag.key), "in",
-          numText(key.it[0]), numText(key.it[1]), numText(key.it[2] || 0)].join("\t"));
-      }
-    } else {
-      // m 用拖拽后的实际 speed 反推（writeLocal 已把 m 展开到各维）
-      var speed = drag.side === "out" ? Number(key.os[drag.dim] || 0) : Number(key.is[drag.dim] || 0);
-      var chord = seg ? Number(seg.chord[drag.dim] || 0) : 0;
-      var m = Math.abs(chord) < 1e-9 ? 0 : speed / chord;
-      var inf = drag.side === "out" ? Number(key.oi[drag.dim] || 33.33) : Number(key.ii[drag.dim] || 33.33);
-      lines.push([drag.side, p.loc, String(drag.key), numText(inf), numText(m)].join("\t"));
+      var target = drag.side === "out" ? keys[drag.segIndex] : keys[drag.segIndex + 1];
+      var lines = ["expect\t" + p.loc + "\t" + p.sig];
+      lines.push(["tan", p.loc, String(drag.side === "out" ? drag.segIndex : drag.segIndex + 1),
+        drag.side, numText(target.ot ? (drag.side === "out" ? target.ot[0] : target.it[0]) : 0),
+        numText(drag.side === "out" ? target.ot[1] : target.it[1]),
+        numText(0)].join("\t"));
+      send(lines.join("\n"));
+      return;
     }
 
-    st.backup = null;
-    send(lines.join("\n"));
-  }
+    if (st.mode === "value") {
+      var b = segmentBezier(drag.segIndex);
+      if (!b) return;
+      applyBezier(b, drag.segIndex);
+      return;
+    }
 
-  function numText(value) {
-    var n = Number(value);
-    if (!isFinite(n)) n = 0;
-    return String(Math.round(n * 10000) / 10000);
+    // 速度图：只写拖动的那一侧
+    var seg = M.segmentOf(keys, drag.segIndex);
+    if (!seg) return;
+    var speed = drag.side === "out"
+      ? Number((keys[drag.segIndex].os || [])[0] || 0)
+      : Number((keys[drag.segIndex + 1].is || [])[0] || 0);
+    var chord = Number(seg.chord[drag.dim] || 0);
+    var m = Math.abs(chord) < 1e-9 ? 0 : speed / chord;
+    var inf = drag.side === "out"
+      ? Number((keys[drag.segIndex].oi || [])[0] || 33.33)
+      : Number((keys[drag.segIndex + 1].ii || [])[0] || 33.33);
+    var keyIndex = drag.side === "out" ? drag.segIndex : drag.segIndex + 1;
+    send([
+      "expect\t" + p.loc + "\t" + p.sig,
+      [drag.side, p.loc, String(keyIndex), numText(inf), numText(m)].join("\t")
+    ].join("\n"));
   }
 
   /* ============================================================
-   * 五、写回与并发冲突
+   * 六、写回
    * ============================================================ */
+
+  /**
+   * 把一条归一化 bezier 应用到「选中的段」。
+   *
+   * 选中 N 个关键帧 → 它们各自的段都套同一条缓动（Flow 的行为）。
+   * 没有选中 → 作用于整条属性。dragSeg 非空时，若它不在选中集合里就只改它自己，
+   * 避免「随手拖一段却把整条属性都改了」。
+   */
+  function applyBezier(b, dragSeg) {
+    var p = active();
+    if (!p) return;
+    var keys = p.keys;
+    var segs = targetSegments();
+    if (typeof dragSeg === "number" && indexOf(segs, dragSeg) < 0) segs = [dragSeg];
+    if (!segs.length) return;
+
+    var e = bezierToEase(b);
+    var lines = ["expect\t" + p.loc + "\t" + p.sig];
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      if (s + 1 >= keys.length) continue;
+      lines.push(["out", p.loc, String(s), numText(e.infOut), numText(e.mOut)].join("\t"));
+      lines.push(["in", p.loc, String(s + 1), numText(e.infIn), numText(e.mIn)].join("\t"));
+    }
+    send(lines.join("\n"));
+  }
 
   function send(text) {
     if (!deps.engine) return;
@@ -891,7 +1102,7 @@ var AEV_CurveUI = (function () {
       }
 
       if (data.status !== "ok") {
-        setMessage(t("写回失败：" + (data.reason || "") , "Write failed: " + (data.reason || "")), true);
+        setMessage(t("写回失败：" + (data.reason || ""), "Write failed: " + (data.reason || "")), true);
         return;
       }
 
@@ -907,17 +1118,9 @@ var AEV_CurveUI = (function () {
         "Applied " + data.applied + note);
       setMessage(message, false);
 
-      // 写完重新读一次：AE 可能钳位/规范化，显示值必须以 AE 为准
       st.afterRead = message;
       read(true);
     });
-  }
-
-  function indexOf(list, value) {
-    for (var i = 0; i < list.length; i++) {
-      if (list[i] === value) return i;
-    }
-    return -1;
   }
 
   function showConflict(data) {
@@ -934,7 +1137,7 @@ var AEV_CurveUI = (function () {
   }
 
   /* ============================================================
-   * 六、工具栏
+   * 七、工具栏
    * ============================================================ */
 
   function renderPropSelect() {
@@ -973,19 +1176,26 @@ var AEV_CurveUI = (function () {
     select.value = String(st.dim);
   }
 
+  /** 三视图切换收进一个小方块：按钮显示当前模式，点开是三项 */
   function renderMode() {
-    el.modeValue.className = "segment" + (st.mode === "value" ? " active" : "");
-    el.modeSpeed.className = "segment" + (st.mode === "speed" ? " active" : "");
-    el.modePath.className = "segment" + (st.mode === "path" ? " active" : "");
+    if (el.modeBtn) {
+      el.modeBtn.textContent = st.mode === "value" ? "值" : (st.mode === "speed" ? "速" : "路");
+      el.modeBtn.title = st.mode === "value" ? t("值曲线", "Value curve")
+        : (st.mode === "speed" ? t("速度曲线", "Speed curve") : t("空间路径", "Spatial path"));
+      el.modeBtn.setAttribute("aria-expanded", st.modeMenuOpen ? "true" : "false");
+    }
+    el.modeValue.className = "mode-item" + (st.mode === "value" ? " active" : "");
+    el.modeSpeed.className = "mode-item" + (st.mode === "speed" ? " active" : "");
+    el.modePath.className = "mode-item" + (st.mode === "path" ? " active" : "");
     el.modePath.disabled = !isPathCapable();
     el.modePath.title = isPathCapable()
       ? t("编辑空间路径切线", "Edit spatial path tangents")
       : t("只有空间属性（如位置）才有路径", "Only spatial properties have a path");
+    if (el.modeMenu) el.modeMenu.hidden = !st.modeMenuOpen;
   }
 
   function renderPresets() {
     var select = el.preset;
-    // 每次都重建：语言切换后标签要跟着变，重建比逐项改文本省事
     select.textContent = "";
     var first = document.createElement("option");
     first.value = "";
@@ -1019,53 +1229,28 @@ var AEV_CurveUI = (function () {
         "Select a property or layer in AE, then click Read"), false);
       return;
     }
-    var selectedCount = 0;
-    for (var k in st.selected) {
-      if (st.selected.hasOwnProperty(k)) selectedCount++;
-    }
-    var parts = [
-      p.name + (p.n ? " · " + p.n + " 键" : ""),
-      (p.spatial && st.mode === "value")
-        ? t("空间属性：值图只读，缓动请在「速度」或「路径」里改",
-            "Spatial: value view is read-only, edit easing in Speed/Path")
-        : "",
-      selectedCount
-        ? t("已选 " + selectedCount + " 个关键帧", selectedCount + " key(s) selected")
-        : t("点关键帧后可拖它的把手", "Click a keyframe to drag its handles"),
-      t("Shift 只改缓动幅度", "Shift = influence only")
-    ];
-    var clean = [];
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i]) clean.push(parts[i]);
-    }
-    setMessage(clean.join(" · "), false);
-  }
+    var segs = targetSegments();
+    var selectedCount = selectedIndexes().length;
+    var p2 = st.mode === "value" && p.spatial;
 
-  /* ============================================================
-   * 七、预设应用
-   * ============================================================ */
-
-  function applyPreset(presetId) {
-    var p = active();
-    if (!p || !presetId) return;
-    var keys = p.keys;
-    var targets = [];
-    var k;
-    for (k in st.selected) {
-      if (st.selected.hasOwnProperty(k)) targets.push(Number(k));
+    var parts = [];
+    parts.push(p.name + (p.n ? " · " + p.n + " 键" : ""));
+    if (p2) {
+      parts.push(t("空间属性：值图只读，缓动请在「速/路」里改",
+        "Spatial: value view is read-only, edit in Speed/Path"));
+    } else if (st.mode === "value") {
+      parts.push(t("拖动两端把手改曲线", "Drag either handle"));
+      parts.push(selectedCount
+        ? t("作用于 " + segs.length + " 段（已选 " + selectedCount + " 键）",
+          "Applies to " + segs.length + " segment(s)")
+        : t("未选关键帧：作用于全部 " + segs.length + " 段", "No selection: all segments"));
+    } else if (st.mode === "speed") {
+      parts.push(t("拖把手改速度", "Drag handle to change speed"));
+      parts.push(t("Shift 只改缓动幅度", "Shift = influence only"));
+    } else {
+      parts.push(t("拖切线改路径", "Drag tangent to shape the path"));
     }
-    if (!targets.length) {
-      // 没选关键帧时作用于全部：这是最常用的一次性“整段套缓动”，
-      // 但必须有明确反馈（状态栏会报数量），否则用户不知道改了哪些。
-      for (var i = 0; i < keys.length; i++) targets.push(i);
-    }
-
-    var lines = ["expect\t" + p.loc + "\t" + p.sig];
-    for (var j = 0; j < targets.length; j++) {
-      lines.push(["preset", p.loc, String(targets[j]), presetId].join("\t"));
-    }
-    send(lines.join("\n"));
-    el.preset.value = "";
+    setMessage(parts.join(" · "), false);
   }
 
   /* ============================================================
@@ -1075,8 +1260,7 @@ var AEV_CurveUI = (function () {
   function init(options) {
     M = window.AEV_CurveMath;
     if (!M) {
-      // 数学没加载就没法画图，直接把原因摆到界面上，比静默空白好
-      var stage = document.getElementById("curveStage");
+      var stage = byId("curveStage");
       if (stage) stage.textContent = "curve_math.js 未加载";
       return;
     }
@@ -1084,12 +1268,14 @@ var AEV_CurveUI = (function () {
 
     el.canvas = byId("curveCanvas");
     el.stage = byId("curveStage");
-    el.empty = byId("curveEmpty");
     el.hint = byId("curveHint");
+    el.readout = byId("curveReadout");
     el.read = byId("btnCurveRead");
     el.prop = byId("curveProp");
     el.dim = byId("curveDim");
     el.preset = byId("curvePreset");
+    el.modeBtn = byId("curveModeBtn");
+    el.modeMenu = byId("curveModeMenu");
     el.modeValue = byId("curveModeValue");
     el.modeSpeed = byId("curveModeSpeed");
     el.modePath = byId("curveModePath");
@@ -1109,10 +1295,40 @@ var AEV_CurveUI = (function () {
       draw();
       updateHint();
     });
-    el.preset.addEventListener("change", function () { applyPreset(this.value); });
+    el.preset.addEventListener("change", function () {
+      var preset = null;
+      for (var i = 0; i < PRESETS.length; i++) {
+        if (PRESETS[i].id === this.value) { preset = PRESETS[i]; break; }
+      }
+      this.value = "";
+      if (!preset) return;
+      var b = { x1: preset.b[0], y1: preset.b[1], x2: preset.b[2], y2: preset.b[3] };
+      // 本地先套一遍：写回后要重读快照，这一下能让画面立刻响应
+      var segs = targetSegments();
+      for (var s = 0; s < segs.length; s++) applyLocalBezier(segs[s], b);
+      draw();
+      applyBezier(b);
+      setMessage(t("已套用「" + preset.zh + "」到 " + segs.length + " 段",
+        "Applied “" + preset.en + "” to " + segs.length + " segment(s)"), false);
+    });
+
+    el.modeBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      st.modeMenuOpen = !st.modeMenuOpen;
+      renderMode();
+    });
     el.modeValue.addEventListener("click", function () { setMode("value"); });
     el.modeSpeed.addEventListener("click", function () { setMode("speed"); });
-    el.modePath.addEventListener("click", function () { if (isPathCapable()) setMode("path"); });
+    el.modePath.addEventListener("click", function () {
+      if (isPathCapable()) setMode("path");
+    });
+    document.addEventListener("mousedown", function (event) {
+      if (!st.modeMenuOpen) return;
+      if (el.modeMenu && el.modeMenu.contains(event.target)) return;
+      if (el.modeBtn && el.modeBtn.contains(event.target)) return;
+      st.modeMenuOpen = false;
+      renderMode();
+    });
 
     el.canvas.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mousemove", onMouseMove);
@@ -1121,7 +1337,6 @@ var AEV_CurveUI = (function () {
     document.addEventListener("keydown", function (event) {
       if (event.key !== "Escape" && event.keyCode !== 27) return;
       if (st.drag) {
-        // 拖拽中按 Esc：回滚到拖拽前的本地模型，不写 AE
         try {
           var p = active();
           if (p && st.backup) p.keys = JSON.parse(st.backup);
@@ -1133,6 +1348,7 @@ var AEV_CurveUI = (function () {
         return;
       }
       if (!el.conflict.hidden) hideConflict();
+      if (st.modeMenuOpen) { st.modeMenuOpen = false; renderMode(); }
     });
 
     byId("curveConflictOverwrite").addEventListener("click", function () {
@@ -1161,14 +1377,21 @@ var AEV_CurveUI = (function () {
     }
   }
 
+  /** 本地套一条 bezier（拖动与预设共用） */
+  function applyLocalBezier(segIndex, b) {
+    var keys = activeKeys();
+    var e = bezierToEase(b);
+    writeLocalSegment(keys, segIndex, e);
+  }
+
   function setMode(mode) {
     st.mode = mode;
+    st.modeMenuOpen = false;
     renderMode();
     draw();
     updateHint();
   }
 
-  /** 视图被切进来时调用：每次都重读，用户在 AE 里换了选中对象能立刻反映 */
   function enter() {
     renderPresets();
     if (!st.loaded) read(false);
@@ -1176,52 +1399,34 @@ var AEV_CurveUI = (function () {
   }
 
   /**
-   * 测试钩子（只读）。
-   *
-   * 无头浏览器里没法「看着画布点」，只能先拿到把手/关键帧的像素坐标，
-   * 再派发真实的 mousedown/mousemove/mouseup —— 这样测的是真拖拽路径，
-   * 而不是绕开命中测试直接调内部函数（后者测不出坐标算错这类问题）。
+   * 测试钩子（只读）。无头浏览器里没法「看着画布点」，先拿像素坐标再派发事件。
    */
   function debugSnapshot() {
     var p = active();
     if (!p) return { active: -1, props: st.props.length };
-    var keyIndex = firstSelected();
+    var segIndex = activeSegmentIndex();
     var keyPoints = [];
     for (var i = 0; i < p.keys.length; i++) {
       var pt = st.map ? keyPixel(i) : null;
       if (pt) keyPoints.push({ i: i, x: pt.x, y: pt.y });
     }
-    var hp = (keyIndex >= 0 && st.map) ? handlePoints(keyIndex, "out", st.dim) : null;
+    var hp = st.map ? segmentHandlePixels(segIndex, st.dim) : null;
     return {
       active: st.active,
       loc: p.loc,
       mode: st.mode,
       dim: st.dim,
       keys: p.keys.length,
-      selected: (function () {
-        var out = [];
-        for (var k in st.selected) if (st.selected.hasOwnProperty(k)) out.push(Number(k));
-        return out;
-      })(),
+      selected: selectedIndexes(),
+      targets: targetSegments(),
       keyPoints: keyPoints,
-      handle: hp ? { x: hp.x, y: hp.y } : null,
+      handle: hp ? { x: hp.p1.x, y: hp.p1.y } : null,
+      handleIn: hp ? { x: hp.p2.x, y: hp.p2.y } : null,
+      bezier: segmentBezier(segIndex),
+      readout: el.readout ? el.readout.textContent : "",
       pathCapable: isPathCapable(),
       message: st.message
     };
-  }
-
-  function keyPixel(index) {
-    var keys = activeKeys();
-    var map = st.map;
-    var k = keys[index];
-    if (!k || !map) return null;
-    if (st.mode === "path") {
-      return { x: map.X(Number(k.v[0] || 0)), y: map.Y(Number(k.v[1] || 0)) };
-    }
-    if (st.mode === "speed") {
-      return { x: map.X(k.t), y: map.Y(speedAtKey(index, st.dim)) };
-    }
-    return { x: map.X(k.t), y: map.Y(Number(k.v[st.dim] || 0)) };
   }
 
   return {

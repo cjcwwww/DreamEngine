@@ -133,10 +133,16 @@
       <button class="action-button" id="btnCurveRead" type="button"
               title="读取 AE 当前选中的属性">读取选中</button>
       <select class="curve-prop" id="curveProp" aria-label="属性"></select>
-      <div class="segmented" role="group" aria-label="图表类型">
-        <button class="segment active" id="curveModeValue" type="button" title="值图表">值</button>
-        <button class="segment" id="curveModeSpeed" type="button" title="速度图表">速度</button>
-        <button class="segment" id="curveModePath" type="button" title="空间路径">路径</button>
+      <!-- 三种图表收进一个小方块：按钮显示当前模式，点开是三项。
+           面板很窄，三个并排按钮会挤掉属性下拉的宽度。 -->
+      <div class="mode-box" id="curveModeBox">
+        <button class="mode-box-btn" id="curveModeBtn" type="button"
+                aria-haspopup="true" aria-expanded="false" title="图表：值 / 速度 / 路径">值</button>
+        <div class="mode-menu" id="curveModeMenu" hidden>
+          <button class="mode-item active" id="curveModeValue" type="button" title="值曲线">值</button>
+          <button class="mode-item" id="curveModeSpeed" type="button" title="速度曲线">速</button>
+          <button class="mode-item" id="curveModePath" type="button" title="空间路径">路</button>
+        </div>
       </div>
       <select id="curveDim" aria-label="维度" hidden></select>
       <select id="curvePreset" aria-label="缓动预设"></select>
@@ -144,6 +150,7 @@
     <div class="curve-stage" id="curveStage">
       <canvas id="curveCanvas"></canvas>
     </div>
+    <div class="curve-readout" id="curveReadout" title="cubic-bezier(x1, y1, x2, y2)">—</div>
     <p class="curve-hint" id="curveHint"></p>
     <div class="curve-conflict" id="curveConflict" hidden role="alertdialog" aria-label="并发冲突">
       <p id="curveConflictText"></p>

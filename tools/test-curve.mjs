@@ -345,28 +345,67 @@ test("引擎拆分：curvelib 依赖 curve_math，缺了要明确报错", () => 
   }, /curve_math/);
 });
 
-test("面板与引擎的缓动预设 id 严格一致", () => {
-  const engineSrc = codeOf(read(`${ENGINE}/curvelib.jsx`));
+test("面板缓动库是合法的 cubic-bezier，且覆盖常用族", () => {
   const panelSrc = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
-  const engineIds = [...engineSrc.matchAll(/id:\s*"([a-z-]+)"/g)].map((m) => m[1]);
   const block = panelSrc.slice(panelSrc.indexOf("var PRESETS = ["), panelSrc.indexOf("var deps ="));
-  const panelIds = [...block.matchAll(/id:\s*"([a-z-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(panelIds.sort(), engineIds.sort(),
-    `面板 ${panelIds} vs 引擎 ${engineIds}`);
-  // 面板的每个 id 都要被引擎认到
-  for (const id of panelIds) assert.match(engineSrc, new RegExp(`id: "${id}"`));
+  const rows = [];
+  const parts = block.split("{").slice(1);
+  for (const part of parts) {
+    const idAt = part.indexOf('id: "');
+    const bAt = part.indexOf("b: [");
+    if (idAt < 0 || bAt < 0) continue;
+    const id = part.slice(idAt + 5, part.indexOf('"', idAt + 5));
+    const b = part.slice(bAt + 4, part.indexOf("]", bAt)).split(",").map(Number);
+    rows.push({ id, b });
+  }
+  assert.ok(rows.length >= 12, "预设数量不足：" + rows.length);
+  const ids = rows.map((r) => r.id);
+  for (const need of ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "cubic-in", "back-out"]) {
+    assert.ok(ids.includes(need), "缺少预设 " + need);
+  }
+  for (const r of rows) {
+    assert.equal(r.b.length, 4, r.id + " 不是四元组");
+    assert.ok(r.b[0] >= 0 && r.b[0] <= 1, r.id + " 的 x1 越界：" + r.b[0]);
+    assert.ok(r.b[2] >= 0 && r.b[2] <= 1, r.id + " 的 x2 越界：" + r.b[2]);
+    assert.ok(Math.abs(r.b[1]) <= 3 && Math.abs(r.b[3]) <= 3, r.id + " 的 y 超出可表达范围");
+  }
+  assert.ok(panelSrc.includes("function bezierToEase("), "缺少 bezierToEase");
+  assert.ok(panelSrc.includes("function applyBezier("), "缺少 applyBezier");
 });
 
-/* ============================================================
- * 三、面板源码契约
- * ============================================================ */
+test("三种图表收进小方块，读数在画布下方", () => {
+  const html = read("cep/com.dreamengine.panel/index.html");
+  assert.ok(html.includes('id="curveModeBtn"'), "缺少模式方块按钮");
+  assert.ok(html.includes('id="curveModeMenu"'), "缺少模式菜单");
+  assert.ok(html.includes('id="curveReadout"'), "缺少读数");
+  for (const id of ["curveModeValue", "curveModeSpeed", "curveModePath"]) {
+    assert.ok(html.includes('id="' + id + '"'), "缺少 " + id);
+  }
+  const toolbar = html.slice(html.indexOf('class="curve-toolbar"'), html.indexOf('class="curve-stage"'));
+  assert.ok(toolbar.indexOf('class="segmented"') < 0, "工具栏里还留着并排按钮");
+  const css = read("cep/com.dreamengine.panel/css/style.css");
+  assert.ok(css.includes(".mode-menu[hidden]"), "缺少 .mode-menu[hidden]");
+  assert.ok(css.includes(".curve-readout"), "缺少 .curve-readout");
+});
+
+test("值图是「两端各一条把手线」，且只作用于选中的段", () => {
+  const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
+  for (const fn of ["segmentHandlePixels", "segmentBezier", "targetSegments"]) {
+    assert.ok(code.includes("function " + fn + "("), "缺少 " + fn);
+  }
+  const apply = code.slice(code.indexOf("function applyBezier("), code.indexOf("function send("));
+  assert.ok(apply.includes('["out", p.loc, String(s)'), "写回缺少 out 侧");
+  assert.ok(apply.includes('["in", p.loc, String(s + 1)'), "写回缺少 in 侧");
+  assert.ok(code.includes('indexOf(segs, dragSeg) < 0) segs = [dragSeg]'),
+    "拖拽没有把范围收敛到单段");
+});
 
 test("拖拽过程中不过桥，松手才写", () => {
   const code = codeOf(read("cep/com.dreamengine.panel/js/curve.js"));
   const drag = code.slice(code.indexOf("function applyDrag("), code.indexOf("function writeLocal("));
   assert.ok(drag.length > 100, "没找到 applyDrag");
   assert.doesNotMatch(drag, /send\(/, "拖拽过程中调用了写回（每个 mousemove 一次 evalScript）");
-  const up = code.slice(code.indexOf("function onMouseUp("), code.indexOf("function numText("));
+  const up = code.slice(code.indexOf("function onMouseUp("), code.indexOf("function applyBezier("));
   assert.match(up, /send\(/, "松手必须写回");
 });
 

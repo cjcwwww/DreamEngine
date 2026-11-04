@@ -1251,3 +1251,84 @@ main {
     max-width: 110px;
   }
 }
+
+/* 图表模式的「小方块》：按钮显示当前模式，点开是三项 */
+.mode-box {
+  position: relative;
+  flex: none;
+}
+
+.mode-box-btn {
+  width: 32px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mode-box-btn:hover {
+  border-color: var(--border-strong);
+}
+
+.mode-menu {
+  position: absolute;
+  top: 33px;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.mode-menu[hidden] {
+  display: none;
+}
+
+.mode-item {
+  width: 34px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mode-item:hover {
+  color: var(--text);
+}
+
+.mode-item.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.mode-item:disabled {
+  color: #4a5157;
+  cursor: default;
+}
+
+/* 四个数：cubic-bezier(x1, y1, x2, y2)，与 Flow 的读数一致 */
+.curve-readout {
+  flex: none;
+  margin-top: -4px;
+  color: var(--muted);
+  font-family: Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
