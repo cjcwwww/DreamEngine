@@ -44,6 +44,30 @@ const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const WIDTH = manifest.width;
 const HEIGHT = manifest.height;
 
+/**
+ * 渲染帧数：指纹是按「渲染参数」算的，而打包会把静态格子从 6 帧压成 1 帧。
+ * 如果用打包后的帧数去比对指纹，会把「本来有效」的预览全判成过期
+ * （实机踩过：60 条里 40 条被误报）。
+ * 所以这里取的是**渲染时的帧数**：优先读源目录的 previews.tsv，没有就退回 manifest。
+ */
+const sourceIndex = resolve(DATA_DIR, "previews.tsv");
+const renderFrames = new Map();
+if (existsSync(sourceIndex)) {
+  const lines = readFileSync(sourceIndex, "utf8").replace(/\r/g, "").split("\n");
+  lines.shift();
+  for (const line of lines) {
+    if (!line) continue;
+    const cells = line.split("\t");
+    if (cells.length < 4) continue;
+    renderFrames.set(cells[0], Number(cells[3]) || 1);
+  }
+}
+for (const item of manifest.items) {
+  if (!renderFrames.has(item.matchName)) {
+    renderFrames.set(item.matchName, item.frames || 1);
+  }
+}
+
 /* ---------- 基础工具 ---------- */
 
 const sha = (buf) => createHash("sha1").update(buf).digest("hex");
@@ -291,8 +315,10 @@ const outManifest = {
 };
 writeFileSync(resolve(OUT_DIR, "manifest.json"), JSON.stringify(outManifest, null, 2) + "\n", "utf8");
 
-/* previews.tsv：manifest 的 TSV 副本，给 ExtendScript 侧读（没有 JSON.parse）。
-   两份索引必须描述同一批条目——不一致会让 staleList 得出错误的过期结论。 */
+/* previews.tsv：缓存索引，描述每条预览的**渲染来源**。
+   frames 列是渲染帧数（不是打包后的存储帧数）——指纹按渲染参数算，
+   这里必须保持渲染帧数，否则 staleList 会把有效预览全判成过期。
+   sheet/cell 列则是打包后的实际位置。 */
 const indexLines = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
 for (const item of outItems) {
   const cell =
@@ -303,7 +329,7 @@ for (const item of outItems) {
       item.matchName,
       String(item.sheet),
       String(cell),
-      String(item.frames || 1),
+      String(renderFrames.get(item.matchName) || item.frames || 1),
       item.frameSrc || "",
       item.key || "",
     ].join("\t"),

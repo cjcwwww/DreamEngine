@@ -60,6 +60,11 @@ copyFileSync(resolve(PKG_DIR, "manifest.json"), oldManifest);
 if (existsSync(resolve(PKG_DIR, "names.json"))) {
   copyFileSync(resolve(PKG_DIR, "names.json"), resolve(TARGET, "names.json"));
 }
+/* previews.tsv 原样复制：它记的是**渲染帧数**，与打包后的存储帧数不同，
+   重新生成会让指纹比对失效（staleList 会把有效预览全判成过期）。 */
+if (existsSync(resolve(PKG_DIR, "previews.tsv"))) {
+  copyFileSync(resolve(PKG_DIR, "previews.tsv"), resolve(TARGET, "previews.tsv"));
+}
 
 /* 校验 */
 const manifest = JSON.parse(
@@ -73,23 +78,26 @@ for (const item of manifest.items) {
   if (!existsSync(resolve(TARGET, file))) missing++;
 }
 
-/* 同步 previews.tsv：它与 manifest 必须是同一份条目的两种表示，
-   staleList 靠它判过期，两边不一致会得出错误的过期结论。 */
-const indexLines = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
-for (const item of manifest.items) {
-  indexLines.push(
-    [
-      item.matchName,
-      String(item.sheet),
-      String(Math.floor(item.y / manifest.cellSize) * manifest.columns +
-        Math.floor(item.x / manifest.cellSize)),
-      String(item.frames || 1),
-      item.frameSrc || "",
-      item.key || "",
-    ].join("\t"),
-  );
+/* 兜底：包里没有 previews.tsv 时才自己生成一份。
+   正常路径是直接复制包里的那份——它记的是**渲染帧数**，
+   与打包后的存储帧数不同，重新生成会让指纹比对失效。 */
+if (!existsSync(resolve(TARGET, "previews.tsv"))) {
+  const indexLines = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
+  for (const item of manifest.items) {
+    indexLines.push(
+      [
+        item.matchName,
+        String(item.sheet),
+        String(Math.floor(item.y / manifest.cellSize) * manifest.columns +
+          Math.floor(item.x / manifest.cellSize)),
+        String(item.frames || 1),
+        item.frameSrc || "",
+        item.key || "",
+      ].join("\t"),
+    );
+  }
+  writeFileSync(resolve(TARGET, "previews.tsv"), indexLines.join("\r\n"), "utf8");
 }
-writeFileSync(resolve(TARGET, "previews.tsv"), indexLines.join("\r\n"), "utf8");
 
 console.log("L1 安装完成");
 console.log(`  预览图 ${copied} 个（${(bytes / 1024 / 1024).toFixed(2)} MB）`);

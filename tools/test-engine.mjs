@@ -550,15 +550,27 @@ test("L1 包里的 manifest 与 previews.tsv 条目一致，且都带指纹", ()
   ]);
   assert.equal(lines.length, manifest.items.length, "两份索引的条目数必须一致");
 
-  const names = new Set(manifest.items.map((item) => item.matchName));
+  const byName = new Map(manifest.items.map((item) => [item.matchName, item]));
+  let renderFrameKept = 0;
   for (const item of manifest.items) {
     assert.ok(item.key && item.key.length > 0, `${item.matchName} 缺指纹`);
   }
   for (const line of lines) {
     const cells = line.split("\t");
-    assert.ok(names.has(cells[0]), `previews.tsv 里的 ${cells[0]} 不在 manifest 中`);
+    const item = byName.get(cells[0]);
+    assert.ok(item, `previews.tsv 里的 ${cells[0]} 不在 manifest 中`);
     assert.ok(cells[5] && cells[5].length > 0, `${cells[0]} 在 previews.tsv 里缺指纹`);
+    assert.equal(cells[5], item.key, `${cells[0]} 两份索引的指纹必须一致`);
+
+    // frames 列是**渲染帧数**，manifest 的 frames 是存储帧数。
+    // 打包把静态格子从 6 帧压成 1 帧后，渲染帧数必须保留下来——
+    // 否则 staleList 会拿 1 帧去比对按 6 帧算的指纹，把有效预览全判成过期。
+    const renderFrames = Number(cells[3]);
+    const storedFrames = item.frames || 1;
+    assert.ok(renderFrames >= storedFrames, `${cells[0]} 渲染帧数不应小于存储帧数`);
+    if (renderFrames > storedFrames) renderFrameKept++;
   }
+  assert.ok(renderFrameKept > 0, "打包后应当至少有一条保留了渲染帧数");
 });
 
 /* ---------- assets / catalog 静态契约 ---------- */

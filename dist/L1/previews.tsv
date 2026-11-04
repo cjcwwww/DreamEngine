@@ -19,43 +19,43 @@ CC Toner	0	16	1		pcjjdc
 CC Radial Fast Blur	0	17	1		805ewo
 CC Lens	0	18	1		uytuuy
 CC Twister	0	19	1		kc9b16
-CC Radial Blur	1	0	1		yb2433
-CC Color Offset	2	0	1		38civn
-CC Bender	3	0	1		gqvecd
-CC Burn Film	4	0	1		fkv824
+CC Radial Blur	1	0	6		yb2433
+CC Color Offset	2	0	6		38civn
+CC Bender	3	0	6		gqvecd
+CC Burn Film	4	0	6		fkv824
 CC Glue Gun	5	0	6	thumbs/batch_005_%04d.png	i3b804
-VISINF Grain Implant	6	0	1		8s5d3w
-CC Cylinder	7	0	1		8ex7jb
-CC Glass Wipe	8	0	1		503xq4
-CC Simple Wire Removal	9	0	1		fgqm10
-CC Vector Blur	10	0	1		w0olbp
-ADBE AutoColor	10	1	1		4o1gh7
-CC Bend It	10	2	1		c0ffz7
-CC Glass	10	3	1		mw1ahz
-CC Light Burst 2.5	10	4	1		ahkdgq
-ADBE Dust & Scratches	10	5	1		64iq7t
-CC Environment	10	6	1		20qeaq
-CC Grid Wipe	10	7	1		3p8cp4
-ADBE Color Difference Key	11	0	1		aub35y
-CC Hair	11	1	1		g181sh
-CC Force Motion Blur	11	2	1		p5pwbr
-CC Overbrights	11	3	1		sze2sc
-ADBE Matte Choker	11	4	1		7yi4ve
-ADBE Color Swirl	11	5	1		gi8alf
-CC Composite	11	6	1		95tu74
-ADBE Bilateral	11	7	1		v0mg2r
-ADBE AutoContrast	12	0	1		m0klwa
-CC Blobbylize	12	1	1		h557tn
-CC Kaleida	12	2	1		10asuw
-CC Light Rays	12	3	1		iydres
-ADBE Fractal Noise	12	4	1		6jezf2
-CC Sphere	12	5	1		1ttiz8
-CC Image Wipe	12	6	1		dmnumd
-ADBE Color Range	12	7	1		tm11r3
-CC Mr. Mercury	13	0	1		36amkh
-CC Wide Time	14	0	1		jwpsth
-ADBE Simple Choker	15	0	1		8aamhl
-ADBE Getting Jiggy	16	0	1		2zke5b
-ADBE Arithmetic	17	0	1		pl8hx9
-ADBE Box Blur2	18	0	1		e055s3
-ADBE AutoLevels	19	0	1		n8m1uf
+VISINF Grain Implant	6	0	6		8s5d3w
+CC Cylinder	7	0	6		8ex7jb
+CC Glass Wipe	8	0	6		503xq4
+CC Simple Wire Removal	9	0	6		fgqm10
+CC Vector Blur	10	0	6		w0olbp
+ADBE AutoColor	10	1	6		4o1gh7
+CC Bend It	10	2	6		c0ffz7
+CC Glass	10	3	6		mw1ahz
+CC Light Burst 2.5	10	4	6		ahkdgq
+ADBE Dust & Scratches	10	5	6		64iq7t
+CC Environment	10	6	6		20qeaq
+CC Grid Wipe	10	7	6		3p8cp4
+ADBE Color Difference Key	11	0	6		aub35y
+CC Hair	11	1	6		g181sh
+CC Force Motion Blur	11	2	6		p5pwbr
+CC Overbrights	11	3	6		sze2sc
+ADBE Matte Choker	11	4	6		7yi4ve
+ADBE Color Swirl	11	5	6		gi8alf
+CC Composite	11	6	6		95tu74
+ADBE Bilateral	11	7	6		v0mg2r
+ADBE AutoContrast	12	0	6		m0klwa
+CC Blobbylize	12	1	6		h557tn
+CC Kaleida	12	2	6		10asuw
+CC Light Rays	12	3	6		iydres
+ADBE Fractal Noise	12	4	6		6jezf2
+CC Sphere	12	5	6		1ttiz8
+CC Image Wipe	12	6	6		dmnumd
+ADBE Color Range	12	7	6		tm11r3
+CC Mr. Mercury	13	0	6		36amkh
+CC Wide Time	14	0	6		jwpsth
+ADBE Simple Choker	15	0	6		8aamhl
+ADBE Getting Jiggy	16	0	6		2zke5b
+ADBE Arithmetic	17	0	6		pl8hx9
+ADBE Box Blur2	18	0	6		e055s3
+ADBE AutoLevels	19	0	6		n8m1uf
