@@ -923,6 +923,8 @@ var AEV_Recipe = (function () {
             target = paramTarget(main.prop, main.ratio);
             if (target === null || target === 0) return false;
         } else {
+            // TEMP: 临时只允许强度参数打关键帧（验证形态参数关键帧是否为元凶）
+            return false;
             // 内置「效果不透明度」：只能 setValue，不能打关键帧
             prop = pluginAnimParam(effectGroup);
             if (!prop) return false;
