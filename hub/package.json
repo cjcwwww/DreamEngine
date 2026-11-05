@@ -1,0 +1,16 @@
+{
+  "name": "dreamengine-hub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DreamEngine Hub —— 不依赖 After Effects 的控制台：添加预设、离线渲染预览、安装与诊断",
+  "author": "DreamEngine",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "selftest": "electron . --selftest"
+  },
+  "devDependencies": {
+    "electron": "45.2.2",
+    "electron-builder": "26.18.0"
+  }
+}

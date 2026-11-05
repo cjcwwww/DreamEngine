@@ -1,0 +1,2056 @@
+:root {
+  color-scheme: dark;
+  --bg: #0a0b0c;
+  --surface: #101214;
+  --surface-2: #15181b;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #e7e7e3;
+  --muted: #8b9299;
+  --faint: #5c646b;
+  --accent: #86aeb2;
+  --accent-soft: rgba(134, 174, 178, 0.12);
+  --danger: #b07a72;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font: 12px/1.5 "Segoe UI", "Microsoft YaHei UI", sans-serif;
+  letter-spacing: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  letter-spacing: 0;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 顶栏只有一行：品牌 / 三个视图切换 / 搜索 / 设置齿轮。
+   视图切换改成文字 tab + 底部 2px accent 线：比填充 pill 更安静，
+   也更像工具面板而不是网页。 */
+.view-switch {
+  flex: 0 0 auto;
+  min-width: 0;
+  display: flex;
+  gap: 20px;
+  margin-left: 4px;
+}
+
+.view-tab {
+  position: relative;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.view-tab:hover {
+  color: var(--text);
+}
+
+.view-tab.active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.view-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--accent);
+}
+
+/* 预设视图：与效果墙同级的整块区域 */
+.preset-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.preset-view[hidden] {
+  display: none;
+}
+
+.preset-sidebar {
+  width: 168px;
+  min-width: 118px;
+  padding: 12px 8px 12px 12px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+.preset-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+
+.preset-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.preset-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.preset-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preset-tools input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 120px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* 预设卡片的缩略图：固定正方形，保证百分比切片不被拉伸 */
+.preset-thumb {
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 4px;
+  border: 0;
+  border-radius: 6px;
+  background-color: var(--surface-2);
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.preset-thumb .thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.preset-badge {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 9px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-badge.static {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(var(--view-size, 180px), 100%), var(--view-size, 180px))
+  );
+  gap: 8px;
+  align-content: start;
+}
+
+.preset-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset-card:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.preset-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.preset-card .preset-name {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-card .preset-category {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-category-toggle {
+  position: absolute;
+  z-index: 4;
+  top: 6px;
+  left: 6px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 50%;
+  background: rgba(10, 11, 12, 0.78);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+
+.preset-category-toggle svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.preset-card:hover .preset-category-toggle,
+.preset-card:focus-within .preset-category-toggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.preset-category-toggle:hover {
+  background: rgba(10, 11, 12, 0.96);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+/* 顶栏只有一行：品牌 / 三个视图切换 / 搜索 / 设置齿轮 */
+.topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.brand-mark {
+  flex: none;
+  display: block;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #050606;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+}
+
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brand-name {
+  flex: none;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.top-actions,
+.segmented,
+.controls,
+.toggle,
+.search-field {
+  display: flex;
+  align-items: center;
+}
+
+.top-actions {
+  flex: none;
+  gap: 8px;
+}
+
+.segmented {
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.segment {
+  min-width: 42px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.segment.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.icon-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-button:hover,
+.segment:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.icon-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+/* 卡片右上角收藏。未收藏时只在悬停/聚焦出现，收藏后常驻。 */
+.favorite-toggle {
+  position: absolute;
+  z-index: 5;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 50%;
+  background: rgba(10, 11, 12, 0.80);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.favorite-toggle svg {
+  width: 12px;
+  height: 12px;
+}
+
+.favorite-toggle path {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.favorite-toggle.active {
+  border-color: rgba(215, 194, 141, 0.46);
+  color: #d7c28d;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.favorite-toggle.active path {
+  fill: currentColor;
+}
+
+.effect-card:hover .favorite-toggle,
+.effect-card:focus-within .favorite-toggle,
+.preset-card:hover .favorite-toggle,
+.preset-card:focus-within .favorite-toggle,
+.material-card:hover .favorite-toggle,
+.material-card:focus-within .favorite-toggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.favorite-toggle:hover {
+  background: rgba(10, 11, 12, 0.96);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sidebar-heading .sidebar-title {
+  margin: 0;
+}
+
+.category-add {
+  width: 24px;
+  height: 24px;
+}
+
+.category-add svg,
+.category-editor button svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.category-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px 24px;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.category-editor[hidden] {
+  display: none;
+}
+
+.category-editor input {
+  min-width: 0;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  font-size: 11px;
+}
+
+.category-editor button {
+  display: grid;
+  width: 24px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.category-editor button:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.preset-category-menu {
+  position: fixed;
+  z-index: 40;
+  width: 190px;
+  max-height: 280px;
+  padding: 5px;
+  overflow-y: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.48);
+}
+
+.preset-category-menu[hidden] {
+  display: none;
+}
+
+.preset-category-menu-title {
+  padding: 4px 7px 6px;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.preset-category-menu button {
+  display: flex;
+  width: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset-category-menu button:hover,
+.preset-category-menu button.active {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.preset-category-menu button.danger:hover {
+  color: var(--danger);
+}
+
+/* 生成队列的控制按钮：与 icon-button 同高度，但带文字 */
+.action-button {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.action-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.action-button[hidden] {
+  display: none;
+}
+
+.icon-button svg,
+.search-field svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.controls {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+/* 预设视图下，效果墙专属的筛选工具条没有意义 */
+.controls[hidden] {
+  display: none;
+}
+
+/* 搜索框：宽面板常驻，窄面板收成一个小图标。
+   面板可以拖得很窄，常驻的大搜索框会把顶栏挤爆。 */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 30px;
+  margin-left: auto;
+}
+
+.search-wrap[hidden] {
+  display: none;
+}
+
+/* 搜索只服务效果墙；切到预设/曲线时它被 hidden，
+   齿轮要接住 margin-left:auto 继续贴在右侧。 */
+.search-wrap[hidden] + #btnSettings {
+  margin-left: auto;
+}
+
+.search-wrap .search-toggle {
+  flex: 0 0 auto;
+}
+
+.search-wrap .search-field {
+  flex: 1 1 auto;
+  min-width: 150px;
+}
+
+.search-field[hidden] {
+  display: none;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 110px;
+  height: 30px;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  transition: border-color 0.12s ease;
+}
+
+.search-field:hover {
+  border-color: var(--border);
+}
+
+.search-field:focus-within {
+  border-color: var(--accent);
+}
+
+.search-field input::placeholder {
+  color: var(--faint);
+}
+
+.search-kbd {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--faint);
+  font: 9px/1.4 Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
+}
+
+/* 宽面板：搜索常驻，图标收起；窄面板才退回「点图标展开」 */
+@media (min-width: 720px) {
+  .search-wrap {
+    flex: 0 1 250px;
+  }
+
+  .search-toggle {
+    display: none;
+  }
+
+  .search-field[hidden] {
+    display: flex;
+  }
+}
+
+.search-field input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+select {
+  height: 28px;
+  padding: 0 24px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11px;
+}
+
+select:hover {
+  border-color: var(--border-strong);
+}
+
+.toggle {
+  gap: 6px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.toggle input {
+  accent-color: var(--accent);
+}
+
+/* 工作区：左右各自独立滚动。
+   之前整个页面一起滚，左侧分类栏会被右侧内容带走。
+   现在 body 是 flex 列（高度固定），workspace 撑满剩余高度，
+   内部 sidebar 与 main 各自 overflow-y:auto——滚右边不动左边。 */
+.workspace {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  gap: 16px;
+}
+
+/* 视图切换：.workspace 自己的 display:flex 会盖掉 [hidden] 的默认
+   display:none（属性选择器的特异性低于类选择器），不显式写这条，
+   隐藏的效果视图就会一直显示 —— 预设视图里会露出整面效果墙。 */
+.workspace[hidden] {
+  display: none;
+}
+
+.sidebar {
+  /* 侧栏宽度随可用空间收缩：面板拖得很窄时（AE 面板可以任意拖窄），
+     固定 176px 会把主区挤到 0，预览墙直接消失。
+     用 clamp 保底 104px，中间按比例缩。 */
+  flex: 0 0 clamp(104px, 22%, 176px);
+  padding: 14px 0 12px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* 侧栏不要被拉成和右栏一样高。
+     stretch 会让它的滚动条贯穿整个面板高度（内容才 500px，条却拖到 1000px），
+     看起来像一根多余的竖线。改成按内容高度自适应，超出才滚。 */
+  align-self: flex-start;
+  max-height: 100%;
+}
+
+.sidebar-title {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+.category-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px 0 10px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 5px 5px 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.category-item.active {
+  border-left-color: var(--accent);
+  background: linear-gradient(90deg, var(--accent-soft), transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.category-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-count {
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.category-item.active .category-count {
+  color: var(--accent);
+}
+
+/* 细滚动条：所有内容滚动区共用，不露出系统默认的宽滚动条。
+   Chromium（CEP 11 = Chrome 87）支持 ::-webkit-scrollbar。 */
+.sidebar::-webkit-scrollbar,
+main::-webkit-scrollbar,
+.preset-view::-webkit-scrollbar,
+.preset-sidebar::-webkit-scrollbar,
+.preset-main::-webkit-scrollbar,
+.queue-list::-webkit-scrollbar,
+.settings-scroll::-webkit-scrollbar,
+.curve-presets::-webkit-scrollbar,
+.materials-sidebar::-webkit-scrollbar,
+.materials-main::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+main::-webkit-scrollbar-track,
+.preset-view::-webkit-scrollbar-track,
+.preset-sidebar::-webkit-scrollbar-track,
+.preset-main::-webkit-scrollbar-track,
+.queue-list::-webkit-scrollbar-track,
+.settings-scroll::-webkit-scrollbar-track,
+.curve-presets::-webkit-scrollbar-track,
+.materials-sidebar::-webkit-scrollbar-track,
+.materials-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+main::-webkit-scrollbar-thumb,
+.preset-view::-webkit-scrollbar-thumb,
+.preset-sidebar::-webkit-scrollbar-thumb,
+.preset-main::-webkit-scrollbar-thumb,
+.queue-list::-webkit-scrollbar-thumb,
+.settings-scroll::-webkit-scrollbar-thumb,
+.curve-presets::-webkit-scrollbar-thumb,
+.materials-sidebar::-webkit-scrollbar-thumb,
+.materials-main::-webkit-scrollbar-thumb {
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+main::-webkit-scrollbar-thumb:hover,
+.preset-view::-webkit-scrollbar-thumb:hover,
+.preset-sidebar::-webkit-scrollbar-thumb:hover,
+.preset-main::-webkit-scrollbar-thumb:hover,
+.queue-list::-webkit-scrollbar-thumb:hover,
+.settings-scroll::-webkit-scrollbar-thumb:hover,
+.curve-presets::-webkit-scrollbar-thumb:hover,
+.materials-sidebar::-webkit-scrollbar-thumb:hover,
+.materials-main::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.28);
+}
+
+.sidebar::-webkit-scrollbar-button,
+main::-webkit-scrollbar-button,
+.preset-view::-webkit-scrollbar-button,
+.preset-sidebar::-webkit-scrollbar-button,
+.preset-main::-webkit-scrollbar-button,
+.queue-list::-webkit-scrollbar-button,
+.settings-scroll::-webkit-scrollbar-button,
+.curve-presets::-webkit-scrollbar-button,
+.materials-sidebar::-webkit-scrollbar-button,
+.materials-main::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.sidebar::-webkit-scrollbar-corner,
+main::-webkit-scrollbar-corner,
+.preset-view::-webkit-scrollbar-corner,
+.preset-sidebar::-webkit-scrollbar-corner,
+.preset-main::-webkit-scrollbar-corner,
+.queue-list::-webkit-scrollbar-corner,
+.settings-scroll::-webkit-scrollbar-corner,
+.curve-presets::-webkit-scrollbar-corner,
+.materials-sidebar::-webkit-scrollbar-corner,
+.materials-main::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+main {
+  flex: 1 1 auto;
+  /* 主区不能被侧栏挤没：面板极窄时至少留出一列预览的宽度。
+     flex-basis:0 + min-width 让「剩余空间」而不是「内容宽度」决定分配。 */
+  flex-basis: 0;
+  min-width: 120px;
+  padding: 12px 16px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 预览格尺寸由当前视图的滑块控制（--view-size）。
+   列宽用固定值而不是 1fr —— 1fr 会把列拉伸填满剩余宽度，
+   面板一变宽卡片就跟着变大，滑块形同虚设。
+   固定列宽下：格子大小只由滑块决定，面板比例只影响每行放几张。
+
+   滑块范围固定 48–180px，不随窗口比例改变；JS 会在极窄面板下把
+   实际格子收敛到能放下的宽度并同步写回滑块，保证「标多少、格子就是多少」。
+   CSS 这边的 min() 只是最后一道兜底：极端窄面板下至少让预览可见。 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(var(--view-size, 132px), 100%), var(--view-size, 132px))
+  );
+  gap: 8px;
+}
+
+.effect-card {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+
+.effect-card:hover .thumb {
+  filter: brightness(1.08);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+/* 预览过期：图还在但配方/素材变了。用角标而不是隐藏，
+   否则用户会以为自己的效果库突然变空。 */
+.effect-card.stale .thumb {
+  box-shadow: inset 0 0 0 1px rgba(224, 163, 58, 0.35);
+}
+
+.effect-card.stale .thumb::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e0a33a;
+}
+
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #070809;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition: filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+.thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--faint);
+  font-size: 10.5px;
+}
+
+.card-copy {
+  padding: 5px 1px 0;
+}
+
+.card-name {
+  display: block;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-top: 2px;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.plugin-dot {
+  flex: 0 0 auto;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.plugin-dot.missing {
+  background: var(--faint);
+}
+
+.card-category {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* hover 时浮出的「加到选中层」入口：双击是隐藏操作，
+   给鼠标用户一个可见的替代路径。 */
+.card-plus {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 50%;
+  background: rgba(10, 11, 12, 0.78);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+
+.effect-card:hover .card-plus,
+.effect-card:focus-visible .card-plus {
+  opacity: 1;
+}
+
+.card-plus:hover {
+  background: rgba(10, 11, 12, 0.96);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+/* 滑块下限 48px 时卡片很窄：收紧文字区，别让名称被挤成几个点。
+   setThumbSize 在小于 80px 时给 .grid 加 compact 类。 */
+.grid.compact { gap: 6px; }
+.grid.compact .effect-card { border-radius: 5px; }
+.grid.compact .thumb { border-radius: 5px; }
+.grid.compact .card-copy { padding: 4px 1px 0; }
+.grid.compact .card-name { font-size: 10px; line-height: 1.25; }
+.grid.compact .card-meta { display: none; }
+.grid.compact .thumb-placeholder { font-size: 9px; }
+.grid.compact .card-plus { width: 18px; height: 18px; font-size: 11px; }
+.grid.compact .favorite-toggle { width: 18px; height: 18px; }
+
+.empty-state {
+  padding: 64px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-state strong {
+  display: block;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.statusbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  /* 固定高度 + 不换行：中文一旦被 flex 压到逐字竖排（截图里
+     「0 待渲染 / 0 失败」变成一根竖条），整个底栏会被撑高好几倍。
+     这里从容器层面把高度钉死，任何内容都撑不动它。 */
+  height: 26px;
+  min-height: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  padding: 0 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--faint);
+  font-size: 10px;
+}
+
+/* 底栏里除状态文字外的每一项都不许被压窄。
+   空间不够时由下面的媒体查询「隐藏次要项」，而不是硬挤成竖排。 */
+.statusbar > * {
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* 状态文案可能很长（生成进度、错误详情）：单行省略，完整内容放 title。 */
+#statusText {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#selectionStats,
+#queueCounts {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusbar .error {
+  color: var(--danger);
+}
+
+/* 右下角的预览格尺寸滑块。
+   放在状态栏里而不是浮层上：面板窄的时候浮层会挡住内容。 */
+.size-slider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.size-slider[hidden] {
+  display: none;
+}
+
+.size-slider label {
+  color: var(--faint);
+}
+
+.size-slider input[type="range"] {
+  width: 72px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.size-slider output {
+  min-width: 24px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* 生成队列：状态栏上一个入口 + 右侧抽屉。
+   以前队列只有状态栏里一行字，看不到「还剩多少、哪条失败」，
+   批量生成时只能干等。 */
+.queue-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--faint);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.queue-toggle:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.queue-toggle #queueCounts {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(320px, 82vw);
+  padding: 12px 14px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: -12px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.queue-drawer[hidden] {
+  display: none;
+}
+
+.queue-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queue-head h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.queue-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-summary {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.queue-list {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.queue-item .queue-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-badge {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.queue-badge.failed {
+  color: var(--danger);
+}
+
+.queue-badge.rendering {
+  color: var(--accent);
+}
+
+.queue-empty {
+  padding: 18px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* 设置页：顶栏只留一个齿轮入口，语言 / 生成 / 刷新 / 重试都收进这里。
+   做成右侧整页抽屉而不是第三个顶部 tab —— 设置是随时调一下就走的，
+   不该把效果墙切掉，也不该跟「效果预览 / 预设预览」这两个内容视图同级。 */
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(340px, 88vw);
+  padding: 12px 14px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: -12px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+/* 带 display:flex 的容器必须显式写 [hidden]，否则类选择器会盖掉
+   浏览器默认的 display:none —— 上一轮预设视图就栽在这里。 */
+.settings-drawer[hidden] {
+  display: none;
+}
+
+#btnSettings[aria-expanded="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.settings-group {
+  margin: 0 0 16px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-group:last-child {
+  border-bottom: none;
+}
+
+.settings-group h4 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.settings-label {
+  font-size: 12px;
+}
+
+/* 右侧的值（顶栏去掉副标题后，条目统计挪到了这里） */
+.settings-value {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-action {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-action:hover {
+  border-color: var(--border-strong);
+}
+
+.settings-action:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+/* 「重试失败」平时是 hidden —— 和抽屉一样要显式覆盖 display:flex */
+.settings-action[hidden] {
+  display: none;
+}
+
+.settings-action-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-action-note {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.settings-note {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.settings-note b {
+  color: var(--text);
+}
+
+/* 面板拖到很窄时，底栏按顺序舍弃次要信息（而不是把它们压成竖排）。
+   顺序：先省掉滑块标签 → 再缩滑块 → 再隐藏「显示 N」→ 最后隐藏整个滑块。 */
+@media (max-width: 620px) {
+  .statusbar {
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .size-slider label {
+    display: none;
+  }
+
+  .size-slider input[type="range"] {
+    width: 56px;
+  }
+}
+
+@media (max-width: 460px) {
+  #selectionStats {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .size-slider {
+    display: none;
+  }
+}
+
+/* 预设视图里的卡片样式见上面的 .preset-card */
+
+@media (max-width: 520px) {
+  .topbar {
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .view-tab {
+    flex: 0 0 auto;
+    padding: 0 4px;
+  }
+
+  .search-wrap {
+    flex: 0 0 auto;
+  }
+
+  .preset-main {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(var(--view-size, 180px), 100%), var(--view-size, 180px))
+    );
+  }
+
+  .controls {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 34px;
+    padding: 6px 10px;
+  }
+
+  main {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .grid {
+    gap: 8px;
+  }
+
+  .size-slider input[type="range"] {
+    width: 56px;
+  }
+}
+
+/* ============================================================
+   曲线编辑（Flow 式：曲线模板 + 应用 + 预设网格）
+   ============================================================ */
+
+/* ---------- 素材库 ---------- */
+.materials-view {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+}
+
+.materials-view[hidden] {
+  display: none;
+}
+
+.materials-sidebar {
+  width: 180px;
+  min-width: 140px;
+  padding: 16px 12px;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+}
+
+.materials-actions {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.materials-actions .action-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.materials-root {
+  min-height: 28px;
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.materials-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.materials-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.materials-search {
+  margin: 0;
+  flex: 1;
+}
+
+.materials-summary {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.materials-grid {
+  align-content: start;
+}
+
+.material-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.material-preview {
+  position: relative;
+  display: flex;
+  aspect-ratio: 16 / 10;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #171a1d;
+}
+
+.material-preview::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 1px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.12s ease;
+}
+
+.material-card.selected .material-preview::after {
+  border-color: rgba(255, 255, 255, 0.94);
+}
+
+.material-card.selected .material-preview {
+  outline: 1px solid rgba(255, 255, 255, 0.94);
+  outline-offset: -1px;
+}
+
+.material-preview img,
+.material-preview video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.material-kind {
+  color: #7f8a91;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.material-card.image .material-preview {
+  background: #20262a;
+}
+
+.material-card.audio .material-preview {
+  background:
+    linear-gradient(90deg, transparent 0 8%, rgba(143, 163, 173, 0.35) 8% 9%, transparent 9% 16%, rgba(143, 163, 173, 0.2) 16% 17%, transparent 17% 28%, rgba(143, 163, 173, 0.42) 28% 29%, transparent 29% 40%, rgba(143, 163, 173, 0.25) 40% 41%, transparent 41% 55%, rgba(143, 163, 173, 0.5) 55% 56%, transparent 56% 70%, rgba(143, 163, 173, 0.2) 70% 71%, transparent 71% 84%, rgba(143, 163, 173, 0.36) 84% 85%, transparent 85%),
+    #171a1d;
+  background-position: center;
+  background-size: 100% 52%;
+  background-repeat: no-repeat;
+}
+
+.material-waveform {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 52%;
+}
+
+.material-card.project .material-preview {
+  background: #171a1d;
+}
+
+.material-card.project .material-kind {
+  color: #b4a27a;
+}
+
+.material-card-body {
+  padding: 9px 10px 10px;
+}
+
+.material-name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.material-meta {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.material-card.missing {
+  opacity: 0.52;
+}
+
+.material-card.missing .material-meta {
+  color: var(--danger);
+}
+
+@media (max-width: 760px) {
+  .materials-sidebar {
+    width: 138px;
+    min-width: 118px;
+  }
+  .materials-main {
+    padding: 12px;
+  }
+  .preset-sidebar {
+    width: 138px;
+    min-width: 112px;
+  }
+  .preset-main {
+    padding: 12px 10px 12px;
+  }
+}
+
+.curve-view {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 10px;
+}
+
+.curve-view[hidden] {
+  display: none;
+}
+
+.curve-flow {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.curve-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+#curveCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 四个数：cubic-bezier(x1, y1, x2, y2)，与 Flow 的读数一致 */
+.curve-readout {
+  flex: none;
+  color: var(--muted);
+  font-family: Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.curve-action-row {
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+/* 应用：Flow 里最重的那个按钮，做得宽而实 */
+.curve-apply {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.curve-save-open {
+  flex: 0 0 88px;
+  height: 34px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.curve-save-open:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.curve-apply:hover {
+  background: rgba(134, 174, 178, 0.20);
+}
+
+.curve-apply:active {
+  transform: translateY(1px);
+}
+
+.curve-apply[disabled] {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+/* 预设：每一条画成一条小曲线，点一下换掉模板 */
+.curve-presets {
+  flex: 0 1 auto;
+  max-height: 168px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 5px;
+  padding-right: 2px;
+}
+
+.preset-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin: 0;
+  padding: 4px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  cursor: pointer;
+  overflow: hidden;
+  min-height: 64px;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.preset-chip canvas {
+  display: block;
+  width: 100%;
+  height: 26px;
+}
+
+.preset-chip span {
+  max-width: 100%;
+  min-height: 24px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.preset-chip:hover {
+  border-color: var(--border-strong);
+}
+
+.preset-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preset-chip.active span {
+  color: var(--text);
+}
+
+.curve-hint {
+  flex: none;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 32px;
+  overflow: hidden;
+}
+
+.curve-hint.error {
+  color: var(--danger);
+}
+
+/* 值 / 速 / 路：收进画布右上角，浮在方块外面，不占布局 */
+.mode-box {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+}
+
+.mode-box-btn {
+  width: 24px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.mode-box-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+  opacity: 1;
+}
+
+.mode-menu {
+  position: absolute;
+  top: 25px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.mode-menu[hidden] {
+  display: none;
+}
+
+.mode-item {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.mode-item:hover {
+  color: var(--text);
+}
+
+.mode-item.active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.mode-item:disabled {
+  color: #3d454a;
+  cursor: default;
+}
+
+/* 并发冲突：覆盖 / 放弃。AE 没有属性变化事件，
+   这是唯一能阻止「静默覆盖用户在时间轴上的修改」的关口。 */
+.curve-conflict {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  width: min(320px, calc(100% - 32px));
+  padding: 14px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.curve-conflict[hidden] {
+  display: none;
+}
+
+.curve-preset-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.curve-preset-dialog input {
+  width: 100%;
+  height: 30px;
+  margin: 0 0 10px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+
+.curve-preset-dialog input:focus {
+  border-color: var(--accent);
+}
+
+.curve-dialog-primary {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.curve-dialog-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.curve-conflict p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.curve-conflict-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+#curveConflict .curve-conflict-actions .action-button:first-child {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+@media (max-width: 620px) {
+  .curve-view {
+    padding: 8px 8px 8px;
+  }
+
+  .curve-presets {
+    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+    max-height: 146px;
+  }
+
+  .curve-apply {
+    height: 32px;
+  }
+
+  .curve-save-open {
+    height: 32px;
+  }
+}

@@ -1,0 +1,5690 @@
+{
+  "version": 1,
+  "generatedFrom": [
+    "names/names-firstparty.tsv",
+    "names/joined-names-bcc.tsv"
+  ],
+  "count": 568,
+  "items": [
+    {
+      "matchName": "ScriptEP",
+      "nameEn": "BCC Extruded EPS",
+      "nameZh": null,
+      "categoryEn": "BCC 3D Objects",
+      "categoryZh": "BCC 3D 对象",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "ScriptSP",
+      "nameEn": "BCC Extruded Spline",
+      "nameZh": null,
+      "categoryEn": "BCC 3D Objects",
+      "categoryZh": "BCC 3D 对象",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "ScriptET",
+      "nameEn": "BCC Extruded Text",
+      "nameZh": null,
+      "categoryEn": "BCC 3D Objects",
+      "categoryZh": "BCC 3D 对象",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "ScriptLD",
+      "nameEn": "BCC Layer Deformer",
+      "nameZh": null,
+      "categoryEn": "BCC 3D Objects",
+      "categoryZh": "BCC 3D 对象",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCCTS",
+      "nameEn": "BCC Title Studio",
+      "nameZh": null,
+      "categoryEn": "BCC 3D Objects",
+      "categoryZh": "BCC 3D 对象",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "ScriptTO",
+      "nameEn": "BCC Type On Text",
+      "nameZh": null,
+      "categoryEn": "BCC 3D Objects",
+      "categoryZh": "BCC 3D 对象",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Artists Poster",
+      "nameEn": "BCC Artist's Poster",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Bump Map",
+      "nameEn": "BCC Bump Map",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC6Cartoon2Look",
+      "nameEn": "BCC Cartoon Look",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Cartooner",
+      "nameEn": "BCC Cartooner",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC6Charcoal Sketch",
+      "nameEn": "BCC Charcoal Sketch",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Halftone",
+      "nameEn": "BCC Halftone",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Median",
+      "nameEn": "BCC Median",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC6Pencil Sketch",
+      "nameEn": "BCC Pencil Sketch",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Posterize",
+      "nameEn": "BCC Posterize",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Spray Paint Noise",
+      "nameEn": "BCC Spray Paint Noise",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC4Tile Mosaic",
+      "nameEn": "BCC Tile Mosaic",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC6Water Color",
+      "nameEn": "BCC Water Color",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_BORDERS",
+      "nameEn": "BCC+Borders",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COLORINFRARED",
+      "nameEn": "BCC+Color Infrared",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COLORSHADOW",
+      "nameEn": "BCC+Color Shadow",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_HARRISSHUTTER",
+      "nameEn": "BCC+Harris Shutter",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_INFRARED",
+      "nameEn": "BCC+Infrared",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_NIGHTVISION",
+      "nameEn": "BCC+Night Vision",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_XRAY",
+      "nameEn": "BCC+X-Ray",
+      "nameZh": null,
+      "categoryEn": "BCC Art Looks",
+      "categoryZh": "BCC 艺术外观",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC6LensShape",
+      "nameEn": "BCC Lens Shape",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Unsharp Mask",
+      "nameEn": "BCC Unsharp Mask",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Z-Blur",
+      "nameEn": "BCC Z-Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_BLUR",
+      "nameEn": "BCC+Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CHANNELBLUR",
+      "nameEn": "BCC+Channel Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CHANNELYUVBLUR",
+      "nameEn": "BCC+Channel Blur YUV",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DETAIL",
+      "nameEn": "BCC+Detail",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DIRECTIONALBLUR",
+      "nameEn": "BCC+Directional Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LENSBLUR",
+      "nameEn": "BCC+Lens Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MOTIONBLURML",
+      "nameEn": "BCC+Motion Blur ML",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RADIALBLUR",
+      "nameEn": "BCC+Radial Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SMEARBLUR",
+      "nameEn": "BCC+Smear Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Blur",
+      "categoryZh": "BCC 模糊",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCCFXBrowser",
+      "nameEn": "BCC FX Browser",
+      "nameZh": null,
+      "categoryEn": "BCC Browser",
+      "categoryZh": "BCC 浏览器",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC6ThreeWayCC",
+      "nameEn": "BCC 3 Way Color Grade",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Brightness-Contrast",
+      "nameEn": "BCC Brightness-Contrast",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Color Balance",
+      "nameEn": "BCC Color Balance",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Color Correction",
+      "nameEn": "BCC Color Correction",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Color Match",
+      "nameEn": "BCC Color Match",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Colorize",
+      "nameEn": "BCC Colorize",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Correct Selected Color",
+      "nameEn": "BCC Correct Selected Color",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Hue-Sat-Lightness",
+      "nameEn": "BCC Hue-Sat-Lightness",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Invert Solarize",
+      "nameEn": "BCC Invert Solarize",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Levels Gamma",
+      "nameEn": "BCC Levels Gamma",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3MultiTone Mix",
+      "nameEn": "BCC MultiTone Mix",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Tritone",
+      "nameEn": "BCC Tritone",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC6Videoscope",
+      "nameEn": "BCC Videoscope",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_BLACKANDWHITE",
+      "nameEn": "BCC+Black and White",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COLORLINK",
+      "nameEn": "BCC+Color Link",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DEFOG",
+      "nameEn": "BCC+DeFog",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DEVELOP",
+      "nameEn": "BCC+Develop",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_ENHANCING",
+      "nameEn": "BCC+Enhancing",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FSTOP",
+      "nameEn": "BCC+F-Stop",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FLUORESCENT",
+      "nameEn": "BCC+Fluorescent",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_GRADE",
+      "nameEn": "BCC+Grade",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_HAZE",
+      "nameEn": "BCC+Haze",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_HIGHCONTRAST",
+      "nameEn": "BCC+High Contrast",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_KELVIN",
+      "nameEn": "BCC+Kelvin",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LOWCONTRAST",
+      "nameEn": "BCC+Low Contrast",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_POLARIZER",
+      "nameEn": "BCC+Polarizer",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SELECTIVESATURATION",
+      "nameEn": "BCC+Selective Saturation",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SHADOWSHIGHLIGHTS",
+      "nameEn": "BCC+Shadows/Highlights",
+      "nameZh": null,
+      "categoryEn": "BCC Color & Tone",
+      "categoryZh": "BCC 颜色与色调",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Match Grain",
+      "nameEn": "BCC Match Grain",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_ATMOSPHERICGLOW",
+      "nameEn": "BCC+Atmospheric Glow",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_BLEACHBYPASS",
+      "nameEn": "BCC+Bleach Bypass",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CROSSPROCESSING",
+      "nameEn": "BCC+Cross Processing",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DAYFORNIGHT",
+      "nameEn": "BCC+Day for Night",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FILMGLOW",
+      "nameEn": "BCC+Film Glow",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FILMGRUNGE",
+      "nameEn": "BCC+Film Grunge",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FILMSTOCKS",
+      "nameEn": "BCC+Film Stocks",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FLASHING",
+      "nameEn": "BCC+Flashing",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_GRAIN",
+      "nameEn": "BCC+Grain",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LIGHTFLICKER",
+      "nameEn": "BCC+Light Flicker",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LOOKS",
+      "nameEn": "BCC+Looks",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_ORBS",
+      "nameEn": "BCC+Orbs",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SMOKEANDFOG",
+      "nameEn": "BCC+Smoke and Fog",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_THREESTRIP",
+      "nameEn": "BCC+Three Strip",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_TWOSTRIP",
+      "nameEn": "BCC+Two Strip",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_VIGNETTE",
+      "nameEn": "BCC+Vignette",
+      "nameZh": null,
+      "categoryEn": "BCC Film Style",
+      "categoryZh": "BCC 胶片风格",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COLORGRADIENT",
+      "nameEn": "BCC+Color Gradient",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COLORSPOT",
+      "nameEn": "BCC+Color Spot",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COLORIZEGRADIENT",
+      "nameEn": "BCC+Colorize Gradient",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DUALGRADIENT",
+      "nameEn": "BCC+Dual Gradient",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_GELS",
+      "nameEn": "BCC+Gels",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_NDGRADIENT",
+      "nameEn": "BCC+ND Gradient",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_PHOTOGRAPHIC",
+      "nameEn": "BCC+Photographic",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RADIALTINT",
+      "nameEn": "BCC+Radial Tint",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SEPIA",
+      "nameEn": "BCC+Sepia",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SKINTONE",
+      "nameEn": "BCC+Skin Tone",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SPLITTONE",
+      "nameEn": "BCC+Split Tone",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SUNSET",
+      "nameEn": "BCC+Sunset",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_TINT",
+      "nameEn": "BCC+Tint",
+      "nameZh": null,
+      "categoryEn": "BCC Grads & Tints",
+      "categoryZh": "BCC 渐变与着色",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Broadcast Safe",
+      "nameEn": "BCC Broadcast Safe",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Dropout Fixer",
+      "nameEn": "BCC Dropout Fixer",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Dust and Scratches",
+      "nameEn": "BCC Dust and Scratches",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Flicker Fixer",
+      "nameEn": "BCC Flicker Fixer",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Lens Correction",
+      "nameEn": "BCC Lens Correction",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Stabilizer",
+      "nameEn": "BCC Optical Stabilizer",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC6Pixel Fixer",
+      "nameEn": "BCC Pixel Fixer",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Reframer",
+      "nameEn": "BCC Reframer",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Remover",
+      "nameEn": "BCC Remover",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Wire Remover",
+      "nameEn": "BCC Wire Remover",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_BEAUTYSTUDIO",
+      "nameEn": "BCC+Beauty Studio",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DEBAND",
+      "nameEn": "BCC+DeBand",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DEBLOCK",
+      "nameEn": "BCC+DeBlock",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLDEINTERLACE",
+      "nameEn": "BCC+Deinterlace ML",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLDENOISE",
+      "nameEn": "BCC+DeNoise ML",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLFRAMEFIXER",
+      "nameEn": "BCC+Frame Fixer ML",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MAGICSHARP",
+      "nameEn": "BCC+Magic Sharp",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_UPRESML",
+      "nameEn": "BCC+UpRes ML",
+      "nameZh": null,
+      "categoryEn": "BCC Image Restoration",
+      "categoryZh": "BCC 图像修复",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Alpha Process",
+      "nameEn": "BCC Alpha Process",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Chroma Key",
+      "nameEn": "BCC Chroma Key",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Chroma Key Studio",
+      "nameEn": "BCC Chroma Key Studio",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Composite",
+      "nameEn": "BCC Composite",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Composite Choker",
+      "nameEn": "BCC Composite Choker",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Make Alpha Key",
+      "nameEn": "BCC Make Alpha Key",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Matte Choker",
+      "nameEn": "BCC Matte Choker",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Matte Cleanup",
+      "nameEn": "BCC Matte Cleanup",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Premult",
+      "nameEn": "BCC Premult",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3RGB Blend",
+      "nameEn": "BCC RGB Blend",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_COLORPASTE",
+      "nameEn": "BCC+Color Paste",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_COMPOSITE",
+      "nameEn": "BCC+Composite",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLDEPTHESTIMATION",
+      "nameEn": "BCC+Depth Map ML",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_EDGECLEANER",
+      "nameEn": "BCC+Edge Cleaner",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_EDGECOMPOSITE",
+      "nameEn": "BCC+Edge Composite",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLFACESEGMENTATION",
+      "nameEn": "BCC+Face ML",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_HOLDOUTCOMPOSITE",
+      "nameEn": "BCC+Holdout Composite",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LIGHTWRAP",
+      "nameEn": "BCC+Light Wrap",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_LINEARCOLORKEY",
+      "nameEn": "BCC+Linear Color Key",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_LINEARLUMAKEY",
+      "nameEn": "BCC+Linear Luma Key",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_MATHCOMPOSITE",
+      "nameEn": "BCC+Math Composite",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLMATTEREFINE",
+      "nameEn": "BCC+Matte Refine ML",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_NONADDITIVEMIX",
+      "nameEn": "BCC+Non-Additive Mix",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_OPTICALDISSOLVE",
+      "nameEn": "BCC+Optical Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_PIXELCHOOSER",
+      "nameEn": "BCC+Pixel Chooser",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_PRIMATTESTUDIO",
+      "nameEn": "BCC+Primatte Studio",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SPILLREMOVER",
+      "nameEn": "BCC+Spill Remover",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_TWOWAYKEY",
+      "nameEn": "BCC+Two Way Key",
+      "nameZh": null,
+      "categoryEn": "BCC Key & Blend",
+      "categoryZh": "BCC 键控与混合",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_CAMERASHAKE",
+      "nameEn": "BCC+Camera Shake",
+      "nameZh": null,
+      "categoryEn": "BCC Lens",
+      "categoryZh": "BCC 镜头",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CHROMATICABERRATION",
+      "nameEn": "BCC+Chromatic Aberration",
+      "nameZh": null,
+      "categoryEn": "BCC Lens",
+      "categoryZh": "BCC 镜头",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DEFRINGE",
+      "nameEn": "BCC+DeFringe",
+      "nameZh": null,
+      "categoryEn": "BCC Lens",
+      "categoryZh": "BCC 镜头",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LENSDISTORTION",
+      "nameEn": "BCC+Lens Distortion",
+      "nameZh": null,
+      "categoryEn": "BCC Lens",
+      "categoryZh": "BCC 镜头",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RADIALEXPOSURE",
+      "nameEn": "BCC+Radial Exposure",
+      "nameZh": null,
+      "categoryEn": "BCC Lens",
+      "categoryZh": "BCC 镜头",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_WIDEANGLELENS",
+      "nameEn": "BCC+Wide Angle Lens",
+      "nameZh": null,
+      "categoryEn": "BCC Lens",
+      "categoryZh": "BCC 镜头",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Edge Lighting",
+      "nameEn": "BCC Edge Lighting",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Laser Beam",
+      "nameEn": "BCC Laser Beam",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Lens Flare 3D",
+      "nameEn": "BCC Lens Flare 3D",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Light Sweep",
+      "nameEn": "BCC Light Sweep",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Lightning",
+      "nameEn": "BCC Lightning",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Rays Puffy",
+      "nameEn": "BCC Rays Puffy",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Rays Radiant Edges",
+      "nameEn": "BCC Rays Radiant Edges",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Reverse Spotlight",
+      "nameEn": "BCC Reverse Spotlight",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Spotlight",
+      "nameEn": "BCC Spotlight",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Stage Light",
+      "nameEn": "BCC Stage Light",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_AMBIENTLIGHT",
+      "nameEn": "BCC+Ambient Light",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CHROMABANDS",
+      "nameEn": "BCC+Chroma Bands",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_EYELIGHT",
+      "nameEn": "BCC+Eye Light",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_GLOW",
+      "nameEn": "BCC+Glow",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_GLOWDARKS",
+      "nameEn": "BCC+Glow Darks",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_GLOWEDGES",
+      "nameEn": "BCC+Glow Edges",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_ICEHALOS",
+      "nameEn": "BCC+Ice Halos",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_KEYLIGHT",
+      "nameEn": "BCC+Key Light",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LENSFLARE",
+      "nameEn": "BCC+Lens Flare",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_LIGHT",
+      "nameEn": "BCC+Light",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LIGHTLEAKS",
+      "nameEn": "BCC+Light Leaks",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_MULTISTAR",
+      "nameEn": "BCC+Multi-Star",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_OVEREXPOSE",
+      "nameEn": "BCC+Overexpose",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RAYS",
+      "nameEn": "BCC+Rays",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_REFLECTOR",
+      "nameEn": "BCC+Reflector",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RELIGHT",
+      "nameEn": "BCC+ReLight",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_STREAKS",
+      "nameEn": "BCC+Streaks",
+      "nameZh": null,
+      "categoryEn": "BCC Lights",
+      "categoryZh": "BCC 灯光",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Corner Pin Studio",
+      "nameEn": "BCC Corner Pin Studio",
+      "nameZh": null,
+      "categoryEn": "BCC Match Move",
+      "categoryZh": "BCC 匹配移动",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3MatchMove",
+      "nameEn": "BCC Match Move",
+      "nameZh": null,
+      "categoryEn": "BCC Match Move",
+      "categoryZh": "BCC 匹配移动",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LICENSEPLATEML",
+      "nameEn": "BCC+License Plate ML",
+      "nameZh": null,
+      "categoryEn": "BCC Match Move",
+      "categoryZh": "BCC 匹配移动",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_WITNESSPROTECTIONML",
+      "nameEn": "BCC+Witness Protection ML",
+      "nameZh": null,
+      "categoryEn": "BCC Match Move",
+      "categoryZh": "BCC 匹配移动",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_CENTERSPOT",
+      "nameEn": "BCC+Center Spot",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DEPTHOFFIELD",
+      "nameEn": "BCC+Depth of Field",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DIFFUSION",
+      "nameEn": "BCC+Diffusion",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DOUBLEFOG",
+      "nameEn": "BCC+Double Fog",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FOG",
+      "nameEn": "BCC+Fog",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FROST",
+      "nameEn": "BCC+Frost",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_HALO",
+      "nameEn": "BCC+Halo",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MIST",
+      "nameEn": "BCC+Mist",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_NET",
+      "nameEn": "BCC+Net",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RACKFOCUS",
+      "nameEn": "BCC+Rack Focus",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SILK",
+      "nameEn": "BCC+Silk",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SPLITFIELD",
+      "nameEn": "BCC+Split Field",
+      "nameZh": null,
+      "categoryEn": "BCC Optical Diffusion",
+      "categoryZh": "BCC 光学扩散",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC32D Particles",
+      "nameEn": "BCC 2D Particles",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Organic Strands",
+      "nameEn": "BCC Organic Strands",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Particle Array 3D",
+      "nameEn": "BCC Particle Array 3D",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Particle Emitter 3D",
+      "nameEn": "BCC Particle Emitter 3D",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Particle Illusion",
+      "nameEn": "BCC Particle Illusion",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Pin Art 3D",
+      "nameEn": "BCC Pin Art 3D",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Rain",
+      "nameEn": "BCC Rain",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Snow",
+      "nameEn": "BCC Snow",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Card Array",
+      "nameEn": "BCC Wild Cards",
+      "nameZh": null,
+      "categoryEn": "BCC Particles",
+      "categoryZh": "BCC 粒子",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC 3D Extruded Image Shatter",
+      "nameEn": "BCC 3D Extruded Image Shatter",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC33D Image Shatter",
+      "nameEn": "BCC 3D Image Shatter",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Cube",
+      "nameEn": "BCC Cube",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Cylinder",
+      "nameEn": "BCC Cylinder",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Fast Flipper",
+      "nameEn": "BCC Fast Flipper",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Page Turn",
+      "nameEn": "BCC Page Turn",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Pan and Zoom",
+      "nameEn": "BCC Pan and Zoom",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Sphere",
+      "nameEn": "BCC Sphere",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Sphere Transition",
+      "nameEn": "BCC Sphere Transition",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_TRANSFORM",
+      "nameEn": "BCC+Transform",
+      "nameZh": null,
+      "categoryEn": "BCC Perspective",
+      "categoryZh": "BCC 透视",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Cast Shadow",
+      "nameEn": "BCC Cast Shadow",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC4Color Choker",
+      "nameEn": "BCC Color Choker",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Colorize Glow",
+      "nameEn": "BCC Colorize Glow",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC4Damaged TV",
+      "nameEn": "BCC Damaged TV",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Drop Shadow",
+      "nameEn": "BCC Drop Shadow",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Edge Grunge",
+      "nameEn": "BCC Edge Grunge",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Emboss",
+      "nameEn": "BCC Emboss",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Glow Alpha Edges",
+      "nameEn": "BCC Glow Alpha Edges",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Grunge",
+      "nameEn": "BCC Grunge",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Misalignment",
+      "nameEn": "BCC Misalignment",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Multi Shadow",
+      "nameEn": "BCC Multi Shadow",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Reflection",
+      "nameEn": "BCC Reflection",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3RGB Edges",
+      "nameEn": "BCC RGB Edges",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3RGB Pixel Noise",
+      "nameEn": "BCC RGB Pixel Noise",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Scatterize",
+      "nameEn": "BCC Scatterize",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_MOSAIC",
+      "nameEn": "BCC+Mosaic",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_PRISMBLUR",
+      "nameEn": "BCC+Prism",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SCANLINE",
+      "nameEn": "BCC+Scanline",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SUPERLED",
+      "nameEn": "BCC+Super LED",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_VIDEOGLITCH",
+      "nameEn": "BCC+Video Glitch",
+      "nameZh": null,
+      "categoryEn": "BCC Stylize",
+      "categoryZh": "BCC 风格化",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Caustics",
+      "nameEn": "BCC Caustics",
+      "nameZh": null,
+      "categoryEn": "BCC Textures",
+      "categoryZh": "BCC 纹理",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Mixed Colors",
+      "nameEn": "BCC Mixed Colors",
+      "nameZh": null,
+      "categoryEn": "BCC Textures",
+      "categoryZh": "BCC 纹理",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC4Noise Map 2",
+      "nameEn": "BCC Noise Map 2",
+      "nameZh": null,
+      "categoryEn": "BCC Textures",
+      "categoryZh": "BCC 纹理",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_TEXTURES",
+      "nameEn": "BCC+Textures",
+      "nameZh": null,
+      "categoryEn": "BCC Textures",
+      "categoryZh": "BCC 纹理",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC Beat Reactor",
+      "nameEn": "BCC Beat Reactor",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Jitter",
+      "nameEn": "BCC Jitter",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Jitter Basic",
+      "nameEn": "BCC Jitter Basic",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Looper",
+      "nameEn": "BCC Looper",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Posterize Time",
+      "nameEn": "BCC Posterize Time",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Temporal Blur",
+      "nameEn": "BCC Temporal Blur",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Time Displacement",
+      "nameEn": "BCC Time Displacement",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Trails",
+      "nameEn": "BCC Trails",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC3Trails Basic",
+      "nameEn": "BCC Trails Basic",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_AUDIOVISUALIZER",
+      "nameEn": "BCC+Audio Visualizer",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MLRETIMER",
+      "nameEn": "BCC+Retimer ML",
+      "nameZh": null,
+      "categoryEn": "BCC Time",
+      "categoryZh": "BCC 时间",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_ATMOSPHERICGLOWDISSOLVE",
+      "nameEn": "BCC+Atmospheric Glow Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_BLURDISSOLVE",
+      "nameEn": "BCC+Blur Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_CAMERASHAKEDISSOLVE",
+      "nameEn": "BCC+Camera Shake Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CHANNELBLURDISSOLVE",
+      "nameEn": "BCC+Channel Blur Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CRASHZOOMDISSOLVE",
+      "nameEn": "BCC+Crash Zoom Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_CROSSZOOMDISSOLVE",
+      "nameEn": "BCC+Cross Zoom Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_MLDEPTHWIPE",
+      "nameEn": "BCC+Depth Wipe ML",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DIRECTIONALBLURDISSOLVE",
+      "nameEn": "BCC+Directional Blur Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DISPLACEMENTDISSOLVE",
+      "nameEn": "BCC+Displacement Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_DISSOLVE",
+      "nameEn": "BCC+Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FILMGLOWDISSOLVE",
+      "nameEn": "BCC+Film Glow Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_FILMROLL",
+      "nameEn": "BCC+Film Roll",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_FLUTTERCUT",
+      "nameEn": "BCC+Flutter Cut",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_MLJUMPCUT",
+      "nameEn": "BCC+Jump Cut Fixer ML",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LENSFLAREDISSOLVE",
+      "nameEn": "BCC+Lens Flare Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_LIGHTLEAKSDISSOLVE",
+      "nameEn": "BCC+Light Leaks Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_LINEARWIPE",
+      "nameEn": "BCC+Linear Wipe",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_MOSAICDISSOLVE",
+      "nameEn": "BCC+Mosaic Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_MULTISTARDISSOLVE",
+      "nameEn": "BCC+Multi-Star Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_ORBSDISSOLVE",
+      "nameEn": "BCC+Orbs Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_PRISMDISSOLVE",
+      "nameEn": "BCC+Prism Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RACKFOCUSDISSOLVE",
+      "nameEn": "BCC+Rack Focus Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RADIALWIPE",
+      "nameEn": "BCC+Radial Wipe",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_RAYSDISSOLVE",
+      "nameEn": "BCC+Rays Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_RECTANGULARWIPE",
+      "nameEn": "BCC+Rectangular Wipe",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_RIPPLEDISSOLVE",
+      "nameEn": "BCC+Ripple Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_SMOKEANDFOGDISSOLVE",
+      "nameEn": "BCC+Smoke and Fog Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SMOKEWIPE",
+      "nameEn": "BCC+Smoke Wipe",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SPINBLURDISSOLVE",
+      "nameEn": "BCC+Spin Blur Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_SWISHGLOW",
+      "nameEn": "BCC+Swish Glow",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SWISH",
+      "nameEn": "BCC+Swish Pan",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_SWISHPRISM",
+      "nameEn": "BCC+Swish Prism",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_SWISHWARP",
+      "nameEn": "BCC+Swish Warp",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_TEXTUREWIPE",
+      "nameEn": "BCC+Texture Wipe",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_VIDEOGLITCHDISSOLVE",
+      "nameEn": "BCC+Video Glitch Dissolve",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_VIGNETTEWIPE",
+      "nameEn": "BCC+Vignette Wipe",
+      "nameZh": null,
+      "categoryEn": "BCC Transitions",
+      "categoryZh": "BCC 过渡",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC VR Blur",
+      "nameEn": "BCC VR Blur",
+      "nameZh": null,
+      "categoryEn": "BCC VR",
+      "categoryZh": "BCC VR",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC VR Flicker Fixer",
+      "nameEn": "BCC VR Flicker Fixer",
+      "nameZh": null,
+      "categoryEn": "BCC VR",
+      "categoryZh": "BCC VR",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC VR Insert",
+      "nameEn": "BCC VR Insert",
+      "nameZh": null,
+      "categoryEn": "BCC VR",
+      "categoryZh": "BCC VR",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC VR Reorient",
+      "nameEn": "BCC VR Reorient",
+      "nameZh": null,
+      "categoryEn": "BCC VR",
+      "categoryZh": "BCC VR",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC VR Sharpen",
+      "nameEn": "BCC VR Sharpen",
+      "nameZh": null,
+      "categoryEn": "BCC VR",
+      "categoryZh": "BCC VR",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Bulge",
+      "nameEn": "BCC Bulge",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC Curl",
+      "nameEn": "BCC Curl",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC4Morph",
+      "nameEn": "BCC Morph",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC4Turbulence",
+      "nameEn": "BCC Turbulence",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Twirl",
+      "nameEn": "BCC Twirl",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC4Video Morph",
+      "nameEn": "BCC Video Morph",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC4Warp",
+      "nameEn": "BCC Warp",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC3Wave",
+      "nameEn": "BCC Wave",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_DISPLACEMENT",
+      "nameEn": "BCC+Displacement Map",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_POLARDISPLACEMENT",
+      "nameEn": "BCC+Polar Displacement",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_POLARWARP",
+      "nameEn": "BCC+Polar Warp",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_RIPPLE",
+      "nameEn": "BCC+Ripple",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "BCC_STMAP",
+      "nameEn": "BCC+ST Map",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "ok"
+    },
+    {
+      "matchName": "BCC_VECTORDISPLACEMENT",
+      "nameEn": "BCC+Vector Displacement",
+      "nameZh": null,
+      "categoryEn": "BCC Warp",
+      "categoryZh": "BCC 弯曲",
+      "pluginHint": "BCC",
+      "nameZhSource": "community",
+      "review": "conflict"
+    },
+    {
+      "matchName": "ADBE Color Swirl",
+      "nameEn": "Color Swirl",
+      "nameZh": "彩色旋绕",
+      "categoryEn": "",
+      "categoryZh": "",
+      "pluginHint": "内置",
+      "nameZhSource": "official",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Getting Jiggy",
+      "nameEn": "Getting Jiggy",
+      "nameZh": "开始活跃",
+      "categoryEn": "",
+      "categoryZh": "",
+      "pluginHint": "内置",
+      "nameZhSource": "official",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AUX CHANNEL EXTRACT",
+      "nameEn": "3D Channel Extract",
+      "nameZh": "3D 通道提取",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE DEPTH MATTE",
+      "nameEn": "Depth Matte",
+      "nameZh": "深度遮罩",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE DEPTH FIELD",
+      "nameEn": "Depth of Field",
+      "nameZh": "场深度",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "EXtractoR",
+      "nameEn": "EXtractoR",
+      "nameZh": "提取器",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE FOG_3D",
+      "nameEn": "Fog 3D",
+      "nameZh": "雾 3D",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE ID MATTE",
+      "nameEn": "ID Matte",
+      "nameZh": "ID 遮罩",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "IDentifier",
+      "nameEn": "IDentifier",
+      "nameZh": "标识符",
+      "categoryEn": "3D Channel",
+      "categoryZh": "3D 通道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud Reverse",
+      "nameEn": "Backwards",
+      "nameZh": "倒放",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud BT",
+      "nameEn": "Bass & Treble",
+      "nameZh": "低音和高音",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud Delay",
+      "nameEn": "Delay",
+      "nameZh": "延迟",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud_Flange",
+      "nameEn": "Flange & Chorus",
+      "nameZh": "变调与合声",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud HiLo",
+      "nameEn": "High-Low Pass",
+      "nameZh": "高通/低通",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud Modulator",
+      "nameEn": "Modulator",
+      "nameZh": "调制器",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Param EQ",
+      "nameEn": "Parametric EQ",
+      "nameZh": "参数均衡",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud Reverb",
+      "nameEn": "Reverb",
+      "nameZh": "混响",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud Stereo Mixer",
+      "nameEn": "Stereo Mixer",
+      "nameZh": "立体声混合器",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Aud Tone",
+      "nameEn": "Tone",
+      "nameZh": "音调",
+      "categoryEn": "Audio",
+      "categoryZh": "音频",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Bilateral",
+      "nameEn": "Bilateral Blur",
+      "nameZh": "双向模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Camera Lens Blur",
+      "nameEn": "Camera Lens Blur",
+      "nameZh": "摄像机镜头模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE CameraShakeDeblur",
+      "nameEn": "Camera-Shake Deblur",
+      "nameZh": "摄像机抖动去模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS CrossBlur",
+      "nameEn": "CC Cross Blur",
+      "nameZh": "CC 交叉模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Radial Blur",
+      "nameEn": "CC Radial Blur",
+      "nameZh": "CC 径向模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Radial Fast Blur",
+      "nameEn": "CC Radial Fast Blur",
+      "nameZh": "CC 径向快速模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Vector Blur",
+      "nameEn": "CC Vector Blur",
+      "nameZh": "CC 矢量模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Channel Blur",
+      "nameEn": "Channel Blur",
+      "nameZh": "通道模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Compound Blur",
+      "nameEn": "Compound Blur",
+      "nameZh": "复合模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Motion Blur",
+      "nameEn": "Directional Blur",
+      "nameZh": "定向模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Box Blur2",
+      "nameEn": "Fast Box Blur",
+      "nameZh": "快速方框模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Gaussian Blur 2",
+      "nameEn": "Gaussian Blur",
+      "nameZh": "高斯模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Radial Blur",
+      "nameEn": "Radial Blur",
+      "nameZh": "径向模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Sharpen",
+      "nameEn": "Sharpen",
+      "nameZh": "锐化",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Smart Blur",
+      "nameEn": "Smart Blur",
+      "nameZh": "智能模糊",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Unsharp Mask2",
+      "nameEn": "Unsharp Mask",
+      "nameZh": "钝化蒙版",
+      "categoryEn": "Blur & Sharpen",
+      "categoryZh": "模糊和锐化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "review"
+    },
+    {
+      "matchName": "CINEMA 4D Effect",
+      "nameEn": "CINEWARE",
+      "nameZh": "CINEWARE",
+      "categoryEn": "CINEMA 4D",
+      "categoryZh": "CINEMA 4D",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Arithmetic",
+      "nameEn": "Arithmetic",
+      "nameZh": "算术",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Blend",
+      "nameEn": "Blend",
+      "nameZh": "混合",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Calculations",
+      "nameEn": "Calculations",
+      "nameZh": "计算",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Composite",
+      "nameEn": "CC Composite",
+      "nameZh": "CC 合成",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Channel Combiner",
+      "nameEn": "Channel Combiner",
+      "nameZh": "通道合成器",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Compound Arithmetic",
+      "nameEn": "Compound Arithmetic",
+      "nameZh": "复合运算",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Invert",
+      "nameEn": "Invert",
+      "nameZh": "反转",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Minimax",
+      "nameEn": "Minimax",
+      "nameZh": "最小/最大",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Remove Color Matting",
+      "nameEn": "Remove Color Matting",
+      "nameZh": "移除颜色遮罩",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Set Channels",
+      "nameEn": "Set Channels",
+      "nameZh": "设置通道",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Set Matte3",
+      "nameEn": "Set Matte",
+      "nameZh": "设置遮罩",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Shift Channels",
+      "nameEn": "Shift Channels",
+      "nameZh": "转换通道",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Solid Composite",
+      "nameEn": "Solid Composite",
+      "nameZh": "固态层合成",
+      "categoryEn": "Channel",
+      "categoryZh": "声道",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AutoColor",
+      "nameEn": "Auto Color",
+      "nameZh": "自动颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AutoContrast",
+      "nameEn": "Auto Contrast",
+      "nameZh": "自动对比度",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AutoLevels",
+      "nameEn": "Auto Levels",
+      "nameZh": "自动色阶",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Black&White",
+      "nameEn": "Black & White",
+      "nameZh": "黑色和白色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Brightness & Contrast 2",
+      "nameEn": "Brightness & Contrast",
+      "nameZh": "亮度和对比度",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Broadcast Colors",
+      "nameEn": "Broadcast Colors",
+      "nameZh": "广播颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS Color Neutralizer",
+      "nameEn": "CC Color Neutralizer",
+      "nameZh": "CC 颜色中和剂",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Color Offset",
+      "nameEn": "CC Color Offset",
+      "nameZh": "CC 色彩偏移",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS Kernel",
+      "nameEn": "CC Kernel",
+      "nameZh": "CC 内核",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Toner",
+      "nameEn": "CC Toner",
+      "nameZh": "CC 调色器",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Change Color",
+      "nameEn": "Change Color",
+      "nameZh": "更改颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Change To Color",
+      "nameEn": "Change to Color",
+      "nameZh": "更改为颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE CHANNEL MIXER",
+      "nameEn": "Channel Mixer",
+      "nameZh": "通道混合器",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Balance 2",
+      "nameEn": "Color Balance",
+      "nameZh": "颜色平衡",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Balance (HLS)",
+      "nameEn": "Color Balance (HLS)",
+      "nameZh": "颜色平衡 (HLS)",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Link",
+      "nameEn": "Color Link",
+      "nameZh": "颜色链接",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Deflicker",
+      "nameEn": "Color Stabilizer",
+      "nameZh": "颜色稳定器",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Colorama",
+      "nameEn": "Colorama",
+      "nameZh": "色光",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "review"
+    },
+    {
+      "matchName": "ADBE CurvesCustom",
+      "nameEn": "Curves",
+      "nameZh": "曲线",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Equalize",
+      "nameEn": "Equalize",
+      "nameZh": "色调均化",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Exposure2",
+      "nameEn": "Exposure",
+      "nameZh": "曝光度",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Gamma/Pedestal/Gain2",
+      "nameEn": "Gamma/Pedestal/Gain",
+      "nameZh": "灰度系数/基值/增益",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE HUE SATURATION",
+      "nameEn": "Hue/Saturation",
+      "nameZh": "色相/饱和度",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Leave Color",
+      "nameEn": "Leave Color",
+      "nameZh": "保留颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Easy Levels2",
+      "nameEn": "Levels",
+      "nameZh": "色阶",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Pro Levels2",
+      "nameEn": "Levels (Individual Controls)",
+      "nameZh": "色阶（单独控件）",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Lumetri",
+      "nameEn": "Lumetri Color",
+      "nameZh": "Lumetri 颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE PhotoFilterPS",
+      "nameEn": "Photo Filter",
+      "nameZh": "照片滤镜",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE PS Arbitrary Map",
+      "nameEn": "PS Arbitrary Map",
+      "nameZh": "PS 任意映射",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE SelectiveColor",
+      "nameEn": "Selective Color",
+      "nameZh": "可选颜色",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE ShadowHighlight",
+      "nameEn": "Shadow/Highlight",
+      "nameZh": "阴影/高光",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Tint",
+      "nameEn": "Tint",
+      "nameZh": "色调",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Tritone",
+      "nameEn": "Tritone",
+      "nameZh": "三色调",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Vibrance",
+      "nameEn": "Vibrance",
+      "nameZh": "自然饱和度",
+      "categoryEn": "Color Correction",
+      "categoryZh": "颜色校正",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE BEZMESH",
+      "nameEn": "Bezier Warp",
+      "nameZh": "贝塞尔曲线变形",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Bulge",
+      "nameEn": "Bulge",
+      "nameZh": "凸出",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Bend It",
+      "nameEn": "CC Bend It",
+      "nameZh": "CC 区域弯曲",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Bender",
+      "nameEn": "CC Bender",
+      "nameZh": "CC 变调器",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Blobbylize",
+      "nameEn": "CC Blobbylize",
+      "nameZh": "CC 融化",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Flo Motion",
+      "nameEn": "CC Flo Motion",
+      "nameZh": "CC 折叠运动",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Griddler",
+      "nameEn": "CC Griddler",
+      "nameZh": "CC 网格变形",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Lens",
+      "nameEn": "CC Lens",
+      "nameZh": "CC 镜头",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Page Turn",
+      "nameEn": "CC Page Turn",
+      "nameZh": "CC 翻页",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Power Pin",
+      "nameEn": "CC Power Pin",
+      "nameZh": "CC 四角扯动",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Ripple Pulse",
+      "nameEn": "CC Ripple Pulse",
+      "nameZh": "CC 波纹脉冲",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Slant",
+      "nameEn": "CC Slant",
+      "nameZh": "CC 倾斜",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Smear",
+      "nameEn": "CC Smear",
+      "nameZh": "CC 旋涡条纹",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Split",
+      "nameEn": "CC Split",
+      "nameZh": "CC 拆分",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Split 2",
+      "nameEn": "CC Split 2",
+      "nameZh": "CC 拆分 2",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Tiler",
+      "nameEn": "CC Tiler",
+      "nameZh": "CC 拼贴",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Corner Pin",
+      "nameEn": "Corner Pin",
+      "nameZh": "边角定位",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Upscale",
+      "nameEn": "Detail-preserving Upscale",
+      "nameZh": "保留细节放大",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Displacement Map",
+      "nameEn": "Displacement Map",
+      "nameZh": "置换图",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE LIQUIFY",
+      "nameEn": "Liquify",
+      "nameZh": "液化",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Magnify",
+      "nameEn": "Magnify",
+      "nameZh": "放大",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE MESH WARP",
+      "nameEn": "Mesh Warp",
+      "nameZh": "网格变形",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Mirror",
+      "nameEn": "Mirror",
+      "nameZh": "镜像",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Offset",
+      "nameEn": "Offset",
+      "nameZh": "偏移",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Optics Compensation",
+      "nameEn": "Optics Compensation",
+      "nameZh": "光学补偿",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Polar Coordinates",
+      "nameEn": "Polar Coordinates",
+      "nameZh": "极坐标",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE RESHAPE",
+      "nameEn": "Reshape",
+      "nameZh": "改变形状",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Ripple",
+      "nameEn": "Ripple",
+      "nameZh": "波纹",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Rolling Shutter",
+      "nameEn": "Rolling Shutter Repair",
+      "nameZh": "果冻效应修复",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE SCHMEAR",
+      "nameEn": "Smear",
+      "nameZh": "涂抹",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Spherize",
+      "nameEn": "Spherize",
+      "nameZh": "球面化",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Geometry2",
+      "nameEn": "Transform",
+      "nameZh": "变换",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Turbulent Displace",
+      "nameEn": "Turbulent Displace",
+      "nameZh": "湍流置换",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Twirl",
+      "nameEn": "Twirl",
+      "nameZh": "旋转扭曲",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE WRPMESH",
+      "nameEn": "Warp",
+      "nameZh": "变形",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE SubspaceStabilizer",
+      "nameEn": "Warp Stabilizer VFX",
+      "nameZh": "变形稳定器",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Wave Warp",
+      "nameEn": "Wave Warp",
+      "nameZh": "波形变形",
+      "categoryEn": "Distort",
+      "categoryZh": "扭曲",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Point3D Control",
+      "nameEn": "3D Point Control",
+      "nameZh": "3D 点控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Angle Control",
+      "nameEn": "Angle Control",
+      "nameZh": "角度控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Checkbox Control",
+      "nameEn": "Checkbox Control",
+      "nameZh": "复选框控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Control",
+      "nameEn": "Color Control",
+      "nameZh": "颜色控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Dropdown Control",
+      "nameEn": "Dropdown Control",
+      "nameZh": "下拉菜单控件",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Layer Control",
+      "nameEn": "Layer Control",
+      "nameZh": "图层控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Point Control",
+      "nameEn": "Point Control",
+      "nameZh": "点控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Slider Control",
+      "nameEn": "Slider Control",
+      "nameZh": "滑块控制",
+      "categoryEn": "Expression Controls",
+      "categoryZh": "表达式控制",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE 4ColorGradient",
+      "nameEn": "4-Color Gradient",
+      "nameZh": "四色渐变",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Lightning 2",
+      "nameEn": "Advanced Lightning",
+      "nameZh": "高级闪电",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AudSpect",
+      "nameEn": "Audio Spectrum",
+      "nameZh": "音频频谱",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AudWave",
+      "nameEn": "Audio Waveform",
+      "nameZh": "音频波形",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Laser",
+      "nameEn": "Beam",
+      "nameZh": "光束",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Glue Gun",
+      "nameEn": "CC Glue Gun",
+      "nameZh": "CC 喷胶枪",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Light Burst 2.5",
+      "nameEn": "CC Light Burst 2.5",
+      "nameZh": "CC 光线缩放 2.5",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Light Rays",
+      "nameEn": "CC Light Rays",
+      "nameZh": "CC 光束",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Light Sweep",
+      "nameEn": "CC Light Sweep",
+      "nameZh": "CC 光线扫描",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS Threads",
+      "nameEn": "CC Threads",
+      "nameZh": "CC 线状穿梭",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Cell Pattern",
+      "nameEn": "Cell Pattern",
+      "nameZh": "单元格图案",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Checkerboard",
+      "nameEn": "Checkerboard",
+      "nameZh": "棋盘",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Circle",
+      "nameEn": "Circle",
+      "nameZh": "圆形",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE ELLIPSE",
+      "nameEn": "Ellipse",
+      "nameZh": "椭圆",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Eyedropper Fill",
+      "nameEn": "Eyedropper Fill",
+      "nameZh": "吸管填充",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Fill",
+      "nameEn": "Fill",
+      "nameZh": "填充",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Fractal",
+      "nameEn": "Fractal",
+      "nameZh": "分形",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Ramp",
+      "nameEn": "Gradient Ramp",
+      "nameZh": "梯度渐变",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Grid",
+      "nameEn": "Grid",
+      "nameZh": "网格",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Lens Flare",
+      "nameEn": "Lens Flare",
+      "nameZh": "镜头光晕",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Paint Bucket",
+      "nameEn": "Paint Bucket",
+      "nameZh": "油漆桶",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Radio Waves",
+      "nameEn": "Radio Waves",
+      "nameZh": "无线电波",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Scribble Fill",
+      "nameEn": "Scribble",
+      "nameZh": "涂写",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Stroke",
+      "nameEn": "Stroke",
+      "nameZh": "描边",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Vegas",
+      "nameEn": "Vegas",
+      "nameZh": "勾画",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "review"
+    },
+    {
+      "matchName": "ADBE Write-on",
+      "nameEn": "Write-on",
+      "nameZh": "写入",
+      "categoryEn": "Generate",
+      "categoryZh": "生成",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Spill2",
+      "nameEn": "Advanced Spill Suppressor",
+      "nameZh": "高级溢出抑制器",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Simple Wire Removal",
+      "nameEn": "CC Simple Wire Removal",
+      "nameZh": "CC 简单去除钢丝",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Difference Key",
+      "nameEn": "Color Difference Key",
+      "nameZh": "颜色差值键",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Range",
+      "nameEn": "Color Range",
+      "nameZh": "颜色范围",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Difference Matte2",
+      "nameEn": "Difference Matte",
+      "nameZh": "差值遮罩",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Extract",
+      "nameEn": "Extract",
+      "nameZh": "提取",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE ATG Extract",
+      "nameEn": "Inner/Outer Key",
+      "nameZh": "内部/外部键",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE KeyCleaner",
+      "nameEn": "Key Cleaner",
+      "nameZh": "抠像清除器",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "Keylight 906",
+      "nameEn": "Keylight (1.2)",
+      "nameZh": "Keylight (1.2)",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Linear Color Key2",
+      "nameEn": "Linear Color Key",
+      "nameZh": "线性颜色键",
+      "categoryEn": "Keying",
+      "categoryZh": "抠像",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Matte Choker",
+      "nameEn": "Matte Choker",
+      "nameZh": "遮罩阻塞工具",
+      "categoryEn": "Matte",
+      "categoryZh": "遮罩",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ISL MochaShapeImporter",
+      "nameEn": "mocha shape",
+      "nameZh": "Mocha 形状",
+      "categoryEn": "Matte",
+      "categoryZh": "遮罩",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE RefineRBMatte",
+      "nameEn": "Refine Hard Matte",
+      "nameZh": "调整实边遮罩",
+      "categoryEn": "Matte",
+      "categoryZh": "遮罩",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE RefineMatte2",
+      "nameEn": "Refine Soft Matte",
+      "nameZh": "调整柔和遮罩",
+      "categoryEn": "Matte",
+      "categoryZh": "遮罩",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Simple Choker",
+      "nameEn": "Simple Choker",
+      "nameZh": "简单阻塞工具",
+      "categoryEn": "Matte",
+      "categoryZh": "遮罩",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "VISINF Grain Implant",
+      "nameEn": "Add Grain",
+      "nameZh": "添加颗粒",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Dust & Scratches",
+      "nameEn": "Dust & Scratches",
+      "nameZh": "蒙尘与划痕",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Fractal Noise",
+      "nameEn": "Fractal Noise",
+      "nameZh": "分形杂色",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "VISINF Grain Duplication",
+      "nameEn": "Match Grain",
+      "nameZh": "匹配颗粒",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Median",
+      "nameEn": "Median",
+      "nameZh": "中间值",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Noise",
+      "nameEn": "Noise",
+      "nameZh": "杂色",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Noise Alpha2",
+      "nameEn": "Noise Alpha",
+      "nameZh": "杂色 Alpha",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Noise HLS2",
+      "nameEn": "Noise HLS",
+      "nameZh": "杂色 HLS",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Noise HLS Auto2",
+      "nameEn": "Noise HLS Auto",
+      "nameZh": "杂色 HLS 自动",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "VISINF Grain Removal",
+      "nameEn": "Remove Grain",
+      "nameZh": "移除颗粒",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE AIF Perlin Noise 3D",
+      "nameEn": "Turbulent Noise",
+      "nameZh": "湍流杂色",
+      "categoryEn": "Noise & Grain",
+      "categoryZh": "杂色和颗粒",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE 3D Tracker",
+      "nameEn": "3D Camera Tracker",
+      "nameZh": "3D 摄像机跟踪器",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE 3D Glasses2",
+      "nameEn": "3D Glasses",
+      "nameZh": "3D 眼镜",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Bevel Alpha",
+      "nameEn": "Bevel Alpha",
+      "nameZh": "斜面 Alpha",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Bevel Edges",
+      "nameEn": "Bevel Edges",
+      "nameZh": "边缘斜面",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Cylinder",
+      "nameEn": "CC Cylinder",
+      "nameZh": "CC 圆柱体",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Environment",
+      "nameEn": "CC Environment",
+      "nameZh": "CC 环境",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Sphere",
+      "nameEn": "CC Sphere",
+      "nameZh": "CC 球体",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Spotlight",
+      "nameEn": "CC Spotlight",
+      "nameZh": "CC 聚光灯",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Drop Shadow",
+      "nameEn": "Drop Shadow",
+      "nameZh": "投影",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Radial Shadow",
+      "nameEn": "Radial Shadow",
+      "nameZh": "径向阴影",
+      "categoryEn": "Perspective",
+      "categoryZh": "透视",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC CardDanceCam",
+      "nameEn": "Card Dance",
+      "nameZh": "卡片动画",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Caustics",
+      "nameEn": "Caustics",
+      "nameZh": "焦散",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Ball Action",
+      "nameEn": "CC Ball Action",
+      "nameZh": "CC 滚珠操作",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Bubbles",
+      "nameEn": "CC Bubbles",
+      "nameZh": "CC 气泡",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Drizzle",
+      "nameEn": "CC Drizzle",
+      "nameZh": "CC 细雨",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Hair",
+      "nameEn": "CC Hair",
+      "nameZh": "CC 毛发",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Mr. Mercury",
+      "nameEn": "CC Mr. Mercury",
+      "nameZh": "CC 水银滴落",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Particle Systems II",
+      "nameEn": "CC Particle Systems II",
+      "nameZh": "CC 粒子系统 Ⅱ",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Particle World",
+      "nameEn": "CC Particle World",
+      "nameZh": "CC 粒子仿真环境",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Pixel Polly",
+      "nameEn": "CC Pixel Polly",
+      "nameZh": "CC 像素多边形",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CSRainfall",
+      "nameEn": "CC Rainfall",
+      "nameZh": "CC 下雨",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Scatterize",
+      "nameEn": "CC Scatterize",
+      "nameZh": "CC 散射",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CSSnowfall",
+      "nameEn": "CC Snowfall",
+      "nameZh": "CC 下雪",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Star Burst",
+      "nameEn": "CC Star Burst",
+      "nameZh": "CC 星爆",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Foam",
+      "nameEn": "Foam",
+      "nameZh": "泡沫",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Playgnd",
+      "nameEn": "Particle Playground",
+      "nameZh": "粒子运动场",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Shatter",
+      "nameEn": "Shatter",
+      "nameZh": "碎片",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC Wave World",
+      "nameEn": "Wave World",
+      "nameZh": "波形环境",
+      "categoryEn": "Simulation",
+      "categoryZh": "模拟",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Brush Strokes",
+      "nameEn": "Brush Strokes",
+      "nameZh": "画笔描边",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Cartoonify",
+      "nameEn": "Cartoon",
+      "nameZh": "卡通",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS BlockLoad",
+      "nameEn": "CC Block Load",
+      "nameZh": "CC 块状载入",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Burn Film",
+      "nameEn": "CC Burn Film",
+      "nameZh": "CC 胶片灼烧",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Glass",
+      "nameEn": "CC Glass",
+      "nameZh": "CC 玻璃",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS HexTile",
+      "nameEn": "CC HexTile",
+      "nameZh": "CC 六边形拼贴",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Kaleida",
+      "nameEn": "CC Kaleida",
+      "nameZh": "CC 万花筒",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Mr. Smoothie",
+      "nameEn": "CC Mr. Smoothie",
+      "nameZh": "CC 像素溶解",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "review"
+    },
+    {
+      "matchName": "CC Plastic",
+      "nameEn": "CC Plastic",
+      "nameZh": "CC 塑料",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC RepeTile",
+      "nameEn": "CC RepeTile",
+      "nameZh": "CC 边缘拼贴",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Threshold",
+      "nameEn": "CC Threshold",
+      "nameZh": "CC 阈值",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Threshold RGB",
+      "nameEn": "CC Threshold RGB",
+      "nameZh": "CC 阈值 RGB",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS Vignette",
+      "nameEn": "CC Vignette",
+      "nameZh": "CC 晕影",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Color Emboss",
+      "nameEn": "Color Emboss",
+      "nameZh": "彩色浮雕",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Emboss",
+      "nameEn": "Emboss",
+      "nameZh": "浮雕",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Find Edges",
+      "nameEn": "Find Edges",
+      "nameZh": "查找边缘",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Glo2",
+      "nameEn": "Glow",
+      "nameZh": "发光",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Mosaic",
+      "nameEn": "Mosaic",
+      "nameZh": "马赛克",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Tile",
+      "nameEn": "Motion Tile",
+      "nameZh": "动态拼贴",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Posterize",
+      "nameEn": "Posterize",
+      "nameZh": "色调分离",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Roughen Edges",
+      "nameEn": "Roughen Edges",
+      "nameZh": "毛边",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Scatter",
+      "nameEn": "Scatter",
+      "nameZh": "散布",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Strobe",
+      "nameEn": "Strobe Light",
+      "nameZh": "闪光灯",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Texturize",
+      "nameEn": "Texturize",
+      "nameZh": "纹理化",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Threshold2",
+      "nameEn": "Threshold",
+      "nameZh": "阈值",
+      "categoryEn": "Stylize",
+      "categoryZh": "风格化",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "SYNTHAP CF Color Finesse 2",
+      "nameEn": "SA Color Finesse 3",
+      "nameZh": "SA Color Finesse 3",
+      "categoryEn": "Synthetic Aperture",
+      "categoryZh": "Synthetic Aperture",
+      "pluginHint": "内置",
+      "nameZhSource": "none",
+      "review": "review"
+    },
+    {
+      "matchName": "ADBE Numbers2",
+      "nameEn": "Numbers",
+      "nameZh": "编号",
+      "categoryEn": "Text",
+      "categoryZh": "文本",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Timecode",
+      "nameEn": "Timecode",
+      "nameZh": "时间码",
+      "categoryEn": "Text",
+      "categoryZh": "文本",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Force Motion Blur",
+      "nameEn": "CC Force Motion Blur",
+      "nameZh": "CC 强制运动模糊",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Wide Time",
+      "nameEn": "CC Wide Time",
+      "nameZh": "CC 宽泛时间",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Echo",
+      "nameEn": "Echo",
+      "nameZh": "残影",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE OFMotionBlur",
+      "nameEn": "Pixel Motion Blur",
+      "nameZh": "像素运动模糊",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Posterize Time",
+      "nameEn": "Posterize Time",
+      "nameZh": "抽帧",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Difference",
+      "nameEn": "Time Difference",
+      "nameZh": "时差",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Time Displacement",
+      "nameEn": "Time Displacement",
+      "nameZh": "时间置换",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Timewarp",
+      "nameEn": "Timewarp",
+      "nameZh": "时间扭曲",
+      "categoryEn": "Time",
+      "categoryZh": "时间",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Block Dissolve",
+      "nameEn": "Block Dissolve",
+      "nameZh": "块溶解",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "APC CardWipeCam",
+      "nameEn": "Card Wipe",
+      "nameZh": "卡片擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Glass Wipe",
+      "nameEn": "CC Glass Wipe",
+      "nameZh": "CC 玻璃擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Grid Wipe",
+      "nameEn": "CC Grid Wipe",
+      "nameZh": "CC 网格擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Image Wipe",
+      "nameEn": "CC Image Wipe",
+      "nameZh": "CC 图像擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Jaws",
+      "nameEn": "CC Jaws",
+      "nameZh": "CC 锯齿",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Light Wipe",
+      "nameEn": "CC Light Wipe",
+      "nameZh": "CC 照明式擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CS LineSweep",
+      "nameEn": "CC Line Sweep",
+      "nameZh": "CC 行扫描",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Radial ScaleWipe",
+      "nameEn": "CC Radial ScaleWipe",
+      "nameZh": "CC 径向缩放擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Scale Wipe",
+      "nameEn": "CC Scale Wipe",
+      "nameZh": "CC 缩放擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Twister",
+      "nameEn": "CC Twister",
+      "nameZh": "CC 扭曲",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC WarpoMatic",
+      "nameEn": "CC WarpoMatic",
+      "nameZh": "CC 溶解",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "review"
+    },
+    {
+      "matchName": "ADBE Gradient Wipe",
+      "nameEn": "Gradient Wipe",
+      "nameZh": "渐变擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE IRIS_WIPE",
+      "nameEn": "Iris Wipe",
+      "nameZh": "光圈擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Linear Wipe",
+      "nameEn": "Linear Wipe",
+      "nameZh": "线性擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Radial Wipe",
+      "nameEn": "Radial Wipe",
+      "nameZh": "径向擦除",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Venetian Blinds",
+      "nameEn": "Venetian Blinds",
+      "nameZh": "百叶窗",
+      "categoryEn": "Transition",
+      "categoryZh": "过渡",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Apply Color LUT2",
+      "nameEn": "Apply Color LUT",
+      "nameZh": "应用颜色 LUT",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "CC Overbrights",
+      "nameEn": "CC Overbrights",
+      "nameZh": "CC 过亮",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Cineon Converter2",
+      "nameEn": "Cineon Converter",
+      "nameZh": "Cineon 转换器",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE ProfileToProfile",
+      "nameEn": "Color Profile Converter",
+      "nameZh": "颜色配置文件转换器",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE GROW BOUNDS",
+      "nameEn": "Grow Bounds",
+      "nameZh": "范围扩散",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE Compander",
+      "nameEn": "HDR Compander",
+      "nameZh": "HDR 压缩扩展器",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    },
+    {
+      "matchName": "ADBE HDR ToneMap",
+      "nameEn": "HDR Highlight Compression",
+      "nameZh": "HDR 高光压缩",
+      "categoryEn": "Utility",
+      "categoryZh": "实用工具",
+      "pluginHint": "内置",
+      "nameZhSource": "helpx",
+      "review": "ok"
+    }
+  ]
+}

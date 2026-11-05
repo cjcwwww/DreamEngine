@@ -1,0 +1,84 @@
+# ---- 探针回传数据 ----
+# probe-results/ 内是用户本机 AE 实测回传的文本/JSON，**必须入库**（回滚分析结论需要原始数据）
+# 只忽略 AE 原始输出目录（体积大、含二进制渲染产物）
+DreamEngineProbe/
+DreamEngineProbe_*/
+
+# ---- 渲染产物与缓存（体积大，不入库）----
+cache/
+thumbs/
+data/thumbs/
+logs/
+*.log
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mov
+*.mp4
+*.avi
+# 文档配图例外
+!docs/**/*.png
+# 面板正式品牌图例外
+!cep/com.dreamengine.panel/css/brand-mark.png
+
+# ---- L1 内置包（可分发的预生成预览，已做帧间去重，必须入库）----
+!dist/
+!dist/L1/
+!dist/L1/**
+!dist/L1/thumbs/*.png
+# 打包中间产物与安装包本身不入库（随时可用 tools/build_release.mjs 重新生成）
+dist/stage/
+dist/*.zip
+
+# ---- 运行时产物（不入库）----
+# 扩展数据目录里的预览图与索引由 AE 生成或由 install_l1 部署，
+# 可分发的副本在 dist/L1/，运行时这份不入库——否则每次生成都会污染版本历史。
+cep/com.dreamengine.panel/data/thumbs/
+cep/com.dreamengine.panel/data/manifest.json
+cep/com.dreamengine.panel/data/previews.tsv
+
+# ---- 用户数据（本机私有，不入库）----
+library/
+settings.json
+index.json
+catalog.json
+preset-library.json
+
+# ---- DreamEngine Hub（独立程序）----
+# node_modules 上百 MB 不入库；package-lock.json 必须入库，否则依赖会漂移
+hub/node_modules/
+hub/dist/
+hub/build/release/
+
+# ---- 临时与系统文件 ----
+_tmp/
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
+
+# ---- Python ----
+__pycache__/
+*.pyc
+
+# ---- 本地工作区数据（记忆、会话缓存，不进仓库）----
+.workbuddy/
+
+# AE 运行时在当前工作目录生成的设置目录（跑 -r 脚本时产生）
+invalidParam/
+cep/com.dreamengine.panel/data/plugin_*.json
+cep/com.dreamengine.panel/data/plugin_*.tsv
+cep/com.dreamengine.panel/data/animated.json
+cep/com.dreamengine.panel/data/preset_manifest.json
+cep/com.dreamengine.panel/data/preset_plugin_manifest.json
+cep/com.dreamengine.panel/data/preset_plugin_blacklist.json
+
+# ---- Public repo exclusions ----
+cep/CEP骨架-安装与运行.md
+cep/com.dreamengine.panel/js/main.js
+cep/com.dreamengine.panel/js/t03_cef_probe.js
+cep/com.dreamengine.panel/js/t06_drag_probe.js
+cep/com.dreamengine.panel/data/l1-targets.tsv
+dist/L1/build-report.json

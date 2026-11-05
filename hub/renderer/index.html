@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' file: data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>DreamEngine Hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark"></span>
+    <span class="brand-name">DreamEngine Hub</span>
+    <span class="brand-ver" id="extVersion"></span>
+  </div>
+  <div class="ae-state" id="aeState">
+    <span class="dot"></span><span class="ae-text">检测中…</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-view="presets">预设库<span class="tab-count" id="tabPresetCount">0</span></button>
+  <button class="tab" data-view="render">渲染</button>
+  <button class="tab" data-view="settings">设置</button>
+</nav>
+
+<main class="workspace">
+
+  <!-- ========== 预设库 ========== -->
+  <section class="view" id="viewPresets">
+    <div class="toolbar">
+      <button class="btn primary" id="btnImport" title="选择一个或多个 .ffx 预设">添加预设</button>
+      <button class="btn" id="btnRefresh">刷新</button>
+      <input class="search" id="search" type="search" placeholder="搜索预设…" spellcheck="false">
+      <span class="spacer"></span>
+      <span class="hint" id="presetHint"></span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="emptyPresets" hidden>
+      <p class="empty-title">预设库还是空的</p>
+      <p class="empty-sub">把 <code>.ffx</code> 拖到这里，或者点上面的「添加预设」。</p>
+      <p class="empty-sub">导入后，AE 里打开着的 DreamEngine 面板会自动刷新，不用关掉重开。</p>
+    </div>
+  </section>
+
+  <!-- ========== 渲染 ========== -->
+  <section class="view" id="viewRender" hidden>
+    <div class="notice" id="aeNotice">
+      <div class="notice-title">正在检测 After Effects…</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-row">
+        <label class="field">
+          <span class="field-label">预览背景</span>
+          <select id="background" class="input"></select>
+        </label>
+        <label class="field narrow">
+          <span class="field-label">每轮条数</span>
+          <input id="limit" class="input" type="number" min="1" max="64" value="12">
+        </label>
+        <label class="field narrow">
+          <span class="field-label">最多轮数</span>
+          <input id="rounds" class="input" type="number" min="1" max="200" value="40">
+        </label>
+      </div>
+      <div class="panel-row actions">
+        <button class="btn primary" id="btnStart">开始渲染</button>
+        <button class="btn danger" id="btnStop" disabled>停止</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="btnOpenLog">打开日志</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-head">
+        <span id="renderPhase">空闲</span>
+        <span id="renderCount"></span>
+      </div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-msg" id="renderMessage">还没有开始渲染。</div>
+    </div>
+
+    <div class="log">
+      <div class="log-head">渲染日志（末尾）</div>
+      <pre class="log-body" id="logBody">（暂无）</pre>
+    </div>
+  </section>
+
+  <!-- ========== 设置 ========== -->
+  <section class="view" id="viewSettings" hidden>
+    <div class="panel">
+      <div class="panel-title">面板安装状态</div>
+      <div class="kv"><span>扩展目录</span><code id="setExtDir">—</code></div>
+      <div class="kv"><span>版本</span><code id="setExtVersion">—</code></div>
+      <div class="kv"><span>预览图</span><code id="setThumbs">—</code></div>
+      <div class="kv"><span>索引</span><code id="setIndexes">—</code></div>
+      <div class="panel-row actions">
+        <button class="btn ghost" id="btnOpenExt">打开扩展目录</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">After Effects</div>
+      <div class="kv"><span>运行状态</span><code id="setAeRun">—</code></div>
+      <div class="kv"><span>已安装版本</span><code id="setAeList">—</code></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">目录</div>
+      <div class="kv"><span>预设库</span><code id="setPresets">—</code></div>
+      <div class="kv"><span>背景图</span><code id="setBg">—</code></div>
+      <div class="kv"><span>日志目录</span><code id="setProbe">—</code></div>
+      <div class="panel-row actions">
+        <button class="btn ghost" id="btnOpenPresets">打开预设库</button>
+        <button class="btn ghost" id="btnOpenProbe">打开日志目录</button>
+      </div>
+    </div>
+
+    <p class="footnote">
+      安装与升级由安装包里的 <code>install_dreamengine.ps1</code> 负责：它只覆盖程序文件，
+      不会动你已经生成的预览图和预设库。
+    </p>
+  </section>
+
+</main>
+
+<footer class="statusbar">
+  <span id="statusText">就绪</span>
+  <span class="spacer"></span>
+  <span id="statusRight" class="muted"></span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

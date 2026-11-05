@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src * data: file: blob: 'unsafe-inline' 'unsafe-eval';"/>
+  <title>DreamEngine</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand-mark" id="brandMark" title="DreamEngine" aria-hidden="true">
+      <img src="css/brand-mark.png" alt=""/>
+    </span>
+    <span class="brand-name">DreamEngine</span>
+    <nav class="view-switch" role="tablist" aria-label="主视图切换" data-i18n-aria="tab.aria">
+      <button class="view-tab active" id="tabEffects" type="button" role="tab" aria-selected="true" data-i18n="tab.effects">效果</button>
+      <button class="view-tab" id="tabPresets" type="button" role="tab" aria-selected="false" data-i18n="tab.presets">预设</button>
+      <button class="view-tab" id="tabCurve" type="button" role="tab" aria-selected="false" data-i18n="tab.curve">曲线</button>
+      <button class="view-tab" id="tabMaterials" type="button" role="tab" aria-selected="false" data-i18n="tab.materials">素材</button>
+    </nav>
+    <div class="search-wrap" id="searchWrap">
+      <button class="icon-button search-toggle" id="searchToggle" type="button"
+              title="搜索效果或分类" aria-label="搜索效果或分类" aria-expanded="false"
+              data-i18n-title="search.effects" data-i18n-aria="search.effects">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+      </button>
+      <label class="search-field" id="searchField" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input id="searchInput" type="search" placeholder="搜索效果、分类或 matchName" autocomplete="off"
+               data-i18n-ph="search.effects"/>
+        <kbd class="search-kbd">/</kbd>
+      </label>
+    </div>
+    <!-- 语言 / 生成 / 刷新 / 重试都收进「设置」页 -->
+      <button class="icon-button" id="btnSettings" type="button"
+              title="设置" aria-label="设置" aria-expanded="false" aria-controls="settingsDrawer"
+              data-i18n-title="settings.title" data-i18n-aria="settings.title">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+    </button>
+  </header>
+
+  <section class="controls" id="effectControls">
+    <select id="pluginFilter" aria-label="插件筛选" data-i18n-aria="filter.plugin">
+      <option value="全部" data-i18n="filter.all">全部来源</option>
+      <option value="内置" selected data-i18n="filter.builtin">内置</option>
+      <option value="BCC">BCC</option>
+      <option value="Sapphire">Sapphire</option>
+      <option value="Red Giant">Red Giant</option>
+      <option value="RE:Vision">RE:Vision</option>
+      <option value="Video Copilot">Video Copilot</option>
+      <option value="其它插件" data-i18n="filter.other">其它插件</option>
+    </select>
+    <div class="segmented" role="group" aria-label="排序" data-i18n-aria="sort.group">
+      <button class="segment active" id="sortName" type="button" data-i18n="sort.name">按名称</button>
+      <button class="segment" id="sortCategory" type="button" data-i18n="sort.category">按分类</button>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="showAll"/>
+      <span data-i18n="toggle.showAll">全部已安装</span>
+    </label>
+  </section>
+
+  <div class="workspace" id="viewEffects">
+    <aside class="sidebar">
+      <h2 class="sidebar-title" data-i18n="sidebar.title">分类</h2>
+      <ul class="category-list" id="categoryList"></ul>
+    </aside>
+
+    <main>
+      <div class="grid" id="previewGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <strong data-i18n="empty.effects">没有匹配的效果</strong>
+      </div>
+    </main>
+  </div>
+
+  <section class="preset-view" id="viewPresets" hidden aria-label="预设预览" data-i18n-aria="tab.presets">
+    <aside class="preset-sidebar">
+      <div class="sidebar-heading">
+        <h2 class="sidebar-title" data-i18n="sidebar.title">分类</h2>
+        <button class="icon-button category-add" id="btnPresetCategoryAdd" type="button"
+                aria-label="新建预设分类" title="新建预设分类"
+                data-i18n-aria="preset.addCategory" data-i18n-title="preset.addCategory">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+      </div>
+      <ul class="category-list" id="presetCategories"></ul>
+      <form class="category-editor" id="presetCategoryEditor" hidden>
+        <input id="presetCategoryName" type="text" maxlength="24" autocomplete="off"
+               placeholder="分类名称" data-i18n-ph="preset.categoryName"/>
+        <button class="category-editor-save" type="submit" aria-label="保存分类"
+                title="保存分类" data-i18n-aria="preset.saveCategory" data-i18n-title="preset.saveCategory">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>
+        </button>
+        <button class="category-editor-cancel" id="presetCategoryCancel" type="button"
+                aria-label="取消" title="取消" data-i18n-aria="common.cancel" data-i18n-title="common.cancel">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </form>
+    </aside>
+    <div class="preset-main">
+      <div class="preset-head">
+        <h2 data-i18n="preset.title">预设库</h2>
+        <div class="preset-tools">
+          <div class="search-wrap" id="presetSearchWrap">
+            <button class="icon-button search-toggle" id="presetSearchToggle" type="button"
+                    title="搜索预设" aria-label="搜索预设" aria-expanded="false"
+                    data-i18n-title="preset.search" data-i18n-aria="preset.search">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.3-4.3"/>
+              </svg>
+            </button>
+            <label class="search-field" id="presetSearchField" hidden>
+              <input id="presetSearch" type="search" placeholder="搜索预设" autocomplete="off"
+                     data-i18n-ph="preset.search"/>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="preset-grid" id="presetList"></div>
+    </div>
+  </section>
+
+  <section class="curve-view" id="viewCurve" hidden aria-label="曲线编辑" data-i18n-aria="curve.aria">
+    <div class="curve-flow">
+      <div class="curve-stage" id="curveStage">
+        <canvas id="curveCanvas"></canvas>
+        <!-- 值 / 速 / 路 收进右上角的小方块。
+             曲线模板只有「值」可编辑；速与路是上次应用读到的属性的只读检查。 -->
+        <div class="mode-box" id="curveModeBox">
+          <button class="mode-box-btn" id="curveModeBtn" type="button"
+                  aria-haspopup="true" aria-expanded="false" title="图表：值 / 速度 / 路径"
+                  data-i18n="curve.modeValue" data-i18n-title="curve.modeTitle">值</button>
+          <div class="mode-menu" id="curveModeMenu" hidden>
+            <button class="mode-item active" id="curveModeValue" type="button" title="值曲线（可编辑）"
+                    data-i18n="curve.modeValue" data-i18n-title="curve.modeValueTitle">值</button>
+            <button class="mode-item" id="curveModeSpeed" type="button" title="速度曲线（只读）"
+                    data-i18n="curve.modeSpeed" data-i18n-title="curve.modeSpeedTitle">速</button>
+            <button class="mode-item" id="curveModePath" type="button" title="空间路径（只读）"
+                    data-i18n="curve.modePath" data-i18n-title="curve.modePathTitle">路</button>
+          </div>
+        </div>
+      </div>
+      <div class="curve-readout" id="curveReadout" title="cubic-bezier(x1, y1, x2, y2)">—</div>
+      <div class="curve-action-row">
+        <button class="curve-apply" id="curveApply" type="button" data-i18n="curve.apply">应用</button>
+        <button class="curve-save-open" id="curvePresetSaveOpen" type="button"
+                data-i18n="curve.saveCurrent">保存当前</button>
+      </div>
+      <div class="curve-presets" id="curvePresets"></div>
+    </div>
+    <p class="curve-hint" id="curveHint"></p>
+    <div class="curve-conflict" id="curveConflict" hidden role="alertdialog"
+         aria-label="并发冲突" data-i18n-aria="curve.conflictAria">
+      <p id="curveConflictText"></p>
+      <div class="curve-conflict-actions">
+        <button class="action-button" id="curveConflictOverwrite" type="button" data-i18n="curve.overwrite">覆盖</button>
+        <button class="action-button" id="curveConflictDrop" type="button" data-i18n="curve.discard">放弃</button>
+      </div>
+    </div>
+    <div class="curve-conflict curve-preset-dialog" id="curvePresetSaveDialog" hidden role="dialog"
+         aria-label="保存曲线预设" data-i18n-aria="curve.savePresetTitle">
+      <h3 data-i18n="curve.savePresetTitle">保存曲线预设</h3>
+      <input id="curvePresetName" type="text" maxlength="24" autocomplete="off"
+             placeholder="预设名称" data-i18n-ph="curve.presetName"/>
+      <div class="curve-conflict-actions">
+        <button class="action-button" id="curvePresetSaveCancel" type="button" data-i18n="curve.cancel">取消</button>
+        <button class="action-button curve-dialog-primary" id="curvePresetSaveConfirm" type="button"
+                data-i18n="curve.save">保存</button>
+      </div>
+    </div>
+    <div class="curve-conflict curve-preset-dialog" id="curvePresetDeleteDialog" hidden role="alertdialog"
+         aria-label="删除曲线预设" data-i18n-aria="curve.deletePresetTitle">
+      <h3 data-i18n="curve.deletePresetTitle">删除曲线预设</h3>
+      <p id="curvePresetDeleteText"></p>
+      <div class="curve-conflict-actions">
+        <button class="action-button" id="curvePresetDeleteCancel" type="button" data-i18n="curve.cancel">取消</button>
+        <button class="action-button curve-dialog-danger" id="curvePresetDeleteConfirm" type="button"
+                data-i18n="curve.delete">删除</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="materials-view" id="viewMaterials" hidden aria-label="素材库" data-i18n-aria="materials.aria">
+    <aside class="materials-sidebar">
+      <h2 class="sidebar-title" data-i18n="materials.title">素材库</h2>
+      <div class="materials-actions">
+        <button class="action-button primary" id="btnMaterialRoot" type="button" data-i18n="materials.chooseRoot">选择素材目录</button>
+        <button class="action-button" id="btnMaterialRefresh" type="button" data-i18n="materials.refresh">刷新</button>
+      </div>
+      <p class="materials-root" id="materialRoot"></p>
+      <ul class="category-list" id="materialCategories"></ul>
+    </aside>
+    <main class="materials-main">
+      <div class="materials-head">
+        <label class="search-field materials-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input id="materialSearch" type="search" placeholder="搜索素材" autocomplete="off"
+                 data-i18n-ph="materials.search"/>
+        </label>
+        <span class="materials-summary" id="materialSummary"></span>
+      </div>
+      <div class="grid materials-grid" id="materialGrid"></div>
+      <div class="empty-state" id="materialEmpty" hidden>
+        <strong data-i18n="materials.empty">当前分类没有素材</strong>
+      </div>
+    </main>
+  </section>
+
+  <footer class="statusbar">
+    <span id="statusText" title="" data-i18n="status.ready">准备扫描</span>
+    <span class="size-slider" id="sizeSliderWrap">
+      <label for="thumbSize" data-i18n="status.size">方块大小</label>
+      <input id="thumbSize" type="range" min="48" max="180" step="2" value="132"/>
+      <output id="thumbSizeValue">132</output>
+    </span>
+    <span id="selectionStats"></span>
+    <button class="queue-toggle" id="btnQueue" type="button" title="查看生成队列" data-i18n-title="queue.toggle">
+      <span data-i18n="queue.label">队列</span> <span id="queueCounts">—</span>
+    </button>
+  </footer>
+
+  <aside class="queue-drawer" id="queueDrawer" hidden aria-label="生成队列" data-i18n-aria="queue.title">
+    <div class="queue-head">
+      <h3 data-i18n="queue.title">生成队列</h3>
+      <button class="icon-button" id="btnQueueClose" type="button" aria-label="关闭队列" data-i18n-aria="queue.close">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="queue-actions">
+      <button class="action-button" id="btnQueueRetry" type="button" data-i18n="queue.retry">重试失败</button>
+      <span class="queue-summary" id="queueSummary"></span>
+    </div>
+    <ul class="queue-list" id="queueList"></ul>
+  </aside>
+
+  <aside class="settings-drawer" id="settingsDrawer" hidden aria-label="设置" data-i18n-aria="settings.title">
+    <div class="queue-head">
+      <h3 data-i18n="settings.title">设置</h3>
+      <button class="icon-button" id="btnSettingsClose" type="button" aria-label="关闭设置" data-i18n-aria="settings.close">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="settings-scroll">
+      <section class="settings-group">
+        <h4 data-i18n="settings.library">库</h4>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="settings.entries">条目</span>
+          <span class="settings-value" id="libraryStats">正在读取效果库</span>
+        </div>
+      </section>
+
+      <section class="settings-group">
+        <h4 data-i18n="settings.appearance">外观</h4>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="settings.language">界面语言</span>
+          <div class="segmented" role="group" aria-label="语言" data-i18n-aria="settings.langGroup">
+            <button class="segment active" id="langZh" type="button"
+                    data-i18n-title="lang.zhTitle">ZH</button>
+            <button class="segment" id="langEn" type="button"
+                    data-i18n-title="lang.enTitle">EN</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-group">
+        <h4 data-i18n="settings.maintenance">预览维护</h4>
+        <button class="settings-action" id="btnGenerate" type="button">
+          <span class="settings-action-title" data-i18n="settings.genMissing">生成缺失预览</span>
+          <span class="settings-action-note" data-i18n="settings.genMissingNote">渲染当前 AE 环境里还没出图的内置效果</span>
+        </button>
+        <button class="settings-action" id="btnRefresh" type="button">
+          <span class="settings-action-title" data-i18n="settings.rescan">重新扫描 AE 效果</span>
+          <span class="settings-action-note" data-i18n="settings.rescanNote">刚装了新插件时用，强制重读效果清单</span>
+        </button>
+        <button class="settings-action" id="btnRetry" type="button" hidden>
+          <span class="settings-action-title" data-i18n="settings.retry">重试失败</span>
+          <span class="settings-action-note" data-i18n="settings.retryNote">把生成失败的条目重新排队</span>
+        </button>
+        <button class="settings-action" id="btnOpenQueue" type="button">
+          <span class="settings-action-title" data-i18n="settings.openQueue">查看生成队列</span>
+          <span class="settings-action-note" data-i18n="settings.openQueueNote">待渲染 / 渲染中 / 失败的逐条状态</span>
+        </button>
+      </section>
+
+      <section class="settings-group">
+        <h4 data-i18n="settings.notes">使用说明</h4>
+        <p class="settings-note" data-i18n="settings.note1">
+          在 AE 里选中图层后，<b>双击</b>效果卡片即可把该效果加到选中层。
+          单击不会改动工程。悬停预览可播放动态效果，静止效果不播放。
+        </p>
+        <p class="settings-note" data-i18n="settings.note2">
+          第三方插件的预览不能靠面板按钮实时生成（会让 AE 崩溃），
+          需关闭 AE 后用离线脚本逐条渲染；插件参数一律保持默认。
+        </p>
+      </section>
+    </div>
+  </aside>
+
+  <div class="preset-category-menu" id="presetCategoryMenu" hidden role="menu"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/bridge.js"></script>
+  <script src="js/prefs.js"></script>
+  <!-- 曲线纯数学：与 AE 侧 $.evalFile 的是同一个文件，拖拽时才不用过桥 -->
+  <script src="engine/curve_math.js"></script>
+  <script src="js/viewmodel.js"></script>
+  <script src="js/curve.js"></script>
+  <script src="js/materials.js"></script>
+  <script src="js/library.js"></script>
+</body>
+</html>

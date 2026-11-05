@@ -1,0 +1,212 @@
+matchName	sheet	cell	frames	frameTemplate	key
+ADBE Gaussian Blur 2	0	0	6	thumbs/batch_000_%04d.png	e9xzcj
+ADBE Box Blur2	0	1	6	thumbs/batch_000_%04d.png	dzdh7l
+ADBE Radial Blur	0	2	6	thumbs/batch_000_%04d.png	omdn4j
+ADBE Motion Blur	0	3	6	thumbs/batch_000_%04d.png	71g7mk
+ADBE Sharpen	0	4	6	thumbs/batch_000_%04d.png	fn5ole
+ADBE Unsharp Mask2	0	5	6	thumbs/batch_000_%04d.png	pkm21c
+CC Radial Fast Blur	0	6	6	thumbs/batch_000_%04d.png	7zdqcb
+CC Radial Blur	0	7	6	thumbs/batch_000_%04d.png	yaafil
+CC Vector Blur	0	8	6	thumbs/batch_000_%04d.png	vzwwr7
+ADBE Brightness & Contrast 2	0	9	6	thumbs/batch_000_%04d.png	kkbxlc
+ADBE Tint	0	10	6	thumbs/batch_000_%04d.png	45yxn4
+ADBE Color Balance 2	0	11	6	thumbs/batch_000_%04d.png	7msrm0
+APC Colorama	0	12	6	thumbs/batch_000_%04d.png	bkc7uv
+ADBE Black&White	0	13	6	thumbs/batch_000_%04d.png	ik2jf9
+ADBE PhotoFilterPS	0	14	6	thumbs/batch_000_%04d.png	y0lz7o
+ADBE CHANNEL MIXER	0	15	6	thumbs/batch_000_%04d.png	ulby7j
+ADBE Tritone	0	16	6	thumbs/batch_000_%04d.png	nzp4m
+ADBE Leave Color	0	17	6	thumbs/batch_000_%04d.png	6iuwt9
+ADBE Equalize	0	18	6	thumbs/batch_000_%04d.png	4jerkh
+ADBE Turbulent Displace	0	19	6	thumbs/batch_000_%04d.png	iycd23
+ADBE Wave Warp	0	20	6	thumbs/batch_000_%04d.png	lw8lmm
+ADBE Ripple	0	21	6	thumbs/batch_000_%04d.png	fxteyl
+ADBE Bulge	0	22	6	thumbs/batch_000_%04d.png	70byww
+ADBE Twirl	0	23	6	thumbs/batch_000_%04d.png	uuqdgj
+ADBE WRPMESH	0	24	6	thumbs/batch_000_%04d.png	37ryv
+ADBE Displacement Map	0	25	6	thumbs/batch_000_%04d.png	sfhl8o
+ADBE Polar Coordinates	0	26	6	thumbs/batch_000_%04d.png	nsehyi
+ADBE Geometry2	0	27	6	thumbs/batch_000_%04d.png	l2hgzz
+ADBE Glo2	0	28	6	thumbs/batch_000_%04d.png	vygr8l
+ADBE Bevel Alpha	0	29	6	thumbs/batch_000_%04d.png	pbl4yt
+ADBE Posterize	0	30	6	thumbs/batch_000_%04d.png	e0yq5y
+ADBE Mosaic	0	31	6	thumbs/batch_000_%04d.png	v12x1p
+ADBE Find Edges	0	32	6	thumbs/batch_000_%04d.png	cqn4m2
+CC Kaleida	0	33	6	thumbs/batch_000_%04d.png	zj4ae
+CC Plastic	0	34	6	thumbs/batch_000_%04d.png	c24ed7
+CC Burn Film	0	35	6	thumbs/batch_000_%04d.png	fk3jhm
+CC Glass	0	36	6	thumbs/batch_000_%04d.png	mv9lxh
+CC Slant	0	37	6	thumbs/batch_000_%04d.png	rsk52l
+ADBE Fill	0	38	6	thumbs/batch_000_%04d.png	d0j4fs
+ADBE 4ColorGradient	0	39	6	thumbs/batch_000_%04d.png	6g2lu
+ADBE Fractal Noise	0	40	6	thumbs/batch_000_%04d.png	6inauk
+ADBE Dust & Scratches	0	41	6	thumbs/batch_000_%04d.png	63r1nb
+ADBE Color Difference Key	0	42	6	thumbs/batch_000_%04d.png	atjelg
+ADBE Compound Blur	0	43	6	thumbs/batch_000_%04d.png	t76dfv
+ADBE Calculations	0	44	6	thumbs/batch_000_%04d.png	bfvz03
+ADBE Arithmetic	0	45	6	thumbs/batch_000_%04d.png	pkgtcr
+ADBE Bilateral	0	46	6	thumbs/batch_000_%04d.png	uzuri9
+ADBE AutoColor	0	47	6	thumbs/batch_000_%04d.png	4n9rwp
+ADBE Brush Strokes	0	48	6	thumbs/batch_000_%04d.png	fzvqmf
+ADBE Laser	0	49	6	thumbs/batch_000_%04d.png	9apua0
+ADBE Block Dissolve	0	50	6	thumbs/batch_000_%04d.png	ah00bp
+ADBE AutoContrast	0	51	6	thumbs/batch_000_%04d.png	lzsxbs
+ADBE Cartoonify	0	52	6	thumbs/batch_000_%04d.png	iimktr
+ADBE Cell Pattern	0	53	6	thumbs/batch_000_%04d.png	wfd61b
+ADBE Bevel Edges	0	54	6	thumbs/batch_000_%04d.png	bls7ev
+ADBE Gradient Wipe	0	55	6	thumbs/batch_000_%04d.png	buqq2c
+ADBE Color Range	0	56	6	thumbs/batch_000_%04d.png	tl9d6l
+ADBE Compander	0	57	6	thumbs/batch_000_%04d.png	g8yui2
+ADBE Simple Choker	0	58	6	thumbs/batch_000_%04d.png	89ixx3
+ADBE Blend	0	59	6	thumbs/batch_000_%04d.png	1m0vau
+ADBE AutoLevels	0	60	6	thumbs/batch_000_%04d.png	n7ud9x
+ADBE Checkerboard	0	61	6	thumbs/batch_000_%04d.png	gqfxq
+ADBE Median	0	62	6	thumbs/batch_000_%04d.png	crhsrj
+ADBE IRIS_WIPE	0	63	6	thumbs/batch_000_%04d.png	n0r1wc
+ADBE CurvesCustom	1	0	1		lj7nwk
+ADBE Easy Levels2	1	1	1		xohb6o
+ADBE Pro Levels2	1	2	1		1yoenz
+ADBE HUE SATURATION	1	3	1		en30e5
+ADBE Lumetri	1	4	1		wqijpv
+ADBE Change Color	1	5	1		mqhoja
+ADBE Threshold2	1	6	1		oqkh8w
+ADBE Exposure2	1	7	1		hohywu
+ADBE Corner Pin	1	8	1		wr0fkx
+ADBE BEZMESH	1	9	1		99ssin
+ADBE Mirror	1	10	1		66c6uk
+ADBE Offset	1	11	1		s0ol08
+ADBE Drop Shadow	1	12	1		6e2sng
+ADBE Ramp	1	13	1		20bphd
+ADBE Linear Color Key2	1	14	1		fu9fza
+ADBE Set Matte3	1	15	1		jfzpd7
+ADBE Timewarp	1	16	1		yp4qpm
+CC Force Motion Blur	1	17	1		p4y7r9
+ADBE Playgnd	1	18	1		7q4x4w
+ADBE Difference	1	19	1		fircos
+ADBE Cineon Converter2	1	20	1		dzvuqf
+ADBE Matte Choker	1	21	1		7xqgaw
+APC CardDanceCam	1	22	1		a1zqov
+ADBE Posterize Time	1	23	1		bne8rp
+ADBE Channel Blur	1	24	1		gt047z
+ADBE Color Emboss	1	25	1		n4c7nd
+ADBE Difference Matte2	1	26	1		r0ej8p
+APC Caustics	1	27	1		k19vtk
+ADBE OFMotionBlur	1	28	1		heam0h
+ADBE GROW BOUNDS	1	29	1		ynkn4r
+ADBE RefineRBMatte	1	30	1		x0zpg9
+ADBE Emboss	1	31	1		boxpcq
+ADBE Radial Shadow	1	32	1		h1xw78
+ADBE ProfileToProfile	1	33	1		4w95sm
+ADBE RefineMatte2	1	34	1		7o4sev
+ADBE Channel Combiner	1	35	1		6s75jt
+ADBE Change To Color	1	36	1		gqkzmh
+ADBE ATG Extract	1	37	1		76mamg
+ADBE Time Displacement	1	38	1		1jsemx
+ADBE LIQUIFY	1	39	1		gcvrg4
+CC Environment	1	40	1		1zypq8
+ADBE KeyCleaner	1	41	1		55z2z8
+CC Overbrights	1	42	1		syme7u
+CC Spotlight	1	43	1		ep7ccp
+ADBE MESH WARP	1	44	1		uip02g
+ADBE Grid	1	45	1		usxg9j
+CC Simple Wire Removal	1	46	1		ffyxgi
+CC Mr. Mercury	1	47	1		35ixzz
+ADBE Deflicker	1	48	1		8414vu
+ADBE Texturize	1	49	1		r3aqw0
+ADBE Paint Bucket	1	50	1		futckr
+ADBE Remove Color Matting	1	51	1		ps6yya
+ADBE RESHAPE	1	52	1		75sok9
+ADBE Scribble Fill	1	53	1		6v9szi
+ADBE Gamma/Pedestal/Gain2	1	54	1		gqe5cl
+ADBE Rolling Shutter	1	55	1		nyjcd3
+ADBE Stroke	1	56	1		4x80i8
+ADBE SCHMEAR	1	57	1		wexb78
+ADBE SubspaceStabilizer	1	58	1		dtza8
+APC Vegas	1	59	1		h0ml4f
+CC RepeTile	1	60	1		4fp7ad
+CC Glue Gun	1	61	1		i2jjfm
+ADBE SelectiveColor	1	62	1		6itst0
+ADBE PS Arbitrary Map	1	63	1		jrr1ia
+ADBE Broadcast Colors	2	0	6	thumbs/batch_002_%04d.png	xon7ue
+ADBE Circle	2	1	6	thumbs/batch_002_%04d.png	v2ojlv
+ADBE Noise2	2	2	6	thumbs/batch_002_%04d.png	2drmdd
+ADBE Linear Wipe	2	3	6	thumbs/batch_002_%04d.png	1m7ba9
+ADBE Extract	2	4	6	thumbs/batch_002_%04d.png	9v8nm4
+APC Foam	2	5	6	thumbs/batch_002_%04d.png	9k8m1o
+ADBE Noise Alpha2	2	6	6	thumbs/batch_002_%04d.png	ixms07
+CC Cylinder	2	7	6	thumbs/batch_002_%04d.png	8e5iyt
+ADBE Radial Wipe	2	8	6	thumbs/batch_002_%04d.png	1n9scz
+APC Shatter	2	9	6	thumbs/batch_002_%04d.png	6klfys
+ADBE HDR ToneMap	2	10	6	thumbs/batch_002_%04d.png	5o92ir
+ADBE Compound Arithmetic	2	11	6	thumbs/batch_002_%04d.png	w44ow0
+ADBE ELLIPSE	2	12	6	thumbs/batch_002_%04d.png	v5u2in
+ADBE Noise HLS2	2	13	6	thumbs/batch_002_%04d.png	dcjgug
+ADBE Venetian Blinds	2	14	6	thumbs/batch_002_%04d.png	anyq1z
+APC Wave World	2	15	6	thumbs/batch_002_%04d.png	ro86s
+ADBE Invert	2	16	6	thumbs/batch_002_%04d.png	nw43ah
+ADBE Magnify	2	17	6	thumbs/batch_002_%04d.png	l2s29o
+ADBE Eyedropper Fill	2	18	6	thumbs/batch_002_%04d.png	avj8hj
+ADBE Noise HLS Auto2	2	19	6	thumbs/batch_002_%04d.png	5ja8wx
+CC Sphere	2	20	6	thumbs/batch_002_%04d.png	1t1ueq
+APC CardWipeCam	2	21	6	thumbs/batch_002_%04d.png	75ze55
+CC Ball Action	2	22	6	thumbs/batch_002_%04d.png	h7r2zo
+CC Wide Time	2	23	6	thumbs/batch_002_%04d.png	jvy48z
+ADBE Minimax	2	24	6	thumbs/batch_002_%04d.png	hg7hxg
+ADBE Color Link	2	25	6	thumbs/batch_002_%04d.png	d5kmda
+ADBE PS Median	2	26	6	thumbs/batch_002_%04d.png	kbsqbm
+CC Glass Wipe	2	27	6	thumbs/batch_002_%04d.png	4zc95m
+ADBE Spill2	2	28	6	thumbs/batch_002_%04d.png	a45urr
+CC Bubbles	2	29	6	thumbs/batch_002_%04d.png	k6oxhm
+ADBE Set Channels	2	30	6	thumbs/batch_002_%04d.png	cfiq09
+ADBE Smart Blur	2	31	6	thumbs/batch_002_%04d.png	l7j7zh
+ADBE Roughen Edges	2	32	6	thumbs/batch_002_%04d.png	1u1q4x
+ADBE AIF Perlin Noise 3D	2	33	6	thumbs/batch_002_%04d.png	40lcao
+CC Grid Wipe	2	34	6	thumbs/batch_002_%04d.png	3ogo4m
+ADBE Color Balance (HLS)	2	35	6	thumbs/batch_002_%04d.png	v5yru6
+ADBE Scatter	2	36	6	thumbs/batch_002_%04d.png	bd8m9z
+ADBE Lens Flare	2	37	6	thumbs/batch_002_%04d.png	v0hvfx
+CC Image Wipe	2	38	6	thumbs/batch_002_%04d.png	dlw61v
+CC Particle Systems II	2	39	6	thumbs/batch_002_%04d.png	6zy7ah
+ADBE Shift Channels	2	40	6	thumbs/batch_002_%04d.png	hqxfff
+ADBE Optics Compensation	2	41	6	thumbs/batch_002_%04d.png	gkxk2b
+ADBE Strobe	2	42	6	thumbs/batch_002_%04d.png	tpzb40
+ADBE Lightning 2	2	43	6	thumbs/batch_002_%04d.png	nfpzbb
+CC Jaws	2	44	6	thumbs/batch_002_%04d.png	6wpg80
+CC Pixel Polly	2	45	6	thumbs/batch_002_%04d.png	pf8wcd
+ADBE Solid Composite	2	46	6	thumbs/batch_002_%04d.png	9qpgcw
+CC Light Wipe	2	47	6	thumbs/batch_002_%04d.png	i1wz4o
+CC Particle World	2	48	6	thumbs/batch_002_%04d.png	kk48o7
+CC Radial ScaleWipe	2	49	6	thumbs/batch_002_%04d.png	hoczbp
+CC Scatterize	2	50	6	thumbs/batch_002_%04d.png	gaggx5
+CC Composite	2	51	6	thumbs/batch_002_%04d.png	9525mm
+CC Scale Wipe	2	52	6	thumbs/batch_002_%04d.png	spzp54
+CC Star Burst	2	53	6	thumbs/batch_002_%04d.png	w6ex91
+CC Twister	2	54	6	thumbs/batch_002_%04d.png	kbhmgt
+ADBE Write-on	2	55	6	thumbs/batch_002_%04d.png	1bskhy
+CC WarpoMatic	2	56	6	thumbs/batch_002_%04d.png	br36xu
+ADBE Spherize	2	57	6	thumbs/batch_002_%04d.png	kczgjf
+CC Mr. Smoothie	2	58	6	thumbs/batch_002_%04d.png	38vgw0
+APC Radio Waves	2	59	6	thumbs/batch_002_%04d.png	4jiq9a
+CC Threshold	2	60	6	thumbs/batch_002_%04d.png	d1qiu0
+CC Light Burst 2.5	2	61	6	thumbs/batch_002_%04d.png	agsow8
+CC Threshold RGB	2	62	6	thumbs/batch_002_%04d.png	bj99eb
+CC Light Rays	2	63	6	thumbs/batch_002_%04d.png	ixm2ua
+ADBE ShadowHighlight	3	0	1		obfuxb
+ADBE DigitalVideoLimiter	3	1	1		hw1pq4
+CC Ripple Pulse	3	2	1		hh8rnk
+CC Smear	3	3	1		oq8srn
+CC Light Sweep	4	0	6	thumbs/batch_004_%04d.png	mlru1z
+ADBE Vibrance	4	1	6	thumbs/batch_004_%04d.png	ixcwvv
+CC Bender	4	2	6	thumbs/batch_004_%04d.png	gq3prv
+CC Bend It	4	3	6	thumbs/batch_004_%04d.png	bznrep
+CC Blobbylize	4	4	6	thumbs/batch_004_%04d.png	h4dj95
+CC Flo Motion	4	5	6	thumbs/batch_004_%04d.png	gjd3nm
+CC Griddler	4	6	6	thumbs/batch_004_%04d.png	j6c2yg
+CC Lens	4	7	6	thumbs/batch_004_%04d.png	uy26al
+CC Page Turn	4	8	6	thumbs/batch_004_%04d.png	i1o181
+CC Power Pin	4	9	6	thumbs/batch_004_%04d.png	4you73
+CC Color Offset	4	10	6	thumbs/batch_004_%04d.png	37kub5
+CC Toner	4	11	6	thumbs/batch_004_%04d.png	pbrusz
+CC Split	4	12	6	thumbs/batch_004_%04d.png	pjqal3
+CC Split 2	4	13	6	thumbs/batch_004_%04d.png	yp1cyx
+CC Tiler	4	14	6	thumbs/batch_004_%04d.png	29may3
