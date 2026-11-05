@@ -16,6 +16,9 @@ const state = {
   stopRequested: false,
   pollTimer: null,
   logTimer: null,
+  presetHoldTimer: null,
+  presetDeletePath: "",
+  presetDeleteName: "",
 };
 
 /* ---------- 工具 ---------- */
@@ -54,6 +57,7 @@ function setView(name) {
     refreshAeState();
     pullLog();
   }
+  if (name !== "presets") closePresetDelete();
 }
 
 /* ---------- 预设库 ---------- */
@@ -124,6 +128,7 @@ function renderPresets() {
     body.appendChild(meta);
     card.appendChild(thumb);
     card.appendChild(body);
+    bindPresetLongPress(card, item);
     grid.appendChild(card);
   }
 
@@ -139,6 +144,60 @@ async function loadPresets() {
   const data = await window.hub.listPresets();
   state.presets = data.items || [];
   renderPresets();
+}
+
+function bindPresetLongPress(card, item) {
+  card.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    cancelPresetHold();
+    state.presetHoldTimer = setTimeout(() => {
+      state.presetHoldTimer = null;
+      openPresetDelete(item);
+    }, 650);
+  });
+  card.addEventListener("pointerup", cancelPresetHold);
+  card.addEventListener("pointerleave", cancelPresetHold);
+  card.addEventListener("pointercancel", cancelPresetHold);
+}
+
+function cancelPresetHold() {
+  if (!state.presetHoldTimer) return;
+  clearTimeout(state.presetHoldTimer);
+  state.presetHoldTimer = null;
+}
+
+function openPresetDelete(item) {
+  state.presetDeletePath = item.path;
+  state.presetDeleteName = item.name;
+  $("presetDeleteText").textContent =
+    `确定删除预设「${item.name}」？对应的 .ffx 文件会从预设库中移除。`;
+  const confirm = $("presetDeleteConfirm");
+  confirm.disabled = false;
+  $("presetDeleteDialog").hidden = false;
+}
+
+function closePresetDelete() {
+  cancelPresetHold();
+  state.presetDeletePath = "";
+  state.presetDeleteName = "";
+  $("presetDeleteDialog").hidden = true;
+}
+
+async function confirmPresetDelete() {
+  const target = state.presetDeletePath;
+  const name = state.presetDeleteName;
+  if (!target) return;
+  const confirm = $("presetDeleteConfirm");
+  confirm.disabled = true;
+  const result = await window.hub.deletePreset(target);
+  if (!result || !result.ok) {
+    confirm.disabled = false;
+    setStatus("删除预设失败：" + ((result && result.reason) || "未知原因"), true);
+    return;
+  }
+  closePresetDelete();
+  setStatus(`已删除预设「${name}」`);
+  await loadPresets();
 }
 
 async function finishAddPresets(result) {
@@ -371,6 +430,14 @@ function bind() {
   });
 
   $("btnImport").addEventListener("click", addPresets);
+  $("presetDeleteCancel").addEventListener("click", closePresetDelete);
+  $("presetDeleteConfirm").addEventListener("click", confirmPresetDelete);
+  $("presetDeleteDialog").addEventListener("mousedown", (event) => {
+    if (event.target === $("presetDeleteDialog")) closePresetDelete();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !$("presetDeleteDialog").hidden) closePresetDelete();
+  });
 
   const presetView = $("viewPresets");
   presetView.addEventListener("dragenter", (event) => {

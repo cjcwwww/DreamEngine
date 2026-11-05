@@ -779,6 +779,29 @@ var AEV_Presets = (function () {
                ',"items":[' + items.join(",") + "]}";
     }
 
+    /**
+     * 删除用户预设库内的一个 .ffx。
+     * 只允许操作 libraryDir() 下的文件，避免面板误删任意磁盘路径。
+     */
+    function deleteJson(pathText) {
+        var file = new File(String(pathText || ""));
+        if (!file.exists) return result("error", [["reason", "file_missing"]]);
+        if (!isPresetFile(file.name)) return result("error", [["reason", "not_ffx"]]);
+
+        var root = String(libraryDir().fsName || "").replace(/\\/g, "/").toLowerCase();
+        var target = String(file.fsName || "").replace(/\\/g, "/").toLowerCase();
+        if (!root || target.indexOf(root + "/") !== 0) {
+            return result("error", [["reason", "outside_library"]]);
+        }
+
+        try {
+            if (!file.remove()) return result("error", [["reason", "remove_failed"]]);
+            return result("ok", [["path", String(pathText || "")]]);
+        } catch (e) {
+            return result("error", [["reason", String(e.toString())]]);
+        }
+    }
+
     return {
         scanJson: scanJson,
         applyJson: applyJson,
@@ -786,6 +809,7 @@ var AEV_Presets = (function () {
         defaultRootJson: defaultRootJson,
         contextJson: contextJson,
         libraryJson: libraryJson,
+        deleteJson: deleteJson,
         libraryDir: libraryDir,
         isPresetFile: isPresetFile,
         categoryOf: categoryOf,

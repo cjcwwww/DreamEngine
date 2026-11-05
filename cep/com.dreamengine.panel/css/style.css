@@ -569,6 +569,11 @@ button:focus-visible,
   color: var(--danger);
 }
 
+.preset-delete-dialog {
+  position: fixed;
+  z-index: 45;
+}
+
 /* 生成队列的控制按钮：与 icon-button 同高度，但带文字 */
 .action-button {
   height: 30px;

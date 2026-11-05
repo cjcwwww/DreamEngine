@@ -30,6 +30,10 @@ var AEV_Library = (function () {
     presetFavoritesOnly: false,
     presetEditorMode: "create",
     presetEditingId: "",
+    presetHoldTimer: null,
+    presetHoldTriggeredPath: "",
+    deletePresetPath: "",
+    deletePresetName: "",
     // 排序方式：name = 按名称首字母，category = 按 AE 分类
     sortMode: "name",
     // 左侧栏选中的分类键（空 = 全部）
@@ -587,6 +591,11 @@ var AEV_Library = (function () {
     }
     if (window.AEV_MaterialsUI) AEV_MaterialsUI.setLanguage(lang);
     if (state.presets.length) renderPresetList();
+    var presetDeleteText = byId("presetDeleteText");
+    var presetDeleteDialog = byId("presetDeleteDialog");
+    if (presetDeleteDialog && !presetDeleteDialog.hidden && presetDeleteText) {
+      presetDeleteText.textContent = L("preset.deleteQuestion", [state.deletePresetName]);
+    }
   }
 
   /**
@@ -1503,7 +1512,23 @@ var AEV_Library = (function () {
   }
 
   function bindPresetItem(button, item) {
+    button.addEventListener("pointerdown", function (event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      if (event.target && event.target.closest &&
+          event.target.closest(".favorite-toggle,.preset-category-toggle")) {
+        return;
+      }
+      startPresetHold(item);
+    });
+    button.addEventListener("pointerup", cancelPresetHold);
+    button.addEventListener("pointerleave", cancelPresetHold);
+    button.addEventListener("pointercancel", cancelPresetHold);
     button.addEventListener("click", function (event) {
+      if (state.presetHoldTriggeredPath === item.path) {
+        state.presetHoldTriggeredPath = "";
+        event.preventDefault();
+        return;
+      }
       if (event.target && event.target.closest &&
           event.target.closest(".favorite-toggle,.preset-category-toggle")) {
         return;
@@ -1525,6 +1550,61 @@ var AEV_Library = (function () {
         event.preventDefault();
         applyPreset(item);
       }
+    });
+  }
+
+  function startPresetHold(item) {
+    cancelPresetHold();
+    state.presetHoldTimer = setTimeout(function () {
+      state.presetHoldTimer = null;
+      state.presetHoldTriggeredPath = item.path;
+      openDeletePreset(item);
+    }, 650);
+  }
+
+  function cancelPresetHold() {
+    if (!state.presetHoldTimer) return;
+    clearTimeout(state.presetHoldTimer);
+    state.presetHoldTimer = null;
+  }
+
+  function openDeletePreset(item) {
+    var dialog = byId("presetDeleteDialog");
+    var text = byId("presetDeleteText");
+    if (!dialog || !text) return;
+    state.deletePresetPath = item.path;
+    state.deletePresetName = item.name;
+    text.textContent = L("preset.deleteQuestion", [item.name]);
+    var confirm = byId("presetDeleteConfirm");
+    if (confirm) confirm.disabled = false;
+    dialog.hidden = false;
+  }
+
+  function closeDeletePreset() {
+    cancelPresetHold();
+    state.deletePresetPath = "";
+    state.deletePresetName = "";
+    state.presetHoldTriggeredPath = "";
+    var dialog = byId("presetDeleteDialog");
+    if (dialog) dialog.hidden = true;
+  }
+
+  function deletePreset() {
+    var path = state.deletePresetPath;
+    var name = state.deletePresetName;
+    if (!path || !state.extensionPath) return;
+    var confirm = byId("presetDeleteConfirm");
+    if (confirm) confirm.disabled = true;
+    engine("AEV_Presets.deleteJson(" + JSON.stringify(path) + ")", function (result) {
+      var data = parseEngineResult(result);
+      if (data && data.status === "ok") {
+        closeDeletePreset();
+        setStatus(L("preset.deleted", [name]), false);
+        loadPresetLibrary();
+        return;
+      }
+      if (confirm) confirm.disabled = false;
+      setStatus(L("preset.deleteFailed", [data && data.reason ? data.reason : L("msg.unknown")]), true);
     });
   }
 
@@ -1914,6 +1994,7 @@ var AEV_Library = (function () {
     if (previous === "materials" && view !== "materials" && window.AEV_MaterialsUI) {
       AEV_MaterialsUI.leave();
     }
+    if (previous === "presets" && view !== "presets") closeDeletePreset();
   }
 
   function boot() {
@@ -1967,6 +2048,7 @@ var AEV_Library = (function () {
       if (event.key === "Escape" || event.keyCode === 27) {
         if (!byId("settingsDrawer").hidden) setSettingsOpen(false);
         hidePresetCategoryMenu();
+        closeDeletePreset();
       }
     });
     // "/" 聚焦效果搜索：键盘用户的快速入口，输入框里不拦截。
@@ -2031,6 +2113,8 @@ var AEV_Library = (function () {
         closePresetCategoryEditor();
       }
     });
+    byId("presetDeleteCancel").addEventListener("click", closeDeletePreset);
+    byId("presetDeleteConfirm").addEventListener("click", deletePreset);
     document.addEventListener("mousedown", function (event) {
       var menu = byId("presetCategoryMenu");
       if (!menu || menu.hidden) return;

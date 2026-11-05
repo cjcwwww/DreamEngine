@@ -144,4 +144,25 @@ function importFiles(files, paths) {
   return { imported, skipped };
 }
 
-module.exports = { list, importFiles, loadPreviewIndex, uniqueTarget, norm };
+/** 删除预设库内的单个 .ffx，拒绝库目录之外的路径 */
+function removePreset(target, paths) {
+  const full = path.resolve(String(target || ""));
+  const root = path.resolve(paths.presets);
+  if (!/\.ffx$/i.test(full)) return { ok: false, reason: "not_ffx" };
+  if (path.dirname(full) !== root) return { ok: false, reason: "outside_library" };
+  let stat;
+  try {
+    stat = fs.statSync(full);
+  } catch {
+    return { ok: false, reason: "file_missing" };
+  }
+  if (!stat.isFile()) return { ok: false, reason: "not_file" };
+  try {
+    fs.unlinkSync(full);
+    return { ok: true, path: full };
+  } catch (error) {
+    return { ok: false, reason: String(error.message || error) };
+  }
+}
+
+module.exports = { list, importFiles, removePreset, loadPreviewIndex, uniqueTarget, norm };

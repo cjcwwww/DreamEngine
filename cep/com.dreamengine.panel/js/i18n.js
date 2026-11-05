@@ -61,6 +61,13 @@ var AEV_I18N = {
   "preset.categoryCreated": ["已新建分类「{0}」", "Created category “{0}”"],
   "preset.categoryRenamed": ["分类已重命名", "Category renamed"],
   "preset.categoryDeleted": ["分类已删除，原预设回到未分类", "Category deleted; its presets are now uncategorized"],
+  "preset.deleteTitle": ["删除预设", "Delete preset"],
+  "preset.deleteQuestion": ["确定删除预设「{0}」？对应的 .ffx 文件会从预设库中移除。",
+    "Delete preset “{0}”? The .ffx file will be removed from the preset library."],
+  "preset.deleteCancel": ["取消", "Cancel"],
+  "preset.deleteConfirm": ["删除", "Delete"],
+  "preset.deleted": ["已删除预设「{0}」", "Deleted preset “{0}”"],
+  "preset.deleteFailed": ["删除预设失败：{0}", "Failed to delete preset: {0}"],
   /* ---------- 素材视图 ---------- */
   "materials.aria": ["素材库", "Materials"],
   "materials.title": ["素材库", "Materials"],

@@ -103,6 +103,7 @@ function registerIpc() {
 
   // 拖拽进来的路径：文件对话框之外的第二种入口（面板里也保留了这条）
   ipcMain.handle("presets:importPaths", (_event, files) => presets.importFiles(files || [], paths));
+  ipcMain.handle("presets:delete", (_event, target) => presets.removePreset(target, paths));
 
   ipcMain.handle("backgrounds:list", () => {
     // 与面板的 preset_preview.backgroundsJson 保持同一组内置 id

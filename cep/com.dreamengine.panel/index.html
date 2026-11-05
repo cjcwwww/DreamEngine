@@ -132,6 +132,17 @@
       </div>
       <div class="preset-grid" id="presetList"></div>
     </div>
+    <div class="curve-conflict preset-delete-dialog" id="presetDeleteDialog" hidden role="alertdialog"
+         aria-label="删除预设" data-i18n-aria="preset.deleteTitle">
+      <h3 data-i18n="preset.deleteTitle">删除预设</h3>
+      <p id="presetDeleteText"></p>
+      <div class="curve-conflict-actions">
+        <button class="action-button" id="presetDeleteCancel" type="button"
+                data-i18n="preset.deleteCancel">取消</button>
+        <button class="action-button curve-dialog-danger" id="presetDeleteConfirm" type="button"
+                data-i18n="preset.deleteConfirm">删除</button>
+      </div>
+    </div>
   </section>
 
   <section class="curve-view" id="viewCurve" hidden aria-label="曲线编辑" data-i18n-aria="curve.aria">

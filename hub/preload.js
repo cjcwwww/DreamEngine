@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld("hub", {
   listPresets: () => ipcRenderer.invoke("presets:list"),
   pickPresets: () => ipcRenderer.invoke("presets:pick"),
   importPaths: (files) => ipcRenderer.invoke("presets:importPaths", files),
+  deletePreset: (target) => ipcRenderer.invoke("presets:delete", target),
   getPathForFile: (file) => webUtils.getPathForFile(file),
   reveal: (target) => ipcRenderer.invoke("shell:reveal", target),
   listBackgrounds: () => ipcRenderer.invoke("backgrounds:list"),
