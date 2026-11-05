@@ -16,9 +16,9 @@
 
 var AEV_I18N = {
   /* ---------- 顶栏 / 视图切换 ---------- */
-  "tab.effects": ["效果预览", "Effects"],
-  "tab.presets": ["预设预览", "Presets"],
-  "tab.curve": ["曲线编辑", "Curves"],
+  "tab.effects": ["效果", "Effects"],
+  "tab.presets": ["预设", "Presets"],
+  "tab.curve": ["曲线", "Curves"],
   "app.title": ["DreamEngine", "DreamEngine"],
   "tab.aria": ["主视图切换", "Main views"],
   "lang.zhTitle": ["中文", "Chinese"],
