@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 下载最新版本 / Download latest release
+    url: https://github.com/yoanx/DreamEngine/releases
+    about: 安装包、SHA-256 校验和 Beta 发布说明
+  - name: 阅读中文 README
+    url: https://github.com/yoanx/DreamEngine/blob/main/README.md
+    about: 安装、使用、数据位置和常见问题
+  - name: Read the English README
+    url: https://github.com/yoanx/DreamEngine/blob/main/README.en.md
+    about: Installation, usage, data locations, and troubleshooting

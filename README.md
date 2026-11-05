@@ -8,6 +8,20 @@
   <a href="README.en.md">English</a> · 中文
 </p>
 
+<p align="center">
+  <a href="https://github.com/yoanx/DreamEngine"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/yoanx/DreamEngine?style=flat-square&amp;logo=github&amp;label=Stars"></a>
+  <a href="https://github.com/yoanx/DreamEngine/releases"><img alt="Release" src="https://img.shields.io/github/v/release/yoanx/DreamEngine?include_prereleases&amp;style=flat-square&amp;label=release"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-4c9a52?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-4f6f8f?style=flat-square&amp;logo=windows&amp;logoColor=white">
+  <img alt="After Effects 2021+" src="https://img.shields.io/badge/After%20Effects-2021%2B-5f8a74?style=flat-square">
+  <img alt="CEP 11" src="https://img.shields.io/badge/CEP-11-6b7f95?style=flat-square">
+  <img alt="DreamEngine Hub 0.1.0" src="https://img.shields.io/badge/Hub-0.1.0-6f8f9a?style=flat-square">
+  <img alt="DreamEngine Panel 0.2.0" src="https://img.shields.io/badge/Panel-0.2.0-7f9c88?style=flat-square">
+</p>
+
 > **Beta 状态**：DreamEngine 面向 Windows，当前在 After Effects 2021 / CEP 11 上完成主要实机验证。更新版本的 AE 尚未完成完整验收。
 
 ## 下载与安装
@@ -165,6 +179,13 @@ DreamEngine 不上传工程、素材或预设。
 - 安装 `ffmpeg`，或在 `文档/DreamEngine/materials/ffmpeg.txt` 中填写 `ffmpeg.exe` 的绝对路径。
 - 回到素材页点击“刷新”。
 
+## 反馈与贡献
+
+- 使用 [Bug 模板](https://github.com/yoanx/DreamEngine/issues/new?template=bug_report.yml) 报告可复现问题。
+- 使用 [功能建议模板](https://github.com/yoanx/DreamEngine/issues/new?template=feature_request.yml) 提议新工作流。
+- 提交问题时请附上 DreamEngine、Windows、After Effects 和 CEP 版本，以及 `文档/DreamEngineProbe/` 中的相关日志。
+- 提交代码前请阅读 PR 模板，并确保公开仓库不包含内部工具、探针、开发笔记、工程素材或密钥。
+
 ## 仓库结构
 
 ```text
@@ -175,6 +196,10 @@ assets/screenshots/          README 截图
 ```
 
 开发探针、内部测试工具和进度笔记不进入公开仓库。
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE)。允许使用、复制、修改、合并、发布、分发、再许可和销售，但需保留版权与许可声明。
 
 ## 当前限制
 

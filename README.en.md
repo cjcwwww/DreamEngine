@@ -8,6 +8,20 @@
   English · <a href="README.md">中文</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/yoanx/DreamEngine"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/yoanx/DreamEngine?style=flat-square&amp;logo=github&amp;label=Stars"></a>
+  <a href="https://github.com/yoanx/DreamEngine/releases"><img alt="Release" src="https://img.shields.io/github/v/release/yoanx/DreamEngine?include_prereleases&amp;style=flat-square&amp;label=release"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-4c9a52?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-4f6f8f?style=flat-square&amp;logo=windows&amp;logoColor=white">
+  <img alt="After Effects 2021+" src="https://img.shields.io/badge/After%20Effects-2021%2B-5f8a74?style=flat-square">
+  <img alt="CEP 11" src="https://img.shields.io/badge/CEP-11-6b7f95?style=flat-square">
+  <img alt="DreamEngine Hub 0.1.0" src="https://img.shields.io/badge/Hub-0.1.0-6f8f9a?style=flat-square">
+  <img alt="DreamEngine Panel 0.2.0" src="https://img.shields.io/badge/Panel-0.2.0-7f9c88?style=flat-square">
+</p>
+
 > **Beta status:** DreamEngine targets Windows. The main workflows are validated on After Effects 2021 / CEP 11. Later AE releases have not completed full validation.
 
 ## Download and install
@@ -165,6 +179,13 @@ Back up `Documents/DreamEngine/` before uninstalling if you need to keep presets
 - Install `ffmpeg`, or put the absolute path to `ffmpeg.exe` in `Documents/DreamEngine/materials/ffmpeg.txt`.
 - Return to the Media page and click Refresh.
 
+## Feedback and contributions
+
+- Use the [Bug report form](https://github.com/yoanx/DreamEngine/issues/new?template=bug_report.yml) for reproducible problems.
+- Use the [Feature request form](https://github.com/yoanx/DreamEngine/issues/new?template=feature_request.yml) for workflow proposals.
+- Include DreamEngine, Windows, After Effects, and CEP versions, plus relevant logs from `Documents/DreamEngineProbe/`.
+- Before opening a PR, follow the PR template and keep internal tools, probes, development notes, project media, and secrets out of the public repository.
+
 ## Repository layout
 
 ```text
@@ -175,6 +196,10 @@ assets/screenshots/          README screenshots
 ```
 
 Development probes, internal test tooling, and progress notes are not included in the public repository.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). You may use, copy, modify, merge, publish, distribute, sublicense, and sell copies, provided the copyright and permission notice is retained.
 
 ## Current limitations
 

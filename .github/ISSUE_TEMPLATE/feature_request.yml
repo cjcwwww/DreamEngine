@@ -1,0 +1,64 @@
+name: 功能建议 / Feature request
+description: 提议 Hub、AE 面板或工作流改进
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请描述要解决的实际问题，而不仅是某个实现方式。DreamEngine 优先保持本地、轻量和单一工作流。
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 相关模块 / Component
+      options:
+        - DreamEngine Hub
+        - AE 面板 / CEP panel
+        - 效果 / Effects
+        - 预设 / Presets
+        - 曲线 / Curves
+        - 素材 / Media library
+        - 离线渲染 / Offline rendering
+        - 安装、发布或文档 / Packaging and docs
+        - 其他 / Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 要解决的问题 / Problem
+      description: 当前流程哪里低效、容易出错或不完整？
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议方案 / Proposed solution
+      description: 描述用户如何操作、看到什么结果。可提供草图或参考。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案 / Alternatives
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影响范围 / Impact
+      description: 是否涉及现有数据格式、AE 工程、插件、安装升级或性能？
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认 / Checklist
+      options:
+        - label: 我已搜索过现有 Issues 和 README
+          required: true
+        - label: 该建议描述的是用户问题，而不只是内部重构偏好
+          required: true
