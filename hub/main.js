@@ -66,6 +66,7 @@ function createWindow() {
     backgroundColor: "#0f1113",
     show: false,
     title: "DreamEngine Hub",
+    icon: path.join(__dirname, "assets", "icon.ico"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

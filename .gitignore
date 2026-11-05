@@ -22,6 +22,9 @@ logs/
 !docs/**/*.png
 # 面板正式品牌图例外
 !cep/com.dreamengine.panel/css/brand-mark.png
+# Hub 品牌图例外
+!hub/assets/icon.png
+!hub/renderer/brand-mark.png
 
 # ---- L1 内置包（可分发的预生成预览，已做帧间去重，必须入库）----
 !dist/
