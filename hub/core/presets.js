@@ -49,7 +49,7 @@ function loadPreviewIndex(paths) {
  * 列出预设库。
  * @param {ReturnType<import("./paths").createPaths>} paths
  */
-function list(paths) {
+function list(paths, organizer = {}) {
   const index = loadPreviewIndex(paths);
   let names = [];
   try {
@@ -71,6 +71,9 @@ function list(paths) {
     if (!stat.isFile()) continue;
 
     const hit = index.get(norm(full));
+    const frameSrc = hit
+      ? hit.frameSrc || String(hit.src || "").replace(/_0000\.png$/i, "_%04d.png")
+      : "";
     items.push({
       path: full,
       fileName: name,
@@ -80,8 +83,15 @@ function list(paths) {
       rendered: !!hit,
       frames: hit ? hit.frames || 1 : 0,
       animated: hit ? !!hit.animated : false,
+      duration: hit ? Number(hit.duration) || 0 : 0,
+      fps: hit ? Number(hit.fps) || 0 : 0,
       offline: hit ? !!hit.plugin : false,
       thumb: hit && hit.src ? path.join(paths.dataDir, hit.src) : "",
+      framePattern: frameSrc ? path.join(paths.dataDir, frameSrc) : "",
+      renderDisabled: !!(
+        organizer.renderSkip &&
+        organizer.renderSkip[String(full).replace(/\\/g, "/").toLowerCase()]
+      ),
     });
   }
 
@@ -165,4 +175,81 @@ function removePreset(target, paths) {
   }
 }
 
-module.exports = { list, importFiles, removePreset, loadPreviewIndex, uniqueTarget, norm };
+function validBaseName(value) {
+  const name = String(value || "").trim().replace(/\.ffx$/i, "");
+  if (!name || name === "." || name === "..") return "";
+  if (/[<>:"/\\|?*\u0000-\u001f]/.test(name)) return "";
+  if (/[ .]$/.test(name)) return "";
+  return name;
+}
+
+/** 重命名预设库内的 .ffx，不改预览图片文件本身 */
+function renamePreset(target, name, paths) {
+  const from = path.resolve(String(target || ""));
+  const root = path.resolve(paths.presets);
+  if (!/\.ffx$/i.test(from)) return { ok: false, reason: "not_ffx" };
+  if (path.dirname(from) !== root) return { ok: false, reason: "outside_library" };
+  const base = validBaseName(name);
+  if (!base) return { ok: false, reason: "invalid_name" };
+  const to = path.join(root, base + ".ffx");
+  if (norm(from) === norm(to)) return { ok: true, unchanged: true, path: from, name: base };
+  if (fs.existsSync(to)) return { ok: false, reason: "name_exists" };
+  try {
+    const stat = fs.statSync(from);
+    if (!stat.isFile()) return { ok: false, reason: "not_file" };
+    fs.renameSync(from, to);
+    return { ok: true, path: to, previousPath: from, name: base };
+  } catch (error) {
+    return { ok: false, reason: String(error.message || error) };
+  }
+}
+
+function remapIndex(file, fromKey, toPath, name) {
+  let doc;
+  try {
+    doc = JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
+  } catch {
+    return;
+  }
+  let changed = false;
+  for (const item of doc.items || []) {
+    if (!item || norm(item.path) !== fromKey) continue;
+    item.path = toPath.replace(/\\/g, "/");
+    item.name = name;
+    changed = true;
+  }
+  if (changed) fs.writeFileSync(file, JSON.stringify(doc, null, 1), "utf8");
+}
+
+function remapPreviewReferences(paths, from, to, name) {
+  const fromKey = norm(from);
+  remapIndex(paths.presetManifest, fromKey, to, name);
+  remapIndex(paths.presetPluginManifest, fromKey, to, name);
+  try {
+    const rows = fs.readFileSync(paths.entries, "utf8").replace(/^\uFEFF/, "").split(/\r?\n/);
+    let changed = false;
+    const output = rows.map((line) => {
+      if (!line || line.charAt(0) === "#") return line;
+      const row = line.split("\t");
+      if (row.length < 2 || norm(row[1]) !== fromKey) return line;
+      row[0] = name;
+      row[1] = to.replace(/\\/g, "/");
+      changed = true;
+      return row.join("\t");
+    });
+    if (changed) fs.writeFileSync(paths.entries, output.join("\r\n"), "utf8");
+  } catch {
+    /* 没有离线预览记录时不需要迁移 */
+  }
+}
+
+module.exports = {
+  list,
+  importFiles,
+  removePreset,
+  renamePreset,
+  remapPreviewReferences,
+  loadPreviewIndex,
+  uniqueTarget,
+  norm,
+};

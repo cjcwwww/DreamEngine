@@ -57,7 +57,7 @@ class RenderJob {
   }
 
   /**
-   * @param {{background?: string, limit?: number, autoClose?: boolean, rounds?: number}} [options]
+   * @param {{background?: string, limit?: number, autoClose?: boolean, rounds?: number, onlyPreset?: string}} [options]
    */
   start(options = {}) {
     if (this.running) return { ok: false, reason: "already_running" };
@@ -70,6 +70,7 @@ class RenderJob {
     if (options.limit) args.push("-Limit", String(Number(options.limit) || 40));
     if (options.rounds) args.push("-Rounds", String(Number(options.rounds) || 40));
     if (options.autoClose) args.push("-AutoClose");
+    if (options.onlyPreset) args.push("-OnlyPreset", String(options.onlyPreset));
 
     try {
       this.proc = spawn(this.powershell, args, {

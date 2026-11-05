@@ -304,6 +304,11 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 .preset-category-menu button:hover,
 .preset-category-menu button.active { background: rgba(255, 255, 255, 0.05); color: var(--text); }
 .preset-category-menu button.danger:hover { color: var(--danger); }
+.preset-category-menu-separator {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--border);
+}
 
 /* ---------- 工具条 ---------- */
 
@@ -400,6 +405,9 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 }
 
 .card:hover { border-color: var(--border-strong); }
+.card.render-disabled { border-color: rgba(255, 255, 255, 0.04); }
+.card.render-disabled .card-thumb { opacity: 0.5; }
+.card.render-disabled .card-category { color: var(--danger); }
 
 .card-thumb {
   position: relative;
@@ -715,6 +723,17 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 
 .modal-card h3 { margin: 0 0 8px; font-size: 14px; }
 .modal-card p { margin: 0; color: var(--muted); line-height: 1.65; overflow-wrap: anywhere; }
+.modal-field { display: grid; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 12px; }
+.modal-field input {
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+}
+.modal-field input:focus { border-color: var(--accent); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
 /* ---------- 状态栏 ---------- */

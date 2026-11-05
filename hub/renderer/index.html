@@ -156,6 +156,20 @@
   </div>
 </div>
 
+<div class="modal-mask" id="presetRenameDialog" hidden>
+  <form class="modal-card" id="presetRenameForm">
+    <h3>重命名预设</h3>
+    <label class="modal-field">
+      <span>文件名</span>
+      <input id="presetRenameInput" type="text" maxlength="120" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="modal-actions">
+      <button class="btn" id="presetRenameCancel" type="button">取消</button>
+      <button class="btn primary" type="submit">保存</button>
+    </div>
+  </form>
+</div>
+
 <footer class="statusbar">
   <span id="statusText">就绪</span>
   <span class="spacer"></span>

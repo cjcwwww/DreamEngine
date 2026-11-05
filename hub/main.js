@@ -88,7 +88,7 @@ function createWindow() {
 function registerIpc() {
   ipcMain.handle("hub:snapshot", () => snapshot());
 
-  ipcMain.handle("presets:list", () => presets.list(paths));
+  ipcMain.handle("presets:list", () => presets.list(paths, presetCategories.read(paths)));
 
   ipcMain.handle("presets:pick", async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
@@ -105,6 +105,16 @@ function registerIpc() {
   // 拖拽进来的路径：文件对话框之外的第二种入口（面板里也保留了这条）
   ipcMain.handle("presets:importPaths", (_event, files) => presets.importFiles(files || [], paths));
   ipcMain.handle("presets:delete", (_event, target) => presets.removePreset(target, paths));
+  ipcMain.handle("presets:rename", (_event, target, name) => {
+    const renamed = presets.renamePreset(target, name, paths);
+    if (!renamed.ok || renamed.unchanged) return renamed;
+    presetCategories.movePath(paths, renamed.previousPath, renamed.path);
+    presets.remapPreviewReferences(paths, renamed.previousPath, renamed.path, renamed.name);
+    return renamed;
+  });
+  ipcMain.handle("presets:toggleRenderSkip", (_event, target) =>
+    presetCategories.toggleRenderSkip(paths, target),
+  );
   ipcMain.handle("categories:load", () => presetCategories.read(paths));
   ipcMain.handle("categories:create", (_event, name) => presetCategories.create(paths, name));
   ipcMain.handle("categories:rename", (_event, id, name) => presetCategories.rename(paths, id, name));

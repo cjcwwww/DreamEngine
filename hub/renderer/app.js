@@ -17,8 +17,10 @@ const state = {
   pollTimer: null,
   logTimer: null,
   presetHoldTimer: null,
+  presetHoverStop: null,
   presetDeletePath: "",
   presetDeleteName: "",
+  presetRenamePath: "",
   presetOrganizer: { categories: [], assignments: {}, favorites: {} },
   presetCategory: "all",
   presetFavoritesOnly: false,
@@ -67,7 +69,9 @@ function setView(name) {
     pullLog();
   }
   if (name !== "presets") closePresetDelete();
+  if (name !== "presets") closePresetRename();
   if (name !== "presets") hideCategoryMenu();
+  if (name !== "presets" && state.presetHoverStop) state.presetHoverStop();
 }
 
 /* ---------- 预设库 ---------- */
@@ -88,6 +92,10 @@ function categoryLabel(target) {
 
 function isPresetFavorite(target) {
   return !!(state.presetOrganizer.favorites || {})[pathKey(target)];
+}
+
+function isPresetRenderDisabled(target) {
+  return !!(state.presetOrganizer.renderSkip || {})[pathKey(target)];
 }
 
 function renderCategories() {
@@ -159,6 +167,55 @@ function bindFavoriteButton(thumb, item) {
   thumb.appendChild(button);
 }
 
+function frameUrl(item, index) {
+  if (!item.framePattern) return "";
+  return toFileUrl(item.framePattern.replace("%04d", String(index).padStart(4, "0")));
+}
+
+function bindPresetHoverPreview(card, img, item) {
+  if (!item.animated || item.frames <= 1 || !item.framePattern) return;
+  const fps = Math.max(1, Number(item.fps) || 6);
+  const delay = Math.max(40, Math.round(1000 / fps));
+  const frames = [];
+  let preloaded = false;
+  let timer = null;
+  let index = 0;
+
+  function preload() {
+    if (preloaded) return;
+    preloaded = true;
+    for (let i = 0; i < item.frames; i++) {
+      const node = new Image();
+      node.src = frameUrl(item, i);
+      frames.push(node);
+    }
+  }
+
+  function stop() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    index = 0;
+    img.src = toFileUrl(item.thumb);
+    if (state.presetHoverStop === stop) state.presetHoverStop = null;
+  }
+
+  card.addEventListener("mouseenter", () => {
+    if (state.presetHoverStop && state.presetHoverStop !== stop) state.presetHoverStop();
+    state.presetHoverStop = stop;
+    preload();
+    if (timer) clearInterval(timer);
+    index = 0;
+    img.src = frameUrl(item, 0) || toFileUrl(item.thumb);
+    timer = setInterval(() => {
+      index = (index + 1) % item.frames;
+      img.src = frameUrl(item, index) || toFileUrl(item.thumb);
+    }, delay);
+  });
+  card.addEventListener("mouseleave", stop);
+}
+
 function bindCategoryButton(thumb, item) {
   const button = document.createElement("button");
   button.type = "button";
@@ -209,6 +266,35 @@ function menuButton(label, active, danger, action) {
 function openCategoryMenu(item, x, y) {
   const menu = $("categoryMenu");
   menu.textContent = "";
+  menu.appendChild(menuTitle("移动到分类"));
+  const current = categoryFor(item.path);
+  menu.appendChild(menuButton("未分类", !current, false, () => assignCategory(item, "")));
+  for (const category of categories()) {
+    menu.appendChild(menuButton(category.name, current === category.id, false, () =>
+      assignCategory(item, category.id),
+    ));
+  }
+  showCategoryMenu(x, y);
+}
+
+function openPresetMenu(item, x, y) {
+  const menu = $("categoryMenu");
+  menu.textContent = "";
+  menu.appendChild(menuTitle(item.name));
+  const favorite = isPresetFavorite(item.path);
+  const renderDisabled = isPresetRenderDisabled(item.path);
+  menu.appendChild(menuButton("重命名", false, false, () => openPresetRename(item)));
+  menu.appendChild(menuButton(favorite ? "取消收藏" : "收藏", false, false, () =>
+    togglePresetFavorite(item),
+  ));
+  menu.appendChild(menuButton(renderDisabled ? "恢复渲染" : "取消渲染", false, false, () =>
+    togglePresetRenderSkip(item),
+  ));
+  menu.appendChild(menuButton("单独渲染", false, false, () => renderSinglePreset(item)));
+
+  const separator = document.createElement("div");
+  separator.className = "preset-category-menu-separator";
+  menu.appendChild(separator);
   menu.appendChild(menuTitle("移动到分类"));
   const current = categoryFor(item.path);
   menu.appendChild(menuButton("未分类", !current, false, () => assignCategory(item, "")));
@@ -278,6 +364,16 @@ async function togglePresetFavorite(item) {
   renderPresets();
 }
 
+async function togglePresetRenderSkip(item) {
+  const result = await window.hub.togglePresetRenderSkip(item.path);
+  if (!result.ok) return;
+  state.presetOrganizer = result.doc;
+  setStatus(
+    result.renderDisabled ? `已取消渲染「${item.name}」` : `已恢复渲染「${item.name}」`,
+  );
+  renderPresets();
+}
+
 async function deleteCategory(category) {
   const result = await window.hub.deletePresetCategory(category.id);
   if (!result.ok) return;
@@ -291,8 +387,44 @@ async function loadPresetCategories() {
   state.presetOrganizer = await window.hub.loadPresetCategories();
 }
 
+function openPresetRename(item) {
+  state.presetRenamePath = item.path;
+  $("presetRenameDialog").hidden = false;
+  $("presetRenameInput").value = item.name;
+  $("presetRenameInput").focus();
+  $("presetRenameInput").select();
+}
+
+function closePresetRename() {
+  state.presetRenamePath = "";
+  $("presetRenameDialog").hidden = true;
+  $("presetRenameInput").value = "";
+}
+
+async function savePresetRename(event) {
+  event.preventDefault();
+  const target = state.presetRenamePath;
+  const name = $("presetRenameInput").value.trim();
+  if (!target || !name) return;
+  const result = await window.hub.renamePreset(target, name);
+  if (!result.ok) {
+    const messages = {
+      invalid_name: "文件名包含不允许的字符",
+      name_exists: "同名预设已经存在",
+      outside_library: "只能重命名预设库内的文件",
+    };
+    setStatus(messages[result.reason] || "重命名失败：" + (result.reason || "未知原因"), true);
+    return;
+  }
+  closePresetRename();
+  await loadPresetCategories();
+  await loadPresets();
+  setStatus(`已重命名为「${result.name}」`);
+}
+
 function renderPresets() {
   const grid = $("grid");
+  if (state.presetHoverStop) state.presetHoverStop();
   const query = state.query.trim().toLowerCase();
   const items = state.presets.filter((item) => {
     if (query && !item.name.toLowerCase().includes(query)) return false;
@@ -312,7 +444,8 @@ function renderPresets() {
 
   for (const item of items) {
     const card = document.createElement("div");
-    card.className = "card";
+    const renderDisabled = isPresetRenderDisabled(item.path);
+    card.className = "card" + (renderDisabled ? " render-disabled" : "");
 
     const thumb = document.createElement("div");
     thumb.className = "card-thumb";
@@ -323,6 +456,7 @@ function renderPresets() {
       img.alt = item.name;
       img.loading = "lazy";
       thumb.appendChild(img);
+      bindPresetHoverPreview(card, img, item);
       if (!item.animated || item.frames <= 1) {
         const dot = document.createElement("span");
         dot.className = "card-static-dot";
@@ -354,7 +488,8 @@ function renderPresets() {
 
     const category = document.createElement("div");
     category.className = "card-category";
-    category.textContent = categoryLabel(item.path) || "未分类";
+    category.textContent =
+      (categoryLabel(item.path) || "未分类") + (renderDisabled ? " · 已取消渲染" : "");
 
     titleRow.appendChild(name);
     titleRow.appendChild(size);
@@ -365,7 +500,7 @@ function renderPresets() {
     bindPresetLongPress(card, item);
     card.addEventListener("contextmenu", (event) => {
       event.preventDefault();
-      openCategoryMenu(item, event.clientX, event.clientY);
+      openPresetMenu(item, event.clientX, event.clientY);
     });
     grid.appendChild(card);
   }
@@ -569,11 +704,12 @@ function stopPolling() {
   }
 }
 
-async function startRender() {
+async function startRender(overrides) {
   const options = {
     background: $("background").value,
     limit: Number($("limit").value) || 40,
     rounds: Number($("rounds").value) || 40,
+    ...(overrides || {}),
   };
   const result = await window.hub.startRender(options);
   if (!result.ok) {
@@ -585,7 +721,7 @@ async function startRender() {
   state.stopRequested = false;
   $("btnStart").disabled = true;
   $("btnStop").disabled = false;
-  setStatus("渲染已启动");
+  setStatus(options.onlyPreset ? "已开始单独渲染" : "渲染已启动");
   startPolling();
 
   // AE 还在跑时 ps1 会进入等待，这里先把话说清楚，别让人以为卡住了
@@ -596,7 +732,18 @@ async function startRender() {
   $("renderMessage").textContent =
     state.snapshot && state.snapshot.ae.running
       ? "等待你关闭 After Effects…"
-      : "正在启动专用 AE 实例（约 25 秒）…";
+      : options.onlyPreset
+        ? "正在单独渲染所选预设（约 25 秒启动 AE）…"
+        : "正在启动专用 AE 实例（约 25 秒）…";
+}
+
+async function renderSinglePreset(item) {
+  setView("render");
+  await startRender({
+    onlyPreset: item.path,
+    limit: 1,
+    rounds: 1,
+  });
 }
 
 async function stopRender() {
@@ -683,8 +830,14 @@ function bind() {
   $("presetDeleteDialog").addEventListener("mousedown", (event) => {
     if (event.target === $("presetDeleteDialog")) closePresetDelete();
   });
+  $("presetRenameForm").addEventListener("submit", savePresetRename);
+  $("presetRenameCancel").addEventListener("click", closePresetRename);
+  $("presetRenameDialog").addEventListener("mousedown", (event) => {
+    if (event.target === $("presetRenameDialog")) closePresetRename();
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !$("presetDeleteDialog").hidden) closePresetDelete();
+    if (event.key === "Escape" && !$("presetRenameDialog").hidden) closePresetRename();
     if (event.key === "Escape") hideCategoryMenu();
   });
 
