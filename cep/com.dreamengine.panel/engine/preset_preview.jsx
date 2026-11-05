@@ -21,8 +21,8 @@
 
 var AEV_PresetPreview = (function () {
     var VERSION = 1;
-    var FPS = 12;                 // 渲染采样帧率（= 面板播放帧率）
-    var MAX_FRAMES = 6;           // 索引里最多保留几帧
+    var FPS = 6;                  // 动态预设每秒至少保留 6 帧
+    var MAX_FRAMES = 36;          // 6 秒 × 6 fps
     var MAX_SPAN_SECONDS = 6;     // 关键帧跨度上限，避免渲出几百帧
     var MAX_PROPS = 900;          // 属性遍历上限，防止深树拖慢 AE
 
@@ -38,7 +38,7 @@ var AEV_PresetPreview = (function () {
         if (typeof DREAM_ENGINE_RENDER_CONFIG !== "undefined" && DREAM_ENGINE_RENDER_CONFIG) {
             return DREAM_ENGINE_RENDER_CONFIG;
         }
-        return { contactSheet: { cellSize: 128 }, animatedPreview: { frameCount: 6 } };
+        return { contactSheet: { cellSize: 128 }, animatedPreview: { frameCount: 36, fps: 6 } };
     }
 
     function pad(value, width) {
@@ -437,7 +437,7 @@ var AEV_PresetPreview = (function () {
             queueItem.timeSpanDuration = span;
             app.project.renderQueue.render();
 
-            // 渲染队列按 comp 帧率输出 N 帧；均匀抽最多 6 帧留作预览
+            // 渲染队列按 6 fps 输出；6 秒最多保留 36 帧，避免被压缩成快放
             rawFiles = folder.getFiles(rawBase + "_*.png");
             if (!rawFiles || rawFiles.length === 0) {
                 return result("error", [["reason", "no_frames"]]);
@@ -465,6 +465,8 @@ var AEV_PresetPreview = (function () {
                 ["animated", animated ? "true" : "false"],
                 ["keyStart", String(Math.round(keyStart * 1000) / 1000)],
                 ["keyEnd", String(Math.round(keyEnd * 1000) / 1000)],
+                ["duration", String(Math.round(span * 1000) / 1000)],
+                ["fps", String(FPS)],
                 ["truncated", truncated ? "true" : "false"],
                 ["background", background],
                 ["plugins", plugins.join(",")],

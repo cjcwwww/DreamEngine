@@ -238,6 +238,12 @@ var AEV_Library = (function () {
       return;
     }
     var frameCount = preview.frames || 1;
+    var durationSeconds = Number(preview.duration) || 0;
+    var sourceFps = Number(preview.fps) || 0;
+    var frameDelay = durationSeconds > 0
+      ? (durationSeconds * 1000) / frameCount
+      : (sourceFps > 0 ? 1000 / sourceFps : 83);
+    frameDelay = Math.max(16, Math.round(frameDelay));
     var frameIndex = 0;
     var playTimer = null;
     var showFrame = function (index) {
@@ -256,7 +262,7 @@ var AEV_Library = (function () {
       playTimer = setInterval(function () {
         frameIndex = (frameIndex + 1) % frameCount;
         showFrame(frameIndex);
-      }, 83);
+      }, frameDelay);
     };
     var play = function () {
       if (!isAnimated || playTimer || frameCount < 2) return;
