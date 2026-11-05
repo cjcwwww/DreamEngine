@@ -28,6 +28,7 @@ var AEV_Library = (function () {
     presetPreviews: {},
     presetCategory: "all",
     presetFavoritesOnly: false,
+    presetOrganizer: { categories: [], assignments: {} },
     presetEditorMode: "create",
     presetEditingId: "",
     presetHoldTimer: null,
@@ -1381,21 +1382,61 @@ var AEV_Library = (function () {
     });
   }
 
+  function updatePresetOrganizer(data) {
+    var doc = data && typeof data === "object" ? data : {};
+    state.presetOrganizer = {
+      categories: doc.categories || [],
+      assignments: doc.assignments || {}
+    };
+  }
+
+  function presetCategories() {
+    return state.presetOrganizer.categories || [];
+  }
+
+  function presetCategoryFor(path) {
+    var key = AEV_Prefs.pathKey(path);
+    return String((state.presetOrganizer.assignments || {})[key] || "");
+  }
+
+  function loadPresetOrganizer(done) {
+    engine("AEV_PresetCategories.loadJson()", function (result) {
+      var data = parseEngineResult(result);
+      updatePresetOrganizer(data);
+      if (presetCategories().length || !AEV_Prefs) {
+        if (done) done();
+        return;
+      }
+      var legacy = AEV_Prefs.presetOrganizerJson();
+      var legacyDoc = parseEngineResult(legacy);
+      if (!legacyDoc || !legacyDoc.categories || !legacyDoc.categories.length) {
+        if (done) done();
+        return;
+      }
+      engine("AEV_PresetCategories.importJson(" + JSON.stringify(legacy) + ")", function (migrated) {
+        updatePresetOrganizer(parseEngineResult(migrated));
+        if (done) done();
+      });
+    });
+  }
+
   /** 载入用户自建的预设库（我的文档/DreamEngine/presets） */
   function loadPresetLibrary() {
     if (!state.extensionPath) return;
-    engine("AEV_Presets.libraryJson()", function (result) {
-      var data = parseEngineResult(result);
-      if (!data || data.status !== "ok") {
-        setStatus(
-          state.lang === "zh" ? "读取预设库失败" : "Failed to read preset library",
-          true
-        );
-        return;
-      }
-      state.presets = data.items || [];
-      state.presetFolder = data.folder || "";
-      loadPresetIndex(renderPresetList);
+    loadPresetOrganizer(function () {
+      engine("AEV_Presets.libraryJson()", function (result) {
+        var data = parseEngineResult(result);
+        if (!data || data.status !== "ok") {
+          setStatus(
+            state.lang === "zh" ? "读取预设库失败" : "Failed to read preset library",
+            true
+          );
+          return;
+        }
+        state.presets = data.items || [];
+        state.presetFolder = data.folder || "";
+        loadPresetIndex(renderPresetList);
+      });
     });
   }
 
@@ -1416,7 +1457,7 @@ var AEV_Library = (function () {
     var visible = [];
     for (var v = 0; v < base.length; v++) {
       var presetItem = base[v];
-      var categoryId = AEV_Prefs.presetCategoryFor(presetItem.path);
+      var categoryId = presetCategoryFor(presetItem.path);
       if (state.presetCategory === "__uncategorized__") {
         if (categoryId) continue;
       } else if (state.presetCategory !== "all" && categoryId !== state.presetCategory) {
@@ -1451,6 +1492,12 @@ var AEV_Library = (function () {
         // 静态预设就显示第 0 帧、不绑 hover；动态预设沿用效果卡的
         // 预加载 + 轮播逻辑（静止时停在最后一帧）。
         attachPreview(thumb, card, preview, animated, animated ? undefined : 0);
+        if (!animated) {
+          var staticDot = document.createElement("span");
+          staticDot.className = "preset-static-dot";
+          staticDot.title = state.lang === "zh" ? "静止帧" : "Still frame";
+          thumb.appendChild(staticDot);
+        }
       } else {
         var placeholder = document.createElement("span");
         placeholder.className = "thumb-placeholder";
@@ -1483,19 +1530,11 @@ var AEV_Library = (function () {
         card.appendChild(categoryButton);
       })(item);
 
-      var badge = document.createElement("span");
-      badge.className = "preset-badge" + (animated ? "" : " static");
-      badge.textContent = !preview
-        ? (state.lang === "zh" ? "未生成" : "No preview")
-        : (animated
-            ? (state.lang === "zh" ? "动态 · " : "Animated · ") + (preview.frames || 1) +
-              (state.lang === "zh" ? " 帧" : " frames")
-            : (state.lang === "zh" ? "静态" : "Static"));
-      if (preview && preview.truncated) {
-        badge.textContent += state.lang === "zh" ? "（截取前 6 秒）" : " (first 6s)";
-      }
-      if (preview && preview.plugin) {
-        badge.textContent += state.lang === "zh" ? " · 离线生成" : " · offline";
+      var badge = null;
+      if (!preview) {
+        badge = document.createElement("span");
+        badge.className = "preset-badge static";
+        badge.textContent = state.lang === "zh" ? "未生成" : "No preview";
       }
 
       var name = document.createElement("span");
@@ -1507,7 +1546,7 @@ var AEV_Library = (function () {
       category.textContent = presetCategoryLabel(item) || item.category || L("preset.fallbackCategory");
 
       card.appendChild(thumb);
-      card.appendChild(badge);
+      if (badge) card.appendChild(badge);
       card.appendChild(name);
       card.appendChild(category);
       bindPresetItem(card, item);
@@ -1615,9 +1654,9 @@ var AEV_Library = (function () {
   }
 
   function presetCategoryLabel(item) {
-    var id = AEV_Prefs.presetCategoryFor(item.path);
+    var id = presetCategoryFor(item.path);
     if (!id) return "";
-    var rows = AEV_Prefs.presetCategories();
+    var rows = presetCategories();
     for (var i = 0; i < rows.length; i++) {
       if (rows[i].id === id) return rows[i].name;
     }
@@ -1628,13 +1667,13 @@ var AEV_Library = (function () {
     var list = byId("presetCategories");
     if (!list) return;
     list.textContent = "";
-    var categories = AEV_Prefs.presetCategories();
+    var categories = presetCategories();
     var favoriteCount = 0;
     var uncategorized = 0;
     var counts = {};
     for (var i = 0; i < items.length; i++) {
       if (isFavorite("presets", items[i].path)) favoriteCount++;
-      var categoryId = AEV_Prefs.presetCategoryFor(items[i].path);
+      var categoryId = presetCategoryFor(items[i].path);
       if (!categoryId) uncategorized++;
       else counts[categoryId] = (counts[categoryId] || 0) + 1;
     }
@@ -1732,17 +1771,28 @@ var AEV_Library = (function () {
     if (!menu) return;
     menu.textContent = "";
     menu.appendChild(menuTitle(L("preset.moveCategory")));
-    var current = AEV_Prefs.presetCategoryFor(item.path);
+    var current = presetCategoryFor(item.path);
     menu.appendChild(menuButton(L("preset.uncategorized"), !current, false, function () {
-      AEV_Prefs.setPresetCategory(item.path, "");
-      renderPresetList();
+      engine(
+        "AEV_PresetCategories.assignJson(" + JSON.stringify(item.path) + ',"")',
+        function (result) {
+          updatePresetOrganizer(parseEngineResult(result));
+          renderPresetList();
+        }
+      );
     }));
-    var categories = AEV_Prefs.presetCategories();
+    var categories = presetCategories();
     for (var i = 0; i < categories.length; i++) {
       (function (category) {
         menu.appendChild(menuButton(category.name, current === category.id, false, function () {
-          AEV_Prefs.setPresetCategory(item.path, category.id);
-          renderPresetList();
+          engine(
+            "AEV_PresetCategories.assignJson(" +
+              JSON.stringify(item.path) + "," + JSON.stringify(category.id) + ")",
+            function (result) {
+              updatePresetOrganizer(parseEngineResult(result));
+              renderPresetList();
+            }
+          );
         }));
       })(categories[i]);
     }
@@ -1758,11 +1808,17 @@ var AEV_Library = (function () {
       openPresetCategoryEditor("rename", category);
     }));
     menu.appendChild(menuButton(L("preset.deleteCategory"), false, true, function () {
-      if (AEV_Prefs.deletePresetCategory(category.id)) {
-        if (state.presetCategory === category.id) state.presetCategory = "all";
-        setStatus(L("preset.categoryDeleted"), false);
-        renderPresetList();
-      }
+      engine(
+        "AEV_PresetCategories.deleteJson(" + JSON.stringify(category.id) + ")",
+        function (result) {
+          var data = parseEngineResult(result);
+          if (!data || data.status === "error") return;
+          updatePresetOrganizer(data);
+          if (state.presetCategory === category.id) state.presetCategory = "all";
+          setStatus(L("preset.categoryDeleted"), false);
+          renderPresetList();
+        }
+      );
     }));
     showPresetCategoryMenu(x, y);
   }
@@ -1793,22 +1849,25 @@ var AEV_Library = (function () {
     if (!input) return;
     var name = String(input.value || "").replace(/^\s+|\s+$/g, "");
     if (!name) return;
-    if (state.presetEditorMode === "rename") {
-      if (!AEV_Prefs.renamePresetCategory(state.presetEditingId, name)) {
+    var rename = state.presetEditorMode === "rename";
+    var expr = rename
+      ? "AEV_PresetCategories.renameJson(" +
+        JSON.stringify(state.presetEditingId) + "," + JSON.stringify(name) + ")"
+      : "AEV_PresetCategories.createJson(" + JSON.stringify(name) + ")";
+    engine(expr, function (result) {
+      var data = parseEngineResult(result);
+      if (!data || data.status === "error") {
         setStatus(L("preset.categoryExists"), true);
         return;
       }
-      setStatus(L("preset.categoryRenamed"), false);
-    } else {
-      var created = AEV_Prefs.createPresetCategory(name);
-      if (!created) {
-        setStatus(L("preset.categoryExists"), true);
-        return;
-      }
-      setStatus(L("preset.categoryCreated", [created.name]), false);
-    }
-    closePresetCategoryEditor();
-    renderPresetList();
+      updatePresetOrganizer(data);
+      closePresetCategoryEditor();
+      setStatus(
+        rename ? L("preset.categoryRenamed") : L("preset.categoryCreated", [name]),
+        false
+      );
+      renderPresetList();
+    });
   }
 
   /**

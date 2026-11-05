@@ -35,6 +35,7 @@ function createPaths(opts = {}) {
     /* 用户资产：升级安装时绝不能被覆盖（install_dreamengine.ps1 也认这两个目录） */
     presets: path.join(userRoot, "presets"),
     backgrounds: path.join(userRoot, "backgrounds"),
+    presetCategories: path.join(userRoot, "preset_categories.json"),
 
     /* 离线渲染的约定目录 */
     probe,

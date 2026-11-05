@@ -151,6 +151,7 @@ var Bridge = (function () {
     "engine/curve_math.js",
     "engine/render_config.jsx",
     "engine/store.jsx",
+    "engine/preset_categories.jsx",
     "engine/materials.jsx",
     "engine/names.jsx",
     "engine/curvelib.jsx",

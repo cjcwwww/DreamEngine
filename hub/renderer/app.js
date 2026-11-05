@@ -19,6 +19,10 @@ const state = {
   presetHoldTimer: null,
   presetDeletePath: "",
   presetDeleteName: "",
+  presetOrganizer: { categories: [], assignments: {} },
+  presetCategory: "all",
+  categoryEditorMode: "create",
+  categoryEditingId: "",
 };
 
 /* ---------- 工具 ---------- */
@@ -42,6 +46,10 @@ function setStatus(text, isError) {
   el.style.color = isError ? "var(--danger)" : "";
 }
 
+function pathKey(value) {
+  return String(value || "").replace(/\\/g, "/").toLowerCase();
+}
+
 /* ---------- 页签 ---------- */
 
 function setView(name) {
@@ -58,23 +66,209 @@ function setView(name) {
     pullLog();
   }
   if (name !== "presets") closePresetDelete();
+  if (name !== "presets") hideCategoryMenu();
 }
 
 /* ---------- 预设库 ---------- */
 
+function categories() {
+  return state.presetOrganizer.categories || [];
+}
+
+function categoryFor(target) {
+  return String((state.presetOrganizer.assignments || {})[pathKey(target)] || "");
+}
+
+function categoryLabel(target) {
+  const id = categoryFor(target);
+  const hit = categories().find((row) => row.id === id);
+  return hit ? hit.name : "";
+}
+
+function renderCategories() {
+  const list = $("categoryList");
+  if (!list) return;
+  const counts = { favorite: 0, all: state.presets.length, uncategorized: 0 };
+  for (const item of state.presets) {
+    const id = categoryFor(item.path);
+    if (!id) counts.uncategorized++;
+    else counts[id] = (counts[id] || 0) + 1;
+  }
+  list.textContent = "";
+  list.appendChild(categoryRow("all", "全部预设", counts.all));
+  list.appendChild(categoryRow("__uncategorized__", "未分类", counts.uncategorized));
+  for (const category of categories()) {
+    const row = categoryRow(category.id, category.name, counts[category.id] || 0);
+    row.querySelector("button").addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      openCategoryAdminMenu(category, event.clientX, event.clientY);
+    });
+    list.appendChild(row);
+  }
+}
+
+function categoryRow(id, label, count) {
+  const li = document.createElement("li");
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "category-item" + (state.presetCategory === id ? " active" : "");
+  const text = document.createElement("span");
+  text.className = "category-label";
+  text.textContent = label;
+  const badge = document.createElement("span");
+  badge.className = "category-count";
+  badge.textContent = String(count);
+  button.appendChild(text);
+  button.appendChild(badge);
+  button.addEventListener("click", () => {
+    state.presetCategory = id;
+    renderPresets();
+  });
+  li.appendChild(button);
+  return li;
+}
+
+function bindCategoryButton(thumb, item) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "card-category-toggle";
+  button.title = "移动到分类";
+  button.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v10H3z"/></svg>';
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const rect = button.getBoundingClientRect();
+    openCategoryMenu(item, rect.left, rect.bottom + 4);
+  });
+  button.addEventListener("dblclick", (event) => event.stopPropagation());
+  thumb.appendChild(button);
+}
+
+function hideCategoryMenu() {
+  $("categoryMenu").hidden = true;
+}
+
+function showCategoryMenu(x, y) {
+  const menu = $("categoryMenu");
+  menu.hidden = false;
+  const width = menu.offsetWidth || 190;
+  const height = menu.offsetHeight || 0;
+  menu.style.left = Math.max(8, Math.min(x, window.innerWidth - width - 8)) + "px";
+  menu.style.top = Math.max(8, Math.min(y, window.innerHeight - height - 8)) + "px";
+}
+
+function menuTitle(text) {
+  const node = document.createElement("div");
+  node.className = "preset-category-menu-title";
+  node.textContent = text;
+  return node;
+}
+
+function menuButton(label, active, danger, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = (active ? "active" : "") + (danger ? " danger" : "");
+  button.textContent = label;
+  button.addEventListener("click", () => {
+    hideCategoryMenu();
+    action();
+  });
+  return button;
+}
+
+function openCategoryMenu(item, x, y) {
+  const menu = $("categoryMenu");
+  menu.textContent = "";
+  menu.appendChild(menuTitle("移动到分类"));
+  const current = categoryFor(item.path);
+  menu.appendChild(menuButton("未分类", !current, false, () => assignCategory(item, "")));
+  for (const category of categories()) {
+    menu.appendChild(menuButton(category.name, current === category.id, false, () =>
+      assignCategory(item, category.id),
+    ));
+  }
+  showCategoryMenu(x, y);
+}
+
+function openCategoryAdminMenu(category, x, y) {
+  const menu = $("categoryMenu");
+  menu.textContent = "";
+  menu.appendChild(menuTitle(category.name));
+  menu.appendChild(menuButton("重命名", false, false, () =>
+    openCategoryEditor("rename", category),
+  ));
+  menu.appendChild(menuButton("删除", false, true, () => deleteCategory(category)));
+  showCategoryMenu(x, y);
+}
+
+function openCategoryEditor(mode, category) {
+  state.categoryEditorMode = mode;
+  state.categoryEditingId = category ? category.id : "";
+  $("categoryEditor").hidden = false;
+  $("categoryName").value = category ? category.name : "";
+  $("categoryName").focus();
+}
+
+function closeCategoryEditor() {
+  $("categoryEditor").hidden = true;
+  $("categoryName").value = "";
+  state.categoryEditingId = "";
+}
+
+async function saveCategory(event) {
+  event.preventDefault();
+  const name = $("categoryName").value.trim();
+  if (!name) return;
+  const result =
+    state.categoryEditorMode === "rename"
+      ? await window.hub.renamePresetCategory(state.categoryEditingId, name)
+      : await window.hub.createPresetCategory(name);
+  if (!result.ok) {
+    setStatus("分类名称已存在", true);
+    return;
+  }
+  state.presetOrganizer = result.doc;
+  closeCategoryEditor();
+  setStatus(state.categoryEditorMode === "rename" ? "分类已重命名" : "已新建分类");
+  renderPresets();
+}
+
+async function assignCategory(item, id) {
+  const result = await window.hub.assignPresetCategory(item.path, id);
+  if (!result.ok) return;
+  state.presetOrganizer = result.doc;
+  renderPresets();
+}
+
+async function deleteCategory(category) {
+  const result = await window.hub.deletePresetCategory(category.id);
+  if (!result.ok) return;
+  state.presetOrganizer = result.doc;
+  if (state.presetCategory === category.id) state.presetCategory = "all";
+  setStatus(`已删除分类「${category.name}」`);
+  renderPresets();
+}
+
+async function loadPresetCategories() {
+  state.presetOrganizer = await window.hub.loadPresetCategories();
+}
+
 function renderPresets() {
   const grid = $("grid");
   const query = state.query.trim().toLowerCase();
-  const items = state.presets.filter(
-    (item) => !query || item.name.toLowerCase().includes(query),
-  );
+  const items = state.presets.filter((item) => {
+    if (query && !item.name.toLowerCase().includes(query)) return false;
+    const cat = categoryFor(item.path);
+    if (state.presetCategory === "__uncategorized__") return !cat;
+    if (state.presetCategory !== "all") return cat === state.presetCategory;
+    return true;
+  });
 
   grid.textContent = "";
+  renderCategories();
 
   const empty = $("emptyPresets");
-  const hasAny = state.presets.length > 0;
-  empty.hidden = hasAny;
-  grid.hidden = !hasAny;
+  empty.hidden = items.length > 0;
+  grid.hidden = items.length === 0;
 
   for (const item of items) {
     const card = document.createElement("div");
@@ -89,19 +283,11 @@ function renderPresets() {
       img.alt = item.name;
       img.loading = "lazy";
       thumb.appendChild(img);
-
-      const badge = document.createElement("span");
-      badge.className = "card-badge done";
-      badge.textContent = item.offline ? "离线生成" : "已渲染";
-      thumb.appendChild(badge);
-
-      if (item.animated && item.frames > 1) {
-        const anim = document.createElement("span");
-        anim.className = "card-badge anim";
-        anim.style.left = "auto";
-        anim.style.right = "7px";
-        anim.textContent = item.frames + " 帧";
-        thumb.appendChild(anim);
+      if (!item.animated || item.frames <= 1) {
+        const dot = document.createElement("span");
+        dot.className = "card-static-dot";
+        dot.title = "静止帧";
+        thumb.appendChild(dot);
       }
     } else {
       const ph = document.createElement("div");
@@ -109,26 +295,37 @@ function renderPresets() {
       ph.textContent = "待渲染";
       thumb.appendChild(ph);
     }
+    bindCategoryButton(thumb, item);
 
     const body = document.createElement("div");
     body.className = "card-body";
 
+    const titleRow = document.createElement("div");
+    titleRow.className = "card-title-row";
     const name = document.createElement("div");
     name.className = "card-name";
     name.textContent = item.name;
     name.title = item.name;
 
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    meta.textContent = item.rendered
-      ? `${item.frames} 帧 · ${formatSize(item.size)}`
-      : formatSize(item.size);
+    const size = document.createElement("span");
+    size.className = "card-size";
+    size.textContent = formatSize(item.size);
 
-    body.appendChild(name);
-    body.appendChild(meta);
+    const category = document.createElement("div");
+    category.className = "card-category";
+    category.textContent = categoryLabel(item.path) || "未分类";
+
+    titleRow.appendChild(name);
+    titleRow.appendChild(size);
+    body.appendChild(titleRow);
+    body.appendChild(category);
     card.appendChild(thumb);
     card.appendChild(body);
     bindPresetLongPress(card, item);
+    card.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      openCategoryMenu(item, event.clientX, event.clientY);
+    });
     grid.appendChild(card);
   }
 
@@ -430,6 +627,16 @@ function bind() {
   });
 
   $("btnImport").addEventListener("click", addPresets);
+  $("btnCategoryAdd").addEventListener("click", () => openCategoryEditor("create", null));
+  $("categoryEditor").addEventListener("submit", saveCategory);
+  $("categoryCancel").addEventListener("click", closeCategoryEditor);
+  $("categoryName").addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeCategoryEditor();
+  });
+  document.addEventListener("mousedown", (event) => {
+    const menu = $("categoryMenu");
+    if (!menu.hidden && !menu.contains(event.target)) hideCategoryMenu();
+  });
   $("presetDeleteCancel").addEventListener("click", closePresetDelete);
   $("presetDeleteConfirm").addEventListener("click", confirmPresetDelete);
   $("presetDeleteDialog").addEventListener("mousedown", (event) => {
@@ -437,6 +644,7 @@ function bind() {
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !$("presetDeleteDialog").hidden) closePresetDelete();
+    if (event.key === "Escape") hideCategoryMenu();
   });
 
   const presetView = $("viewPresets");
@@ -527,6 +735,7 @@ async function boot() {
   bind();
   const snap = await refreshAeState();
   await fillBackgrounds();
+  await loadPresetCategories();
   await loadPresets();
   await pullLog();
 

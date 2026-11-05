@@ -209,6 +209,7 @@ var AEV_Prefs = (function () {
     renamePresetCategory: renamePresetCategory,
     deletePresetCategory: deletePresetCategory,
     presetCategoryFor: presetCategoryFor,
-    setPresetCategory: setPresetCategory
+    setPresetCategory: setPresetCategory,
+    presetOrganizerJson: function () { return JSON.stringify(organizerDoc()); }
   };
 })();

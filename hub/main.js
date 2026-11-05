@@ -17,6 +17,7 @@ const fs = require("node:fs");
 const { createPaths } = require("./core/paths");
 const { findAfterFX, bestAfterFX, isAERunning } = require("./core/ae");
 const presets = require("./core/presets");
+const presetCategories = require("./core/preset_categories");
 const install = require("./core/install");
 const { RenderJob } = require("./core/render");
 
@@ -104,6 +105,13 @@ function registerIpc() {
   // 拖拽进来的路径：文件对话框之外的第二种入口（面板里也保留了这条）
   ipcMain.handle("presets:importPaths", (_event, files) => presets.importFiles(files || [], paths));
   ipcMain.handle("presets:delete", (_event, target) => presets.removePreset(target, paths));
+  ipcMain.handle("categories:load", () => presetCategories.read(paths));
+  ipcMain.handle("categories:create", (_event, name) => presetCategories.create(paths, name));
+  ipcMain.handle("categories:rename", (_event, id, name) => presetCategories.rename(paths, id, name));
+  ipcMain.handle("categories:delete", (_event, id) => presetCategories.remove(paths, id));
+  ipcMain.handle("categories:assign", (_event, target, id) =>
+    presetCategories.assign(paths, target, id),
+  );
 
   ipcMain.handle("backgrounds:list", () => {
     // 与面板的 preset_preview.backgroundsJson 保持同一组内置 id

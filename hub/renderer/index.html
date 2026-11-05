@@ -30,18 +30,34 @@
 
   <!-- ========== 预设库 ========== -->
   <section class="view" id="viewPresets">
-    <div class="toolbar">
-      <button class="btn primary" id="btnImport" title="选择一个或多个 .ffx 预设">添加预设</button>
-      <button class="btn" id="btnRefresh">刷新</button>
-      <input class="search" id="search" type="search" placeholder="搜索预设…" spellcheck="false">
-      <span class="spacer"></span>
-      <span class="hint" id="presetHint"></span>
-    </div>
-    <div class="grid" id="grid"></div>
-    <div class="empty" id="emptyPresets" hidden>
-      <p class="empty-title">预设库还是空的</p>
-      <p class="empty-sub">把 <code>.ffx</code> 拖到这里，或者点上面的「添加预设」。</p>
-      <p class="empty-sub">导入后，AE 里打开着的 DreamEngine 面板会自动刷新，不用关掉重开。</p>
+    <div class="preset-layout">
+      <aside class="preset-sidebar">
+        <div class="sidebar-heading">
+          <h2>分类</h2>
+          <button class="icon-btn" id="btnCategoryAdd" type="button" title="新建分类">+</button>
+        </div>
+        <ul class="category-list" id="categoryList"></ul>
+        <form class="category-editor" id="categoryEditor" hidden>
+          <input id="categoryName" type="text" maxlength="24" autocomplete="off" placeholder="分类名称">
+          <button type="submit" title="保存">✓</button>
+          <button id="categoryCancel" type="button" title="取消">×</button>
+        </form>
+      </aside>
+      <div class="preset-main">
+        <div class="toolbar">
+          <button class="btn primary" id="btnImport" title="选择一个或多个 .ffx 预设">添加预设</button>
+          <button class="btn" id="btnRefresh">刷新</button>
+          <input class="search" id="search" type="search" placeholder="搜索预设…" spellcheck="false">
+          <span class="spacer"></span>
+          <span class="hint" id="presetHint"></span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="empty" id="emptyPresets" hidden>
+          <p class="empty-title">预设库还是空的</p>
+          <p class="empty-sub">把 <code>.ffx</code> 拖到这里，或者点上面的「添加预设」。</p>
+          <p class="empty-sub">导入后，AE 里打开着的 DreamEngine 面板会自动刷新，不用关掉重开。</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -126,6 +142,8 @@
   </section>
 
 </main>
+
+<div class="preset-category-menu" id="categoryMenu" hidden></div>
 
 <div class="modal-mask" id="presetDeleteDialog" hidden>
   <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="presetDeleteTitle">
