@@ -334,7 +334,7 @@ function stopPolling() {
 async function startRender() {
   const options = {
     background: $("background").value,
-    limit: Number($("limit").value) || 12,
+    limit: Number($("limit").value) || 40,
     rounds: Number($("rounds").value) || 40,
   };
   const result = await window.hub.startRender(options);

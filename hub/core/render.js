@@ -67,7 +67,7 @@ class RenderJob {
 
     const args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", this.script];
     if (options.background) args.push("-Background", String(options.background));
-    if (options.limit) args.push("-Limit", String(Number(options.limit) || 12));
+    if (options.limit) args.push("-Limit", String(Number(options.limit) || 40));
     if (options.rounds) args.push("-Rounds", String(Number(options.rounds) || 40));
     if (options.autoClose) args.push("-AutoClose");
 
