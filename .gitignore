@@ -25,6 +25,8 @@ logs/
 # Hub 品牌图例外
 !hub/assets/icon.png
 !hub/renderer/brand-mark.png
+# README 实机截图例外
+!assets/screenshots/*.png
 
 # ---- L1 内置包（可分发的预生成预览，已做帧间去重，必须入库）----
 !dist/

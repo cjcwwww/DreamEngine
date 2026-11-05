@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="cep/com.dreamengine.panel/css/brand-mark.png" width="96" alt="DreamEngine logo">
-</p>
-
 <h1 align="center">DreamEngine</h1>
 
 <p align="center">
@@ -36,6 +32,16 @@ The panel is ready to use after installation. DreamEngine Hub is mainly used for
 - **Presets:** click a card to apply it; add new `.ffx` presets through DreamEngine Hub.
 - **Materials:** click to preview; double-click to insert the media at the current composition time.
 - **Favorites:** hover a card and click the star in the upper-right corner. Favorites can be combined with category filters.
+
+## Screenshots
+
+**After Effects panel**
+
+![DreamEngine effect browser in After Effects 2021](assets/screenshots/ae-panel.png)
+
+**DreamEngine Hub**
+
+![DreamEngine Hub preset library and rendering entry point](assets/screenshots/hub.png)
 
 ## Features
 

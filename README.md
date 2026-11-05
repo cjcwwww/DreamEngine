@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="cep/com.dreamengine.panel/css/brand-mark.png" width="96" alt="DreamEngine logo">
-</p>
-
 <h1 align="center">DreamEngine</h1>
 
 <p align="center">
@@ -36,6 +32,16 @@
 - **预设**：单击卡片直接应用；新增 `.ffx` 预设请打开 DreamEngine Hub。
 - **素材**：单击播放预览；双击把素材加到当前合成的当前时间位置。
 - **收藏**：鼠标移到卡片上，点右上角星标；收藏可与分类同时筛选。
+
+## 实机截图
+
+**After Effects 面板**
+
+![DreamEngine 在 After Effects 2021 中的效果面板](assets/screenshots/ae-panel.png)
+
+**DreamEngine Hub**
+
+![DreamEngine Hub 预设库与渲染入口](assets/screenshots/hub.png)
 
 ## 功能
 
