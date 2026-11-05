@@ -96,6 +96,16 @@ var AEV_Prefs = (function () {
     return !found;
   }
 
+  function presetFavoritePathsJson() {
+    return JSON.stringify(favoritesDoc().presets || []);
+  }
+
+  function clearPresetFavorites() {
+    var doc = favoritesDoc();
+    doc.presets = [];
+    writeJson(FAVORITES_KEY, doc);
+  }
+
   function organizerDoc() {
     var doc = readJson(ORGANIZER_KEY, null);
     if (!doc || typeof doc !== "object") doc = {};
@@ -204,6 +214,8 @@ var AEV_Prefs = (function () {
     pathKey: pathKey,
     isFavorite: isFavorite,
     toggleFavorite: toggleFavorite,
+    presetFavoritePathsJson: presetFavoritePathsJson,
+    clearPresetFavorites: clearPresetFavorites,
     presetCategories: categories,
     createPresetCategory: createPresetCategory,
     renamePresetCategory: renamePresetCategory,

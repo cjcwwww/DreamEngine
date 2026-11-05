@@ -112,6 +112,9 @@ function registerIpc() {
   ipcMain.handle("categories:assign", (_event, target, id) =>
     presetCategories.assign(paths, target, id),
   );
+  ipcMain.handle("categories:toggleFavorite", (_event, target) =>
+    presetCategories.toggleFavorite(paths, target),
+  );
 
   ipcMain.handle("backgrounds:list", () => {
     // 与面板的 preset_preview.backgroundsJson 保持同一组内置 id

@@ -19,8 +19,9 @@ const state = {
   presetHoldTimer: null,
   presetDeletePath: "",
   presetDeleteName: "",
-  presetOrganizer: { categories: [], assignments: {} },
+  presetOrganizer: { categories: [], assignments: {}, favorites: {} },
   presetCategory: "all",
+  presetFavoritesOnly: false,
   categoryEditorMode: "create",
   categoryEditingId: "",
 };
@@ -85,16 +86,22 @@ function categoryLabel(target) {
   return hit ? hit.name : "";
 }
 
+function isPresetFavorite(target) {
+  return !!(state.presetOrganizer.favorites || {})[pathKey(target)];
+}
+
 function renderCategories() {
   const list = $("categoryList");
   if (!list) return;
   const counts = { favorite: 0, all: state.presets.length, uncategorized: 0 };
   for (const item of state.presets) {
+    if (isPresetFavorite(item.path)) counts.favorite++;
     const id = categoryFor(item.path);
     if (!id) counts.uncategorized++;
     else counts[id] = (counts[id] || 0) + 1;
   }
   list.textContent = "";
+  list.appendChild(categoryRow("__favorites__", "收藏", counts.favorite, true));
   list.appendChild(categoryRow("all", "全部预设", counts.all));
   list.appendChild(categoryRow("__uncategorized__", "未分类", counts.uncategorized));
   for (const category of categories()) {
@@ -107,11 +114,13 @@ function renderCategories() {
   }
 }
 
-function categoryRow(id, label, count) {
+function categoryRow(id, label, count, favoriteRow) {
   const li = document.createElement("li");
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "category-item" + (state.presetCategory === id ? " active" : "");
+  const active = favoriteRow ? state.presetFavoritesOnly : state.presetCategory === id;
+  button.className =
+    "category-item" + (favoriteRow ? " favorite-category" : "") + (active ? " active" : "");
   const text = document.createElement("span");
   text.className = "category-label";
   text.textContent = label;
@@ -121,11 +130,33 @@ function categoryRow(id, label, count) {
   button.appendChild(text);
   button.appendChild(badge);
   button.addEventListener("click", () => {
-    state.presetCategory = id;
+    if (favoriteRow) state.presetFavoritesOnly = !state.presetFavoritesOnly;
+    else state.presetCategory = id;
     renderPresets();
   });
   li.appendChild(button);
   return li;
+}
+
+function bindFavoriteButton(thumb, item) {
+  const active = isPresetFavorite(item.path);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "card-favorite-toggle" + (active ? " active" : "");
+  button.setAttribute("aria-pressed", active ? "true" : "false");
+  button.title = active ? "取消收藏" : "收藏";
+  button.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z"/></svg>';
+  button.addEventListener("pointerdown", (event) => {
+    event.stopPropagation();
+    cancelPresetHold();
+  });
+  button.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    await togglePresetFavorite(item);
+  });
+  button.addEventListener("dblclick", (event) => event.stopPropagation());
+  thumb.appendChild(button);
 }
 
 function bindCategoryButton(thumb, item) {
@@ -239,6 +270,14 @@ async function assignCategory(item, id) {
   renderPresets();
 }
 
+async function togglePresetFavorite(item) {
+  const result = await window.hub.togglePresetFavorite(item.path);
+  if (!result.ok) return;
+  state.presetOrganizer = result.doc;
+  setStatus(result.favorite ? `已收藏「${item.name}」` : `已取消收藏「${item.name}」`);
+  renderPresets();
+}
+
 async function deleteCategory(category) {
   const result = await window.hub.deletePresetCategory(category.id);
   if (!result.ok) return;
@@ -257,6 +296,7 @@ function renderPresets() {
   const query = state.query.trim().toLowerCase();
   const items = state.presets.filter((item) => {
     if (query && !item.name.toLowerCase().includes(query)) return false;
+    if (state.presetFavoritesOnly && !isPresetFavorite(item.path)) return false;
     const cat = categoryFor(item.path);
     if (state.presetCategory === "__uncategorized__") return !cat;
     if (state.presetCategory !== "all") return cat === state.presetCategory;
@@ -295,6 +335,7 @@ function renderPresets() {
       ph.textContent = "待渲染";
       thumb.appendChild(ph);
     }
+    bindFavoriteButton(thumb, item);
     bindCategoryButton(thumb, item);
 
     const body = document.createElement("div");

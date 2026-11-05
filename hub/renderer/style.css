@@ -237,6 +237,7 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
   color: var(--text);
   font-weight: 600;
 }
+.category-item.favorite-category { margin-bottom: 4px; }
 .category-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .category-count { flex: 0 0 auto; color: var(--faint); font-size: 10px; }
 
@@ -359,12 +360,37 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
   overflow-y: auto;
   padding: 16px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fill, 168px);
+  grid-auto-rows: max-content;
   gap: 12px;
   align-content: start;
+  align-items: start;
+  justify-content: start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  overscroll-behavior: contain;
+}
+
+.grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  background-clip: padding-box;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: padding-box;
 }
 
 .card {
+  width: 168px;
+  align-self: start;
+  min-height: 0;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -377,7 +403,8 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 
 .card-thumb {
   position: relative;
-  aspect-ratio: 1 / 1;
+  flex: 0 0 168px;
+  height: 168px;
   background: var(--surface-2);
   display: flex;
   align-items: center;
@@ -416,6 +443,53 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 
 .card:hover .card-category-toggle,
 .card:focus-within .card-category-toggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card-favorite-toggle {
+  position: absolute;
+  z-index: 5;
+  top: 28px;
+  right: 7px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: rgba(10, 11, 12, 0.82);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.card-favorite-toggle svg {
+  width: 13px;
+  height: 13px;
+}
+
+.card-favorite-toggle path {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.card-favorite-toggle.active {
+  border-color: rgba(215, 194, 141, 0.46);
+  color: #d7c28d;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card-favorite-toggle.active path { fill: currentColor; }
+
+.card:hover .card-favorite-toggle,
+.card:focus-within .card-favorite-toggle {
   opacity: 1;
   pointer-events: auto;
 }

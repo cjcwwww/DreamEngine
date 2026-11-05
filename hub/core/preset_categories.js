@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 function emptyDoc() {
-  return { version: 1, categories: [], assignments: {} };
+  return { version: 1, categories: [], assignments: {}, favorites: {} };
 }
 
 function pathKey(value) {
@@ -21,6 +21,7 @@ function read(paths) {
       version: 1,
       categories: Array.isArray(doc.categories) ? doc.categories : [],
       assignments: doc.assignments && typeof doc.assignments === "object" ? doc.assignments : {},
+      favorites: doc.favorites && typeof doc.favorites === "object" ? doc.favorites : {},
     };
   } catch {
     return emptyDoc();
@@ -94,4 +95,15 @@ function assign(paths, target, categoryId) {
   return { ok: true, doc };
 }
 
-module.exports = { read, create, rename, remove, assign, pathKey };
+function toggleFavorite(paths, target) {
+  const doc = read(paths);
+  const key = pathKey(target);
+  if (!key) return { ok: false, reason: "empty_path", doc };
+  const favorite = !doc.favorites[key];
+  if (favorite) doc.favorites[key] = true;
+  else delete doc.favorites[key];
+  write(paths, doc);
+  return { ok: true, favorite, doc };
+}
+
+module.exports = { read, create, rename, remove, assign, toggleFavorite, pathKey };

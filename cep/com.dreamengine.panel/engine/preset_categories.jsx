@@ -2,7 +2,7 @@
 // preset_categories.jsx —— AE / Hub 共享的预设分类存储
 //
 // 文件：<我的文档>/DreamEngine/preset_categories.json
-// 结构：{ version, categories:[{id,name}], assignments:{path:id} }
+// 结构：{ version, categories:[{id,name}], assignments:{path:id}, favorites:{path:true} }
 // 语法：ES3 only。
 // ============================================================
 
@@ -28,13 +28,14 @@ var AEV_PresetCategories = (function () {
     }
 
     function emptyDoc() {
-        return { version: 1, categories: [], assignments: {} };
+        return { version: 1, categories: [], assignments: {}, favorites: {} };
     }
 
     function normalize(doc) {
         if (!doc || typeof doc !== "object") return emptyDoc();
         if (!doc.categories || !doc.categories.length) doc.categories = doc.categories || [];
         if (!doc.assignments || typeof doc.assignments !== "object") doc.assignments = {};
+        if (!doc.favorites || typeof doc.favorites !== "object") doc.favorites = {};
         doc.version = 1;
         return doc;
     }
@@ -52,6 +53,7 @@ var AEV_PresetCategories = (function () {
     function docJson(doc) {
         var categories = [];
         var assignments = [];
+        var favorites = [];
         var i;
         for (i = 0; i < doc.categories.length; i++) {
             categories.push(
@@ -63,8 +65,13 @@ var AEV_PresetCategories = (function () {
             if (!doc.assignments.hasOwnProperty(key)) continue;
             assignments.push(jsonText(key) + ":" + jsonText(doc.assignments[key]));
         }
+        for (var favorite in doc.favorites) {
+            if (!doc.favorites.hasOwnProperty(favorite) || !doc.favorites[favorite]) continue;
+            favorites.push(jsonText(favorite) + ":true");
+        }
         return '{"version":1,"categories":[' + categories.join(",") +
-            '],"assignments":{' + assignments.join(",") + "}}";
+            '],"assignments":{' + assignments.join(",") +
+            '},"favorites":{' + favorites.join(",") + "}}";
     }
 
     function writeDoc(doc) {
@@ -159,6 +166,38 @@ var AEV_PresetCategories = (function () {
         return docJson(writeDoc(doc));
     }
 
+    function toggleFavoriteJson(path) {
+        var doc = readDoc();
+        var key = pathKey(path);
+        if (!key) return '{"status":"error","reason":"empty_path"}';
+        if (doc.favorites[key]) delete doc.favorites[key];
+        else doc.favorites[key] = true;
+        return docJson(writeDoc(doc));
+    }
+
+    function importFavoritesJson(text) {
+        var doc = readDoc();
+        var incoming;
+        try {
+            incoming = eval("(" + String(text || "[]") + ")");
+        } catch (e) {
+            return '{"status":"error","reason":"bad_json"}';
+        }
+        if (incoming instanceof Array) {
+            for (var i = 0; i < incoming.length; i++) {
+                var key = pathKey(incoming[i]);
+                if (key) doc.favorites[key] = true;
+            }
+        } else if (incoming && typeof incoming === "object") {
+            for (var favorite in incoming) {
+                if (incoming.hasOwnProperty(favorite) && incoming[favorite]) {
+                    doc.favorites[pathKey(favorite)] = true;
+                }
+            }
+        }
+        return docJson(writeDoc(doc));
+    }
+
     return {
         loadJson: loadJson,
         importJson: importJson,
@@ -166,6 +205,8 @@ var AEV_PresetCategories = (function () {
         renameJson: renameJson,
         deleteJson: deleteJson,
         assignJson: assignJson,
+        toggleFavoriteJson: toggleFavoriteJson,
+        importFavoritesJson: importFavoritesJson,
         pathKey: pathKey
     };
 })();

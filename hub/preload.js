@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld("hub", {
   renamePresetCategory: (id, name) => ipcRenderer.invoke("categories:rename", id, name),
   deletePresetCategory: (id) => ipcRenderer.invoke("categories:delete", id),
   assignPresetCategory: (target, id) => ipcRenderer.invoke("categories:assign", target, id),
+  togglePresetFavorite: (target) => ipcRenderer.invoke("categories:toggleFavorite", target),
   getPathForFile: (file) => webUtils.getPathForFile(file),
   reveal: (target) => ipcRenderer.invoke("shell:reveal", target),
   listBackgrounds: () => ipcRenderer.invoke("backgrounds:list"),

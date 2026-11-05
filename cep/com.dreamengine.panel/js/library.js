@@ -28,7 +28,7 @@ var AEV_Library = (function () {
     presetPreviews: {},
     presetCategory: "all",
     presetFavoritesOnly: false,
-    presetOrganizer: { categories: [], assignments: {} },
+    presetOrganizer: { categories: [], assignments: {}, favorites: {} },
     presetEditorMode: "create",
     presetEditingId: "",
     presetHoldTimer: null,
@@ -55,6 +55,13 @@ var AEV_Library = (function () {
   }
 
   function isFavorite(kind, id) {
+    if (kind === "presets") {
+      return !!(
+        window.AEV_Prefs &&
+        state.presetOrganizer.favorites &&
+        state.presetOrganizer.favorites[AEV_Prefs.pathKey(id)]
+      );
+    }
     return window.AEV_Prefs && AEV_Prefs.isFavorite(kind, id);
   }
 
@@ -82,6 +89,16 @@ var AEV_Library = (function () {
     appendStarIcon(button);
     button.addEventListener("click", function (event) {
       event.stopPropagation();
+      if (kind === "presets") {
+        engine(
+          "AEV_PresetCategories.toggleFavoriteJson(" + JSON.stringify(id) + ")",
+          function (result) {
+            updatePresetOrganizer(parseEngineResult(result));
+            if (onChange) onChange();
+          }
+        );
+        return;
+      }
       AEV_Prefs.toggleFavorite(kind, id);
       if (onChange) onChange();
     });
@@ -1386,7 +1403,8 @@ var AEV_Library = (function () {
     var doc = data && typeof data === "object" ? data : {};
     state.presetOrganizer = {
       categories: doc.categories || [],
-      assignments: doc.assignments || {}
+      assignments: doc.assignments || {},
+      favorites: doc.favorites || {}
     };
   }
 
@@ -1403,20 +1421,43 @@ var AEV_Library = (function () {
     engine("AEV_PresetCategories.loadJson()", function (result) {
       var data = parseEngineResult(result);
       updatePresetOrganizer(data);
-      if (presetCategories().length || !AEV_Prefs) {
+      if (!AEV_Prefs) {
         if (done) done();
         return;
       }
+
       var legacy = AEV_Prefs.presetOrganizerJson();
       var legacyDoc = parseEngineResult(legacy);
-      if (!legacyDoc || !legacyDoc.categories || !legacyDoc.categories.length) {
-        if (done) done();
-        return;
+      var hasLegacyCategories =
+        legacyDoc && legacyDoc.categories && legacyDoc.categories.length;
+      var finish = function () {
+        var legacyFavorites = AEV_Prefs.presetFavoritePathsJson();
+        var rows = parseEngineResult(legacyFavorites);
+        if (!rows || !rows.length) {
+          if (done) done();
+          return;
+        }
+        engine(
+          "AEV_PresetCategories.importFavoritesJson(" + JSON.stringify(legacyFavorites) + ")",
+          function (migrated) {
+            var favoriteDoc = parseEngineResult(migrated);
+            if (favoriteDoc && favoriteDoc.status !== "error") {
+              updatePresetOrganizer(favoriteDoc);
+              AEV_Prefs.clearPresetFavorites();
+            }
+            if (done) done();
+          }
+        );
+      };
+
+      if (!presetCategories().length && hasLegacyCategories) {
+        engine("AEV_PresetCategories.importJson(" + JSON.stringify(legacy) + ")", function (migrated) {
+          updatePresetOrganizer(parseEngineResult(migrated));
+          finish();
+        });
+      } else {
+        finish();
       }
-      engine("AEV_PresetCategories.importJson(" + JSON.stringify(legacy) + ")", function (migrated) {
-        updatePresetOrganizer(parseEngineResult(migrated));
-        if (done) done();
-      });
     });
   }
 
