@@ -44,11 +44,11 @@ Hub is a standalone manager that runs outside the active AE process:
 
 - Add, rename, favorite, categorize, and long-press to delete `.ffx` presets.
 - Render offline previews and animated frame sequences for plugin presets.
-- Skip one preset from automatic rendering or re-render only that preset.
+- Clear one preset's previous preview or force a fresh single-preset render.
 - Add custom preview backgrounds.
 - Inspect panel installation, AE versions, directories, and render logs.
 
-Preset categories, preset favorites, and skip-render state are shared between the panel and Hub.
+Preset categories and preset favorites are shared between the panel and Hub.
 
 ## Features
 
@@ -60,8 +60,9 @@ Preset categories, preset favorites, and skip-render state are shared between th
 - Create, rename, and delete categories in the left sidebar.
 - Favorites are an independent filter and can be combined with categories.
 - Animated presets play while hovered; static previews show an orange dot in the upper-right corner.
-- The context menu provides rename, favorite, skip-render, render-only, and move-to-category actions.
-- Long-press a card to delete its `.ffx` file from the preset library.
+- The context menu provides rename, favorite, skip-render, render-only, delete, and move-to-category actions.
+- "Skip render" removes that preset's index and frame files, returns it to the unrendered state, and includes it in the next batch render again.
+- Long-press a card or use the context menu to delete its `.ffx` file from the preset library.
 
 **Offline preview rendering**
 
@@ -69,7 +70,6 @@ Preset categories, preset favorites, and skip-render state are shared between th
 - Each dedicated AE instance handles up to 40 presets by default to reduce repeated launches.
 - Save and close AE before rendering. Hub can reopen AE when the job finishes.
 - Built-in and custom preview backgrounds are supported.
-- "Skip render" persistently excludes one preset without stopping other work.
 - "Render only" processes one preset and forces a fresh render, bypassing existing previews and the failure blacklist.
 
 **Settings and diagnostics**
@@ -137,7 +137,7 @@ DreamEngine does not upload projects, media, or presets.
 | --- | --- |
 | `Documents/DreamEngine/presets/` | User `.ffx` presets |
 | `Documents/DreamEngine/backgrounds/` | Custom preview backgrounds |
-| `Documents/DreamEngine/preset_categories.json` | Preset categories, preset favorites, and skip-render state |
+| `Documents/DreamEngine/preset_categories.json` | Preset categories and preset favorites |
 | `Documents/DreamEngine/materials/` | Media index, waveform, and video preview cache |
 | `Documents/DreamEngineProbe/` | Hub render state and logs |
 | `%APPDATA%/Adobe/CEP/extensions/com.dreamengine.panel/` | Installed panel and built-in preview indexes |

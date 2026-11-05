@@ -88,7 +88,7 @@ function createWindow() {
 function registerIpc() {
   ipcMain.handle("hub:snapshot", () => snapshot());
 
-  ipcMain.handle("presets:list", () => presets.list(paths, presetCategories.read(paths)));
+  ipcMain.handle("presets:list", () => presets.list(paths));
 
   ipcMain.handle("presets:pick", async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
@@ -112,9 +112,7 @@ function registerIpc() {
     presets.remapPreviewReferences(paths, renamed.previousPath, renamed.path, renamed.name);
     return renamed;
   });
-  ipcMain.handle("presets:toggleRenderSkip", (_event, target) =>
-    presetCategories.toggleRenderSkip(paths, target),
-  );
+  ipcMain.handle("presets:clearRender", (_event, target) => presets.clearPreview(target, paths));
   ipcMain.handle("categories:load", () => presetCategories.read(paths));
   ipcMain.handle("categories:create", (_event, name) => presetCategories.create(paths, name));
   ipcMain.handle("categories:rename", (_event, id, name) => presetCategories.rename(paths, id, name));

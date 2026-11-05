@@ -94,10 +94,6 @@ function isPresetFavorite(target) {
   return !!(state.presetOrganizer.favorites || {})[pathKey(target)];
 }
 
-function isPresetRenderDisabled(target) {
-  return !!(state.presetOrganizer.renderSkip || {})[pathKey(target)];
-}
-
 function renderCategories() {
   const list = $("categoryList");
   if (!list) return;
@@ -282,15 +278,15 @@ function openPresetMenu(item, x, y) {
   menu.textContent = "";
   menu.appendChild(menuTitle(item.name));
   const favorite = isPresetFavorite(item.path);
-  const renderDisabled = isPresetRenderDisabled(item.path);
   menu.appendChild(menuButton("重命名", false, false, () => openPresetRename(item)));
   menu.appendChild(menuButton(favorite ? "取消收藏" : "收藏", false, false, () =>
     togglePresetFavorite(item),
   ));
-  menu.appendChild(menuButton(renderDisabled ? "恢复渲染" : "取消渲染", false, false, () =>
-    togglePresetRenderSkip(item),
-  ));
+  if (item.rendered) {
+    menu.appendChild(menuButton("取消渲染", false, false, () => clearPresetRender(item)));
+  }
   menu.appendChild(menuButton("单独渲染", false, false, () => renderSinglePreset(item)));
+  menu.appendChild(menuButton("删除预设", false, true, () => openPresetDelete(item)));
 
   const separator = document.createElement("div");
   separator.className = "preset-category-menu-separator";
@@ -364,14 +360,15 @@ async function togglePresetFavorite(item) {
   renderPresets();
 }
 
-async function togglePresetRenderSkip(item) {
-  const result = await window.hub.togglePresetRenderSkip(item.path);
+async function clearPresetRender(item) {
+  if (state.rendering) {
+    setStatus("请先停止当前渲染任务，再清空预设预览", true);
+    return;
+  }
+  const result = await window.hub.clearPresetRender(item.path);
   if (!result.ok) return;
-  state.presetOrganizer = result.doc;
-  setStatus(
-    result.renderDisabled ? `已取消渲染「${item.name}」` : `已恢复渲染「${item.name}」`,
-  );
-  renderPresets();
+  await loadPresets();
+  setStatus(`已清空「${item.name}」的预览，下次批渲会重新加入`);
 }
 
 async function deleteCategory(category) {
@@ -444,8 +441,7 @@ function renderPresets() {
 
   for (const item of items) {
     const card = document.createElement("div");
-    const renderDisabled = isPresetRenderDisabled(item.path);
-    card.className = "card" + (renderDisabled ? " render-disabled" : "");
+    card.className = "card";
 
     const thumb = document.createElement("div");
     thumb.className = "card-thumb";
@@ -488,8 +484,7 @@ function renderPresets() {
 
     const category = document.createElement("div");
     category.className = "card-category";
-    category.textContent =
-      (categoryLabel(item.path) || "未分类") + (renderDisabled ? " · 已取消渲染" : "");
+    category.textContent = categoryLabel(item.path) || "未分类";
 
     titleRow.appendChild(name);
     titleRow.appendChild(size);

@@ -405,9 +405,6 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
 }
 
 .card:hover { border-color: var(--border-strong); }
-.card.render-disabled { border-color: rgba(255, 255, 255, 0.04); }
-.card.render-disabled .card-thumb { opacity: 0.5; }
-.card.render-disabled .card-category { color: var(--danger); }
 
 .card-thumb {
   position: relative;

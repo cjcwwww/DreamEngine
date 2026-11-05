@@ -2,7 +2,7 @@
 // preset_categories.jsx —— AE / Hub 共享的预设分类存储
 //
 // 文件：<我的文档>/DreamEngine/preset_categories.json
-// 结构：{ version, categories, assignments, favorites, renderSkip }
+// 结构：{ version, categories, assignments, favorites }
 // 语法：ES3 only。
 // ============================================================
 
@@ -28,7 +28,7 @@ var AEV_PresetCategories = (function () {
     }
 
     function emptyDoc() {
-        return { version: 1, categories: [], assignments: {}, favorites: {}, renderSkip: {} };
+        return { version: 1, categories: [], assignments: {}, favorites: {} };
     }
 
     function normalize(doc) {
@@ -36,7 +36,6 @@ var AEV_PresetCategories = (function () {
         if (!doc.categories || !doc.categories.length) doc.categories = doc.categories || [];
         if (!doc.assignments || typeof doc.assignments !== "object") doc.assignments = {};
         if (!doc.favorites || typeof doc.favorites !== "object") doc.favorites = {};
-        if (!doc.renderSkip || typeof doc.renderSkip !== "object") doc.renderSkip = {};
         doc.version = 1;
         return doc;
     }
@@ -55,7 +54,6 @@ var AEV_PresetCategories = (function () {
         var categories = [];
         var assignments = [];
         var favorites = [];
-        var renderSkip = [];
         var i;
         for (i = 0; i < doc.categories.length; i++) {
             categories.push(
@@ -71,14 +69,9 @@ var AEV_PresetCategories = (function () {
             if (!doc.favorites.hasOwnProperty(favorite) || !doc.favorites[favorite]) continue;
             favorites.push(jsonText(favorite) + ":true");
         }
-        for (var skipped in doc.renderSkip) {
-            if (!doc.renderSkip.hasOwnProperty(skipped) || !doc.renderSkip[skipped]) continue;
-            renderSkip.push(jsonText(skipped) + ":true");
-        }
         return '{"version":1,"categories":[' + categories.join(",") +
             '],"assignments":{' + assignments.join(",") +
-            '},"favorites":{' + favorites.join(",") +
-            '},"renderSkip":{' + renderSkip.join(",") + "}}";
+            '},"favorites":{' + favorites.join(",") + "}}";
     }
 
     function writeDoc(doc) {

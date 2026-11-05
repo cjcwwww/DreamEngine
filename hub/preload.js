@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld("hub", {
   importPaths: (files) => ipcRenderer.invoke("presets:importPaths", files),
   deletePreset: (target) => ipcRenderer.invoke("presets:delete", target),
   renamePreset: (target, name) => ipcRenderer.invoke("presets:rename", target, name),
-  togglePresetRenderSkip: (target) => ipcRenderer.invoke("presets:toggleRenderSkip", target),
+  clearPresetRender: (target) => ipcRenderer.invoke("presets:clearRender", target),
   loadPresetCategories: () => ipcRenderer.invoke("categories:load"),
   createPresetCategory: (name) => ipcRenderer.invoke("categories:create", name),
   renamePresetCategory: (id, name) => ipcRenderer.invoke("categories:rename", id, name),

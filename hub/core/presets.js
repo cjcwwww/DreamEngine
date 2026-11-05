@@ -49,7 +49,7 @@ function loadPreviewIndex(paths) {
  * 列出预设库。
  * @param {ReturnType<import("./paths").createPaths>} paths
  */
-function list(paths, organizer = {}) {
+function list(paths) {
   const index = loadPreviewIndex(paths);
   let names = [];
   try {
@@ -88,10 +88,6 @@ function list(paths, organizer = {}) {
       offline: hit ? !!hit.plugin : false,
       thumb: hit && hit.src ? path.join(paths.dataDir, hit.src) : "",
       framePattern: frameSrc ? path.join(paths.dataDir, frameSrc) : "",
-      renderDisabled: !!(
-        organizer.renderSkip &&
-        organizer.renderSkip[String(full).replace(/\\/g, "/").toLowerCase()]
-      ),
     });
   }
 
@@ -243,12 +239,125 @@ function remapPreviewReferences(paths, from, to, name) {
   }
 }
 
+function dataFilePath(paths, relative) {
+  const root = path.resolve(paths.dataDir);
+  const full = path.resolve(root, String(relative || "").replace(/\//g, path.sep));
+  if (full === root || !full.startsWith(root + path.sep)) return "";
+  return full;
+}
+
+function collectPreviewFiles(paths, item, output) {
+  if (!item || typeof item !== "object") return;
+  const src = dataFilePath(paths, item.src);
+  if (src) output.add(src);
+  const pattern = dataFilePath(paths, item.frameSrc);
+  if (!pattern) return;
+  if (!pattern.includes("%04d")) {
+    output.add(pattern);
+    return;
+  }
+  const dir = path.dirname(pattern);
+  const namePattern = path.basename(pattern);
+  const escaped = namePattern
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace("%04d", "\\d{4}");
+  let names = [];
+  try {
+    names = fs.readdirSync(dir);
+  } catch {
+    return;
+  }
+  const matcher = new RegExp("^" + escaped + "$", "i");
+  for (const name of names) {
+    if (matcher.test(name)) output.add(path.join(dir, name));
+  }
+}
+
+function removeIndexEntry(file, targetKey) {
+  let doc;
+  try {
+    doc = JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
+  } catch {
+    return [];
+  }
+  const removed = [];
+  doc.items = (doc.items || []).filter((item) => {
+    if (!item || norm(item.path) !== targetKey) return true;
+    removed.push(item);
+    return false;
+  });
+  if (removed.length) fs.writeFileSync(file, JSON.stringify(doc, null, 1), "utf8");
+  return removed;
+}
+
+function removeRows(file, targetKey, pathColumn) {
+  let text;
+  try {
+    text = fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "");
+  } catch {
+    return 0;
+  }
+  let removed = 0;
+  const output = text.split(/\r?\n/).filter((line) => {
+    if (!line || line.charAt(0) === "#") return true;
+    const row = line.split("\t");
+    if (norm(row[pathColumn]) !== targetKey) return true;
+    removed++;
+    return false;
+  });
+  if (removed) fs.writeFileSync(file, output.join("\r\n"), "utf8");
+  return removed;
+}
+
+function removeBlacklistJson(file, targetKey) {
+  let doc;
+  try {
+    doc = JSON.parse(fs.readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
+  } catch {
+    return false;
+  }
+  const before = (doc.items || []).length;
+  doc.items = (doc.items || []).filter((item) => norm(item && item.matchName) !== targetKey);
+  if (doc.items.length === before) return false;
+  fs.writeFileSync(file, JSON.stringify({ version: doc.version || 1, items: doc.items }, null, 1), "utf8");
+  return true;
+}
+
+/** 清空一条预设的预览结果，让它重新回到待渲染队列 */
+function clearPreview(target, paths) {
+  const full = path.resolve(String(target || ""));
+  const root = path.resolve(paths.presets);
+  if (!/\.ffx$/i.test(full)) return { ok: false, reason: "not_ffx" };
+  if (path.dirname(full) !== root) return { ok: false, reason: "outside_library" };
+  const key = norm(full);
+  const removedItems = [
+    ...removeIndexEntry(paths.presetManifest, key),
+    ...removeIndexEntry(paths.presetPluginManifest, key),
+  ];
+  const files = new Set();
+  for (const item of removedItems) collectPreviewFiles(paths, item, files);
+  let deleted = 0;
+  for (const file of files) {
+    try {
+      fs.unlinkSync(file);
+      deleted++;
+    } catch {
+      /* 索引可能共享已清理的帧，忽略缺失文件 */
+    }
+  }
+  removeRows(paths.entries, key, 1);
+  removeRows(path.join(paths.probe, "preset_plugin_blacklist.tsv"), key, 0);
+  removeBlacklistJson(path.join(paths.dataDir, "preset_plugin_blacklist.json"), key);
+  return { ok: true, removed: removedItems.length, deleted };
+}
+
 module.exports = {
   list,
   importFiles,
   removePreset,
   renamePreset,
   remapPreviewReferences,
+  clearPreview,
   loadPreviewIndex,
   uniqueTarget,
   norm,

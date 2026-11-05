@@ -7,7 +7,6 @@ function emptyDoc() {
     categories: [],
     assignments: {},
     favorites: {},
-    renderSkip: {},
   };
 }
 
@@ -28,7 +27,6 @@ function read(paths) {
       categories: Array.isArray(doc.categories) ? doc.categories : [],
       assignments: doc.assignments && typeof doc.assignments === "object" ? doc.assignments : {},
       favorites: doc.favorites && typeof doc.favorites === "object" ? doc.favorites : {},
-      renderSkip: doc.renderSkip && typeof doc.renderSkip === "object" ? doc.renderSkip : {},
     };
   } catch {
     return emptyDoc();
@@ -113,17 +111,6 @@ function toggleFavorite(paths, target) {
   return { ok: true, favorite, doc };
 }
 
-function toggleRenderSkip(paths, target) {
-  const doc = read(paths);
-  const key = pathKey(target);
-  if (!key) return { ok: false, reason: "empty_path", doc };
-  const renderDisabled = !doc.renderSkip[key];
-  if (renderDisabled) doc.renderSkip[key] = true;
-  else delete doc.renderSkip[key];
-  write(paths, doc);
-  return { ok: true, renderDisabled, doc };
-}
-
 function movePath(paths, from, to) {
   const oldKey = pathKey(from);
   const newKey = pathKey(to);
@@ -137,10 +124,6 @@ function movePath(paths, from, to) {
     doc.favorites[newKey] = true;
     delete doc.favorites[oldKey];
   }
-  if (doc.renderSkip[oldKey]) {
-    doc.renderSkip[newKey] = true;
-    delete doc.renderSkip[oldKey];
-  }
   write(paths, doc);
   return { ok: true, doc };
 }
@@ -152,7 +135,6 @@ module.exports = {
   remove,
   assign,
   toggleFavorite,
-  toggleRenderSkip,
   movePath,
   pathKey,
 };
