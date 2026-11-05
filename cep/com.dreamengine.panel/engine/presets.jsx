@@ -788,10 +788,23 @@ var AEV_Presets = (function () {
             return result("error", [["reason", "no_file"], ["path", String(path || "")]]);
         }
         var dir = libraryDir();
-        var target = new File(dir.fsName + "/" + src.name);
+        /* AE 的 File.name 对非 ASCII 文件名返回 **URL 编码串**
+           （"丝绸.ffx" → "%E4%B8%9D%E7%BB%B8.ffx"），这是 M5 实机探针确认的。
+           如果直接用 src.name 当目标文件名，复制到磁盘上的名字会变成一串
+           "%E4B8…" 字面字符（显示层靠 displayName 的 decodeURI 恰好掩盖，
+           但磁盘文件名是损坏的，文件管理器里看到的是乱码，离线渲染脚本按
+           *.ffx 扫描时也会拿到带百分号的路径）。必须先 decode 还原真实文件名。
+           decodeURI 对文件名里真含 % 的情况会抛错，用 try/catch 回退原名。 */
+        var rawName;
+        try {
+            rawName = decodeURI(src.name);
+        } catch (e) {
+            rawName = src.name;
+        }
+        var target = new File(dir.fsName + "/" + rawName);
         var n = 1;
         while (target.exists) {
-            var base = String(src.name).replace(/\.ffx$/i, "");
+            var base = String(rawName).replace(/\.ffx$/i, "");
             target = new File(dir.fsName + "/" + base + "_" + n + ".ffx");
             n++;
         }

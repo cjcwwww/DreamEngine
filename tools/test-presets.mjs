@@ -173,6 +173,25 @@ test("File.openDialog 的 Windows 过滤器用 *.ffx，不再用没有冒号的�
   assert.match(pick, /isPresetFile\(f\.name\)/);
 });
 
+test("导入中文名 .ffx 时磁盘文件名不乱码（M5 实机修复）", () => {
+  const src = read("cep/com.dreamengine.panel/engine/presets.jsx");
+  const code = codeOf(src);
+  const imp = code.slice(
+    code.indexOf("function importOneJson("),
+    code.indexOf("function libraryJson(")
+  );
+  // AE 的 File.name 对非 ASCII 文件名返回 **URL 编码串**
+  // （"丝绸.ffx" → "%E4%B8%9D%E7%BB%B8.ffx"），这是 M5 实机探针确认的。
+  // 若直接用 src.name 当目标文件名，复制到磁盘上的名字会变成字面
+  // "%E4B8…" 串（显示层靠 displayName 的 decodeURI 恰好掩盖，但磁盘文件名
+  // 是损坏的，文件管理器里看到的是乱码）。必须先 decodeURI 还原真实文件名。
+  assert.match(imp, /decodeURI\(src\.name\)/);
+  assert.doesNotMatch(imp, /new File\(dir\.fsName \+ "\/" \+ src\.name\)/);
+  // decodeURI 对文件名里真含 % 的情况会抛错，必须有 try/catch 回退原名，
+  // 不能让整条 import 崩掉
+  assert.match(imp, /catch \(e\) \{\s*rawName = src\.name/);
+});
+
 test("添加预设主通道走 CEF 原生文件框，不走 AE 模态对话框", () => {
   const html = read("cep/com.dreamengine.panel/index.html");
   const lib = read("cep/com.dreamengine.panel/js/library.js");
