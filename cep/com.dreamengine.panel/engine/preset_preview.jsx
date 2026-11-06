@@ -152,20 +152,42 @@ var AEV_PresetPreview = (function () {
         return null;
     }
 
-    /** 统计效果数与含关键帧的属性数（判断预设有没有真的落上去） */
-    function snapshot(comp) {
-        var effects = 0, keyProps = 0;
+    /**
+     * 遍历合成里的真实图层，并递归进入预合成。
+     * 预设现在作用在内置背景自身的文字/纯色/形状层上，
+     * 顶层快照必须能看到这些子层产生的效果和关键帧。
+     */
+    function walkLayerTree(comp, callback, depth, seen) {
+        if (!comp || (depth || 0) > 5) return;
+        seen = seen || [];
+        for (var s = 0; s < seen.length; s++) {
+            if (seen[s] === comp) return;
+        }
+        seen.push(comp);
         var total = 0;
         try { total = comp.numLayers; } catch (e) { total = 0; }
         for (var i = 1; i <= total; i++) {
             var layer = null;
             try { layer = comp.layer(i); } catch (e2) { continue; }
             if (!layer) continue;
+            callback(layer);
+            var source = null;
+            try { source = layer.source; } catch (e3) {}
+            if (source && source instanceof CompItem) {
+                walkLayerTree(source, callback, (depth || 0) + 1, seen);
+            }
+        }
+    }
+
+    /** 统计效果数与含关键帧的属性数（判断预设有没有真的落上去） */
+    function snapshot(comp) {
+        var effects = 0, keyProps = 0;
+        walkLayerTree(comp, function (layer) {
             var parade = null;
-            try { parade = layer.property("ADBE Effect Parade"); } catch (e3) { continue; }
-            if (!parade) continue;
+            try { parade = layer.property("ADBE Effect Parade"); } catch (e3) { return; }
+            if (!parade) return;
             var count = 0;
-            try { count = parade.numProperties; } catch (e4) { continue; }
+            try { count = parade.numProperties; } catch (e4) { return; }
             for (var e = 1; e <= count; e++) {
                 effects++;
                 var group = null;
@@ -180,7 +202,7 @@ var AEV_PresetPreview = (function () {
                     } catch (e7) {}
                 }
             }
-        }
+        });
         return { effects: effects, keyProps: keyProps };
     }
 
@@ -221,30 +243,21 @@ var AEV_PresetPreview = (function () {
 
     function keyRange(comp) {
         var out = { min: 1e9, max: -1e9, keys: 0, count: 0 };
-        var total = 0;
-        try { total = comp.numLayers; } catch (e) { total = 0; }
-        for (var i = 1; i <= total; i++) {
-            var layer = null;
-            try { layer = comp.layer(i); } catch (e2) { continue; }
-            if (layer) walkKeys(layer, 0, out);
-        }
+        walkLayerTree(comp, function (layer) {
+            walkKeys(layer, 0, out);
+        });
         return out;
     }
 
     /** 收集预设用到的第三方插件效果 matchName（只读名字，不碰参数值） */
     function pluginMatchNames(comp) {
         var found = [];
-        var total = 0;
-        try { total = comp.numLayers; } catch (e) { total = 0; }
-        for (var i = 1; i <= total; i++) {
-            var layer = null;
-            try { layer = comp.layer(i); } catch (e2) { continue; }
-            if (!layer) continue;
+        walkLayerTree(comp, function (layer) {
             var parade = null;
-            try { parade = layer.property("ADBE Effect Parade"); } catch (e3) { continue; }
-            if (!parade) continue;
+            try { parade = layer.property("ADBE Effect Parade"); } catch (e3) { return; }
+            if (!parade) return;
             var count = 0;
-            try { count = parade.numProperties; } catch (e4) { continue; }
+            try { count = parade.numProperties; } catch (e4) { return; }
             for (var e = 1; e <= count; e++) {
                 var group = null;
                 try { group = parade.property(e); } catch (e5) { continue; }
@@ -256,7 +269,7 @@ var AEV_PresetPreview = (function () {
                     if (!AEV_Recipe.isBuiltinMatch(mn)) found.push(mn);
                 }
             }
-        }
+        });
         return found;
     }
 
@@ -267,6 +280,37 @@ var AEV_PresetPreview = (function () {
             try { comp.layer(i).selected = false; } catch (e2) {}
         }
         try { layer.selected = true; } catch (e3) {}
+    }
+
+    function targetLayersForAsset(kind, asset, fallbackLayer) {
+        var targets = [];
+        if (kind === "text") {
+            walkLayerTree(asset, function (layer) {
+                if (layer instanceof TextLayer) {
+                    targets.push({ comp: asset, layer: layer });
+                }
+            });
+        } else if (kind === "solid" || kind === "shape") {
+            var wanted = kind === "solid" ? "base" : "body";
+            walkLayerTree(asset, function (layer) {
+                var name = "";
+                try { name = String(layer.name || ""); } catch (e) {}
+                if (name === wanted) {
+                    targets.push({ comp: asset, layer: layer });
+                }
+            });
+        }
+        if (targets.length === 0) {
+            targets.push({ comp: fallbackLayer.comp, layer: fallbackLayer.layer });
+        }
+        return targets;
+    }
+
+    function applyToTargets(targets, file) {
+        for (var i = 0; i < targets.length; i++) {
+            selectOnly(targets[i].comp, targets[i].layer);
+            targets[i].layer.applyPreset(file);
+        }
     }
 
     /** 搭背景层：内置素材 comp 或用户上传的图片 */
@@ -284,7 +328,10 @@ var AEV_PresetPreview = (function () {
             trash.comps.push(asset);
             var nested = comp.layers.add(asset);
             nested.moveToEnd();
-            return nested;
+            return {
+                layer: nested,
+                targets: targetLayersForAsset(id, asset, { comp: comp, layer: nested })
+            };
         }
         var file = new File(id);
         if (!file.exists) return null;
@@ -305,7 +352,10 @@ var AEV_PresetPreview = (function () {
             var scale = Math.max(size / w, size / h) * 100;
             layer.property("ADBE Transform Group").property("ADBE Scale").setValue([scale, scale]);
         } catch (e3) {}
-        return layer;
+        return {
+            layer: layer,
+            targets: [{ comp: comp, layer: layer }]
+        };
     }
 
     /**
@@ -361,34 +411,17 @@ var AEV_PresetPreview = (function () {
             );
             comp.time = 0; // applyPreset 会把关键帧放在当前时间指示器上
 
-            var bgLayer = addBackground(comp, background, size, trash);
+            var backgroundInfo = addBackground(comp, background, size, trash);
+            var bgLayer = backgroundInfo && backgroundInfo.layer;
             if (!bgLayer) return result("error", [["reason", "bad_background"]]);
 
             var before = snapshot(comp);
             try {
-                selectOnly(comp, bgLayer);
-                bgLayer.applyPreset(file);
+                applyToTargets(backgroundInfo.targets, file);
             } catch (eApply) {
                 return result("error", [["reason", "apply_failed"], ["detail", String(eApply)]]);
             }
             var after = snapshot(comp);
-            if (after.effects <= before.effects && after.keyProps <= before.keyProps) {
-                // 文本类预设落在纯色/素材层上会静默无效 —— 垫一个文字层再试。
-                // 背景仍在底层可见，文字层只占中间一小块。
-                try {
-                    var textLayer = comp.layers.addText("PRESET");
-                    var tp = textLayer.property("ADBE Text Properties").property("ADBE Text Document");
-                    var doc = tp.value;
-                    doc.fontSize = Math.round(size * 0.16);
-                    doc.fillColor = [0.93, 0.94, 0.9];
-                    tp.setValue(doc);
-                    textLayer.property("ADBE Transform Group").property("ADBE Position")
-                        .setValue([size / 2, size / 2]);
-                    selectOnly(comp, textLayer);
-                    textLayer.applyPreset(file);
-                    after = snapshot(comp);
-                } catch (eText) {}
-            }
             if (after.effects <= before.effects && after.keyProps <= before.keyProps) {
                 return result("no_effect", [["reason", "preset_did_not_apply"]]);
             }
