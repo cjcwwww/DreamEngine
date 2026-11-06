@@ -578,7 +578,7 @@ var AEV_CurveUI = (function () {
       ctx.stroke();
     }
 
-    ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+    ctx.font = "10px 'DreamEngine Sans', 'Microsoft YaHei UI', sans-serif";
     ctx.fillStyle = "#5c646b";
     ctx.textAlign = "left";
     ctx.fillText(prop.name + t("（只读）", " (read-only)"), rect.x, rect.y - 4);
@@ -628,7 +628,7 @@ var AEV_CurveUI = (function () {
       ctx.lineTo(rect.x + rect.w, gy);
       ctx.stroke();
     }
-    ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+    ctx.font = "10px 'DreamEngine Sans', 'Microsoft YaHei UI', sans-serif";
     ctx.fillStyle = "#5c646b";
     ctx.textAlign = "right";
     for (var j = 0; j <= 4; j++) {
@@ -640,7 +640,7 @@ var AEV_CurveUI = (function () {
 
   function drawEmpty(ctx, w, h, text) {
     ctx.fillStyle = "#5c646b";
-    ctx.font = "12px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+    ctx.font = "12px 'DreamEngine Sans', 'Microsoft YaHei UI', sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(text, w / 2, h / 2);
     ctx.textAlign = "left";

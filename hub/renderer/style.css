@@ -4,6 +4,14 @@
  * 两个窗口要看起来是同一个产品的两个面。
  * ============================================================ */
 
+@font-face {
+  font-family: "DreamEngine Sans";
+  src: url("../assets/fonts/NotoSansSC-VF.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --bg: #0a0b0c;
@@ -32,12 +40,12 @@ body {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font: 13px/1.5 "Segoe UI", "Microsoft YaHei UI", sans-serif;
+  font: 13px/1.5 "DreamEngine Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   user-select: none;
 }
 
 button, input, select { font: inherit; color: inherit; }
-code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
+code { font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace; font-size: 12px; }
 
 /* ---------- 顶栏 ---------- */
 
@@ -667,7 +675,7 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
   padding: 12px 14px;
   max-height: 220px;
   overflow: auto;
-  font: 11px/1.7 Consolas, "Cascadia Mono", monospace;
+  font: 11px/1.7 Consolas, "Cascadia Mono", "DreamEngine Sans", monospace;
   color: var(--muted);
   white-space: pre-wrap;
   word-break: break-all;

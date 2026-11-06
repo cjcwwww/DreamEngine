@@ -22,6 +22,17 @@ body {
   height: 100%;
 }
 
+/* The font stack is intentionally literal: AE 2021's CEF silently drops a
+   declaration that uses an unresolvable custom property. The packaged variable
+   font keeps CJK text consistent on machines without Source Han Sans. */
+@font-face {
+  font-family: "DreamEngine Sans";
+  src: url("fonts/NotoSansSC-VF.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 body {
   margin: 0;
   display: flex;
@@ -30,7 +41,7 @@ body {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font: 12px/1.5 "Segoe UI", "Microsoft YaHei UI", sans-serif;
+  font: 12px/1.5 "DreamEngine Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   letter-spacing: 0;
 }
 
@@ -710,7 +721,7 @@ button:focus-visible,
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--faint);
-  font: 9px/1.4 Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
+  font: 9px/1.4 Consolas, "Cascadia Mono", "DreamEngine Sans", monospace;
 }
 
 /* 宽面板：搜索常驻，图标收起；窄面板才退回「点图标展开」 */
@@ -725,6 +736,32 @@ button:focus-visible,
 
   .search-field[hidden] {
     display: flex;
+  }
+}
+
+/* 窄面板：顶栏展开的搜索框改成浮在图标左侧的小浮层。
+   原先它是 flex 项，展开等于在行内增宽 —— 顶栏被撑开，整行内容连带
+   往左移。改成绝对定位后它脱离布局流，面板多窄都不会带动其他元素；
+   宽度用 max-width 夹住，保证左边缘不越出面板。
+   只作用于 .topbar：预设页的 .search-wrap 处在 overflow 容器里，
+   浮层会被裁掉，那边的行为保持不变。 */
+@media (max-width: 719.98px) {
+  .topbar .search-wrap {
+    z-index: 40;
+  }
+
+  .topbar .search-wrap .search-field:not([hidden]) {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 6px);
+    transform: translateY(-50%);
+    flex: none;
+    width: 220px;
+    min-width: 0;
+    max-width: calc(100vw - 104px);
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -1488,9 +1525,14 @@ main {
     display: none;
   }
 
+  .view-switch {
+    gap: 8px;
+    margin-left: 0;
+  }
+
   .view-tab {
     flex: 0 0 auto;
-    padding: 0 4px;
+    padding: 0 2px;
   }
 
   .search-wrap {
@@ -1527,6 +1569,21 @@ main {
 
   .size-slider input[type="range"] {
     width: 56px;
+  }
+}
+
+@media (max-width: 300px) {
+  .topbar {
+    gap: 4px;
+    padding: 0 6px;
+  }
+
+  .view-switch {
+    gap: 4px;
+  }
+
+  .brand-mark {
+    display: none;
   }
 }
 
@@ -1777,7 +1834,7 @@ main {
 .curve-readout {
   flex: none;
   color: var(--muted);
-  font-family: Consolas, "SFMono-Regular", "Cascadia Mono", monospace;
+  font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace;
   font-size: 11px;
   letter-spacing: 0.02em;
   text-align: center;
