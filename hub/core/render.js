@@ -70,6 +70,7 @@ class RenderJob {
     if (options.limit) args.push("-Limit", String(Number(options.limit) || 40));
     if (options.rounds) args.push("-Rounds", String(Number(options.rounds) || 40));
     if (options.autoClose) args.push("-AutoClose");
+    if (options.retryFailed) args.push("-RetryFailed");
     if (options.onlyPreset) args.push("-OnlyPreset", String(options.onlyPreset));
 
     try {
@@ -88,7 +89,10 @@ class RenderJob {
     this.proc.on("exit", (code, signal) => {
       this.running = false;
       this.stopPolling();
-      this.onExit({ code, signal, state: this.lastState });
+      const finalState = readStateFile(this.paths.hubState) || this.lastState;
+      this.lastState = finalState;
+      if (finalState) this.onState(finalState);
+      this.onExit({ code, signal, state: finalState });
     });
 
     this.startPolling();

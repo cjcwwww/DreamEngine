@@ -662,7 +662,7 @@ function paintProgress(renderState) {
     "waiting-close": "等待关闭 AE",
     rendering: "渲染中",
     done: "已完成",
-    failed: "已停止",
+    failed: "未全部完成",
     cancelled: "已取消",
   };
   phase.textContent = labels[renderState.phase] || String(renderState.phase || "");
@@ -700,11 +700,13 @@ function stopPolling() {
 }
 
 async function startRender(overrides) {
+  const extra = overrides || {};
   const options = {
     background: $("background").value,
     limit: Number($("limit").value) || 40,
     rounds: Number($("rounds").value) || 40,
-    ...(overrides || {}),
+    retryFailed: !extra.onlyPreset,
+    ...extra,
   };
   const result = await window.hub.startRender(options);
   if (!result.ok) {
@@ -911,8 +913,18 @@ function bind() {
     if (wasStopped) {
       setStatus("已停止", false);
     } else {
-      const ok = info.code === 0;
-      setStatus(ok ? "渲染完成" : "渲染结束（退出码 " + info.code + "）", !ok);
+      const finalState = info.state;
+      if (finalState) paintProgress(finalState);
+      const remaining = Number(finalState && finalState.remaining) || 0;
+      const failed = Number(finalState && finalState.fail) || 0;
+      const incomplete = remaining > 0 || failed > 0 || (finalState && finalState.phase === "failed");
+      if (incomplete) {
+        const count = remaining || failed;
+        setStatus("渲染未全部完成：仍有 " + count + " 个预设未生成", true);
+      } else {
+        const ok = info.code === 0;
+        setStatus(ok ? "渲染完成" : "渲染结束（退出码 " + info.code + "）", !ok);
+      }
     }
     await pullLog();
     await loadPresets();
