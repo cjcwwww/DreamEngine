@@ -326,8 +326,15 @@ var AEV_PresetPreview = (function () {
             } catch (e) {}
             if (!asset) return null;
             trash.comps.push(asset);
+            if (id === "text") {
+                var textBg = comp.layers.addSolid([0.07, 0.08, 0.09], "textBg", size, size, 1);
+                textBg.moveToEnd();
+            }
             var nested = comp.layers.add(asset);
-            nested.moveToEnd();
+            if (id !== "text") nested.moveToEnd();
+            if (id === "text" && AEV_Assets.centerTextAsset) {
+                AEV_Assets.centerTextAsset(asset, nested, size);
+            }
             return {
                 layer: nested,
                 targets: targetLayersForAsset(id, asset, { comp: comp, layer: nested })

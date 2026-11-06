@@ -140,25 +140,44 @@ var AEV_Assets = (function () {
         var bg = scene.layers.addSolid([0.07, 0.08, 0.09], "bg", size, size, 1);
         bg.moveToEnd();
 
-        var title = scene.layers.addText("Dream");
+        // 文字类预设必须只作用于一个文字图层；双文字层会让预设重复求值并铺满整帧。
+        var title = scene.layers.addText("Dream\rEngine");
         var titleProp = title.property("ADBE Text Properties").property("ADBE Text Document");
         var titleDoc = titleProp.value;
-        titleDoc.fontSize = Math.round(size * 0.3);
+        titleDoc.fontSize = Math.round(size * 0.22);
         titleDoc.fillColor = [0.93, 0.94, 0.9];
         titleProp.setValue(titleDoc);
         title.property("ADBE Transform Group").property("ADBE Position")
-            .setValue([Math.round(size * 0.5), Math.round(size * 0.45)]);
-
-        var sub = scene.layers.addText("Engine");
-        var subProp = sub.property("ADBE Text Properties").property("ADBE Text Document");
-        var subDoc = subProp.value;
-        subDoc.fontSize = Math.round(size * 0.18);
-        subDoc.fillColor = [0.18, 0.68, 0.76];
-        subProp.setValue(subDoc);
-        sub.property("ADBE Transform Group").property("ADBE Position")
-            .setValue([Math.round(size * 0.5), Math.round(size * 0.68)]);
+            .setValue([Math.round(size * 0.5), Math.round(size * 0.5)]);
 
         return scene;
+    }
+
+    /**
+     * 文字图层内部保持预设应用时的原始文档状态；居中通过父级嵌套图层的
+     * transform 完成，避免修改 TextDocument 后触发预设重新铺满整帧。
+     */
+    function centerTextAsset(asset, nested, size) {
+        var left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+        for (var i = 1; i <= asset.numLayers; i++) {
+            var layer = asset.layer(i);
+            if (!(layer instanceof TextLayer)) continue;
+            var rect = layer.sourceRectAtTime(0, false);
+            var transform = layer.property("ADBE Transform Group");
+            var position = transform.property("ADBE Position").value;
+            var anchor = transform.property("ADBE Anchor Point").value;
+            left = Math.min(left, position[0] + rect.left - anchor[0]);
+            top = Math.min(top, position[1] + rect.top - anchor[1]);
+            right = Math.max(right, position[0] + rect.left + rect.width - anchor[0]);
+            bottom = Math.max(bottom, position[1] + rect.top + rect.height - anchor[1]);
+        }
+        if (left === Infinity) return;
+        var nestedTransform = nested.property("ADBE Transform Group");
+        var nestedAnchor = nestedTransform.property("ADBE Anchor Point").value;
+        nestedTransform.property("ADBE Position").setValue([
+            Math.round(size * 0.5) - (left + right) / 2 + nestedAnchor[0],
+            Math.round(size * 0.5) - (top + bottom) / 2 + nestedAnchor[1]
+        ]);
     }
 
     function buildSolid(size) {
@@ -325,6 +344,7 @@ var AEV_Assets = (function () {
         backgroundFingerprint: backgroundFingerprint,
         get: get,
         getFresh: getFresh,
+        centerTextAsset: centerTextAsset,
         clear: clear,
         dispose: dispose
     };
