@@ -673,8 +673,8 @@ function paintPluginEffectAe(ae) {
     notice.className = "notice ok";
     notice.innerHTML =
       '<div class="notice-title">可以开始</div>' +
-      '<div class="notice-sub">将使用当前 AE 的效果清单，每轮启动独立实例逐条渲染。' +
-      "插件崩溃不会影响其他条目，也不会混入内置效果预览。</div>";
+      '<div class="notice-sub">将使用当前 AE 的效果清单；同一专用实例会分批连续渲染，' +
+      "只有崩溃或超时才重启。插件崩溃不会影响其他批次，也不会混入内置效果预览。</div>";
   }
 
   $("btnPluginEffectStart").disabled =
