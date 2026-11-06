@@ -645,6 +645,15 @@ var AEV_Library = (function () {
   var THUMB_COMPACT = 80;
   var thumbPreferred = { effects: 132, presets: 180, materials: 132 };
 
+  function loadThumbPreferences() {
+    if (!window.AEV_Prefs) return;
+    for (var view in thumbPreferred) {
+      if (!thumbPreferred.hasOwnProperty(view)) continue;
+      var saved = AEV_Prefs.thumbSize(view);
+      if (saved) thumbPreferred[view] = saved;
+    }
+  }
+
   function thumbGridId(view) {
     if (view === "effects") return "previewGrid";
     if (view === "presets") return "presetList";
@@ -660,12 +669,15 @@ var AEV_Library = (function () {
     return Math.floor(width);
   }
 
-  function setThumbSize(size) {
+  function setThumbSize(size, persist) {
     var view = state.view;
     if (!state.thumbSizes.hasOwnProperty(view)) return;
     var requested = Number(size);
     if (!isNaN(requested) && requested > 0) {
       thumbPreferred[view] = Math.max(THUMB_MIN, Math.min(THUMB_MAX, requested));
+      if (persist && window.AEV_Prefs) {
+        AEV_Prefs.setThumbSize(view, thumbPreferred[view]);
+      }
     }
     var limit = Math.min(THUMB_MAX, availableThumbWidth(view));
     if (limit < THUMB_MIN) limit = THUMB_MIN;
@@ -2104,6 +2116,7 @@ var AEV_Library = (function () {
   }
 
   function boot() {
+    loadThumbPreferences();
     // 首屏：把 data-i18n 的静态文案对齐到当前语言（默认中文，等价于无操作）
     if (typeof AEV_applyI18n === "function") AEV_applyI18n(state.lang);
 
@@ -2228,7 +2241,7 @@ var AEV_Library = (function () {
       hidePresetCategoryMenu();
     });
     byId("thumbSize").addEventListener("input", function () {
-      setThumbSize(this.value);
+      setThumbSize(this.value, true);
     });
     syncThumbControl(state.view);
 

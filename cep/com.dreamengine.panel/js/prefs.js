@@ -9,8 +9,10 @@
 var AEV_Prefs = (function () {
   var FAVORITES_KEY = "dreamengine.favorites.v1";
   var ORGANIZER_KEY = "dreamengine.presetOrganizer.v1";
+  var UI_LAYOUT_KEY = "dreamengine.uiLayout.v1";
   var memoryStorage = {};
   var categorySeq = 0;
+  var SIDEBAR_KINDS = { effects: true, presets: true, materials: true };
 
   function readRaw(key) {
     try {
@@ -41,6 +43,50 @@ var AEV_Prefs = (function () {
 
   function writeJson(key, value) {
     writeRaw(key, JSON.stringify(value));
+  }
+
+  function uiLayoutDoc() {
+    var doc = readJson(UI_LAYOUT_KEY, null);
+    if (!doc || typeof doc !== "object") doc = {};
+    if (!doc.sidebarWidths || typeof doc.sidebarWidths !== "object") {
+      doc.sidebarWidths = {};
+    }
+    if (!doc.thumbSizes || typeof doc.thumbSizes !== "object") {
+      doc.thumbSizes = {};
+    }
+    return doc;
+  }
+
+  function sidebarWidth(kind) {
+    if (!SIDEBAR_KINDS[kind]) return 0;
+    var value = Number(uiLayoutDoc().sidebarWidths[kind]);
+    return isFinite(value) && value > 0 ? Math.round(value) : 0;
+  }
+
+  function setSidebarWidth(kind, width) {
+    if (!SIDEBAR_KINDS[kind]) return false;
+    var value = Number(width);
+    if (!isFinite(value) || value < 80 || value > 1000) return false;
+    var doc = uiLayoutDoc();
+    doc.sidebarWidths[kind] = Math.round(value);
+    writeJson(UI_LAYOUT_KEY, doc);
+    return true;
+  }
+
+  function thumbSize(kind) {
+    if (!SIDEBAR_KINDS[kind]) return 0;
+    var value = Number(uiLayoutDoc().thumbSizes[kind]);
+    return isFinite(value) && value >= 48 && value <= 180 ? Math.round(value) : 0;
+  }
+
+  function setThumbSize(kind, size) {
+    if (!SIDEBAR_KINDS[kind]) return false;
+    var value = Number(size);
+    if (!isFinite(value) || value < 48 || value > 180) return false;
+    var doc = uiLayoutDoc();
+    doc.thumbSizes[kind] = 48 + Math.round((value - 48) / 2) * 2;
+    writeJson(UI_LAYOUT_KEY, doc);
+    return true;
   }
 
   function trim(value) {
@@ -212,6 +258,10 @@ var AEV_Prefs = (function () {
 
   return {
     pathKey: pathKey,
+    sidebarWidth: sidebarWidth,
+    setSidebarWidth: setSidebarWidth,
+    thumbSize: thumbSize,
+    setThumbSize: setThumbSize,
     isFavorite: isFavorite,
     toggleFavorite: toggleFavorite,
     presetFavoritePathsJson: presetFavoritePathsJson,

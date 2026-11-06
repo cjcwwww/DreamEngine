@@ -52,6 +52,7 @@ var AEV_I18N = {
   "sort.category": ["按分类", "By category"],
   "toggle.showAll": ["全部已安装", "Show all installed"],
   "sidebar.title": ["分类", "Categories"],
+  "sidebar.resize": ["调整分类栏宽度", "Resize categories"],
   "sidebar.all": ["全部", "All"],
   "empty.effects": ["没有匹配的效果", "No matching effects"],
   "card.addHint": ["（双击或点 + 添加到 AE 选中图层）", " (double-click or click + to add to the selected layer)"],

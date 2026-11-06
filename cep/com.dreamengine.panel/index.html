@@ -77,6 +77,9 @@
       <h2 class="sidebar-title" data-i18n="sidebar.title">分类</h2>
       <ul class="category-list" id="categoryList"></ul>
     </aside>
+    <div class="sidebar-resizer" data-sidebar-resizer data-sidebar-kind="effects"
+         role="separator" aria-orientation="vertical"
+         aria-label="调整分类栏宽度" data-i18n-aria="sidebar.resize"></div>
 
     <main>
       <div class="grid" id="previewGrid"></div>
@@ -112,6 +115,9 @@
         </button>
       </form>
     </aside>
+    <div class="sidebar-resizer" data-sidebar-resizer data-sidebar-kind="presets"
+         role="separator" aria-orientation="vertical"
+         aria-label="调整分类栏宽度" data-i18n-aria="sidebar.resize"></div>
     <div class="preset-main">
       <div class="preset-head">
         <h2 data-i18n="preset.title">预设库</h2>
@@ -217,6 +223,9 @@
       <p class="materials-root" id="materialRoot"></p>
       <ul class="category-list" id="materialCategories"></ul>
     </aside>
+    <div class="sidebar-resizer" data-sidebar-resizer data-sidebar-kind="materials"
+         role="separator" aria-orientation="vertical"
+         aria-label="调整分类栏宽度" data-i18n-aria="sidebar.resize"></div>
     <main class="materials-main">
       <div class="materials-head">
         <label class="search-field materials-search">
@@ -408,6 +417,7 @@
   <script src="js/i18n.js"></script>
   <script src="js/bridge.js"></script>
   <script src="js/prefs.js"></script>
+  <script src="js/sidebar_resize.js"></script>
   <script src="js/about.js"></script>
   <!-- 曲线纯数学：与 AE 侧 $.evalFile 的是同一个文件，拖拽时才不用过桥 -->
   <script src="engine/curve_math.js"></script>

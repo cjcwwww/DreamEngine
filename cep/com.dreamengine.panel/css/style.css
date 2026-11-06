@@ -107,6 +107,7 @@ button:focus-visible,
 
 /* 预设视图：与效果墙同级的整块区域 */
 .preset-view {
+  --category-width: 168px;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -118,11 +119,12 @@ button:focus-visible,
 }
 
 .preset-sidebar {
-  width: 168px;
+  width: var(--category-width, 168px);
   min-width: 118px;
+  max-width: calc(100% - 132px);
+  flex: 0 0 var(--category-width, 168px);
   padding: 12px 8px 12px 12px;
   overflow-y: auto;
-  border-right: 1px solid var(--border);
 }
 
 .preset-main {
@@ -985,11 +987,12 @@ select:hover {
    现在 body 是 flex 列（高度固定），workspace 撑满剩余高度，
    内部 sidebar 与 main 各自 overflow-y:auto——滚右边不动左边。 */
 .workspace {
+  --category-width: clamp(104px, 22%, 176px);
   flex: 1 1 auto;
   display: flex;
   align-items: stretch;
   min-height: 0;
-  gap: 16px;
+  gap: 0;
 }
 
 /* 视图切换：.workspace 自己的 display:flex 会盖掉 [hidden] 的默认
@@ -1000,10 +1003,10 @@ select:hover {
 }
 
 .sidebar {
-  /* 侧栏宽度随可用空间收缩：面板拖得很窄时（AE 面板可以任意拖窄），
-     固定 176px 会把主区挤到 0，预览墙直接消失。
-     用 clamp 保底 104px，中间按比例缩。 */
-  flex: 0 0 clamp(104px, 22%, 176px);
+  width: var(--category-width, 176px);
+  min-width: 104px;
+  max-width: calc(100% - 132px);
+  flex: 0 0 var(--category-width, 176px);
   padding: 14px 0 12px 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1012,6 +1015,40 @@ select:hover {
      看起来像一根多余的竖线。改成按内容高度自适应，超出才滚。 */
   align-self: flex-start;
   max-height: 100%;
+}
+
+.sidebar-resizer {
+  position: relative;
+  z-index: 2;
+  width: 12px;
+  flex: 0 0 12px;
+  align-self: stretch;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.sidebar-resizer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--border);
+  transform: translateX(-50%);
+  transition: width 0.12s ease, background 0.12s ease;
+}
+
+.sidebar-resizer:hover::before,
+.sidebar-resizer.resizing::before {
+  width: 2px;
+  background: var(--accent);
+}
+
+body.is-resizing-sidebar,
+body.is-resizing-sidebar * {
+  cursor: col-resize !important;
+  user-select: none !important;
 }
 
 .sidebar-title {
@@ -1784,6 +1821,7 @@ main {
 
 /* ---------- 素材库 ---------- */
 .materials-view {
+  --category-width: 180px;
   display: flex;
   min-height: 0;
   flex: 1;
@@ -1796,11 +1834,12 @@ main {
 }
 
 .materials-sidebar {
-  width: 180px;
+  width: var(--category-width, 180px);
   min-width: 140px;
+  max-width: calc(100% - 132px);
+  flex: 0 0 var(--category-width, 180px);
   padding: 16px 12px;
   overflow-y: auto;
-  border-right: 1px solid var(--line);
 }
 
 .materials-actions {
@@ -1967,15 +2006,19 @@ main {
 }
 
 @media (max-width: 760px) {
+  .preset-view {
+    --category-width: 138px;
+  }
+  .materials-view {
+    --category-width: 138px;
+  }
   .materials-sidebar {
-    width: 138px;
     min-width: 118px;
   }
   .materials-main {
     padding: 12px;
   }
   .preset-sidebar {
-    width: 138px;
     min-width: 112px;
   }
   .preset-main {
