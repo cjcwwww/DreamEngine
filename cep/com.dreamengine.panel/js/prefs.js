@@ -10,6 +10,7 @@ var AEV_Prefs = (function () {
   var FAVORITES_KEY = "dreamengine.favorites.v1";
   var ORGANIZER_KEY = "dreamengine.presetOrganizer.v1";
   var UI_LAYOUT_KEY = "dreamengine.uiLayout.v1";
+  var EFFECT_PREVIEW_KEY = "dreamengine.effectPreview.v1";
   var memoryStorage = {};
   var categorySeq = 0;
   var SIDEBAR_KINDS = { effects: true, presets: true, materials: true };
@@ -86,6 +87,23 @@ var AEV_Prefs = (function () {
     var doc = uiLayoutDoc();
     doc.thumbSizes[kind] = 48 + Math.round((value - 48) / 2) * 2;
     writeJson(UI_LAYOUT_KEY, doc);
+    return true;
+  }
+
+  function renderPrefsDoc() {
+    var doc = readJson(EFFECT_PREVIEW_KEY, null);
+    if (!doc || typeof doc !== "object") doc = {};
+    return doc;
+  }
+
+  function effectBackground() {
+    return String(renderPrefsDoc().background || "");
+  }
+
+  function setEffectBackground(path) {
+    var doc = renderPrefsDoc();
+    doc.background = String(path || "");
+    writeJson(EFFECT_PREVIEW_KEY, doc);
     return true;
   }
 
@@ -262,6 +280,8 @@ var AEV_Prefs = (function () {
     setSidebarWidth: setSidebarWidth,
     thumbSize: thumbSize,
     setThumbSize: setThumbSize,
+    effectBackground: effectBackground,
+    setEffectBackground: setEffectBackground,
     isFavorite: isFavorite,
     toggleFavorite: toggleFavorite,
     presetFavoritePathsJson: presetFavoritePathsJson,

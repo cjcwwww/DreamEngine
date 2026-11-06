@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "aeMajor": 21,
   "cellSize": 128,
   "columns": 8,
   "width": 1024,

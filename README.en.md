@@ -18,7 +18,7 @@
   <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-4f6f8f?style=flat-square&amp;logo=windows&amp;logoColor=white">
   <img alt="After Effects 2021+" src="https://img.shields.io/badge/After%20Effects-2021%2B-5f8a74?style=flat-square">
   <img alt="CEP 11" src="https://img.shields.io/badge/CEP-11-6b7f95?style=flat-square">
-  <img alt="DreamEngine Hub 0.1.0" src="https://img.shields.io/badge/Hub-0.1.0-6f8f9a?style=flat-square">
+  <img alt="DreamEngine Hub 0.2.0" src="https://img.shields.io/badge/Hub-0.2.0-6f8f9a?style=flat-square">
   <img alt="DreamEngine Panel 0.2.0" src="https://img.shields.io/badge/Panel-0.2.0-7f9c88?style=flat-square">
 </p>
 
@@ -26,11 +26,11 @@
 
 ## Download and install
 
-Current release: **DreamEngine Hub 0.1.0 / CEP panel 0.2.0**
+Current release: **DreamEngine 0.2.0 / v0.2.0-beta.3**
 
-Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.1.0-beta.2):
+Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.3):
 
-- `DreamEngine-Hub-Setup-0.1.0.exe`
+- `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`
 
 Installation:
@@ -58,6 +58,7 @@ Hub is a standalone manager that runs outside the active AE process:
 
 - Add, rename, favorite, categorize, and long-press to delete `.ffx` presets.
 - Render offline previews and animated frame sequences for plugin presets.
+- Render third-party effect previews one by one in isolated AE instances using the current AE plugin catalog.
 - Clear one preset's previous preview or force a fresh single-preset render.
 - Add custom preview backgrounds.
 - Inspect panel installation, AE versions, directories, and render logs.
@@ -80,6 +81,7 @@ Preset categories and preset favorites are shared between the panel and Hub.
 
 **Offline preview rendering**
 
+- The Plugin Effects page reads the current AE plugin catalog and renders entries in isolated instances with cancellation, resume, and crash blacklisting.
 - Plugin presets render in dedicated AE instances to avoid destabilizing the active AE session.
 - Each dedicated AE instance handles up to 40 presets by default to reduce repeated launches.
 - Save and close AE before rendering. Hub can reopen AE when the job finishes.
@@ -100,6 +102,8 @@ Preset categories and preset favorites are shared between the panel and Hub.
 - Animated previews play on hover; static previews stay still.
 - Double-click an effect or use its add button to apply it to the selected layer.
 - Favorite effects and combine favorites with category filters.
+- Previews prefer the current AE major version and silently fall back to same-name previews from other versions.
+- General footage-style effect previews can use a custom background uploaded from Settings.
 
 **Presets**
 

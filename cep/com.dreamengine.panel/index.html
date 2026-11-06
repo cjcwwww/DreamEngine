@@ -67,7 +67,7 @@
       <button class="segment" id="sortCategory" type="button" data-i18n="sort.category">按分类</button>
     </div>
     <label class="toggle">
-      <input type="checkbox" id="showAll"/>
+      <input type="checkbox" id="showAll" checked/>
       <span data-i18n="toggle.showAll">全部已安装</span>
     </label>
   </section>
@@ -136,6 +136,17 @@
                      data-i18n-ph="preset.search"/>
             </label>
           </div>
+          <button class="hub-button" id="btnOpenHub" type="button"
+                  title="打开 DreamEngine Hub" aria-label="打开 DreamEngine Hub"
+                  data-i18n-title="preset.openHub" data-i18n-aria="preset.openHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="4" width="6" height="6" rx="1.5"/>
+              <rect x="14" y="4" width="6" height="6" rx="1.5"/>
+              <rect x="4" y="14" width="6" height="6" rx="1.5"/>
+              <rect x="14" y="14" width="6" height="6" rx="1.5"/>
+            </svg>
+            <span>Hub</span>
+          </button>
         </div>
       </div>
       <div class="preset-grid" id="presetList"></div>
@@ -308,6 +319,22 @@
 
       <section class="settings-group">
         <h4 data-i18n="settings.maintenance">预览维护</h4>
+        <div class="settings-background">
+          <div class="settings-row">
+            <span class="settings-label" data-i18n="settings.effectBackground">效果预览背景</span>
+            <span class="settings-value" id="effectBackgroundName"
+                  data-i18n="settings.effectBackgroundDefault">默认素材</span>
+          </div>
+          <div class="settings-background-actions">
+            <button class="action-button" id="btnEffectBackground" type="button"
+                    data-i18n="settings.effectBackgroundChoose">上传背景图片</button>
+            <button class="action-button" id="btnEffectBackgroundClear" type="button" hidden
+                    data-i18n="settings.effectBackgroundClear">恢复默认</button>
+          </div>
+          <p class="settings-note" data-i18n="settings.effectBackgroundNote">
+            自定义背景用于普通效果预览；文字、形状、遮罩和两层输入类效果仍使用各自的专用图层，避免效果失效。
+          </p>
+        </div>
         <button class="settings-action" id="btnGenerate" type="button">
           <span class="settings-action-title" data-i18n="settings.genMissing">生成缺失预览</span>
           <span class="settings-action-note" data-i18n="settings.genMissingNote">渲染当前 AE 环境里还没出图的内置效果</span>

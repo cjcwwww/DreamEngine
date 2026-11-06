@@ -43,6 +43,8 @@ function createPaths(opts = {}) {
     runLog: path.join(probe, "preset_plugin_run.log"),
     entries: path.join(probe, "preset_plugin_previews.tsv"),
     todo: path.join(probe, "next_preset_plugin_batch.tsv"),
+    pluginEffectState: path.join(probe, "plugin_effect_state.json"),
+    pluginEffectLog: path.join(probe, "plugin_run.log"),
 
     /* 面板读的三份索引 */
     presetManifest: path.join(dataDir, "preset_manifest.json"),

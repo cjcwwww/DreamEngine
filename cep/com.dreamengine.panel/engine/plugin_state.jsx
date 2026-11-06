@@ -190,6 +190,29 @@ var AEV_PluginState = (function () {
         return out;
     }
 
+    /** 当前插件清单相对已有索引/黑名单的总体进度 */
+    function planStats(todo, entries, blacklist) {
+        var done = {};
+        var blocked = blacklist || {};
+        var total = 0;
+        var finished = 0;
+        var blacklisted = 0;
+        for (var i = 0; i < entries.length; i++) done[entries[i].matchName] = true;
+        for (var t = 0; t < todo.length; t++) {
+            var item = todo[t];
+            if (!item || !item.matchName) continue;
+            total++;
+            if (done[item.matchName]) finished++;
+            else if (blocked[item.matchName]) blacklisted++;
+        }
+        return {
+            total: total,
+            done: finished,
+            blacklisted: blacklisted,
+            pending: Math.max(0, total - finished - blacklisted)
+        };
+    }
+
     /**
      * 拼面板用的独立索引。
      *
@@ -251,6 +274,7 @@ var AEV_PluginState = (function () {
         entriesTsv: entriesTsv,
         addEntry: addEntry,
         planRun: planRun,
+        planStats: planStats,
         buildManifest: buildManifest
     };
 })();

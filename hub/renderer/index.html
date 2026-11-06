@@ -26,7 +26,8 @@
 
 <nav class="tabs" id="tabs">
   <button class="tab active" data-view="presets">预设库<span class="tab-count" id="tabPresetCount">0</span></button>
-  <button class="tab" data-view="render">渲染</button>
+  <button class="tab" data-view="render">预设预览</button>
+  <button class="tab" data-view="pluginEffects">插件效果</button>
   <button class="tab" data-view="settings">设置</button>
 </nav>
 
@@ -106,6 +107,52 @@
     <div class="log">
       <div class="log-head">渲染日志（末尾）</div>
       <pre class="log-body" id="logBody">（暂无）</pre>
+    </div>
+  </section>
+
+  <!-- ========== 插件效果预览 ========== -->
+  <section class="view" id="viewPluginEffects" hidden>
+    <div class="notice" id="pluginEffectAeNotice">
+      <div class="notice-title">正在检测 After Effects…</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-row">
+        <label class="field">
+          <span class="field-label">预览背景</span>
+          <select id="pluginEffectBackground" class="input"></select>
+        </label>
+        <label class="field narrow">
+          <span class="field-label">每实例最多</span>
+          <input id="pluginEffectLimit" class="input" type="number" min="1" max="64" value="24">
+        </label>
+        <label class="field narrow">
+          <span class="field-label">最大轮数</span>
+          <input id="pluginEffectRounds" class="input" type="number" min="1" max="200" value="200">
+        </label>
+      </div>
+      <div class="panel-row actions">
+        <button class="btn primary" id="btnPluginEffectStart">开始生成</button>
+        <button class="btn danger" id="btnPluginEffectStop" disabled>停止</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="btnPluginEffectLog">打开日志</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-head">
+        <span id="pluginEffectPhase">空闲</span>
+        <span id="pluginEffectCount"></span>
+      </div>
+      <div class="progress"><div class="progress-bar" id="pluginEffectBar"></div></div>
+      <div class="progress-msg" id="pluginEffectMessage">
+        插件效果会使用独立 AE 实例逐条渲染，崩溃条目会自动跳过。
+      </div>
+    </div>
+
+    <div class="log">
+      <div class="log-head">插件效果生成日志（末尾）</div>
+      <pre class="log-body" id="pluginEffectLogBody">（暂无）</pre>
     </div>
   </section>
 

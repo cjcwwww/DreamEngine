@@ -58,9 +58,12 @@ var AEV_MaterialsUI = (function () {
   }
 
   function normalizeItems(items) {
-    var out = items || [];
-    for (var i = 0; i < out.length; i++) {
-      out[i].name = displayName(out[i].name);
+    var source = items || [];
+    var out = [];
+    for (var i = 0; i < source.length; i++) {
+      if (!source[i] || source[i].exists === false) continue;
+      source[i].name = displayName(source[i].name);
+      out.push(source[i]);
     }
     return out;
   }
@@ -161,13 +164,11 @@ var AEV_MaterialsUI = (function () {
     if (state.selectedPath && AEV_Prefs.pathKey(state.selectedPath) === AEV_Prefs.pathKey(item.path)) {
       card.className += " selected";
     }
-    card.title = item.path + (item.exists ? "" : "\n" + L("materials.missing"));
+    card.title = item.path;
 
     var preview = document.createElement("div");
     preview.className = "material-preview";
-    if (!item.exists) {
-      preview.appendChild(textNode("span", "material-kind", L("materials.missing")));
-    } else if (item.type === "image") {
+    if (item.type === "image") {
       var image = document.createElement("img");
       image.loading = "lazy";
       image.alt = item.name;
@@ -202,12 +203,10 @@ var AEV_MaterialsUI = (function () {
     body.appendChild(textNode(
       "div",
       "material-meta",
-      item.exists
-        ? item.type + " · " + formatSize(item.size)
-        : L("materials.missing")
+      item.type + " · " + formatSize(item.size)
     ));
     card.appendChild(body);
-    if (item.exists) bindMaterialCard(card, item);
+    bindMaterialCard(card, item);
     return card;
   }
 

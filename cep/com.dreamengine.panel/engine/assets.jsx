@@ -13,7 +13,8 @@
 //   M1 实测发现纯色层上高斯模糊、锐化、噪波几乎看不出变化，
 //   而多层复合素材能让绝大多数效果"看得出名堂"。这是按实测调整，不是偏离。
 //
-// 缓存策略：同一个 AE 会话内按 kind+size 复用同一个 comp；工程关闭后自动失效。
+// 缓存策略：一轮生成内按 kind+size 复用同一个 comp；整轮结束后 dispose，
+// 不把中间素材合成留在用户工程里。
 //
 // 语法：ES3 only。
 // ============================================================
@@ -21,9 +22,22 @@
 var AEV_Assets = (function () {
     var VERSION = "photo-v3";
     var cache = {};
+    var temporaryDeps = [];
 
-    function key(kind, size) {
-        return kind + "@" + size;
+    function backgroundFingerprint(path) {
+        var text = String(path || "");
+        if (!text) return "default";
+        var file = new File(text);
+        if (!file.exists) return "missing";
+        var modified = 0;
+        try {
+            modified = file.modified ? file.modified.getTime() : 0;
+        } catch (e) {}
+        return String(file.length || 0) + ":" + String(modified);
+    }
+
+    function key(kind, size, background) {
+        return kind + "@" + size + "@" + backgroundFingerprint(background);
     }
 
     /** 素材版本指纹：素材内容一变，所有基于它的缓存都必须失效 */
@@ -31,8 +45,8 @@ var AEV_Assets = (function () {
         return VERSION;
     }
 
-    function existing(kind, size) {
-        var k = key(kind, size);
+    function existing(kind, size, background) {
+        var k = key(kind, size, background);
         var cached = cache[k];
         if (cached && cached.item) {
             // comp 可能已被用户删除，确认还能用
@@ -43,8 +57,8 @@ var AEV_Assets = (function () {
         return null;
     }
 
-    function remember(kind, size, comp) {
-        cache[key(kind, size)] = { item: comp };
+    function remember(kind, size, background, comp, deps) {
+        cache[key(kind, size, background)] = { item: comp, deps: deps || [] };
         return comp;
     }
 
@@ -85,6 +99,40 @@ var AEV_Assets = (function () {
             .setValue([Math.round(size * 0.5), Math.round(size * 0.57)]);
 
         return scene;
+    }
+
+    /** 用用户图片替换通用 photo 素材；文字/形状等专用素材保持不变。 */
+    function buildImportedPhoto(size, background) {
+        var source = new File(String(background || ""));
+        if (!source.exists) return null;
+
+        var imported = null;
+        try {
+            imported = app.project.importFile(new ImportOptions(source));
+        } catch (eImport) {
+            return null;
+        }
+        if (!imported) return null;
+
+        var scene = null;
+        var layer = null;
+        try {
+            scene = app.project.items.addComp("DE_asset_photo_" + size, size, size, 1, 1, 30);
+            layer = scene.layers.add(imported);
+        } catch (eBuild) {
+            try { imported.remove(); } catch (eCleanup) {}
+            try { if (scene) scene.remove(); } catch (eScene) {}
+            return null;
+        }
+        try {
+            var width = Number(imported.width) || size;
+            var height = Number(imported.height) || size;
+            var scale = Math.max(size / width, size / height) * 100;
+            layer.property("ADBE Transform Group").property("ADBE Scale").setValue([scale, scale]);
+            layer.property("ADBE Transform Group").property("ADBE Position")
+                .setValue([size / 2, size / 2]);
+        } catch (eLayout) {}
+        return { comp: scene, dep: imported };
     }
 
     function buildText(size) {
@@ -184,20 +232,29 @@ var AEV_Assets = (function () {
      * 取（必要时生成）指定类型的标准素材。
      * kind: "photo" | "text" | "solid" | "shape" | "pattern"
      */
-    function get(kind, size) {
+    function get(kind, size, background) {
         var resolvedSize = size || 256;
         var resolvedKind = kind || "photo";
-        var cached = existing(resolvedKind, resolvedSize);
+        var cached = existing(resolvedKind, resolvedSize, background);
         if (cached) return cached;
 
         var comp;
+        var deps = [];
+        if (resolvedKind === "photo" && background) {
+            var custom = buildImportedPhoto(resolvedSize, background);
+            if (custom) {
+                comp = custom.comp;
+                deps.push(custom.dep);
+            }
+        }
+        if (comp) return remember(resolvedKind, resolvedSize, background, comp, deps);
         if (resolvedKind === "text") comp = buildText(resolvedSize);
         else if (resolvedKind === "solid") comp = buildSolid(resolvedSize);
         else if (resolvedKind === "shape") comp = buildShape(resolvedSize);
         else if (resolvedKind === "pattern") comp = buildPattern(resolvedSize);
         else comp = buildPhoto(resolvedSize);
 
-        return remember(resolvedKind, resolvedSize, comp);
+        return remember(resolvedKind, resolvedSize, background, comp, deps);
     }
 
     /**
@@ -210,9 +267,16 @@ var AEV_Assets = (function () {
      *
      * 逐条渲染插件效果时，每条都用一份独立素材，保证每次都是首次求值。
      */
-    function getFresh(kind, size) {
+    function getFresh(kind, size, background) {
         var resolvedSize = size || 256;
         var resolvedKind = kind || "photo";
+        if (resolvedKind === "photo" && background) {
+            var custom = buildImportedPhoto(resolvedSize, background);
+            if (custom) {
+                temporaryDeps.push(custom.dep);
+                return custom.comp;
+            }
+        }
         if (resolvedKind === "text") return buildText(resolvedSize);
         if (resolvedKind === "solid") return buildSolid(resolvedSize);
         if (resolvedKind === "shape") return buildShape(resolvedSize);
@@ -223,13 +287,45 @@ var AEV_Assets = (function () {
     /** 新工程/换项目后清空缓存 */
     function clear() {
         cache = {};
+        temporaryDeps = [];
+    }
+
+    /** 删除本次进程创建的标准素材 comp，并清空引用缓存 */
+    function dispose() {
+        var removed = 0;
+        for (var keyName in cache) {
+            if (!cache.hasOwnProperty(keyName)) continue;
+            var entry = cache[keyName];
+            if (!entry || !entry.item) continue;
+            try {
+                entry.item.remove();
+                removed++;
+            } catch (e) {}
+            for (var d = 0; d < (entry.deps || []).length; d++) {
+                try {
+                    entry.deps[d].remove();
+                    removed++;
+                } catch (eDep) {}
+            }
+        }
+        for (var t = 0; t < temporaryDeps.length; t++) {
+            try {
+                temporaryDeps[t].remove();
+                removed++;
+            } catch (eTemp) {}
+        }
+        cache = {};
+        temporaryDeps = [];
+        return removed;
     }
 
     return {
         VERSION: VERSION,
         fingerprint: fingerprint,
+        backgroundFingerprint: backgroundFingerprint,
         get: get,
         getFresh: getFresh,
-        clear: clear
+        clear: clear,
+        dispose: dispose
     };
 })();

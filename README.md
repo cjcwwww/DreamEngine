@@ -18,7 +18,7 @@
   <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-4f6f8f?style=flat-square&amp;logo=windows&amp;logoColor=white">
   <img alt="After Effects 2021+" src="https://img.shields.io/badge/After%20Effects-2021%2B-5f8a74?style=flat-square">
   <img alt="CEP 11" src="https://img.shields.io/badge/CEP-11-6b7f95?style=flat-square">
-  <img alt="DreamEngine Hub 0.1.0" src="https://img.shields.io/badge/Hub-0.1.0-6f8f9a?style=flat-square">
+  <img alt="DreamEngine Hub 0.2.0" src="https://img.shields.io/badge/Hub-0.2.0-6f8f9a?style=flat-square">
   <img alt="DreamEngine Panel 0.2.0" src="https://img.shields.io/badge/Panel-0.2.0-7f9c88?style=flat-square">
 </p>
 
@@ -26,11 +26,11 @@
 
 ## 下载与安装
 
-当前版本：**DreamEngine Hub 0.1.0 / CEP 面板 0.2.0**
+当前版本：**DreamEngine 0.2.0 / v0.2.0-beta.3**
 
-从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.1.0-beta.2) 下载：
+从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.3) 下载：
 
-- `DreamEngine-Hub-Setup-0.1.0.exe`
+- `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`
 
 安装步骤：
@@ -58,6 +58,7 @@ Hub 是不依赖 AE 主进程的独立管理程序，主要用于：
 
 - 添加、重命名、收藏、分类和长按删除 `.ffx` 预设。
 - 为第三方插件预设生成离线预览图与动态帧序列。
+- 使用当前 AE 的插件清单，在独立 AE 实例中逐条生成第三方效果预览。
 - 对单条预设清空旧预览，或强制单独重渲。
 - 添加自定义预览背景。
 - 查看面板安装状态、AE 版本、目录和渲染日志。
@@ -80,6 +81,7 @@ Hub 是不依赖 AE 主进程的独立管理程序，主要用于：
 
 **离线预览渲染**
 
+- “插件效果”页会自动读取当前 AE 的插件清单，逐条隔离渲染，并支持停止、断点继续和崩溃黑名单。
 - 插件预设通过独立的 AE 实例渲染，避免破坏正在使用的 AE 会话。
 - 默认每个专用 AE 实例连续处理最多 40 条，减少重复启动。
 - 渲染前必须保存并关闭 AE；任务完成后可按原状重新打开 AE。
@@ -100,6 +102,8 @@ Hub 是不依赖 AE 主进程的独立管理程序，主要用于：
 - 动态预览悬停播放，静态效果保持静止。
 - 双击效果或点击卡片上的添加按钮，将效果加入当前选中图层。
 - 收藏效果，并与分类条件组合筛选。
+- 预览会优先选择当前 AE 主版本；缺少时静默回退到其他版本的同名预览。
+- 可在设置中上传普通画面类效果的自定义预览背景。
 
 **预设**
 

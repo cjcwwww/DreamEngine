@@ -5,9 +5,13 @@ var AEV_Library = (function () {
     lang: "zh",
     query: "",
     plugin: "内置",
-    showAll: false,
+    showAll: true,
     names: {},
     previews: {},
+    previewVariants: {},
+    catalogVersion: "",
+    catalogMajor: 0,
+    effectBackground: "",
     manifest: null,
     catalog: [],
     items: [],
@@ -167,6 +171,34 @@ var AEV_Library = (function () {
   // 排除规则统一放在 viewmodel，面板与离线清单生成共用同一份判断
   function isActiveEffect(effect) {
     return !AEV_ViewModel.isExcludable(effect);
+  }
+
+  function addPreviewVariant(preview) {
+    if (!preview || !preview.matchName) return;
+    var key = preview.matchName;
+    if (!state.previewVariants[key]) state.previewVariants[key] = [];
+    state.previewVariants[key].push(preview);
+  }
+
+  function selectPreviews() {
+    state.previews = {};
+    for (var matchName in state.previewVariants) {
+      if (!state.previewVariants.hasOwnProperty(matchName)) continue;
+      var preview = AEV_ViewModel.choosePreview(
+        state.previewVariants[matchName],
+        state.catalogMajor
+      );
+      if (preview) state.previews[matchName] = preview;
+    }
+  }
+
+  function isExactPreview(matchName) {
+    var preview = state.previews[matchName];
+    return !!(
+      preview &&
+      state.catalogMajor &&
+      Number(preview.aeMajor) === Number(state.catalogMajor)
+    );
   }
 
   function rebuildItems() {
@@ -604,6 +636,7 @@ var AEV_Library = (function () {
     byId("langEn").className = "segment" + (lang === "en" ? " active" : "");
     /* 静态文案：HTML 上标了 data-i18n 的全部换掉（设置页、队列、按钮 title…） */
     if (typeof AEV_applyI18n === "function") AEV_applyI18n(lang);
+    syncEffectBackgroundUi();
     /* 底栏那条是上一次操作留下的、用旧语言拼出来的字符串，
        语言一换它就不再匹配 —— 直接回到「就绪」 */
     setStatus(L("status.ready"), false);
@@ -652,6 +685,51 @@ var AEV_Library = (function () {
       var saved = AEV_Prefs.thumbSize(view);
       if (saved) thumbPreferred[view] = saved;
     }
+  }
+
+  function effectBackgroundLabel(path) {
+    var value = String(path || "");
+    if (!value) return L("settings.effectBackgroundDefault");
+    var name = value.split(/[\\/]/).pop() || value;
+    try {
+      name = decodeURIComponent(name);
+    } catch (e) {}
+    return name;
+  }
+
+  function syncEffectBackgroundUi() {
+    var label = byId("effectBackgroundName");
+    var clear = byId("btnEffectBackgroundClear");
+    if (label) label.textContent = effectBackgroundLabel(state.effectBackground);
+    if (clear) clear.hidden = !state.effectBackground;
+  }
+
+  function saveEffectBackground(path, message) {
+    state.effectBackground = String(path || "");
+    if (window.AEV_Prefs) AEV_Prefs.setEffectBackground(state.effectBackground);
+    syncEffectBackgroundUi();
+    refresh(function (error) {
+      setStatus(error ? L("msg.noCatalog", [String(error.message || error)]) : message, !!error);
+    });
+  }
+
+  function chooseEffectBackground() {
+    var button = byId("btnEffectBackground");
+    button.disabled = true;
+    engine("AEV_PreviewGen.pickBackground()", function (result) {
+      button.disabled = false;
+      var data = parseEngineResult(result);
+      if (data.status === "cancelled") return;
+      if (data.status !== "ok" || !data.path) {
+        setStatus(L("msg.backgroundFailed", [data.reason || L("msg.unknown")]), true);
+        return;
+      }
+      saveEffectBackground(data.path, L("msg.backgroundSelected", [data.name || effectBackgroundLabel(data.path)]));
+    });
+  }
+
+  function clearEffectBackground() {
+    saveEffectBackground("", L("msg.backgroundCleared"));
   }
 
   function thumbGridId(view) {
@@ -758,6 +836,7 @@ var AEV_Library = (function () {
         }
         state.manifest = manifestData;
         state.previews = {};
+        state.previewVariants = {};
         state.entries = [];
         var columns = manifestData.columns || 8;
         var cellSize = manifestData.cellSize || 256;
@@ -774,7 +853,10 @@ var AEV_Library = (function () {
             var sheet = sheetByIndex[preview.sheet] || {};
             preview.src = sheet.src || "";
           }
-          state.previews[preview.matchName] = preview;
+          preview.aeMajor = preview.aeMajor === undefined
+            ? Number(manifestData.aeMajor) || 0
+            : Number(preview.aeMajor) || 0;
+          addPreviewVariant(preview);
           state.entries.push({
             matchName: preview.matchName,
             sheet: preview.sheet || 0,
@@ -782,7 +864,9 @@ var AEV_Library = (function () {
               Math.floor((preview.y || 0) / cellSize) * columns +
               Math.floor((preview.x || 0) / cellSize),
             frames: preview.frames || 1,
-            frameTemplate: preview.frameSrc || ""
+            frameTemplate: preview.frameSrc || "",
+            aeMajor: preview.aeMajor,
+            key: preview.key || ""
           });
         }
 
@@ -806,7 +890,8 @@ var AEV_Library = (function () {
               if (!pluginPreview.src && pluginPreview.frameSrc) {
                 pluginPreview.src = pluginPreview.frameSrc.replace("%04d", "0000");
               }
-              state.previews[pluginPreview.matchName] = pluginPreview;
+              pluginPreview.aeMajor = Number(pluginPreview.aeMajor) || 0;
+              addPreviewVariant(pluginPreview);
               state.pluginPreviewCount++;
             }
 
@@ -827,6 +912,12 @@ var AEV_Library = (function () {
                   return;
                 }
                 state.catalog = catalogData.effects;
+                state.catalogVersion = String(catalogData.aeVersion || "");
+                state.catalogMajor =
+                  Number(catalogData.aeMajor) ||
+                  parseInt(state.catalogVersion, 10) ||
+                  0;
+                selectPreviews();
                 // 分类顺序 = AE 菜单里的顺序（catalog 里各类首次出现的次序）
                 state.categoryOrder = AEV_ViewModel.categoryOrder(state.catalog);
                 checkStale(function () {
@@ -968,7 +1059,10 @@ var AEV_Library = (function () {
       return;
     }
     engine(
-      "AEV_PreviewGen.staleList(" + JSON.stringify(state.extensionPath) + ")",
+      "AEV_PreviewGen.staleList(" +
+        JSON.stringify(state.extensionPath) + "," +
+        JSON.stringify(state.effectBackground) +
+        ")",
       function (result) {
         var data = parseEngineResult(result);
         if (data && data.stale) {
@@ -1052,11 +1146,29 @@ var AEV_Library = (function () {
           entry.sheet,
           entry.cell,
           entry.frames,
-          entry.frameTemplate || ""
+          entry.frameTemplate || "",
+          String(entry.aeMajor || 0),
+          entry.key || ""
         ].join("\t")
       );
     }
     return lines.join("\n");
+  }
+
+  /** 同名效果重渲时，只替换当前 AE 主版本的旧条目，保留其它版本回退图。 */
+  function dropCurrentPreviewEntries(matchNames) {
+    var names = {};
+    for (var i = 0; i < matchNames.length; i++) names[matchNames[i]] = true;
+    var kept = [];
+    for (var j = 0; j < state.entries.length; j++) {
+      var entry = state.entries[j];
+      if (names[entry.matchName] &&
+          Number(entry.aeMajor) === Number(state.catalogMajor)) {
+        continue;
+      }
+      kept.push(entry);
+    }
+    state.entries = kept;
   }
 
   function writeManifest(callback) {
@@ -1066,6 +1178,8 @@ var AEV_Library = (function () {
         JSON.stringify(tsv) +
         "," +
         JSON.stringify(state.extensionPath) +
+        "," +
+        JSON.stringify(state.effectBackground) +
         ")",
       function (result) {
         callback(parseEngineResult(result));
@@ -1077,8 +1191,10 @@ var AEV_Library = (function () {
     state.generating = false;
     byId("btnGenerate").disabled = false;
     byId("btnRetry").hidden = !isError;
-    refresh(function () {
-      setStatus(message, !!isError);
+    engine("AEV_PreviewGen.cleanupArtifacts()", function () {
+      refresh(function () {
+        setStatus(message, !!isError);
+      });
     });
   }
 
@@ -1090,11 +1206,21 @@ var AEV_Library = (function () {
       return;
     }
 
+    var installedBuiltinNames = {};
+    for (var c0 = 0; c0 < state.catalog.length; c0++) {
+      if (isActiveEffect(state.catalog[c0]) &&
+          AEV_ViewModel.isBuiltinEffect(state.catalog[c0])) {
+        installedBuiltinNames[state.catalog[c0].matchName] = true;
+      }
+    }
+
     var existingNames = [];
     var staleNames = [];
     for (var key in state.previews) {
       if (!state.previews.hasOwnProperty(key)) continue;
-      if (state.stale[key]) staleNames.push(key);
+      // 插件预览没有 AE 主版本字段，不能按内置效果的版本规则重渲。
+      if (!installedBuiltinNames[key]) continue;
+      if (state.stale[key] || !isExactPreview(key)) staleNames.push(key);
       else existingNames.push(key);
     }
 
@@ -1109,8 +1235,8 @@ var AEV_Library = (function () {
         pluginSkipped++;
         continue;
       }
-      // 已过期的不算「已有预览」：图留着继续显示，但要重新渲一遍
-      if (state.previews[effect.matchName] && !state.stale[effect.matchName]) continue;
+      // 当前版本预览且未过期才算完整；旧版回退图继续显示，但仍需生成当前版本。
+      if (isExactPreview(effect.matchName) && !state.stale[effect.matchName]) continue;
       if (AEV_ViewModel.isNoPreview(effect.category)) continue;
       if (AEV_ViewModel.isPoorPreviewTarget(effect)) continue;
       candidates.push(effect);
@@ -1127,12 +1253,13 @@ var AEV_Library = (function () {
     }
 
     if (queueNames.length === 0) {
-      setStatus(
+      var doneMessage =
         pluginSkipped > 0
           ? L("msg.genAllDone", [pluginSkipped])
-          : L("msg.nothingToDo"),
-        false
-      );
+          : L("msg.nothingToDo");
+      engine("AEV_PreviewGen.cleanupArtifacts()", function () {
+        setStatus(doneMessage, false);
+      });
       return;
     }
 
@@ -1188,6 +1315,8 @@ var AEV_Library = (function () {
         sheetIndex +
         ',{limit:' +
         limit +
+        ",keepAssets:true,background:" +
+        JSON.stringify(state.effectBackground) +
         ',cellOffset:0,outputRoot:"extension",extensionPath:' +
         JSON.stringify(state.extensionPath) +
         "})";
@@ -1221,6 +1350,7 @@ var AEV_Library = (function () {
           return;
         }
 
+        dropCurrentPreviewEntries(names);
         for (var n = 0; n < names.length; n++) {
           state.entries.push({
             matchName: names[n],
@@ -1228,7 +1358,8 @@ var AEV_Library = (function () {
             cell: n,
             frames: 6,
             frameTemplate:
-              "thumbs/batch_" + zeroPad(sheetIndex, 3) + "_%04d.png"
+              "thumbs/batch_" + zeroPad(sheetIndex, 3) + "_%04d.png",
+            aeMajor: state.catalogMajor
           });
         }
         totalAdded += names.length;
@@ -1267,7 +1398,9 @@ var AEV_Library = (function () {
       var expr =
         "AEV_Queue.drain(" +
         sheetIndex +
-        ',{limit:1,cellOffset:0,outputRoot:"extension",extensionPath:' +
+        ",{limit:1,keepAssets:true,background:" +
+        JSON.stringify(state.effectBackground) +
+        ',cellOffset:0,outputRoot:"extension",extensionPath:' +
         JSON.stringify(state.extensionPath) +
         "})";
 
@@ -1275,12 +1408,14 @@ var AEV_Library = (function () {
         var data = parseEngineResult(result);
         var got = (data && data.names) || [];
         if (data && data.status === "ok" && got.length === 1) {
+          dropCurrentPreviewEntries(got);
           state.entries.push({
             matchName: got[0],
             sheet: sheetIndex,
             cell: 0,
             frames: 6,
-            frameTemplate: "thumbs/batch_" + zeroPad(sheetIndex, 3) + "_%04d.png"
+            frameTemplate: "thumbs/batch_" + zeroPad(sheetIndex, 3) + "_%04d.png",
+            aeMajor: state.catalogMajor
           });
           totalAdded += 1;
           writeManifest(function () {
@@ -2117,8 +2252,10 @@ var AEV_Library = (function () {
 
   function boot() {
     loadThumbPreferences();
+    if (window.AEV_Prefs) state.effectBackground = AEV_Prefs.effectBackground();
     // 首屏：把 data-i18n 的静态文案对齐到当前语言（默认中文，等价于无操作）
     if (typeof AEV_applyI18n === "function") AEV_applyI18n(state.lang);
+    syncEffectBackgroundUi();
 
     byId("langZh").addEventListener("click", function () { setLanguage("zh"); });
     byId("langEn").addEventListener("click", function () { setLanguage("en"); });
@@ -2148,6 +2285,8 @@ var AEV_Library = (function () {
     });
     byId("btnGenerate").addEventListener("click", generateMissing);
     byId("btnRetry").addEventListener("click", retryFailed);
+    byId("btnEffectBackground").addEventListener("click", chooseEffectBackground);
+    byId("btnEffectBackgroundClear").addEventListener("click", clearEffectBackground);
     byId("btnSettings").addEventListener("click", function () {
       setSettingsOpen(byId("settingsDrawer").hidden);
     });
@@ -2224,6 +2363,23 @@ var AEV_Library = (function () {
     byId("btnPresetCategoryAdd").addEventListener("click", function () {
       openPresetCategoryEditor("create", null);
     });
+    byId("btnOpenHub").addEventListener("click", function () {
+      var button = this;
+      if (!window.Bridge || typeof Bridge.openHub !== "function") {
+        setStatus(L("msg.hubMissing"), true);
+        return;
+      }
+      button.disabled = true;
+      setStatus(L("msg.hubOpening"), false);
+      Bridge.openHub(function (result) {
+        button.disabled = false;
+        if (String(result || "").indexOf("OK:") === 0) {
+          setStatus(L("msg.hubOpened"), false);
+        } else {
+          setStatus(L("msg.hubMissing"), true);
+        }
+      });
+    });
     byId("presetCategoryEditor").addEventListener("submit", savePresetCategory);
     byId("presetCategoryCancel").addEventListener("click", closePresetCategoryEditor);
     byId("presetCategoryName").addEventListener("keydown", function (event) {
@@ -2266,9 +2422,16 @@ var AEV_Library = (function () {
       }, 120);
     });
 
-    refresh(function () {
-      // 索引就绪后再开监视：extensionPath 在首次 refresh 里才解析出来
-      startWatch();
+    refresh(function (error) {
+      // 索引就绪后再开监视：extensionPath 在首次 refresh 里才解析出来。
+      // 同时清一次上一轮异常中断留下的 DE_* 临时对象。
+      if (!error && state.extensionPath) {
+        engine("AEV_PreviewGen.cleanupArtifacts()", function () {
+          startWatch();
+        });
+      } else {
+        startWatch();
+      }
     });
   }
 

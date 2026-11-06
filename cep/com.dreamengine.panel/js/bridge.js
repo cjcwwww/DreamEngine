@@ -240,6 +240,68 @@ var Bridge = (function () {
     evalAE(jsx, cb);
   }
 
+  /**
+   * 启动 DreamEngine Hub。
+   *
+   * Hub 与面板安装在不同的位置，而且安装目录允许用户修改。优先读取 Hub
+   * 首次运行时写入的 hub-path.txt；没有标记时再查开始菜单和常见安装目录。
+   * 同一路径重复启动会由 Hub 的单实例锁聚焦已有窗口。
+   */
+  function openHub(cb) {
+    getExtensionPath(function (extensionPath) {
+      var jsx =
+        "(function(){" +
+        "  try{" +
+        "    var ext = " + JSON.stringify(extensionPath || "") + ";" +
+      "    var candidates = [];" +
+      "    function add(path) { if (path) candidates.push(String(path)); }" +
+      "    var docs = Folder.myDocuments.fsName;" +
+      "    var marker = new File(docs + '/DreamEngine/hub-path.txt');" +
+      "    if (marker.exists && marker.open('r')) {" +
+      "      var marked = marker.read();" +
+      "      marker.close();" +
+      "      marked = marked.replace(/^\\uFEFF/, '').replace(/[\\r\\n]+/g, '');" +
+      "      if (marked.toLowerCase().indexOf('dreamengine hub.exe') >= 0) add(marked);" +
+      "    }" +
+      "    var appData = '';" +
+      "    try { appData = Folder.userData.fsName; } catch (e0) {}" +
+      "    var local = $.getenv('LOCALAPPDATA') || '';" +
+      "    var pf = $.getenv('ProgramFiles') || '';" +
+      "    var pfx = $.getenv('ProgramFiles(x86)') || '';" +
+      "    add(appData + '/Microsoft/Windows/Start Menu/Programs/DreamEngine Hub.lnk');" +
+      "    add(appData + '/Microsoft/Windows/Start Menu/Programs/DreamEngine/DreamEngine Hub.lnk');" +
+      "    add(Folder.desktop.fsName + '/DreamEngine Hub.lnk');" +
+      "    var roots = [local + '/Programs', local, pf, pfx];" +
+      "    for (var i = 0; i < roots.length; i++) {" +
+      "      if (!roots[i]) continue;" +
+      "      add(roots[i] + '/DreamEngine Hub/DreamEngine Hub.exe');" +
+      "      add(roots[i] + '/dreamengine-hub/DreamEngine Hub.exe');" +
+      "    }" +
+      "    if (ext) add(ext + '/../../hub/dist/win-unpacked/DreamEngine Hub.exe');" +
+      // electron-builder 的目录名可能随版本变化；只扫 Programs 下一层，
+      // 避免遍历整个 Program Files。
+      "    try {" +
+      "      var programs = new Folder(local + '/Programs');" +
+      "      var entries = programs.getFiles();" +
+      "      for (var j = 0; j < entries.length; j++) {" +
+      "        if (entries[j] instanceof Folder) {" +
+      "          add(entries[j].fsName + '/DreamEngine Hub.exe');" +
+      "        }" +
+      "      }" +
+      "    } catch (e1) {}" +
+      "    for (var k = 0; k < candidates.length; k++) {" +
+      "      try {" +
+      "        var file = new File(candidates[k]);" +
+      "        if (file.exists && file.execute()) return 'OK:' + file.fsName;" +
+      "      } catch (e2) {}" +
+      "    }" +
+      "    return 'NOT_FOUND';" +
+      "  } catch (e) { return 'ERR:' + e.toString(); }" +
+      "})()";
+      evalAE(jsx, cb);
+    });
+  }
+
   /** 自检：AE 版本 + 写权限 */
   function selfCheck(cb) {
     var out = { cep: isCEP(), aeVersion: "", writePref: "unknown", docs: "" };
@@ -271,6 +333,7 @@ var Bridge = (function () {
     runEngine: runEngine,
     ENGINE_FILES: ENGINE_FILES,
     revealDir: revealDir,
+    openHub: openHub,
     selfCheck: selfCheck
   };
 })();

@@ -20,15 +20,22 @@ const presets = require("./core/presets");
 const presetCategories = require("./core/preset_categories");
 const install = require("./core/install");
 const { RenderJob } = require("./core/render");
+const { PluginEffectJob } = require("./core/effect_render");
 
 let mainWindow = null;
 let paths = null;
 let job = null;
+let pluginJob = null;
 
 /** 开发态用仓库里的 tools/；打包后随包走 resources/tools/ */
 function toolsDir() {
   const packed = path.join(process.resourcesPath || "", "tools");
-  if (fs.existsSync(path.join(packed, "generate_plugin_presets.ps1"))) return packed;
+  if (
+    fs.existsSync(path.join(packed, "generate_plugin_presets.ps1")) &&
+    fs.existsSync(path.join(packed, "generate_plugin_effects.ps1"))
+  ) {
+    return packed;
+  }
   return path.join(__dirname, "..", "tools");
 }
 
@@ -36,6 +43,21 @@ function buildPaths() {
   // 必须用 Electron 的 documents 路径：Windows 上它可能被 OneDrive 重定向，
   // os.homedir()+"Documents" 在这种情况下会指向一个空目录。
   return createPaths({ docsDir: app.getPath("documents") });
+}
+
+/**
+ * 记住当前 Hub 可执行文件位置，供 AE 面板“打开 Hub”直接启动。
+ * 安装目录允许用户修改，所以不能把路径硬编码进 CEP 面板。
+ */
+function rememberHubPath(currentPaths) {
+  try {
+    if (path.basename(process.execPath).toLowerCase() !== "dreamengine hub.exe") return;
+    const dir = path.join(currentPaths.docsDir, "DreamEngine");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "hub-path.txt"), process.execPath + "\n", "utf8");
+  } catch {
+    /* 标记失败不影响 Hub 启动；面板仍会查开始菜单和默认路径 */
+  }
 }
 
 function snapshot() {
@@ -55,6 +77,9 @@ function snapshot() {
       docs: paths.docsDir,
     },
     render: job ? { running: job.isRunning(), state: job.snapshot() } : { running: false, state: null },
+    pluginEffects: pluginJob
+      ? { running: pluginJob.isRunning(), state: pluginJob.snapshot() }
+      : { running: false, state: null },
   };
 }
 
@@ -200,6 +225,7 @@ function registerIpc() {
 
   ipcMain.handle("render:start", (_event, options) => {
     if (!job) return { ok: false, reason: "no_job" };
+    if (pluginJob && pluginJob.isRunning()) return { ok: false, reason: "plugin_effects_running" };
     const statePath = paths.hubState;
     // 上一轮残留的 done/failed 状态会让 UI 一上来就显示「已完成」，先清掉
     try {
@@ -213,6 +239,31 @@ function registerIpc() {
   ipcMain.handle("render:stop", () => (job ? job.stop() : { ok: false }));
 
   ipcMain.handle("render:snapshot", () => (job ? job.snapshot() : null));
+
+  ipcMain.handle("plugin-effects:start", (_event, options) => {
+    if (!pluginJob) return { ok: false, reason: "no_job" };
+    if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
+    return pluginJob.start(options || {});
+  });
+  ipcMain.handle("plugin-effects:stop", () =>
+    pluginJob ? pluginJob.stop() : { ok: false, reason: "no_job" },
+  );
+  ipcMain.handle("plugin-effects:snapshot", () =>
+    pluginJob ? pluginJob.snapshot() : null,
+  );
+  ipcMain.handle("plugin-effects:logTail", (_event, lines = 40) => {
+    const n = lines === undefined ? 40 : Math.floor(Number(lines));
+    if (!Number.isFinite(n) || n <= 0) return "";
+    try {
+      return fs.readFileSync(paths.pluginEffectLog, "utf8")
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .slice(-n)
+        .join("\n");
+    } catch {
+      return "";
+    }
+  });
 
   ipcMain.handle("log:tail", (_event, lines = 40) => {
     const n = lines === undefined ? 40 : Math.floor(Number(lines));
@@ -248,6 +299,7 @@ if (!gotLock) {
 
   app.whenReady().then(() => {
     paths = buildPaths();
+    rememberHubPath(paths);
 
     job = new RenderJob({
       paths,
@@ -260,6 +312,21 @@ if (!gotLock) {
       onExit: (info) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send("render:exit", info);
+        }
+      },
+    });
+
+    pluginJob = new PluginEffectJob({
+      paths,
+      script: path.join(toolsDir(), "generate_plugin_effects.ps1"),
+      onState: (state) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send("plugin-effects:state", state);
+        }
+      },
+      onExit: (info) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send("plugin-effects:exit", info);
         }
       },
     });
@@ -304,10 +371,12 @@ if (!gotLock) {
   app.on("window-all-closed", () => {
     // 渲染中途关窗口：把专用 AE 实例一起收掉，别留孤儿进程
     if (job && job.isRunning()) job.stop();
+    if (pluginJob && pluginJob.isRunning()) pluginJob.stop();
     if (process.platform !== "darwin") app.quit();
   });
 
   app.on("before-quit", () => {
     if (job && job.isRunning()) job.stop();
+    if (pluginJob && pluginJob.isRunning()) pluginJob.stop();
   });
 }

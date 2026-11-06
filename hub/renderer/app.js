@@ -14,7 +14,10 @@ const state = {
   view: "presets",
   rendering: false,
   stopRequested: false,
+  pluginEffectRendering: false,
+  pluginEffectStopRequested: false,
   pollTimer: null,
+  pluginEffectPollTimer: null,
   logTimer: null,
   presetHoldTimer: null,
   presetHoverStop: null,
@@ -62,11 +65,19 @@ function setView(name) {
   }
   $("viewPresets").hidden = name !== "presets";
   $("viewRender").hidden = name !== "render";
+  $("viewPluginEffects").hidden = name !== "pluginEffects";
   $("viewSettings").hidden = name !== "settings";
 
   if (name === "render") {
     refreshAeState();
     pullLog();
+  }
+  if (name === "pluginEffects") {
+    refreshAeState();
+    pullPluginEffectLog();
+    window.hub.pluginEffectsSnapshot().then((last) => {
+      if (last) paintPluginEffectProgress(last);
+    });
   }
   if (name !== "presets") closePresetDelete();
   if (name !== "presets") closePresetRename();
@@ -635,7 +646,39 @@ function paintAe(ae) {
       '<div class="notice-sub">请确认已安装 AE 2021 或更高版本。</div>';
   }
 
-  $("btnStart").disabled = state.rendering || !ae.exe;
+  $("btnStart").disabled =
+    state.rendering || state.pluginEffectRendering || !ae.exe;
+}
+
+function paintPluginEffectAe(ae) {
+  const notice = $("pluginEffectAeNotice");
+  const extReady = !!(state.snapshot && state.snapshot.ext.installed);
+
+  if (ae.running) {
+    notice.className = "notice warn";
+    notice.innerHTML =
+      '<div class="notice-title">插件效果需要独占 After Effects</div>' +
+      '<div class="notice-sub">请先保存工程并关闭 After Effects，再回到 Hub 开始生成。</div>';
+  } else if (!ae.exe) {
+    notice.className = "notice warn";
+    notice.innerHTML =
+      '<div class="notice-title">没有找到 After Effects</div>' +
+      '<div class="notice-sub">请安装 After Effects 2021 或更高版本。</div>';
+  } else if (!extReady) {
+    notice.className = "notice warn";
+    notice.innerHTML =
+      '<div class="notice-title">DreamEngine 面板尚未安装</div>' +
+      '<div class="notice-sub">离线渲染脚本位于已安装扩展的 tools 目录中，请先重新安装面板。</div>';
+  } else {
+    notice.className = "notice ok";
+    notice.innerHTML =
+      '<div class="notice-title">可以开始</div>' +
+      '<div class="notice-sub">将使用当前 AE 的效果清单，每轮启动独立实例逐条渲染。' +
+      "插件崩溃不会影响其他条目，也不会混入内置效果预览。</div>";
+  }
+
+  $("btnPluginEffectStart").disabled =
+    state.pluginEffectRendering || state.rendering || ae.running || !ae.exe || !extReady;
 }
 
 function paintProgress(renderState) {
@@ -675,6 +718,7 @@ async function refreshAeState() {
   const snap = await window.hub.snapshot();
   state.snapshot = snap;
   paintAe(snap.ae);
+  paintPluginEffectAe(snap.ae);
   fillSettings(snap);
   return snap;
 }
@@ -717,6 +761,7 @@ async function startRender(overrides) {
   state.rendering = true;
   state.stopRequested = false;
   $("btnStart").disabled = true;
+  $("btnPluginEffectStart").disabled = true;
   $("btnStop").disabled = false;
   setStatus(options.onlyPreset ? "已开始单独渲染" : "渲染已启动");
   startPolling();
@@ -754,6 +799,105 @@ async function stopRender() {
   stopPolling();
   setStatus("已停止");
   $("renderMessage").textContent = "已手动停止。";
+}
+
+/* ---------- 插件效果预览 ---------- */
+
+function paintPluginEffectProgress(renderState) {
+  const bar = $("pluginEffectBar");
+  const phase = $("pluginEffectPhase");
+  const count = $("pluginEffectCount");
+  const message = $("pluginEffectMessage");
+  if (!renderState) {
+    bar.style.width = "0%";
+    phase.textContent = "空闲";
+    count.textContent = "";
+    message.textContent = "插件效果会使用独立 AE 实例逐条渲染，崩溃条目会自动跳过。";
+    return;
+  }
+
+  const total = Number(renderState.total) || 0;
+  const current = Number(renderState.current) || 0;
+  const percent = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
+  const labels = {
+    starting: "准备中",
+    rendering: "生成中",
+    done: "已完成",
+    paused: "可继续",
+    failed: "已停止",
+    cancelled: "已取消",
+  };
+  bar.style.width = percent + "%";
+  phase.textContent = labels[renderState.phase] || String(renderState.phase || "");
+  count.textContent =
+    total > 0
+      ? `${current} / ${total}　本轮成功 ${renderState.ok || 0}　失败 ${renderState.fail || 0}　剩余 ${renderState.remaining || 0}`
+      : "";
+  message.textContent = renderState.message || "";
+}
+
+async function pullPluginEffectLog() {
+  const text = await window.hub.logPluginEffectsTail(40);
+  $("pluginEffectLogBody").textContent = text || "（暂无）";
+}
+
+function startPluginEffectPolling() {
+  stopPluginEffectPolling();
+  state.pluginEffectPollTimer = setInterval(async () => {
+    await refreshAeState();
+    await pullPluginEffectLog();
+    const current = await window.hub.pluginEffectsSnapshot();
+    if (current) paintPluginEffectProgress(current);
+  }, 2000);
+}
+
+function stopPluginEffectPolling() {
+  if (state.pluginEffectPollTimer) {
+    clearInterval(state.pluginEffectPollTimer);
+    state.pluginEffectPollTimer = null;
+  }
+}
+
+async function startPluginEffects() {
+  if (!state.snapshot || !state.snapshot.ae.exe) return;
+  const options = {
+    ae: state.snapshot.ae.exe,
+    background: $("pluginEffectBackground").value || "",
+    limit: Number($("pluginEffectLimit").value) || 24,
+    rounds: Number($("pluginEffectRounds").value) || 200,
+  };
+  const result = await window.hub.startPluginEffects(options);
+  if (!result.ok) {
+    setStatus("插件效果生成启动失败：" + (result.reason || ""), true);
+    return;
+  }
+
+  state.pluginEffectRendering = true;
+  state.pluginEffectStopRequested = false;
+  $("btnPluginEffectStart").disabled = true;
+  $("btnStart").disabled = true;
+  $("btnPluginEffectStop").disabled = false;
+  setStatus("插件效果预览生成已启动");
+  paintPluginEffectProgress({
+    phase: "starting",
+    total: 0,
+    current: 0,
+    remaining: 0,
+    message: "正在读取当前 After Effects 的插件效果清单…",
+  });
+  startPluginEffectPolling();
+}
+
+async function stopPluginEffects() {
+  state.pluginEffectStopRequested = true;
+  const result = await window.hub.stopPluginEffects();
+  if (!result || !result.ok) state.pluginEffectStopRequested = false;
+  state.pluginEffectRendering = false;
+  $("btnPluginEffectStart").disabled = false;
+  $("btnPluginEffectStop").disabled = true;
+  stopPluginEffectPolling();
+  setStatus("已停止插件效果生成");
+  $("pluginEffectMessage").textContent = "已手动停止，下次开始会从断点继续。";
 }
 
 /* ---------- 设置页 ---------- */
@@ -799,6 +943,34 @@ async function fillBackgrounds() {
     select.value = current;
   } else if (select.options.length) {
     select.value = select.options[0].value;
+  }
+  select.dataset.previous = select.value;
+}
+
+async function fillPluginEffectBackgrounds() {
+  const select = $("pluginEffectBackground");
+  const current = select.value;
+  const list = await window.hub.listBackgrounds();
+  select.textContent = "";
+  const standard = document.createElement("option");
+  standard.value = "";
+  standard.textContent = "标准素材";
+  select.appendChild(standard);
+  for (const item of list) {
+    if (item.builtin) continue;
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = item.label;
+    select.appendChild(option);
+  }
+  const custom = document.createElement("option");
+  custom.value = "__custom__";
+  custom.textContent = "自己添加…";
+  select.appendChild(custom);
+  if (current && [...select.options].some((option) => option.value === current)) {
+    select.value = current;
+  } else {
+    select.value = "";
   }
   select.dataset.previous = select.value;
 }
@@ -885,9 +1057,30 @@ function bind() {
     setStatus(`已添加背景：${added[0].split(/[\\/]/).pop()}`);
   });
 
+  $("pluginEffectBackground").addEventListener("change", async (event) => {
+    const select = event.target;
+    if (select.value !== "__custom__") {
+      select.dataset.previous = select.value;
+      return;
+    }
+    select.value = select.dataset.previous || "";
+    const result = await window.hub.addBackground();
+    const added = result.added || [];
+    if (!added.length) return;
+    await fillPluginEffectBackgrounds();
+    select.value = added[0];
+    select.dataset.previous = added[0];
+    setStatus(`已添加背景：${added[0].split(/[\\/]/).pop()}`);
+  });
+
   $("btnStart").addEventListener("click", startRender);
   $("btnStop").addEventListener("click", stopRender);
   $("btnOpenLog").addEventListener("click", () => {
+    if (state.snapshot) window.hub.reveal(state.snapshot.paths.probe);
+  });
+  $("btnPluginEffectStart").addEventListener("click", startPluginEffects);
+  $("btnPluginEffectStop").addEventListener("click", stopPluginEffects);
+  $("btnPluginEffectLog").addEventListener("click", () => {
     if (state.snapshot) window.hub.reveal(state.snapshot.paths.probe);
   });
 
@@ -930,12 +1123,45 @@ function bind() {
     await loadPresets();
     await refreshAeState();
   });
+
+  window.hub.onPluginEffectsState((renderState) => {
+    paintPluginEffectProgress(renderState);
+  });
+
+  window.hub.onPluginEffectsExit(async (info) => {
+    state.pluginEffectRendering = false;
+    const wasStopped = state.pluginEffectStopRequested;
+    state.pluginEffectStopRequested = false;
+    $("btnPluginEffectStart").disabled = false;
+    $("btnPluginEffectStop").disabled = true;
+    stopPluginEffectPolling();
+    if (info.state) paintPluginEffectProgress(info.state);
+    await pullPluginEffectLog();
+    await refreshAeState();
+
+    const finalState = info.state || {};
+    const remaining = Number(finalState.remaining) || 0;
+    if (finalState.phase === "done" && remaining === 0) {
+      setStatus("插件效果预览生成完成");
+    } else if (wasStopped) {
+      setStatus("插件效果预览生成已停止");
+    } else if (finalState.phase === "paused") {
+      setStatus(finalState.message || "已达轮数上限，可再次开始继续生成");
+    } else {
+      setStatus(
+        "插件效果预览未全部完成" +
+          (remaining > 0 ? `，仍有 ${remaining} 条待生成` : ""),
+        true,
+      );
+    }
+  });
 }
 
 async function boot() {
   bind();
   const snap = await refreshAeState();
   await fillBackgrounds();
+  await fillPluginEffectBackgrounds();
   await loadPresetCategories();
   await loadPresets();
   await pullLog();
@@ -943,6 +1169,15 @@ async function boot() {
   const last = await window.hub.renderSnapshot();
   if (last) paintProgress(last);
   else paintProgress(null);
+  const lastPluginEffects = await window.hub.pluginEffectsSnapshot();
+  if (lastPluginEffects) paintPluginEffectProgress(lastPluginEffects);
+  else paintPluginEffectProgress(null);
+  if (snap.pluginEffects && snap.pluginEffects.running) {
+    state.pluginEffectRendering = true;
+    $("btnPluginEffectStart").disabled = true;
+    $("btnPluginEffectStop").disabled = false;
+    startPluginEffectPolling();
+  }
 
   if (!snap.ext.installed) {
     setStatus("没有检测到已安装的 DreamEngine 面板，先跑安装包里的安装脚本", true);

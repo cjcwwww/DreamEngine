@@ -38,11 +38,23 @@ contextBridge.exposeInMainWorld("hub", {
   renderSnapshot: () => ipcRenderer.invoke("render:snapshot"),
   logTail: (lines) => ipcRenderer.invoke("log:tail", lines),
 
+  /* 插件效果预览 */
+  startPluginEffects: (options) => ipcRenderer.invoke("plugin-effects:start", options),
+  stopPluginEffects: () => ipcRenderer.invoke("plugin-effects:stop"),
+  pluginEffectsSnapshot: () => ipcRenderer.invoke("plugin-effects:snapshot"),
+  logPluginEffectsTail: (lines) => ipcRenderer.invoke("plugin-effects:logTail", lines),
+
   /* 主进程推送 */
   onRenderState: (callback) => {
     ipcRenderer.on("render:state", (_event, state) => callback(state));
   },
   onRenderExit: (callback) => {
     ipcRenderer.on("render:exit", (_event, info) => callback(info));
+  },
+  onPluginEffectsState: (callback) => {
+    ipcRenderer.on("plugin-effects:state", (_event, state) => callback(state));
+  },
+  onPluginEffectsExit: (callback) => {
+    ipcRenderer.on("plugin-effects:exit", (_event, info) => callback(info));
   },
 });

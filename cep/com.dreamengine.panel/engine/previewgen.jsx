@@ -130,6 +130,124 @@ var AEV_PreviewGen = (function () {
         return "{" + parts.join(",") + "}";
     }
 
+    function currentMajor() {
+        try {
+            return parseInt(String(app.version || ""), 10) || 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function usableBackground(path) {
+        var text = String(path || "");
+        if (!text) return "";
+        try {
+            var file = new File(text);
+            return file.exists ? file.fsName : "";
+        } catch (e) {
+            return "";
+        }
+    }
+
+    function backgroundFingerprint(path) {
+        if (typeof AEV_Assets !== "undefined" && AEV_Assets.backgroundFingerprint) {
+            return AEV_Assets.backgroundFingerprint(path);
+        }
+        return path ? String(path).toLowerCase() : "default";
+    }
+
+    /** 选择一张本地图片，复制到 DreamEngine 管理的背景目录后返回绝对路径。 */
+    function pickBackground() {
+        var source = File.openDialog("选择效果预览背景");
+        if (!source) return '{"status":"cancelled"}';
+        var name = String(source.name || "");
+        if (!/\.(png|jpe?g|bmp|tiff?)$/i.test(name)) {
+            return result("error", [["reason", "unsupported_image"]]);
+        }
+
+        var dir = new Folder(Folder.myDocuments.fsName + "/DreamEngine/backgrounds");
+        if (!dir.exists && !dir.create()) {
+            return result("error", [["reason", "cannot_create_background_folder"]]);
+        }
+        var target = new File(dir.fsName + "/" + name);
+        var dot = name.lastIndexOf(".");
+        var base = dot > 0 ? name.substring(0, dot) : name;
+        var ext = dot > 0 ? name.substring(dot) : "";
+        var n = 1;
+        while (target.exists) {
+            target = new File(dir.fsName + "/" + base + "_" + n + ext);
+            n++;
+        }
+        try {
+            if (!source.copy(target)) {
+                return result("error", [["reason", "copy_failed"]]);
+            }
+        } catch (e) {
+            return result("error", [["reason", "copy_failed"], ["detail", String(e)]]);
+        }
+        return result("ok", [["path", target.fsName], ["name", target.name]]);
+    }
+
+    /**
+     * 清理渲染留在 AE 工程里的内部对象，但绝不删除磁盘上的预览 PNG。
+     *
+     * 某些 AE 版本会把 Render Queue 输出的 PNG 序列放进工程面板。
+     * 这里只清 DreamEngine 约定命名的对象，不碰用户素材。
+     */
+    function cleanupArtifacts() {
+        var removed = 0;
+        var failed = 0;
+        try {
+            if (typeof AEV_Assets !== "undefined" && AEV_Assets.dispose) {
+                AEV_Assets.dispose();
+            }
+        } catch (eAssets) {}
+
+        var total = 0;
+        try {
+            total = app.project.numItems;
+        } catch (eTotal) {
+            return '{"removed":0,"failed":1}';
+        }
+
+        for (var i = total; i >= 1; i--) {
+            var item = null;
+            try {
+                item = app.project.item(i);
+            } catch (eItem) {
+                failed++;
+                continue;
+            }
+            if (!item) continue;
+
+            var internal = false;
+            var name = String(item.name || "");
+            if (item instanceof CompItem &&
+                    /^DE_(asset|scene|cell|sheet|preset_cell)_/.test(name)) {
+                internal = true;
+            } else if (item instanceof FootageItem) {
+                try {
+                    var source = item.mainSource;
+                    var sourceFile = source && source.file;
+                    var sourceName = sourceFile ? String(sourceFile.name || "") : "";
+                    var sourcePath = sourceFile
+                        ? String(sourceFile.fsName || "").replace(/\\/g, "/").toLowerCase()
+                        : "";
+                    internal = /^batch_\d{3}(?:_\d{4})?\.png$/i.test(sourceName) &&
+                        sourcePath.indexOf("/thumbs/") >= 0;
+                } catch (eSource) {}
+            }
+            if (!internal) continue;
+            try {
+                item.remove();
+                removed++;
+            } catch (eRemove) {
+                failed++;
+            }
+        }
+        return '{"removed":' + removed + ',"failed":' + failed + "}";
+    }
+
     /**
      * 批量渲染一张 contact sheet。
      * matchNames：本次要渲的 matchName 数组（不超过每网格数）
@@ -150,6 +268,7 @@ var AEV_PreviewGen = (function () {
         // 插件 L2 预览走 singleCell：一张图只渲一个格子（128×128），
         // 不必为一条效果生成一整张 1024×1024 的网。默认路径完全不变。
         var singleCell = !!(options && options.singleCell);
+        var background = usableBackground(options && options.background);
         var columns = singleCell ? 1 : conf.contactSheet.columns;
         var width = singleCell ? cellSize : conf.contactSheet.width;
         var height = singleCell ? cellSize : conf.contactSheet.height;
@@ -187,6 +306,8 @@ var AEV_PreviewGen = (function () {
         var grid = null;
         var queueItem = null;
         var started = new Date().getTime();
+        // 面板整轮批量生成需要跨批次复用素材；结束时由 cleanupArtifacts 统一清理。
+        var keepAssets = !!(options && options.keepAssets);
 
         // freshAssets：每批用一份全新的素材 comp，不复用会话缓存。
         // AE 会缓存嵌套 comp 的渲染帧，复用同一素材时后一次渲染可能直接吃缓存，
@@ -197,12 +318,12 @@ var AEV_PreviewGen = (function () {
         function sceneOf(kind) {
             if (!scenes[kind]) {
                 if (freshAssets && typeof AEV_Assets !== "undefined") {
-                    var built = AEV_Assets.getFresh(kind, cellSize);
+                    var built = AEV_Assets.getFresh(kind, cellSize, background);
                     freshComps.push(built);
                     scenes[kind] = built;
                 } else {
                     scenes[kind] = (typeof AEV_Assets !== "undefined")
-                        ? AEV_Assets.get(kind, cellSize)
+                        ? AEV_Assets.get(kind, cellSize, background)
                         : buildScene(cellSize);
                 }
             }
@@ -374,8 +495,8 @@ var AEV_PreviewGen = (function () {
             for (var f = 0; f < freshComps.length; f++) {
                 try { freshComps[f].remove(); } catch (eFresh) {}
             }
-            // 标准素材（scenes）刻意不删：它们由 AEV_Assets 缓存，跨批次复用，
-            // 每批重建会让 64 格的批量生成慢上一个数量级。
+            // 单批/离线渲染立即清理；面板批量生成延迟到整轮结束。
+            if (!keepAssets) cleanupArtifacts();
         }
     }
 
@@ -391,11 +512,16 @@ var AEV_PreviewGen = (function () {
      *
      * 素材指纹带上 kind：photo 与 pattern 用同一张网时，换素材不会误判命中。
      */
-    function itemKey(matchName, cellSize, frames) {
+    function itemKey(matchName, cellSize, frames, background) {
         if (typeof AEV_Recipe === "undefined") return "";
         var kind = AEV_Recipe.assetKindFor(AEV_Recipe.sceneFor(matchName));
         var assetVersion = (typeof AEV_Assets !== "undefined") ? AEV_Assets.fingerprint() : "na";
-        return AEV_Recipe.cacheKey(matchName, kind + "@" + assetVersion, cellSize, frames);
+        var bg = usableBackground(background);
+        var source = kind + "@" + assetVersion;
+        if (kind === "photo" && bg) {
+            source += "@background-" + backgroundFingerprint(bg);
+        }
+        return AEV_Recipe.cacheKey(matchName, source, cellSize, frames);
     }
 
     /**
@@ -405,15 +531,16 @@ var AEV_PreviewGen = (function () {
      * 落在扩展目录里才能被相对路径加载。jsx 侧手工拼 JSON 是本项目既定做法
      * （catalog.jsx 同样如此），不引入 JSON 库。
      *
-     * entriesTsv 每行 5 列：
-     *   matchName \t sheet \t cell \t frames \t frameTemplate
+     * entriesTsv 每行 7 列：
+     *   matchName \t sheet \t cell \t frames \t frameTemplate \t aeMajor \t key
+     * key 是已有预览的指纹；只有新渲染条目才留空并由当前背景重新计算。
      * frameTemplate 为空表示单文件预览（src = thumbs/batch_XXX.png）
      *
-     * 同时把同样的条目写一份 data/previews.tsv（多带 cacheKey 一列）：
+     * 同时把同样的条目写一份 data/previews.tsv（多带 cacheKey、aeMajor 两列）：
      * json 给 CEF 读，tsv 给 ExtendScript 读——ExtendScript 没有 JSON.parse，
      * 校验缓存是否过期必须在 AE 侧做，所以需要这份可被 split 的副本。
      */
-    function writeManifest(entriesTsv, extensionPath) {
+    function writeManifest(entriesTsv, extensionPath, background) {
         var conf = config();
         var columns = conf.contactSheet.columns;
         var cellSize = conf.contactSheet.cellSize;
@@ -431,7 +558,9 @@ var AEV_PreviewGen = (function () {
                 sheet: parseInt(parts[1], 10) || 0,
                 cell: parseInt(parts[2], 10) || 0,
                 frames: parseInt(parts[3], 10) || 1,
-                frameTemplate: parts.length > 4 ? parts[4] : ""
+                frameTemplate: parts.length > 4 ? parts[4] : "",
+                aeMajor: parts.length > 5 ? (parseInt(parts[5], 10) || 0) : 0,
+                key: parts.length > 6 ? parts[6] : ""
             });
         }
         if (rows.length === 0) return result("error", [["reason", "empty_manifest"]]);
@@ -451,19 +580,26 @@ var AEV_PreviewGen = (function () {
         var items = [];
         var sheetsSeen = {};
         var sheets = [];
-        var indexRows = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey"];
+        var manifestMajor = 0;
+        var mixedMajors = false;
+        var indexRows = ["matchName\tsheet\tcell\tframes\tframeTemplate\tkey\taeMajor"];
         for (var r = 0; r < rows.length; r++) {
             var row = rows[r];
+            if (row.aeMajor) {
+                if (manifestMajor && row.aeMajor !== manifestMajor) mixedMajors = true;
+                else manifestMajor = row.aeMajor;
+            }
             var fileName = "batch_" + pad(row.sheet, 3) + ".png";
             var src = row.frameTemplate ? "" : ("thumbs/" + fileName);
             var frameSrc = row.frameTemplate || "";
-            var key = itemKey(row.matchName, cellSize, row.frames);
+            var key = row.key || itemKey(row.matchName, cellSize, row.frames, background);
             var parts2 = ['"matchName":' + jsonText(row.matchName)];
             parts2.push('"sheet":' + row.sheet);
             parts2.push('"x":' + ((row.cell % columns) * cellSize));
             parts2.push('"y":' + (Math.floor(row.cell / columns) * cellSize));
             parts2.push('"width":' + cellSize + ',"height":' + cellSize);
             parts2.push('"frames":' + row.frames);
+            parts2.push('"aeMajor":' + row.aeMajor);
             if (key) parts2.push('"key":' + jsonText(key));
             if (src) parts2.push('"src":' + jsonText(src));
             if (frameSrc) parts2.push('"frameSrc":' + jsonText(frameSrc));
@@ -474,7 +610,8 @@ var AEV_PreviewGen = (function () {
                 String(row.cell),
                 String(row.frames),
                 row.frameTemplate,
-                key
+                key,
+                String(row.aeMajor)
             ].join("\t"));
 
             if (!sheetsSeen[String(row.sheet)]) {
@@ -490,7 +627,8 @@ var AEV_PreviewGen = (function () {
             }
         }
 
-        var manifest = '{"version":2,"cellSize":' + cellSize +
+        var manifest = '{"version":2,"aeMajor":' + (mixedMajors ? 0 : manifestMajor) +
+            ',"cellSize":' + cellSize +
             ',"columns":' + columns + ',"width":' + width + ',"height":' + height +
             ',"sheets":[' + sheets.join(",") + '],"items":[' + items.join(",") + "]}";
 
@@ -519,7 +657,7 @@ var AEV_PreviewGen = (function () {
      * 这是「改了配方或换素材后旧图自动失效」的实现点。没有指纹的旧条目
      * （key 列为空）视为有效——它们是在引入指纹之前渲的，不该被一次性清空。
      */
-    function staleList(extensionPath) {
+    function staleList(extensionPath, background) {
         var conf = config();
         var cellSize = conf.contactSheet.cellSize;
         var file = new File(String(extensionPath) + "/data/previews.tsv");
@@ -542,9 +680,12 @@ var AEV_PreviewGen = (function () {
             var matchName = parts[0];
             var frames = parseInt(parts[3], 10) || 1;
             var storedKey = parts[5];
+            var rowMajor = parts.length > 6 ? (parseInt(parts[6], 10) || 0) : 0;
             checked++;
             if (!storedKey) continue;
-            var currentKey = itemKey(matchName, cellSize, frames);
+            // 旧版本预览继续作为回退图使用，不参与当前版本的配方失效判断。
+            if (!rowMajor || rowMajor !== currentMajor()) continue;
+            var currentKey = itemKey(matchName, cellSize, frames, background);
             if (currentKey && currentKey !== storedKey) stale.push(matchName);
         }
         file.close();
@@ -562,6 +703,8 @@ var AEV_PreviewGen = (function () {
         itemKey: itemKey,
         renderBatch: renderBatch,
         renderOne: renderOne,
+        pickBackground: pickBackground,
+        cleanupArtifacts: cleanupArtifacts,
         writeManifest: writeManifest,
         staleList: staleList
     };

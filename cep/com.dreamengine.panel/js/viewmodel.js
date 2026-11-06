@@ -1,4 +1,9 @@
 var AEV_ViewModel = (function () {
+  function trimText(value) {
+    return String(value === undefined || value === null ? "" : value)
+      .replace(/^\s+|\s+$/g, "");
+  }
+
   /* 表达式控件族与音频族不渲图，面板退化为文字条目（设计文档 §4.3） */
   var NO_PREVIEW_CATEGORIES = [
     "expression controls",
@@ -128,7 +133,7 @@ var AEV_ViewModel = (function () {
     if (/Obsolete|过时/i.test(category)) return true;
     // AE 对一批效果不返回分类（实测 97 个，多是 ADBE CM * 与 3D 通道族）。
     // 用户明确要求「未分类的效果不要」，这里直接排除。
-    if (!category.trim()) return true;
+    if (!trimText(category)) return true;
     return isPoorPreviewTarget(effect);
   }
 
@@ -189,7 +194,7 @@ var AEV_ViewModel = (function () {
    * 但它们指的是同一个分类，显示名要走 names.json 映射）。
    */
   function categoryKey(item) {
-    var raw = String((item && item.category) || "").trim();
+    var raw = trimText((item && item.category) || "");
     return raw || "未分类";
   }
 
@@ -336,7 +341,7 @@ var AEV_ViewModel = (function () {
 
     return {
       size: size,
-      position: posX.toFixed(4) + "% " + posY.toFixed(4) + "%",
+      position: posX.toFixed(4) + "% " + posY.toFixed(4) + "%"
     };
   }
 
@@ -410,6 +415,23 @@ var AEV_ViewModel = (function () {
     };
   }
 
+  /**
+   * 同一 matchName 可能同时存在多个 AE 版本生成的预览。
+   * 当前主版本精确命中优先；没有时静默回退到现有其他版本。
+   */
+  function choosePreview(variants, aeMajor) {
+    var exact = null;
+    var fallback = null;
+    var rows = variants || [];
+    for (var i = 0; i < rows.length; i++) {
+      var preview = rows[i];
+      if (!preview || !(preview.src || preview.frameSrc)) continue;
+      fallback = preview;
+      if (Number(preview.aeMajor) === Number(aeMajor)) exact = preview;
+    }
+    return exact || fallback;
+  }
+
   function filterItems(items, state) {
     var lang = state.lang || "zh";
     var query = String(state.query || "").toLowerCase();
@@ -452,6 +474,7 @@ var AEV_ViewModel = (function () {
     categoryOrder: categoryOrder,
     categoryCounts: categoryCounts,
     sortItems: sortItems,
+    choosePreview: choosePreview,
     buildItem: buildItem,
     filterItems: filterItems
   };

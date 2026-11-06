@@ -158,6 +158,41 @@ button:focus-visible,
   gap: 8px;
 }
 
+.hub-button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hub-button:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.hub-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.hub-button svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
 .preset-tools input[type="search"] {
   flex: 1 1 auto;
   min-width: 120px;
@@ -1648,6 +1683,32 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.settings-background {
+  margin: 0 0 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.settings-background .settings-note {
+  margin: 8px 0 0;
+}
+
+.settings-background-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.settings-background-actions .action-button {
+  min-height: 28px;
+}
+
+.settings-background-actions .action-button[hidden] {
+  display: none;
 }
 
 .settings-action {

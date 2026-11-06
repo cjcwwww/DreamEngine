@@ -78,7 +78,8 @@ var AEV_Catalog = (function () {
             items.push({
                 matchName: String(effect.matchName || ""),
                 displayName: String(effect.displayName || ""),
-                category: String(effect.category || "")
+                category: String(effect.category || ""),
+                version: String(effect.version || "")
             });
         }
         return items;
@@ -87,17 +88,22 @@ var AEV_Catalog = (function () {
     function getCatalogJson(force) {
         if (!force && cacheJson) return cacheJson;
         var items = buildItems();
+        var aeVersion = String(app.version || "");
+        var aeMajor = parseInt(aeVersion, 10) || 0;
         var rows = [];
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             rows.push(
                 '{"matchName":' + jsonString(item.matchName) +
                 ',"displayName":' + jsonString(item.displayName) +
-                ',"category":' + jsonString(item.category) + "}"
+                ',"category":' + jsonString(item.category) +
+                ',"version":' + jsonString(item.version) + "}"
             );
         }
         cacheItems = items;
-        cacheJson = '{"version":1,"count":' + items.length + ',"effects":[' + rows.join(",") + "]}";
+        cacheJson = '{"version":1,"aeVersion":' + jsonString(aeVersion) +
+            ',"aeMajor":' + aeMajor +
+            ',"count":' + items.length + ',"effects":[' + rows.join(",") + "]}";
         return cacheJson;
     }
 
