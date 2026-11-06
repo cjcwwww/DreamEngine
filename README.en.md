@@ -28,7 +28,7 @@
 
 Current release: **DreamEngine Hub 0.1.0 / CEP panel 0.2.0**
 
-Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.1.0-beta.1):
+Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.1.0-beta.2):
 
 - `DreamEngine-Hub-Setup-0.1.0.exe`
 - `SHA256SUMS.txt`

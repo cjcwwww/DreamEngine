@@ -24,6 +24,16 @@ var AEV_Materials = (function () {
         return at >= 0 ? value.substring(at) : "";
     }
 
+    /** ExtendScript may return File.name as a URL-encoded string. */
+    function displayName(name) {
+        var text = String(name || "");
+        try {
+            return decodeURI(text);
+        } catch (e) {
+            return text;
+        }
+    }
+
     function classify(name) {
         var ext = extensionOf(name);
         if ((" " + VIDEO_EXT + " ").indexOf(" " + ext + " ") >= 0) return "video";
@@ -224,14 +234,15 @@ var AEV_Materials = (function () {
                 scanFolder(entry, items, errors, visited);
                 continue;
             }
-            var type = classify(entry.name);
+            var entryName = displayName(entry.name);
+            var type = classify(entryName);
             if (!type) continue;
             try {
                 items.push({
                     path: String(entry.fsName).replace(/\\/g, "/"),
-                    name: String(entry.name),
+                    name: entryName,
                     type: type,
-                    extension: extensionOf(entry.name),
+                    extension: extensionOf(entryName),
                     size: Number(entry.length) || 0,
                     modifiedAt: entry.modified ? entry.modified.getTime() : 0,
                     exists: !!entry.exists

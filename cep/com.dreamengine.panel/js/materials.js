@@ -47,6 +47,24 @@ var AEV_MaterialsUI = (function () {
     }
   }
 
+  /** Old indices may contain URL-encoded File.name values from ExtendScript. */
+  function displayName(name) {
+    var text = String(name || "");
+    try {
+      return decodeURI(text);
+    } catch (e) {
+      return text;
+    }
+  }
+
+  function normalizeItems(items) {
+    var out = items || [];
+    for (var i = 0; i < out.length; i++) {
+      out[i].name = displayName(out[i].name);
+    }
+    return out;
+  }
+
   function categoryRows() {
     var counts = {
       favorites: 0,
@@ -362,7 +380,7 @@ var AEV_MaterialsUI = (function () {
     run("AEV_Materials.indexJson()", function (text) {
       var data = parseResult(text);
       if (data && data.status !== "error" && data.items) {
-        state.items = data.items;
+        state.items = normalizeItems(data.items);
         state.root = data.root || "";
         state.loaded = true;
       } else if (data && data.status === "error") {
@@ -380,7 +398,7 @@ var AEV_MaterialsUI = (function () {
         setStatus(L("materials.readFailed", [data.reason || ""]), true);
         return;
       }
-      state.items = data.items || [];
+      state.items = normalizeItems(data.items);
       state.root = data.root || "";
       state.loaded = true;
       setStatus(L("materials.scanned", [state.items.length]), false);
@@ -399,7 +417,7 @@ var AEV_MaterialsUI = (function () {
         setStatus(L("materials.readFailed", [data && data.reason ? data.reason : ""]), true);
         return;
       }
-      state.items = data.items || [];
+      state.items = normalizeItems(data.items);
       state.loaded = true;
       setStatus(L("materials.scanned", [state.items.length]), false);
       render();

@@ -28,7 +28,7 @@
 
 当前版本：**DreamEngine Hub 0.1.0 / CEP 面板 0.2.0**
 
-从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.1.0-beta.1) 下载：
+从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.1.0-beta.2) 下载：
 
 - `DreamEngine-Hub-Setup-0.1.0.exe`
 - `SHA256SUMS.txt`

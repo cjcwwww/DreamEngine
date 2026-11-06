@@ -29,6 +29,18 @@ var AEV_I18N = {
   "favorites.add": ["收藏", "Add to favorites"],
   "favorites.remove": ["取消收藏", "Remove from favorites"],
 
+  /* ---------- 介绍弹窗 ---------- */
+  "about.open": ["关于 DreamEngine", "About DreamEngine"],
+  "about.close": ["关闭介绍", "Close about"],
+  "about.linksAria": ["作者链接", "Creator links"],
+  "about.tagline": ["AE 效果 / 预设 / 曲线 / 素材", "AE effects / presets / curves / media"],
+  "about.douyin": ["抖音", "Douyin"],
+  "about.github": ["GitHub 源码", "GitHub source"],
+  "about.qqGroup": ["QQ 交流群", "QQ group"],
+  "about.copy": ["复制", "Copy"],
+  "about.copied": ["已复制", "Copied"],
+  "about.copyFailed": ["复制失败", "Copy failed"],
+
   /* ---------- 效果墙 ---------- */
   "search.effects": ["搜索效果、分类或 matchName", "Search effects, categories or matchName"],
   "filter.plugin": ["插件筛选", "Plugin filter"],

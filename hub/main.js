@@ -10,7 +10,7 @@
  *   · 不自己实现安装 —— 一律调用 tools/install_dreamengine.ps1
  * ============================================================ */
 
-const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell, Menu, clipboard } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
 
@@ -87,6 +87,19 @@ function createWindow() {
 
 function registerIpc() {
   ipcMain.handle("hub:snapshot", () => snapshot());
+  ipcMain.handle("shell:openExternal", (_event, url) => {
+    const allowed = new Set([
+      "https://v.douyin.com/-9l_jE72QY4/",
+      "https://github.com/yoanx/DreamEngine",
+    ]);
+    if (!allowed.has(url)) return false;
+    return shell.openExternal(url).then(() => true).catch(() => false);
+  });
+  ipcMain.handle("clipboard:writeText", (_event, text) => {
+    if (text !== "972561311") return false;
+    clipboard.writeText(text);
+    return true;
+  });
 
   ipcMain.handle("presets:list", () => presets.list(paths));
 
