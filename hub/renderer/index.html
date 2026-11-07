@@ -26,8 +26,7 @@
 
 <nav class="tabs" id="tabs">
   <button class="tab active" data-view="presets">预设库<span class="tab-count" id="tabPresetCount">0</span></button>
-  <button class="tab" data-view="render">预设预览</button>
-  <button class="tab" data-view="pluginEffects">插件效果</button>
+  <button class="tab" data-view="render">渲染</button>
   <button class="tab" data-view="settings">设置</button>
 </nav>
 
@@ -68,99 +67,93 @@
 
   <!-- ========== 渲染 ========== -->
   <section class="view" id="viewRender" hidden>
-    <div class="notice" id="aeNotice">
-      <div class="notice-title">正在检测 After Effects…</div>
+    <div class="render-mode-switch" id="renderModeSwitch" role="tablist" aria-label="渲染类型">
+      <button class="render-mode-button active" type="button"
+              data-render-mode="preset" role="tab" aria-selected="true">预设预览</button>
+      <button class="render-mode-button" type="button"
+              data-render-mode="plugin" role="tab" aria-selected="false">插件效果</button>
     </div>
 
-    <div class="panel">
-      <div class="panel-row">
-        <label class="field">
-          <span class="field-label">预览背景</span>
-          <select id="background" class="input"></select>
-        </label>
-        <label class="field">
-          <span class="field-label">渲染 AE 版本</span>
-          <select id="renderAeVersion" class="input ae-version-select"></select>
-        </label>
-        <label class="field narrow">
-          <span class="field-label">每实例最多</span>
-          <input id="limit" class="input" type="number" min="1" max="64" value="40">
-        </label>
-        <label class="field narrow">
-          <span class="field-label">崩溃恢复上限</span>
-          <input id="rounds" class="input" type="number" min="1" max="200" value="40">
-        </label>
+    <div class="render-mode" id="presetRenderMode">
+      <div class="notice" id="aeNotice">
+        <div class="notice-title">正在检测 After Effects…</div>
       </div>
-      <div class="panel-row actions">
-        <button class="btn primary" id="btnStart">开始渲染</button>
-        <button class="btn danger" id="btnStop" disabled>停止</button>
-        <span class="spacer"></span>
-        <button class="btn ghost" id="btnOpenLog">打开日志</button>
+      <div class="panel">
+        <div class="panel-row">
+          <label class="field">
+            <span class="field-label">预览背景</span>
+            <select id="background" class="input"></select>
+          </label>
+          <label class="field">
+            <span class="field-label">渲染 AE 版本</span>
+            <select id="renderAeVersion" class="input ae-version-select"></select>
+          </label>
+          <label class="field narrow">
+            <span class="field-label">每实例最多</span>
+            <input id="limit" class="input" type="number" min="1" max="64" value="40">
+          </label>
+          <label class="field narrow">
+            <span class="field-label">崩溃恢复上限</span>
+            <input id="rounds" class="input" type="number" min="1" max="200" value="40">
+          </label>
+        </div>
+        <div class="panel-row actions">
+          <button class="btn primary" id="btnStart">开始渲染</button>
+          <button class="btn danger" id="btnStop" disabled>停止</button>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="btnOpenLog">打开日志</button>
+        </div>
       </div>
-    </div>
-
-    <div class="progress-wrap">
-      <div class="progress-head">
-        <span id="renderPhase">空闲</span>
-        <span id="renderCount"></span>
-      </div>
-      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-      <div class="progress-msg" id="renderMessage">还没有开始渲染。</div>
-    </div>
-
-    <div class="log">
-      <div class="log-head">渲染日志（末尾）</div>
-      <pre class="log-body" id="logBody">（暂无）</pre>
-    </div>
-  </section>
-
-  <!-- ========== 插件效果预览 ========== -->
-  <section class="view" id="viewPluginEffects" hidden>
-    <div class="notice" id="pluginEffectAeNotice">
-      <div class="notice-title">正在检测 After Effects…</div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-row">
-        <label class="field">
-          <span class="field-label">预览背景</span>
-          <select id="pluginEffectBackground" class="input"></select>
-        </label>
-        <label class="field">
-          <span class="field-label">渲染 AE 版本</span>
-          <select id="pluginEffectAeVersion" class="input ae-version-select"></select>
-        </label>
-        <label class="field narrow">
-          <span class="field-label">每批条数</span>
-          <input id="pluginEffectLimit" class="input" type="number" min="1" max="64" value="8">
-        </label>
-        <label class="field narrow">
-          <span class="field-label">重启上限</span>
-          <input id="pluginEffectRounds" class="input" type="number" min="1" max="200" value="200">
-        </label>
-      </div>
-      <div class="panel-row actions">
-        <button class="btn primary" id="btnPluginEffectStart">开始生成</button>
-        <button class="btn danger" id="btnPluginEffectStop" disabled>停止</button>
-        <span class="spacer"></span>
-        <button class="btn ghost" id="btnPluginEffectLog">打开日志</button>
+      <div class="progress-wrap">
+        <div class="progress-head">
+          <span id="renderPhase">空闲</span>
+          <span id="renderCount"></span>
+        </div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-msg" id="renderMessage">还没有开始渲染。</div>
       </div>
     </div>
 
-    <div class="progress-wrap">
-      <div class="progress-head">
-        <span id="pluginEffectPhase">空闲</span>
-        <span id="pluginEffectCount"></span>
+    <div class="render-mode" id="pluginRenderMode" hidden>
+      <div class="notice" id="pluginEffectAeNotice">
+        <div class="notice-title">正在检测 After Effects…</div>
       </div>
-      <div class="progress"><div class="progress-bar" id="pluginEffectBar"></div></div>
-      <div class="progress-msg" id="pluginEffectMessage">
-        插件效果会使用独立 AE 实例逐条渲染，崩溃条目会自动跳过。
+      <div class="panel">
+        <div class="panel-row">
+          <label class="field">
+            <span class="field-label">预览背景</span>
+            <select id="pluginEffectBackground" class="input"></select>
+          </label>
+          <label class="field">
+            <span class="field-label">渲染 AE 版本</span>
+            <select id="pluginEffectAeVersion" class="input ae-version-select"></select>
+          </label>
+          <label class="field narrow">
+            <span class="field-label">每批条数</span>
+            <input id="pluginEffectLimit" class="input" type="number" min="1" max="64" value="8">
+          </label>
+          <label class="field narrow">
+            <span class="field-label">重启上限</span>
+            <input id="pluginEffectRounds" class="input" type="number" min="1" max="200" value="200">
+          </label>
+        </div>
+        <div class="panel-row actions">
+          <button class="btn primary" id="btnPluginEffectStart">开始生成</button>
+          <button class="btn danger" id="btnPluginEffectStop" disabled>停止</button>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="btnPluginEffectLog">打开日志</button>
+        </div>
       </div>
-    </div>
-
-    <div class="log">
-      <div class="log-head">插件效果生成日志（末尾）</div>
-      <pre class="log-body" id="pluginEffectLogBody">（暂无）</pre>
+      <div class="progress-wrap">
+        <div class="progress-head">
+          <span id="pluginEffectPhase">空闲</span>
+          <span id="pluginEffectCount"></span>
+        </div>
+        <div class="progress"><div class="progress-bar" id="pluginEffectBar"></div></div>
+        <div class="progress-msg" id="pluginEffectMessage">
+          插件效果会使用独立 AE 实例逐条渲染，崩溃条目会自动跳过。
+        </div>
+      </div>
     </div>
   </section>
 
@@ -227,6 +220,29 @@
       <button class="btn primary" type="submit">保存</button>
     </div>
   </form>
+</div>
+
+<div class="modal-mask" id="renderLogDialog" hidden>
+  <section class="log-dialog" role="dialog" aria-modal="true" aria-labelledby="renderLogTitle">
+    <header class="log-dialog-head">
+      <div>
+        <h3 id="renderLogTitle">渲染日志</h3>
+        <span id="renderLogSubtitle">最近日志</span>
+      </div>
+      <button class="icon-btn" id="renderLogClose" type="button"
+              aria-label="关闭日志" title="关闭日志">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </header>
+    <pre class="log-dialog-body" id="renderLogBody">（暂无）</pre>
+    <footer class="log-dialog-actions">
+      <button class="btn ghost" id="renderLogOpenFolder" type="button">打开日志目录</button>
+      <span class="spacer"></span>
+      <button class="btn" id="renderLogCloseBottom" type="button">关闭</button>
+    </footer>
+  </section>
 </div>
 
 <div class="modal-mask about-mask" id="aboutDialog" hidden>

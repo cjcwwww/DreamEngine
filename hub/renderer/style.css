@@ -766,6 +766,44 @@ code { font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace; fo
 
 #viewRender, #viewSettings { overflow-y: auto; padding: 16px 16px 32px; gap: 12px; }
 
+.render-mode-switch {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.render-mode-button {
+  min-width: 88px;
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.render-mode-button:hover:not(:disabled) { color: var(--text); }
+.render-mode-button.active { background: var(--surface-2); color: var(--text); }
+.render-mode-button:disabled { cursor: default; opacity: 0.62; }
+.render-mode-button:focus { outline: none; }
+.render-mode-button:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+.render-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.render-mode[hidden] { display: none; }
+.render-mode > .notice,
+.render-mode > .panel,
+.render-mode > .progress-wrap { margin-bottom: 0; }
+
 .notice {
   border: 1px solid var(--border);
   border-left: 3px solid var(--muted);
@@ -867,6 +905,61 @@ code { font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace; fo
   word-break: break-all;
   user-select: text;
 }
+
+.log-dialog {
+  width: min(920px, 100%);
+  height: min(680px, calc(100vh - 80px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: 0 20px 58px rgba(0, 0, 0, 0.58);
+}
+
+.log-dialog-head,
+.log-dialog-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  padding: 12px 14px;
+}
+
+.log-dialog-head {
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-dialog-head h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.log-dialog-head span {
+  display: block;
+  margin-top: 3px;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.log-dialog-body {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 13px 15px;
+  overflow: auto;
+  background: #0b0d0e;
+  color: var(--muted);
+  font: 11px/1.7 Consolas, "Cascadia Mono", "DreamEngine Sans", monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+}
+
+.log-dialog-actions { border-top: 1px solid var(--border); }
 
 /* ---------- 设置页 ---------- */
 

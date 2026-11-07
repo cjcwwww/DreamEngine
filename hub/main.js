@@ -352,9 +352,15 @@ if (!gotLock) {
         setTimeout(async () => {
           try {
             if (viewArg) {
+              const tab = viewArg === "pluginEffects" ? "render" : viewArg;
               await mainWindow.webContents.executeJavaScript(
-                `document.querySelector('.tab[data-view="${viewArg}"]').click()`,
+                `document.querySelector('.tab[data-view="${tab}"]').click()`,
               );
+              if (viewArg === "pluginEffects") {
+                await mainWindow.webContents.executeJavaScript(
+                  `document.querySelector('.render-mode-button[data-render-mode="plugin"]').click()`,
+                );
+              }
               await new Promise((r) => setTimeout(r, 1200));
             }
             const image = await mainWindow.webContents.capturePage();

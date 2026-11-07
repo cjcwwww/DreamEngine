@@ -13,6 +13,8 @@ const state = {
   presets: [],
   query: "",
   view: "presets",
+  renderMode: "preset",
+  logKind: "preset",
   rendering: false,
   stopRequested: false,
   pluginEffectRendering: false,
@@ -60,30 +62,53 @@ function pathKey(value) {
 /* ---------- 页签 ---------- */
 
 function setView(name) {
-  state.view = name;
+  const pluginAlias = name === "pluginEffects";
+  const target = pluginAlias ? "render" : name;
+  state.view = target;
   for (const tab of document.querySelectorAll(".tab")) {
-    tab.classList.toggle("active", tab.dataset.view === name);
+    tab.classList.toggle("active", tab.dataset.view === target);
   }
-  $("viewPresets").hidden = name !== "presets";
-  $("viewRender").hidden = name !== "render";
-  $("viewPluginEffects").hidden = name !== "pluginEffects";
-  $("viewSettings").hidden = name !== "settings";
+  $("viewPresets").hidden = target !== "presets";
+  $("viewRender").hidden = target !== "render";
+  $("viewSettings").hidden = target !== "settings";
 
-  if (name === "render") {
+  if (pluginAlias) setRenderMode("plugin");
+  if (target === "render") {
     refreshAeState();
-    pullLog();
+    if (state.renderMode === "plugin") {
+      pullPluginEffectLog();
+      window.hub.pluginEffectsSnapshot().then((last) => {
+        if (last) paintPluginEffectProgress(last);
+      });
+    } else {
+      pullLog();
+    }
+  } else if (!$("renderLogDialog").hidden) {
+    closeRenderLog();
   }
-  if (name === "pluginEffects") {
-    refreshAeState();
-    pullPluginEffectLog();
-    window.hub.pluginEffectsSnapshot().then((last) => {
-      if (last) paintPluginEffectProgress(last);
-    });
+  if (target !== "presets") closePresetDelete();
+  if (target !== "presets") closePresetRename();
+  if (target !== "presets") hideCategoryMenu();
+  if (target !== "presets" && state.presetHoverStop) state.presetHoverStop();
+}
+
+function setRenderMode(mode) {
+  if (state.rendering || state.pluginEffectRendering) return;
+  state.renderMode = mode === "plugin" ? "plugin" : "preset";
+  $("presetRenderMode").hidden = state.renderMode !== "preset";
+  $("pluginRenderMode").hidden = state.renderMode !== "plugin";
+  for (const button of document.querySelectorAll(".render-mode-button")) {
+    const active = button.dataset.renderMode === state.renderMode;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
   }
-  if (name !== "presets") closePresetDelete();
-  if (name !== "presets") closePresetRename();
-  if (name !== "presets") hideCategoryMenu();
-  if (name !== "presets" && state.presetHoverStop) state.presetHoverStop();
+}
+
+function updateRenderModeButtons() {
+  const busy = state.rendering || state.pluginEffectRendering;
+  for (const button of document.querySelectorAll(".render-mode-button")) {
+    button.disabled = busy;
+  }
 }
 
 /* ---------- 预设库 ---------- */
@@ -758,9 +783,26 @@ function selectRenderAe(value, source) {
   }
 }
 
-async function pullLog() {
-  const text = await window.hub.logTail(40);
-  $("logBody").textContent = text || "（暂无）";
+async function openRenderLog(kind) {
+  state.logKind = kind === "plugin" ? "plugin" : "preset";
+  $("renderLogTitle").textContent =
+    state.logKind === "plugin" ? "插件效果生成日志" : "预设渲染日志";
+  $("renderLogSubtitle").textContent = "最近 400 行";
+  $("renderLogBody").textContent = "正在读取日志…";
+  $("renderLogDialog").hidden = false;
+  $("renderLogClose").focus();
+  if (state.logKind === "plugin") await pullPluginEffectLog(400);
+  else await pullLog(400);
+}
+
+function closeRenderLog() {
+  $("renderLogDialog").hidden = true;
+}
+
+async function pullLog(lines = 400) {
+  if ($("renderLogDialog").hidden || state.logKind !== "preset") return;
+  const text = await window.hub.logTail(lines);
+  $("renderLogBody").textContent = text || "（暂无）";
 }
 
 function startPolling() {
@@ -796,6 +838,7 @@ async function startRender(overrides) {
 
   state.rendering = true;
   state.stopRequested = false;
+  updateRenderModeButtons();
   $("btnStart").disabled = true;
   $("btnPluginEffectStart").disabled = true;
   $("btnStop").disabled = false;
@@ -817,6 +860,7 @@ async function startRender(overrides) {
 
 async function renderSinglePreset(item) {
   setView("render");
+  setRenderMode("preset");
   await startRender({
     onlyPreset: item.path,
     limit: 1,
@@ -830,6 +874,7 @@ async function stopRender() {
   // 没有真正停掉（进程已经退了 / 本来就没跑）时不要留下「已停止」的标记
   if (!result || !result.ok) state.stopRequested = false;
   state.rendering = false;
+  updateRenderModeButtons();
   $("btnStart").disabled = false;
   $("btnStop").disabled = true;
   stopPolling();
@@ -872,9 +917,10 @@ function paintPluginEffectProgress(renderState) {
   message.textContent = renderState.message || "";
 }
 
-async function pullPluginEffectLog() {
-  const text = await window.hub.logPluginEffectsTail(40);
-  $("pluginEffectLogBody").textContent = text || "（暂无）";
+async function pullPluginEffectLog(lines = 400) {
+  if ($("renderLogDialog").hidden || state.logKind !== "plugin") return;
+  const text = await window.hub.logPluginEffectsTail(lines);
+  $("renderLogBody").textContent = text || "（暂无）";
 }
 
 function startPluginEffectPolling() {
@@ -910,6 +956,7 @@ async function startPluginEffects() {
 
   state.pluginEffectRendering = true;
   state.pluginEffectStopRequested = false;
+  updateRenderModeButtons();
   $("btnPluginEffectStart").disabled = true;
   $("btnStart").disabled = true;
   $("btnPluginEffectStop").disabled = false;
@@ -929,6 +976,7 @@ async function stopPluginEffects() {
   const result = await window.hub.stopPluginEffects();
   if (!result || !result.ok) state.pluginEffectStopRequested = false;
   state.pluginEffectRendering = false;
+  updateRenderModeButtons();
   $("btnPluginEffectStart").disabled = false;
   $("btnPluginEffectStop").disabled = true;
   stopPluginEffectPolling();
@@ -1125,13 +1173,34 @@ function bind() {
 
   $("btnStart").addEventListener("click", startRender);
   $("btnStop").addEventListener("click", stopRender);
-  $("btnOpenLog").addEventListener("click", () => {
-    if (state.snapshot) window.hub.reveal(state.snapshot.paths.probe);
-  });
+  $("btnOpenLog").addEventListener("click", () => openRenderLog("preset"));
   $("btnPluginEffectStart").addEventListener("click", startPluginEffects);
   $("btnPluginEffectStop").addEventListener("click", stopPluginEffects);
-  $("btnPluginEffectLog").addEventListener("click", () => {
+  $("btnPluginEffectLog").addEventListener("click", () => openRenderLog("plugin"));
+  $("renderLogClose").addEventListener("click", closeRenderLog);
+  $("renderLogCloseBottom").addEventListener("click", closeRenderLog);
+  $("renderLogOpenFolder").addEventListener("click", () => {
     if (state.snapshot) window.hub.reveal(state.snapshot.paths.probe);
+  });
+  $("renderLogDialog").addEventListener("click", (event) => {
+    if (event.target === $("renderLogDialog")) closeRenderLog();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !$("renderLogDialog").hidden) {
+      event.preventDefault();
+      closeRenderLog();
+    }
+  });
+
+  $("renderModeSwitch").addEventListener("click", (event) => {
+    const button = event.target.closest(".render-mode-button");
+    if (!button || button.disabled) return;
+    setRenderMode(button.dataset.renderMode);
+    if (state.renderMode === "plugin") {
+      window.hub.pluginEffectsSnapshot().then((last) => {
+        if (last) paintPluginEffectProgress(last);
+      });
+    }
   });
 
   for (const select of document.querySelectorAll(".ae-version-select")) {
@@ -1153,6 +1222,7 @@ function bind() {
 
   window.hub.onRenderExit(async (info) => {
     state.rendering = false;
+    updateRenderModeButtons();
     $("btnStart").disabled = false;
     $("btnStop").disabled = true;
     stopPolling();
@@ -1186,6 +1256,7 @@ function bind() {
 
   window.hub.onPluginEffectsExit(async (info) => {
     state.pluginEffectRendering = false;
+    updateRenderModeButtons();
     const wasStopped = state.pluginEffectStopRequested;
     state.pluginEffectStopRequested = false;
     $("btnPluginEffectStart").disabled = false;
@@ -1229,7 +1300,9 @@ async function boot() {
   if (lastPluginEffects) paintPluginEffectProgress(lastPluginEffects);
   else paintPluginEffectProgress(null);
   if (snap.pluginEffects && snap.pluginEffects.running) {
+    setRenderMode("plugin");
     state.pluginEffectRendering = true;
+    updateRenderModeButtons();
     $("btnPluginEffectStart").disabled = true;
     $("btnPluginEffectStop").disabled = false;
     startPluginEffectPolling();
