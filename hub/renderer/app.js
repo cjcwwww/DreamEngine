@@ -863,7 +863,7 @@ async function startPluginEffects() {
   const options = {
     ae: state.snapshot.ae.exe,
     background: $("pluginEffectBackground").value || "",
-    limit: Number($("pluginEffectLimit").value) || 24,
+    limit: Number($("pluginEffectLimit").value) || 8,
     rounds: Number($("pluginEffectRounds").value) || 200,
   };
   const result = await window.hub.startPluginEffects(options);

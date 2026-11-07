@@ -143,11 +143,31 @@ var AEV_PresetPreview = (function () {
         return '{"status":"ok"}';
     }
 
-    /** PNG 序列输出模板（与 previewgen.jsx 同一套） */
-    function pngTemplate(outputModule) {
-        var templates = outputModule.templates;
+    /** 新首选项没有可见 PNG 模板时，回退到 AE 自带的 Hidden Legacy 模板。 */
+    function applyPngTemplate(outputModule) {
+        var candidates = ["_HIDDEN Legacy PNG Sequence"];
+        var templates = outputModule.templates || [];
         for (var i = 0; i < templates.length; i++) {
-            if (String(templates[i]).toLowerCase().indexOf("png") >= 0) return String(templates[i]);
+            var name = String(templates[i]);
+            if (name.toLowerCase().indexOf("png") >= 0) candidates.push(name);
+        }
+        candidates.push("DreamEngine PNG Sequence");
+        candidates.push("PNG Sequence");
+        candidates.push("PNG 序列");
+        var seen = {};
+        for (var c = 0; c < candidates.length; c++) {
+            var candidate = String(candidates[c] || "");
+            if (!candidate || seen[candidate]) continue;
+            seen[candidate] = true;
+            try {
+                outputModule.applyTemplate(candidate);
+                if (outputModule.getSettings) {
+                    var settings = outputModule.getSettings();
+                    var appliedFormat = String(settings && settings.Format || "");
+                    if (appliedFormat && appliedFormat.toLowerCase().indexOf("png") < 0) continue;
+                }
+                return candidate;
+            } catch (eApply) {}
         }
         return null;
     }
@@ -469,9 +489,8 @@ var AEV_PresetPreview = (function () {
 
             queueItem = app.project.renderQueue.items.add(comp);
             var outputModule = queueItem.outputModule(1);
-            var template = pngTemplate(outputModule);
+            var template = applyPngTemplate(outputModule);
             if (!template) return result("error", [["reason", "no_png_template"]]);
-            outputModule.applyTemplate(template);
             outputModule.file = new File(folder.fsName + "/" + rawBase + "_[####].png");
             queueItem.timeSpanStart = start;
             queueItem.timeSpanDuration = span;

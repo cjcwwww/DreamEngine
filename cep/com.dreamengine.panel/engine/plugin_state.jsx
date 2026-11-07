@@ -2,8 +2,8 @@
 // plugin_state.jsx —— 插件 L2 预览的纯状态逻辑（ES3，无 app 依赖）
 //
 // 为什么要单独一层：插件效果与内置效果混在同一张整网渲染会让 AE 进程
-// 直接消失，脚本里 catch 不到。因此插件预览必须「逐条渲 + 渲前写心跳 +
-// 崩溃后拉黑 + 每条成功立即落索引」。这些规则如果只写在离线脚本里就没法
+// 直接消失，脚本里 catch 不到。因此插件预览采用「每批 8 个、失败后逐条重试
+// + 渲前写心跳 + 崩溃后拉黑 + 每条成功立即落索引」。这些规则如果只写在离线脚本里就没法
 // 自动测；抽成不碰 AE 对象的纯函数后，Node 侧可以用 vm 直接跑断言。
 //
 // 本文件只处理字符串与数组，不读写文件、不调用 app：
@@ -16,7 +16,7 @@
 
 var AEV_PluginState = (function () {
     var VERSION = 1;
-    var ENTRY_HEADER = "matchName\tsheet\tframes\tframeTemplate\tplugin";
+    var ENTRY_HEADER = "matchName\tsheet\tframes\tframeTemplate\tplugin\tx\ty\tcolumns\twidth\theight";
     var BLACKLIST_HEADER = "matchName\treason";
 
     function jsonText(value) {
@@ -132,7 +132,12 @@ var AEV_PluginState = (function () {
                 sheet: parseInt(p[1], 10) || 0,
                 frames: parseInt(p[2], 10) || 1,
                 frameTemplate: p[3] || "",
-                plugin: p[4] || "其它插件"
+                plugin: p[4] || "其它插件",
+                x: parseInt(p[5], 10) || 0,
+                y: parseInt(p[6], 10) || 0,
+                columns: parseInt(p[7], 10) || 1,
+                width: parseInt(p[8], 10) || 0,
+                height: parseInt(p[9], 10) || 0
             });
         }
         return out;
@@ -147,7 +152,12 @@ var AEV_PluginState = (function () {
                 String(e.sheet),
                 String(e.frames),
                 e.frameTemplate || "",
-                e.plugin || "其它插件"
+                e.plugin || "其它插件",
+                String(e.x || 0),
+                String(e.y || 0),
+                String(e.columns || 1),
+                String(e.width || 0),
+                String(e.height || 0)
             ].join("\t"));
         }
         return lines.join("\r\n");
@@ -235,13 +245,16 @@ var AEV_PluginState = (function () {
             var e = entries[i];
             var tmpl = e.frameTemplate || "";
             var firstFrame = tmpl ? tmpl.replace("%04d", "0000") : "";
+            var itemColumns = e.columns || columns;
+            var itemWidth = e.width || width;
+            var itemHeight = e.height || height;
             var parts = ['"matchName":' + jsonText(e.matchName)];
             parts.push('"sheet":' + e.sheet);
-            parts.push('"x":0,"y":0');
+            parts.push('"x":' + (e.x || 0) + ',"y":' + (e.y || 0));
             parts.push('"width":' + cellSize + ',"height":' + cellSize);
             parts.push('"frames":' + e.frames);
-            parts.push('"sliceColumns":' + columns + ',"sliceCellSize":' + cellSize);
-            parts.push('"sliceWidth":' + width + ',"sliceHeight":' + height);
+            parts.push('"sliceColumns":' + itemColumns + ',"sliceCellSize":' + cellSize);
+            parts.push('"sliceWidth":' + itemWidth + ',"sliceHeight":' + itemHeight);
             parts.push('"plugin":' + jsonText(e.plugin || "其它插件"));
             if (tmpl) parts.push('"frameSrc":' + jsonText(tmpl));
             if (firstFrame) parts.push('"src":' + jsonText(firstFrame));
@@ -250,8 +263,8 @@ var AEV_PluginState = (function () {
             if (!seenSheets[String(e.sheet)] && firstFrame) {
                 seenSheets[String(e.sheet)] = true;
                 sheets.push('{"index":' + e.sheet + ',"src":' +
-                            jsonText(firstFrame) + ',"width":' + width +
-                            ',"height":' + height + "}");
+                            jsonText(firstFrame) + ',"width":' + itemWidth +
+                            ',"height":' + itemHeight + "}");
             }
         }
         // sheets 顺序无所谓：面板按 index 字段取，不按数组位置取

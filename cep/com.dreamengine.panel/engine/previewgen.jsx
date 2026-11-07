@@ -58,6 +58,39 @@ var AEV_PreviewGen = (function () {
         return null;
     }
 
+    /**
+     * 新账户或损坏的首选项可能让 templates 列表里没有可见 PNG 模板。
+     * Hidden Legacy 模板随 AE 安装，不依赖用户保存过输出模板。
+     */
+    function applyPngTemplate(outputModule) {
+        var candidates = ["_HIDDEN Legacy PNG Sequence"];
+        var templates = outputModule.templates || [];
+        for (var i = 0; i < templates.length; i++) {
+            var name = String(templates[i]);
+            if (name.toLowerCase().indexOf("png") >= 0) candidates.push(name);
+        }
+        candidates.push(config().render.pngOutputTemplate);
+        candidates.push("PNG Sequence");
+        candidates.push("PNG 序列");
+
+        var seen = {};
+        for (var c = 0; c < candidates.length; c++) {
+            var candidate = String(candidates[c] || "");
+            if (!candidate || seen[candidate]) continue;
+            seen[candidate] = true;
+            try {
+                outputModule.applyTemplate(candidate);
+                if (outputModule.getSettings) {
+                    var settings = outputModule.getSettings();
+                    var appliedFormat = String(settings && settings.Format || "");
+                    if (appliedFormat && appliedFormat.toLowerCase().indexOf("png") < 0) continue;
+                }
+                return candidate;
+            } catch (eApply) {}
+        }
+        return null;
+    }
+
     /** 标准素材场景：深色底 + 青色块 + 暖色块 + 文字，能同时体现模糊、发光、变形、调色。
      *  注意：addSolid 的 width/height 必须是整数，AE 2021 会以
      *  "151.04 不是整数" 直接抛错，所以比例尺寸一律 Math.round。
@@ -252,11 +285,11 @@ var AEV_PreviewGen = (function () {
      * 批量渲染一张 contact sheet。
      * matchNames：本次要渲的 matchName 数组（不超过每网格数）
      * sheetIndex：第几张网，决定输出文件名
-     * options：{ extensionPath, outputRoot, startTime, cellOffset, singleCell }
+     * options：{ extensionPath, outputRoot, startTime, cellOffset, singleCell,
+     *            gridColumns, gridRows }
      *   cellOffset —— 本批从网格第几格开始摆。整张新网传 0；
      *   往已有网里补空位时才用得上（要与 manifest 里的 cell 编号一致）。
-     *   singleCell —— 插件 L2 预览专用：1×1 单格网，输出 128×128 帧序列，
-     *   不与其它效果混渲（第三方插件混渲会直接杀掉 AE 进程）。
+     *   singleCell —— 插件隔离重试通道：1×1 单格网，输出 128×128 帧序列。
      */
     function renderBatch(matchNames, sheetIndex, options) {
         if (!matchNames || matchNames.length === 0) {
@@ -269,9 +302,11 @@ var AEV_PreviewGen = (function () {
         // 不必为一条效果生成一整张 1024×1024 的网。默认路径完全不变。
         var singleCell = !!(options && options.singleCell);
         var background = usableBackground(options && options.background);
-        var columns = singleCell ? 1 : conf.contactSheet.columns;
-        var width = singleCell ? cellSize : conf.contactSheet.width;
-        var height = singleCell ? cellSize : conf.contactSheet.height;
+        var requestedColumns = options && parseInt(options.gridColumns, 10);
+        var requestedRows = options && parseInt(options.gridRows, 10);
+        var columns = singleCell ? 1 : (requestedColumns > 0 ? requestedColumns : conf.contactSheet.columns);
+        var width = singleCell ? cellSize : (requestedColumns > 0 ? columns * cellSize : conf.contactSheet.width);
+        var height = singleCell ? cellSize : (requestedRows > 0 ? requestedRows * cellSize : conf.contactSheet.height);
         var frames = conf.animatedPreview.frameCount;
         // 帧数可覆盖：插件 L2 预览不打关键帧（参数是保守启发式拨的，动起来失真），
         // 6 帧内容完全相同 —— 只渲 1 帧，省 5/6 的磁盘与加载开销。
@@ -423,11 +458,10 @@ var AEV_PreviewGen = (function () {
 
             queueItem = app.project.renderQueue.items.add(grid);
             var outputModule = queueItem.outputModule(1);
-            var template = pngTemplate(outputModule);
+            var template = applyPngTemplate(outputModule);
             if (!template) {
                 throw new Error("no_png_template");
             }
-            outputModule.applyTemplate(template);
 
             var baseName = "batch_" + pad(sheetIndex, 3);
 
@@ -699,6 +733,7 @@ var AEV_PreviewGen = (function () {
         config: config,
         plan: plan,
         pngTemplate: pngTemplate,
+        applyPngTemplate: applyPngTemplate,
         buildScene: buildScene,
         itemKey: itemKey,
         renderBatch: renderBatch,

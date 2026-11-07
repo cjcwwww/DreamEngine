@@ -53,7 +53,7 @@ class PluginEffectJob {
       "-Extension",
       this.paths.extDir,
       "-Limit",
-      String(Number(options.limit) || 24),
+      String(Number(options.limit) || 8),
       "-Rounds",
       String(Number(options.rounds) || 200),
       "-Background",
