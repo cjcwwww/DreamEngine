@@ -359,7 +359,8 @@ var AEV_Library = (function () {
       var isAnimated =
         state.staticPreviews[item.matchName] !== true &&
         (!preview.frameSrc || (preview.frames || 1) > 1);
-      attachPreview(thumb, card, preview, isAnimated);
+      var stillIndex = item.plugin === "内置" ? undefined : 0;
+      attachPreview(thumb, card, preview, isAnimated, stillIndex);
     } else {
       var placeholder = document.createElement("span");
       placeholder.className = "thumb-placeholder";

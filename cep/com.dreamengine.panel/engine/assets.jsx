@@ -108,7 +108,9 @@ var AEV_Assets = (function () {
 
         var imported = null;
         try {
-            imported = app.project.importFile(new ImportOptions(source));
+            var importOptions = new ImportOptions(source);
+            importOptions.sequence = false;
+            imported = app.project.importFile(importOptions);
         } catch (eImport) {
             return null;
         }

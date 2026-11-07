@@ -364,7 +364,9 @@ var AEV_PresetPreview = (function () {
         if (!file.exists) return null;
         var imported = null;
         try {
-            imported = app.project.importFile(new ImportOptions(file));
+            var importOptions = new ImportOptions(file);
+            importOptions.sequence = false;
+            imported = app.project.importFile(importOptions);
         } catch (e2) {
             return null;
         }

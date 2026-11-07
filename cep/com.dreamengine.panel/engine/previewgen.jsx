@@ -397,6 +397,7 @@ var AEV_PreviewGen = (function () {
                 }
                 grid.width = width;
                 grid.height = height;
+                grid.frameRate = CELL_FPS;
                 grid.duration = Math.max(durationSeconds, 1 / CELL_FPS);
             } else {
                 grid = app.project.items.addComp(
@@ -533,10 +534,11 @@ var AEV_PreviewGen = (function () {
             /* 单格 addProperty 失败时 cellNames 会比 matchNames 少；这时不能报 ok，
                否则队列会把整批（包括没出图的那格）都标成 cached，索引里留下空条目。 */
             var missingCells = matchNames.length - cellNames.length;
-            var status = files.length > 0 && missingCells === 0 ? "ok" : "error";
+            var status = files.length === frames && missingCells === 0 ? "ok" : "error";
             var reason = status === "ok"
                 ? ""
-                : (missingCells > 0 ? "cell_add_failed" : "no_frames");
+                : (missingCells > 0 ? "cell_add_failed"
+                    : (files.length === 0 ? "no_frames" : "incomplete_frames"));
             var detail = [
                 ["reason", reason],
                 ["sheet", baseName],
