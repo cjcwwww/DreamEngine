@@ -8,10 +8,68 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "selftest": "electron . --selftest"
+    "selftest": "electron . --selftest",
+    "build:resources": "node ../tools/prepare_hub_bundle.mjs",
+    "pack": "node ../tools/build_hub.mjs --dir",
+    "dist": "node ../tools/build_hub.mjs --win nsis",
+    "test:package": "node ../tools/test-hub-package.mjs",
+    "test:release": "node ../tools/test-hub-release.mjs"
   },
   "devDependencies": {
     "electron": "45.2.2",
     "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.dreamengine.hub",
+    "productName": "DreamEngine Hub",
+    "artifactName": "DreamEngine-Hub-Setup-${version}.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*",
+      "core/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/release/panel",
+        "to": "panel"
+      },
+      {
+        "from": "build/release/tools",
+        "to": "tools"
+      },
+      {
+        "from": "build/release/installer",
+        "to": "installer"
+      }
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": true
+    }
   }
 }

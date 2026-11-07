@@ -46,6 +46,7 @@ function importImageAsPng({ source, targetDir, nativeImage }) {
     if (!Buffer.isBuffer(png) || png.length === 0) {
       return { ok: false, reason: "encode_failed", source };
     }
+
     fs.mkdirSync(targetDir, { recursive: true });
     const target = uniquePngPath(targetDir, source);
     const temp = `${target}.converting-${process.pid}-${Date.now()}`;
@@ -62,14 +63,22 @@ function importImageAsPng({ source, targetDir, nativeImage }) {
   }
 }
 
+/**
+ * Convert imported backgrounds to real PNG files by content, not extension.
+ * Existing JPEG/WebP files with a misleading .png suffix are replaced in place.
+ */
 function normalizeBackgroundDirectory({ dir, nativeImage }) {
   const converted = [];
   const invalid = [];
-  if (!fs.existsSync(dir)) return { converted, invalid };
+  if (!fs.existsSync(dir)) {
+    return { converted, invalid };
+  }
+
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isFile() || !IMAGE_RE.test(entry.name)) continue;
     const source = path.join(dir, entry.name);
     if (entry.name.toLowerCase().endsWith(".png") && isPngFile(source)) continue;
+
     const result = importImageAsPng({ source, targetDir: dir, nativeImage });
     if (!result.ok) {
       invalid.push(source);
@@ -80,7 +89,8 @@ function normalizeBackgroundDirectory({ dir, nativeImage }) {
       try {
         fs.unlinkSync(source);
       } catch {
-        // Conversion succeeded; leave the source if it is temporarily locked.
+        // Conversion already succeeded. Keeping one stale source is safer than
+        // deleting a newly written PNG when the source is temporarily locked.
       }
     }
   }
