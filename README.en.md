@@ -26,9 +26,9 @@
 
 ## Download and install
 
-Current release: **DreamEngine 0.2.0 / v0.2.0-beta.4**
+Current release: **DreamEngine 0.2.0 / v0.2.0-beta.5**
 
-Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.4):
+Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.5):
 
 - `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`

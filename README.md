@@ -26,9 +26,9 @@
 
 ## 下载与安装
 
-当前版本：**DreamEngine 0.2.0 / v0.2.0-beta.4**
+当前版本：**DreamEngine 0.2.0 / v0.2.0-beta.5**
 
-从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.4) 下载：
+从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.5) 下载：
 
 - `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`
