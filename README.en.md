@@ -26,9 +26,9 @@
 
 ## Download and install
 
-Current release: **DreamEngine 0.2.0 / v0.2.0-beta.3**
+Current release: **DreamEngine 0.2.0 / v0.2.0-beta.4**
 
-Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.3):
+Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.4):
 
 - `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`
@@ -162,7 +162,7 @@ DreamEngine does not upload projects, media, or presets.
 
 Effect favorites, media favorites, curve presets, and some panel preferences remain in the panel's local CEP `localStorage`.
 
-Back up `Documents/DreamEngine/` before uninstalling if you need to keep presets and caches.
+Upgrades preserve presets and caches. Uninstalling DreamEngine from Windows Settings or the Start menu removes the panel scripts, preset library, backgrounds, caches, logs, CEP `localStorage`, and related registry settings. Back up `Documents/DreamEngine/` before uninstalling if you need to keep your presets.
 
 ## Troubleshooting
 

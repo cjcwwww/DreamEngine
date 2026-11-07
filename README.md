@@ -26,9 +26,9 @@
 
 ## 下载与安装
 
-当前版本：**DreamEngine 0.2.0 / v0.2.0-beta.3**
+当前版本：**DreamEngine 0.2.0 / v0.2.0-beta.4**
 
-从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.3) 下载：
+从 [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.4) 下载：
 
 - `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`
@@ -162,7 +162,7 @@ DreamEngine 不上传工程、素材或预设。
 
 效果收藏、素材收藏、曲线预设和部分面板设置仍保存在 CEP 面板的本地 `localStorage` 中。
 
-卸载或升级前，如需保留预设与缓存，请备份 `文档/DreamEngine/`。
+升级会保留预设与缓存。通过 Windows 设置或开始菜单卸载 DreamEngine 时会完全清理面板脚本、预设库、背景、缓存、日志、CEP `localStorage` 和相关注册表设置；如需保留预设，请在卸载前备份 `文档/DreamEngine/`。
 
 ## 常见问题
 
