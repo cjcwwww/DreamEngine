@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.5">
+  <!-- 右侧正方形 -->
+  <rect x="15" y="8" width="8" height="8" stroke="none"/>
+  <!-- 向右箭头（空心） -->
+  <line x1="1" y1="12" x2="11" y2="12" stroke-linecap="round"/>
+  <polyline points="6 7 11 12 6 17" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

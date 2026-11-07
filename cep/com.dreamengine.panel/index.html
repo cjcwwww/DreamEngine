@@ -122,20 +122,6 @@
       <div class="preset-head">
         <h2 data-i18n="preset.title">预设库</h2>
         <div class="preset-tools">
-          <div class="search-wrap" id="presetSearchWrap">
-            <button class="icon-button search-toggle" id="presetSearchToggle" type="button"
-                    title="搜索预设" aria-label="搜索预设" aria-expanded="false"
-                    data-i18n-title="preset.search" data-i18n-aria="preset.search">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.3-4.3"/>
-              </svg>
-            </button>
-            <label class="search-field" id="presetSearchField" hidden>
-              <input id="presetSearch" type="search" placeholder="搜索预设" autocomplete="off"
-                     data-i18n-ph="preset.search"/>
-            </label>
-          </div>
           <button class="hub-button" id="btnOpenHub" type="button"
                   title="打开 DreamEngine Hub" aria-label="打开 DreamEngine Hub"
                   data-i18n-title="preset.openHub" data-i18n-aria="preset.openHub">
@@ -165,32 +151,144 @@
   </section>
 
   <section class="curve-view" id="viewCurve" hidden aria-label="曲线编辑" data-i18n-aria="curve.aria">
-    <div class="curve-flow">
-      <div class="curve-stage" id="curveStage">
-        <canvas id="curveCanvas"></canvas>
-        <!-- 值 / 速 / 路 收进右上角的小方块。
-             曲线模板只有「值」可编辑；速与路是上次应用读到的属性的只读检查。 -->
-        <div class="mode-box" id="curveModeBox">
-          <button class="mode-box-btn" id="curveModeBtn" type="button"
-                  aria-haspopup="true" aria-expanded="false" title="图表：值 / 速度 / 路径"
-                  data-i18n="curve.modeValue" data-i18n-title="curve.modeTitle">值</button>
-          <div class="mode-menu" id="curveModeMenu" hidden>
-            <button class="mode-item active" id="curveModeValue" type="button" title="值曲线（可编辑）"
-                    data-i18n="curve.modeValue" data-i18n-title="curve.modeValueTitle">值</button>
-            <button class="mode-item" id="curveModeSpeed" type="button" title="速度曲线（只读）"
-                    data-i18n="curve.modeSpeed" data-i18n-title="curve.modeSpeedTitle">速</button>
-            <button class="mode-item" id="curveModePath" type="button" title="空间路径（只读）"
-                    data-i18n="curve.modePath" data-i18n-title="curve.modePathTitle">路</button>
+    <!-- 布局参考 XLFlow：左边（窄时是上边）是编辑器，右边（下边）是预设，
+         中间一条可拖的分隔条。画布在上、操作栏在画布下方、工具栏在最底部，
+         这样手指/鼠标从画布下来最近，预设区还能独立滚动。 -->
+    <div class="curve-split" id="curveSplit">
+      <div class="curve-editor-pane" id="curveEditorPane">
+        <div class="curve-stage" id="curveStage">
+          <canvas id="curveCanvas"></canvas>
+          <!-- 值 / 速 / 路 收进右上角的小方块。
+               曲线模板只有「值」可编辑；速与路是上次应用读到的属性的只读检查。 -->
+          <div class="mode-box" id="curveModeBox">
+            <button class="mode-box-btn" id="curveModeBtn" type="button"
+                    aria-haspopup="true" aria-expanded="false" title="图表：值 / 速度 / 路径"
+                    data-i18n="curve.modeValue" data-i18n-title="curve.modeTitle">值</button>
+            <div class="mode-menu" id="curveModeMenu" hidden>
+              <button class="mode-item active" id="curveModeValue" type="button" title="值曲线（可编辑）"
+                      data-i18n="curve.modeValue" data-i18n-title="curve.modeValueTitle">值</button>
+              <button class="mode-item" id="curveModeSpeed" type="button" title="速度曲线（只读）"
+                      data-i18n="curve.modeSpeed" data-i18n-title="curve.modeSpeedTitle">速</button>
+              <button class="mode-item" id="curveModePath" type="button" title="空间路径（只读）"
+                      data-i18n="curve.modePath" data-i18n-title="curve.modePathTitle">路</button>
+            </div>
           </div>
         </div>
+
+        <!-- 操作栏：左边是读数，右边是「应用 / 收藏」，与 XLFlow 的 action bar 同构 -->
+        <div class="curve-action-bar curve-action-row">
+          <div class="curve-readout" id="curveReadout" title="cubic-bezier(x1, y1, x2, y2)">—</div>
+          <button class="curve-action-btn curve-action-primary curve-apply" id="curveApply" type="button"
+                  title="应用到 AE" data-i18n-title="curve.applyTitle"
+                  aria-label="应用" data-i18n-aria="curve.apply">
+            <img src="svg/apply.svg" alt="" />
+          </button>
+          <button class="curve-action-btn curve-save-open" id="curvePresetSaveOpen" type="button"
+                  title="保存为预设" data-i18n-title="curve.saveCurrentTitle"
+                  aria-label="保存当前" data-i18n-aria="curve.saveCurrent">
+            <img src="svg/favorite.svg" alt="" />
+          </button>
+        </div>
+
+        <!-- 工具栏：图标按钮，分页横滚，面板再窄也不会溢出。
+             「读取 / 换键 / 冻左 / 冻右」会动 AE，「反向 / 撤销 / 重做 / 重置」
+             只改本地曲线 —— 后者绝不过桥。 -->
+        <div class="curve-toolbar" id="curveToolbar" role="toolbar"
+             aria-label="曲线工具" data-i18n-aria="curve.toolbarAria">
+          <button class="curve-toolbar-arrow" id="curveToolbarPrev" type="button"
+                  title="上一组" data-i18n-title="curve.scrollPrev" aria-label="上一组"
+                  data-i18n-aria="curve.scrollPrev">
+            <img src="svg/arrow-left.svg" alt="" />
+          </button>
+          <div class="curve-toolbar-viewport" id="curveToolbarViewport">
+            <div class="curve-toolbar-track" id="curveToolbarTrack">
+              <div class="curve-toolbar-group" role="group">
+                <button class="curve-tool-button active" id="curveModeTwo" type="button"
+                        aria-pressed="true" title="两点模式：拖两端把手"
+                        data-i18n-title="curve.modeTwoTitle" aria-label="两点"
+                        data-i18n-aria="curve.modeTwo">
+                  <img src="svg/mode-two.svg" alt="" />
+                </button>
+                <button class="curve-tool-button" id="curveModeMulti" type="button"
+                        aria-pressed="false" title="多点模式：双击加点、拖节点与把手"
+                        data-i18n-title="curve.modeMultiTitle" aria-label="多点"
+                        data-i18n-aria="curve.modeMulti">
+                  <img src="svg/mode-multi.svg" alt="" />
+                </button>
+              </div>
+              <div class="curve-toolbar-group" role="group">
+                <button class="curve-tool-button" id="curveRead" type="button"
+                        title="读取选中关键帧的曲线" data-i18n-title="curve.toolReadTitle"
+                        aria-label="读取" data-i18n-aria="curve.toolRead">
+                  <img src="svg/read-curve.svg" alt="" />
+                </button>
+                <button class="curve-tool-button" id="curveReverse" type="button"
+                        title="曲线反向（只改本地）" data-i18n-title="curve.toolReverseTitle"
+                        aria-label="反向" data-i18n-aria="curve.toolReverse">
+                  <img src="svg/reverse-curve.svg" alt="" />
+                </button>
+              </div>
+              <div class="curve-toolbar-group" role="group">
+                <button class="curve-tool-button" id="curveSwap" type="button"
+                        title="交换选中的两个关键帧" data-i18n-title="curve.toolSwapTitle"
+                        aria-label="换键" data-i18n-aria="curve.toolSwap">
+                  <img src="svg/reverse-time.svg" alt="" />
+                </button>
+                <button class="curve-tool-button" id="curveFreezeLeft" type="button"
+                        title="把选中区间冻结为首键的值" data-i18n-title="curve.toolFreezeLeftTitle"
+                        aria-label="冻左" data-i18n-aria="curve.toolFreezeLeft">
+                  <img src="svg/left-still.svg" alt="" />
+                </button>
+                <button class="curve-tool-button" id="curveFreezeRight" type="button"
+                        title="把选中区间冻结为末键的值" data-i18n-title="curve.toolFreezeRightTitle"
+                        aria-label="冻右" data-i18n-aria="curve.toolFreezeRight">
+                  <img src="svg/right-still.svg" alt="" />
+                </button>
+              </div>
+              <div class="curve-toolbar-group" role="group">
+                <button class="curve-tool-button" id="curveSnap" type="button"
+                        aria-pressed="false" title="吸附到 0.1 网格" data-i18n-title="curve.toolSnapTitle"
+                        aria-label="吸附" data-i18n-aria="curve.toolSnap">
+                  <img src="svg/magnet.svg" alt="" />
+                </button>
+              </div>
+              <div class="curve-toolbar-group curve-toolbar-history" role="group">
+                <button class="curve-tool-button" id="curveUndo" type="button" disabled
+                        title="撤销本地曲线改动" data-i18n-title="curve.toolUndoTitle"
+                        aria-label="撤销" data-i18n-aria="curve.toolUndo">
+                  <img src="svg/undo.svg" alt="" />
+                </button>
+                <button class="curve-tool-button" id="curveRedo" type="button" disabled
+                        title="重做本地曲线改动" data-i18n-title="curve.toolRedoTitle"
+                        aria-label="重做" data-i18n-aria="curve.toolRedo">
+                  <img src="svg/redo.svg" alt="" />
+                </button>
+                <button class="curve-tool-button" id="curveReset" type="button"
+                        title="恢复默认两点曲线" data-i18n-title="curve.toolResetTitle"
+                        aria-label="重置" data-i18n-aria="curve.toolReset">
+                  <img src="svg/reset.svg" alt="" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <button class="curve-toolbar-arrow" id="curveToolbarNext" type="button"
+                  title="下一组" data-i18n-title="curve.scrollNext" aria-label="下一组"
+                  data-i18n-aria="curve.scrollNext">
+            <img src="svg/arrow-right.svg" alt="" />
+          </button>
+        </div>
       </div>
-      <div class="curve-readout" id="curveReadout" title="cubic-bezier(x1, y1, x2, y2)">—</div>
-      <div class="curve-action-row">
-        <button class="curve-apply" id="curveApply" type="button" data-i18n="curve.apply">应用</button>
-        <button class="curve-save-open" id="curvePresetSaveOpen" type="button"
-                data-i18n="curve.saveCurrent">保存当前</button>
+
+      <div class="curve-resizer" id="curveResizer" role="separator"
+           aria-orientation="vertical" aria-label="调整曲线与预设的比例"
+           data-i18n-aria="curve.splitAria"></div>
+
+      <div class="curve-presets-pane" id="curvePresetsPane">
+        <div class="curve-pane-head">
+          <span data-i18n="curve.presetsTitle">预设</span>
+        </div>
+        <div class="curve-presets" id="curvePresets"></div>
       </div>
-      <div class="curve-presets" id="curvePresets"></div>
     </div>
     <p class="curve-hint" id="curveHint"></p>
     <div class="curve-conflict" id="curveConflict" hidden role="alertdialog"
@@ -239,14 +337,6 @@
          aria-label="调整分类栏宽度" data-i18n-aria="sidebar.resize"></div>
     <main class="materials-main">
       <div class="materials-head">
-        <label class="search-field materials-search">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.3-4.3"/>
-          </svg>
-          <input id="materialSearch" type="search" placeholder="搜索素材" autocomplete="off"
-                 data-i18n-ph="materials.search"/>
-        </label>
         <span class="materials-summary" id="materialSummary"></span>
       </div>
       <div class="grid materials-grid" id="materialGrid"></div>
@@ -448,6 +538,11 @@
   <script src="js/about.js"></script>
   <!-- 曲线纯数学：与 AE 侧 $.evalFile 的是同一个文件，拖拽时才不用过桥 -->
   <script src="engine/curve_math.js"></script>
+  <!-- 图模型必须排在 curve_toolbar 与 curve.js 之前：两者都直接用 AEV_CurveGraph -->
+  <script src="engine/curve_graph.js"></script>
+  <script src="js/curve_toolbar.js"></script>
+  <!-- 分隔条：编辑区与预设区的比例 -->
+  <script src="js/curve_split.js"></script>
   <script src="js/viewmodel.js"></script>
   <script src="js/curve.js"></script>
   <script src="js/materials.js"></script>

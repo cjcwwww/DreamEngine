@@ -2162,14 +2162,9 @@ var AEV_Library = (function () {
       if (event.key === "Escape" || event.keyCode === 27) {
         event.stopPropagation();
         input.value = "";
-        if (inputId === "searchInput") {
-          state.query = "";
-          render();
-        } else {
-          state.presetQuery = "";
-          renderPresetList();
-        }
+        applySearch("");
         setSearchOpen(false, inputId, fieldId, toggleId);
+        markSearchActive("");
       }
     });
 
@@ -2207,6 +2202,89 @@ var AEV_Library = (function () {
    * 四个视图同级，切换栏固定在面板最上方。用表驱动而不是逐个写 if：
    * 以后再加视图（比如批量导入）只改这两张表。
    */
+  /* ============================================================
+   * 顶栏搜索：同一个输入框服务当前视图
+   *
+   * 效果 / 预设 / 素材三个页面原来各有一套搜索框（预设页还有自己的一套
+   * 展开收起），位置和手感都不一致。现在只留顶栏这一个，按 state.view
+   * 决定关键词送到谁那里。
+   * ============================================================ */
+
+  /* 占位文案跟着视图走；曲线页没有搜索，所以不在表里 */
+  var SEARCH_PLACEHOLDER = {
+    effects: "search.effects",
+    presets: "preset.search",
+    materials: "materials.search"
+  };
+
+  /** 当前视图已经输入的关键词：三个页面各存一份，切回来还在 */
+  function currentSearchValue() {
+    if (state.view === "presets") return state.presetQuery || "";
+    if (state.view === "materials") {
+      return window.AEV_MaterialsUI && window.AEV_MaterialsUI.getQuery
+        ? window.AEV_MaterialsUI.getQuery() : "";
+    }
+    return state.query || "";
+  }
+
+  /** 把关键词送到当前视图对应的筛选入口 */
+  function applySearch(value) {
+    var query = String(value === undefined || value === null ? "" : value);
+    if (state.view === "presets") {
+      state.presetQuery = query;
+      renderPresetList();
+      return;
+    }
+    if (state.view === "materials") {
+      if (window.AEV_MaterialsUI && window.AEV_MaterialsUI.setQuery) {
+        window.AEV_MaterialsUI.setQuery(query);
+      }
+      return;
+    }
+    state.query = query;
+    render();
+  }
+
+  /** 收起状态下也要能看出「有筛选条件」：图标上点一个强调色小点 */
+  function markSearchActive(value) {
+    var toggle = byId("searchToggle");
+    if (!toggle) return;
+    if (value) toggle.classList.add("has-query");
+    else toggle.classList.remove("has-query");
+  }
+
+  /** 切视图 / 切语言时同步：显隐、占位文案、已输入内容、高亮 */
+  function syncSearchBox() {
+    var wrap = byId("searchWrap");
+    var input = byId("searchInput");
+    var toggle = byId("searchToggle");
+    if (!wrap || !input) return;
+
+    var key = SEARCH_PLACEHOLDER[state.view];
+    wrap.hidden = !key;
+    if (!key) return;
+
+    input.setAttribute("data-i18n-ph", key);
+    if (toggle) {
+      toggle.setAttribute("data-i18n-title", key);
+      toggle.setAttribute("data-i18n-aria", key);
+    }
+    if (typeof AEV_t === "function") {
+      var text = AEV_t(key, state.lang);
+      input.setAttribute("placeholder", text);
+      if (toggle) {
+        toggle.setAttribute("title", text);
+        toggle.setAttribute("aria-label", text);
+      }
+    }
+
+    /* 切视图就该换成那个视图自己的关键词：这里不能因为「焦点还在输入框里」
+       就跳过 —— 点页签不会把焦点移走，跳过的话素材页会残留预设的搜索词。 */
+    var value = currentSearchValue();
+    input.value = value;
+    markSearchActive(value);
+  }
+
   var VIEW_TABS = { effects: "tabEffects", presets: "tabPresets", curve: "tabCurve", materials: "tabMaterials" };
   var VIEW_PANELS = { effects: "viewEffects", presets: "viewPresets", curve: "viewCurve", materials: "viewMaterials" };
 
@@ -2226,9 +2304,8 @@ var AEV_Library = (function () {
     }
     // 效果墙专属的工具条在另外两个视图下没有意义（搜索的是效果不是预设/曲线）
     byId("effectControls").hidden = view !== "effects";
-    // 顶栏搜索同样只服务效果墙；预设视图有自己的搜索框。
-    var searchWrap = byId("searchWrap");
-    if (searchWrap) searchWrap.hidden = view !== "effects";
+    // 顶栏搜索服务所有带搜索的视图（效果 / 预设 / 素材），曲线页隐藏。
+    syncSearchBox();
     syncThumbControl(view);
 
     if (view === "effects") {
@@ -2267,8 +2344,8 @@ var AEV_Library = (function () {
     byId("sortName").addEventListener("click", function () { setSortMode("name"); });
     byId("sortCategory").addEventListener("click", function () { setSortMode("category"); });
     byId("searchInput").addEventListener("input", function () {
-      state.query = this.value;
-      render();
+      applySearch(this.value);
+      markSearchActive(this.value);
     });
     bindSearchToggle("searchToggle", "searchInput", "searchField", "searchWrap");
     byId("pluginFilter").addEventListener("change", function () {
@@ -2313,7 +2390,9 @@ var AEV_Library = (function () {
     // "/" 聚焦效果搜索：键盘用户的快速入口，输入框里不拦截。
     document.addEventListener("keydown", function (event) {
       if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
-      if (state.view !== "effects") return;
+      /* 曲线页没有搜索框，其余三个视图共用顶栏这一个 */
+      var wrap = byId("searchWrap");
+      if (!wrap || wrap.hidden) return;
       var target = event.target;
       var tag = target && target.tagName ? target.tagName.toLowerCase() : "";
       if (
@@ -2351,16 +2430,6 @@ var AEV_Library = (function () {
     byId("btnQueueRetry").addEventListener("click", function () {
       retryFailed();
     });
-    byId("presetSearch").addEventListener("input", function () {
-      state.presetQuery = this.value;
-      renderPresetList();
-    });
-    bindSearchToggle(
-      "presetSearchToggle",
-      "presetSearch",
-      "presetSearchField",
-      "presetSearchWrap"
-    );
     byId("btnPresetCategoryAdd").addEventListener("click", function () {
       openPresetCategoryEditor("create", null);
     });

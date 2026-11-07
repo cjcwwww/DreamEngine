@@ -433,15 +433,8 @@ var AEV_MaterialsUI = (function () {
   function bind() {
     var pick = byId("btnMaterialRoot");
     var refreshButton = byId("btnMaterialRefresh");
-    var search = byId("materialSearch");
     if (pick) pick.addEventListener("click", pickRoot);
     if (refreshButton) refreshButton.addEventListener("click", refresh);
-    if (search) {
-      search.addEventListener("input", function () {
-        state.query = this.value;
-        renderCards();
-      });
-    }
   }
 
   function enter() {
@@ -458,6 +451,21 @@ var AEV_MaterialsUI = (function () {
     render();
   }
 
+  /**
+   * 搜索词由顶栏那一个搜索框统一驱动（原来在素材页里还有一个自己的输入框）。
+   * 只改查询并重绘，不做防抖 —— 卡片数量有限，按下即筛。
+   */
+  function setQuery(value) {
+    var next = String(value === undefined || value === null ? "" : value);
+    if (next === state.query) return;
+    state.query = next;
+    if (state.loaded) renderCards();
+  }
+
+  function getQuery() {
+    return state.query;
+  }
+
   document.addEventListener("DOMContentLoaded", bind);
 
   return {
@@ -465,6 +473,8 @@ var AEV_MaterialsUI = (function () {
     leave: leave,
     refresh: refresh,
     setLanguage: setLanguage,
+    setQuery: setQuery,
+    getQuery: getQuery,
     pauseAll: pauseAll,
     state: state
   };

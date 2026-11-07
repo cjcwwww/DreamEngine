@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 两点模式：一条贝塞尔 + 两个端点 -->
+  <path d="M4 19C9 19 11 5 20 5"/>
+  <circle cx="4" cy="19" r="2.3" fill="#FFFFFF" stroke="none"/>
+  <circle cx="20" cy="5" r="2.3" fill="#FFFFFF" stroke="none"/>
+</svg>

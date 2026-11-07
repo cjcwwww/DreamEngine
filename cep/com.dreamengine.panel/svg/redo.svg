@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 重做：向右的回头箭头 -->
+  <path d="M19 11h-9.5a4.5 4.5 0 0 0 0 9H15"/>
+  <polyline points="15 7 19 11 15 15"/>
+</svg>

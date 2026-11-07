@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 左下角 L 形路径 -->
+  <path d="M3 21 L3 10 Q3 6 7 6 L12 6"/>
+  <!-- 右上角倒 L 形路径 -->
+  <path d="M21 3 L21 14 Q21 18 17 18 L12 18"/>
+  <!-- 中间向右箭头 -->
+  <line x1="8" y1="12" x2="16" y2="12"/>
+  <polyline points="13 9 16 12 13 15"/>
+</svg>

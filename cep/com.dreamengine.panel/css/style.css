@@ -193,17 +193,6 @@ button:focus-visible,
   stroke-width: 1.6;
 }
 
-.preset-tools input[type="search"] {
-  flex: 1 1 auto;
-  min-width: 120px;
-  height: 30px;
-  padding: 0 9px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--surface);
-  color: var(--text);
-}
-
 /* 预设卡片的缩略图：固定正方形，保证百分比切片不被拉伸 */
 .preset-thumb {
   position: relative;
@@ -896,6 +885,19 @@ button:focus-visible,
 
 .search-wrap .search-toggle {
   flex: 0 0 auto;
+  position: relative;
+}
+
+/* 收起状态下也能看出「当前视图有筛选条件」：图标右上角一个小点 */
+.search-toggle.has-query::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .search-wrap .search-field {
@@ -1940,11 +1942,6 @@ main {
   margin-bottom: 12px;
 }
 
-.materials-search {
-  margin: 0;
-  flex: 1;
-}
-
 .materials-summary {
   color: var(--muted);
   font-size: 11px;
@@ -2087,6 +2084,13 @@ main {
   }
 }
 
+/* ============================================================
+ * 曲线页 —— 布局参考 XLFlow
+ *
+ * 编辑器在左（窄面板时在上）：画布 → 操作栏 → 工具栏；
+ * 预设区在右（窄时在下），中间一条可拖的分隔条。
+ * 工具栏是固定宽度的图标条 + 分页横滚，面板再窄也不溢出。
+ * ============================================================ */
 .curve-view {
   position: relative;
   flex: 1 1 auto;
@@ -2094,25 +2098,106 @@ main {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 12px 10px;
+  padding: 8px 10px 8px;
 }
 
 .curve-view[hidden] {
   display: none;
 }
 
-.curve-flow {
+.curve-split {
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+}
+
+/* 编辑器：画布吃掉剩余高度，操作栏与工具栏固定高度。
+   默认比例 3:2，拖动分隔条后由 JS 写死 px。 */
+.curve-editor-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 3 1 0;
+  min-height: 120px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.curve-presets-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 2 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.curve-pane-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 16px;
+  color: var(--faint);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+/* 分隔条：纵向堆叠时上下拖，横向分栏时左右拖 */
+.curve-resizer {
+  flex: 0 0 6px;
+  position: relative;
+  cursor: ns-resize;
+}
+
+.curve-resizer::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border-strong);
+  transition: background 0.15s ease;
+}
+
+.curve-resizer:hover::after,
+.curve-resizer.active::after {
+  background: var(--accent);
+}
+
+/* 宽屏：改成左右分栏（判据是宽高比，不是单纯宽度） */
+@media (min-width: 360px) and (min-aspect-ratio: 4/5) {
+  .curve-split {
+    flex-direction: row;
+  }
+
+  .curve-editor-pane {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .curve-presets-pane {
+    height: 100%;
+  }
+
+  .curve-resizer {
+    cursor: ew-resize;
+  }
+
+  .curve-resizer::after {
+    width: 2px;
+    height: 42px;
+  }
 }
 
 .curve-stage {
   position: relative;
   flex: 1 1 auto;
-  min-height: 140px;
+  min-height: 90px;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--surface);
@@ -2125,83 +2210,214 @@ main {
   height: 100%;
 }
 
-/* 四个数：cubic-bezier(x1, y1, x2, y2)，与 Flow 的读数一致 */
-.curve-readout {
+/* 工具栏：左右箭头 + 可翻页的轨道。按钮定宽，翻页靠 transform。 */
+.curve-toolbar {
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.curve-toolbar-arrow {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+.curve-toolbar-arrow img {
+  display: block;
+  width: 13px;
+  height: 13px;
+}
+
+.curve-toolbar-arrow:hover {
+  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.curve-toolbar-arrow[disabled] {
+  opacity: 0.12;
+  background: transparent;
+  cursor: default;
+}
+
+.curve-toolbar-viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  /* 按钮没占满时居中，否则会「左边空少、右边空多」 */
+  display: flex;
+  justify-content: center;
+}
+
+/* 溢出时才从左边排，翻页位移才对得上 */
+.curve-toolbar-viewport.is-overflowing {
+  justify-content: flex-start;
+}
+
+.curve-toolbar-track {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.22s ease;
+  will-change: transform;
+}
+
+.curve-toolbar-group {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.curve-tool-button {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  opacity: 0.62;
+  cursor: pointer;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+
+.curve-tool-button img {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+
+.curve-tool-button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.curve-tool-button.active {
+  opacity: 1;
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(134, 174, 178, 0.35);
+}
+
+.curve-tool-button:disabled {
+  opacity: 0.24;
+  background: transparent;
+  cursor: default;
+}
+
+/* 操作栏：左边读数（等宽，像坐标条），右边应用 / 收藏 */
+.curve-action-bar,
+.curve-action-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.curve-readout {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
   color: var(--muted);
-  font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace;
-  font-size: 11px;
+  font-family: Consolas, "Cascadia Mono", "Noto Sans SC", monospace;
+  font-size: 11.5px;
   letter-spacing: 0.02em;
-  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.curve-action-row {
-  flex: none;
+.curve-action-btn {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 30px;
   display: flex;
-  align-items: stretch;
-  gap: 6px;
-}
-
-/* 应用：Flow 里最重的那个按钮，做得宽而实 */
-.curve-apply {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 34px;
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-}
-
-.curve-save-open {
-  flex: 0 0 88px;
-  height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 1px solid var(--border-strong);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--surface);
-  color: var(--muted);
-  font-size: 11px;
+  opacity: 0.82;
   cursor: pointer;
 }
 
-.curve-save-open:hover {
+.curve-action-btn img {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.curve-action-btn:hover {
+  opacity: 1;
   border-color: var(--accent);
-  color: var(--text);
 }
 
-.curve-apply:hover {
-  background: rgba(134, 174, 178, 0.20);
-}
-
-.curve-apply:active {
+.curve-action-btn:active {
   transform: translateY(1px);
 }
 
-.curve-apply[disabled] {
-  opacity: 0.55;
+.curve-action-btn[disabled] {
+  opacity: 0.45;
   cursor: default;
   transform: none;
 }
 
+/* 应用：主按钮，宽一点、带强调底 */
+.curve-action-primary {
+  flex: 0 0 56px;
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+/* 旧类名保留：渲染测量脚本与既有断言仍按这两个名字找元素 */
+.curve-apply {
+  flex: 0 0 56px;
+}
+
+.curve-save-open {
+  flex: 0 0 38px;
+}
+
 /* 预设：每一条画成一条小曲线，点一下换掉模板 */
 .curve-presets {
-  flex: 0 1 auto;
-  max-height: 168px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  align-content: start;
   gap: 5px;
-  padding-right: 2px;
+  padding: 3px 2px 0 0;
 }
 
 .preset-chip {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2224,7 +2440,7 @@ main {
   height: 26px;
 }
 
-.preset-chip span {
+.preset-chip .preset-name {
   max-width: 100%;
   min-height: 24px;
   color: var(--muted);
@@ -2242,6 +2458,60 @@ main {
 
 .preset-chip:hover {
   border-color: var(--border-strong);
+}
+
+/* 分组标题：横贯整行，把两点 / 多点 / 自定义分开 */
+.preset-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  color: var(--faint);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.preset-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--border);
+}
+
+.preset-divider[data-group="multi"] {
+  color: var(--accent);
+}
+
+/* 多点预设：卡片描边带一点强调色 + 右上角节点数角标，和两点预设一眼可分 */
+.preset-chip.is-multi {
+  border-color: rgba(134, 174, 178, 0.42);
+}
+
+.preset-chip.is-multi canvas {
+  height: 30px;
+}
+
+/* 注意：预设库的「静态/动态」角标也叫 .preset-badge，这里是曲线页自己的，
+   必须用不同的类名，否则两边样式会互相覆盖 */
+.curve-preset-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 13px;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #0d1415;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .preset-chip.active {

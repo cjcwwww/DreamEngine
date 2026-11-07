@@ -47,6 +47,49 @@ var AEV_CurveUI = (function () {
     { id: "smooth", zh: "平滑", en: "Smooth", b: [0.4, 0, 0.2, 1] }
   ];
 
+  /* 内置多点预设：g 是图模型（两端点 + 若干中间节点，t 升序）。
+     和两点预设放在同一个列表里，点中会自动切到多点模式并整份替换图。 */
+  var GRAPH_PRESETS = [
+    {
+      id: "g-two-stage", zh: "双段", en: "Two Stage",
+      g: {
+        version: 2, kind: "dreamengine-curve-graph", propertyMode: "numeric",
+        nodes: [
+          { id: "start", t: 0, v: 0, inHandle: null, outHandle: { dt: 0.18, dv: 0.02 } },
+          { id: "n1", t: 0.35, v: 0.12, inHandle: { dt: -0.12, dv: -0.02 }, outHandle: { dt: 0.15, dv: 0.1 } },
+          { id: "n2", t: 0.65, v: 0.88, inHandle: { dt: -0.15, dv: -0.1 }, outHandle: { dt: 0.12, dv: 0.02 } },
+          { id: "end", t: 1, v: 1, inHandle: { dt: -0.18, dv: -0.02 }, outHandle: null }
+        ]
+      }
+    },
+    {
+      id: "g-accel", zh: "三段加速", en: "Three Stage",
+      g: {
+        version: 2, kind: "dreamengine-curve-graph", propertyMode: "numeric",
+        nodes: [
+          { id: "start", t: 0, v: 0, inHandle: null, outHandle: { dt: 0.12, dv: 0 } },
+          { id: "n1", t: 0.3, v: 0.06, inHandle: { dt: -0.1, dv: -0.02 }, outHandle: { dt: 0.1, dv: 0.06 } },
+          { id: "n2", t: 0.62, v: 0.34, inHandle: { dt: -0.12, dv: -0.06 }, outHandle: { dt: 0.14, dv: 0.22 } },
+          { id: "n3", t: 0.85, v: 0.9, inHandle: { dt: -0.1, dv: -0.06 }, outHandle: { dt: 0.06, dv: 0.02 } },
+          { id: "end", t: 1, v: 1, inHandle: { dt: -0.06, dv: -0.01 }, outHandle: null }
+        ]
+      }
+    },
+    {
+      id: "g-hold", zh: "停顿再冲", en: "Hold & Go",
+      g: {
+        version: 2, kind: "dreamengine-curve-graph", propertyMode: "numeric",
+        nodes: [
+          { id: "start", t: 0, v: 0, inHandle: null, outHandle: { dt: 0.2, dv: 0.05 } },
+          { id: "n1", t: 0.3, v: 0.45, inHandle: { dt: -0.08, dv: -0.05 }, outHandle: { dt: 0.05, dv: 0 } },
+          { id: "n2", t: 0.55, v: 0.46, inHandle: { dt: -0.05, dv: 0 }, outHandle: { dt: 0.05, dv: 0 } },
+          { id: "n3", t: 0.8, v: 0.9, inHandle: { dt: -0.08, dv: -0.05 }, outHandle: { dt: 0.08, dv: 0.03 } },
+          { id: "end", t: 1, v: 1, inHandle: { dt: -0.08, dv: -0.02 }, outHandle: null }
+        ]
+      }
+    }
+  ];
+
   var DEFAULT_CURVE = { x1: 0.33, y1: 0, x2: 0.67, y2: 1 };
   var CUSTOM_PRESET_KEY = "dreamengine.curve.customPresets.v1";
   var DELETED_PRESET_KEY = "dreamengine.curve.deletedPresets.v1";
@@ -55,10 +98,17 @@ var AEV_CurveUI = (function () {
   var deps = { engine: null, parse: null, status: null, lang: null };
   var el = {};
   var M = null;
+  var AEV_CurveGraph = null;
 
   var st = {
     /* 当前视图：value = 单位方块（可编辑）；speed / path = 上次应用的只读检查 */
     mode: "value",
+    /* 编辑模式：two = 老的「一条模板曲线」；multi = 多点图（XLFlow 特征）。
+       两者共用同一块画布，两点模式仍然完全走 st.curve，多重模式才用 st.graph。 */
+    graphMode: "two",
+    graph: null,
+    selectedNodeId: "",
+    snapEnabled: false,
     /* 正在编辑的模板曲线 */
     curve: { x1: DEFAULT_CURVE.x1, y1: DEFAULT_CURVE.y1, x2: DEFAULT_CURVE.x2, y2: DEFAULT_CURVE.y2 },
     preset: "ease",
@@ -155,21 +205,27 @@ var AEV_CurveUI = (function () {
     var out = [];
     for (var i = 0; i < data.length; i++) {
       var item = data[i];
-      if (!item || !/^custom-/.test(String(item.id || "")) || !item.b || item.b.length < 4) continue;
+      if (!item || !/^custom-/.test(String(item.id || ""))) continue;
       var name = String(item.name || "").replace(/^\s+|\s+$/g, "").substring(0, 24);
       if (!name) continue;
+      var entry = { id: String(item.id), name: name, builtin: false };
+
+      /* 多点预设存的是整张图；结构不对就整条丢掉，别让它半残地进列表 */
+      var g = item.g;
+      if (g && g.nodes && typeof g.nodes.length === "number" && g.nodes.length >= 2) {
+        entry.g = g;
+        out.push(entry);
+        continue;
+      }
+      if (!item.b || item.b.length < 4) continue;
       var curve = clampCurve({
         x1: Number(item.b[0]) || 0,
         y1: Number(item.b[1]) || 0,
         x2: Number(item.b[2]) || 0,
         y2: Number(item.b[3]) || 0
       });
-      out.push({
-        id: String(item.id),
-        name: name,
-        builtin: false,
-        b: [curve.x1, curve.y1, curve.x2, curve.y2]
-      });
+      entry.b = [curve.x1, curve.y1, curve.x2, curve.y2];
+      out.push(entry);
     }
     return out;
   }
@@ -201,8 +257,12 @@ var AEV_CurveUI = (function () {
   }
 
   function isBuiltinPreset(id) {
-    for (var i = 0; i < PRESETS.length; i++) {
+    var i;
+    for (i = 0; i < PRESETS.length; i++) {
       if (PRESETS[i].id === id) return true;
+    }
+    for (i = 0; i < GRAPH_PRESETS.length; i++) {
+      if (GRAPH_PRESETS[i].id === id) return true;
     }
     return false;
   }
@@ -214,12 +274,40 @@ var AEV_CurveUI = (function () {
     return false;
   }
 
+  /* ---------- 预设的两类：两点曲线（b）与多点图（g） ---------- */
+
+  function presetHasGraph(preset) {
+    return !!(preset && preset.g);
+  }
+
+  function presetType(preset) {
+    return presetHasGraph(preset) ? "multi" : "two";
+  }
+
+  function presetLabel(preset) {
+    if (!preset) return "";
+    return preset.builtin === false
+      ? String(preset.name || "")
+      : t(preset.zh, preset.en);
+  }
+
+  function presetNodes(preset) {
+    if (!presetHasGraph(preset) || !AEV_CurveGraph) return 0;
+    var g = AEV_CurveGraph.normalize(preset.g);
+    return g ? g.nodes.length : 0;
+  }
+
   function allPresets() {
     var out = [];
-    for (var i = 0; i < PRESETS.length; i++) {
+    var i;
+    /* 顺序：两点 → 多点 → 自定义。同类聚在一起，扫一眼就能分辨。 */
+    for (i = 0; i < PRESETS.length; i++) {
       if (!isDeletedPreset(PRESETS[i].id)) out.push(PRESETS[i]);
     }
-    for (var j = 0; j < st.customPresets.length; j++) out.push(st.customPresets[j]);
+    for (i = 0; i < GRAPH_PRESETS.length; i++) {
+      if (!isDeletedPreset(GRAPH_PRESETS[i].id)) out.push(GRAPH_PRESETS[i]);
+    }
+    for (i = 0; i < st.customPresets.length; i++) out.push(st.customPresets[i]);
     return out;
   }
 
@@ -252,9 +340,18 @@ var AEV_CurveUI = (function () {
     st.busy = !!flag;
     if (el.apply) {
       el.apply.disabled = st.busy;
-      el.apply.textContent = st.busy
-        ? t("应用中…", "Applying…")
-        : t("应用", "Apply");
+      /* 「应用」现在是图标按钮，不能再改 textContent —— 那会把 <img> 冲掉。
+         忙碌状态改用 aria-label / title 表达，读屏与悬停都还看得到。 */
+      var label = st.busy ? t("应用中…", "Applying…") : t("应用", "Apply");
+      el.apply.setAttribute("aria-label", label);
+      el.apply.setAttribute("title", label);
+    }
+    /* 工具栏上的 AE 按钮也要跟着禁用：一边正在写 AE，一边再点「换键」
+       会造出两组互相覆盖的撤销 */
+    if (window.AEV_CurveToolbar && window.AEV_CurveToolbar.setBusy) {
+      try {
+        window.AEV_CurveToolbar.setBusy(st.busy);
+      } catch (e) {}
     }
   }
 
@@ -330,26 +427,67 @@ var AEV_CurveUI = (function () {
    * 所以同一条模板可以服务任何属性。方块缩到可用空间的 86%，四周留出的
    * 余量给回弹/过冲的把手 —— back 族会跑到 0..1 之外。
    */
+  /** 值图的可绘制区域：铺满可用空间（以前缩成 90% 的方块，小面板上白丢面积） */
   function unitSquare(w, h) {
-    var padTop = 16;
-    var padBottom = 18;
-    var padSide = 16;
-    var availW = Math.max(40, w - padSide * 2);
-    var availH = Math.max(40, h - padTop - padBottom);
-    var size = Math.min(availW, availH) * 0.9;
-    var cx = padSide + availW / 2;
-    var cy = padTop + availH / 2;
-    return { x: cx - size / 2, y: cy - size / 2, w: size, h: size };
+    var padTop = 12;
+    var padBottom = 14;
+    var padSide = 14;
+    return {
+      x: padSide,
+      y: padTop,
+      w: Math.max(60, w - padSide * 2),
+      h: Math.max(60, h - padTop - padBottom)
+    };
   }
 
-  /** 0..1 → 像素。单位方块的映射与属性数据无关，所以只需要 rect。 */
-  function makeMap(rect) {
+  /**
+   * 值图的纵向取景：0..1 永远包含在内，另外把节点/把手伸出去的部分也包进来。
+   *
+   * 以前纵向固定映射 0..1，过冲画到框外就被裁掉了 —— 面板一小就完全看不见，
+   * 于是「看着是平的、应用后 AE 里在参数附近回弹」。现在按内容取景，
+   * 过冲多大多小都画得出来，所见即所写。
+   */
+  function valueWindow() {
+    var lo = 0;
+    var hi = 1;
+
+    function take(v) {
+      if (!isFinite(v)) return;
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    }
+
+    if (st.graphMode === "multi" && st.graph && st.graph.nodes) {
+      for (var i = 0; i < st.graph.nodes.length; i++) {
+        var n = st.graph.nodes[i];
+        take(n.v);
+        if (n.inHandle) take(n.v + n.inHandle.dv);
+        if (n.outHandle) take(n.v + n.outHandle.dv);
+      }
+    } else if (st.curve) {
+      take(st.curve.y1);
+      take(st.curve.y2);
+    }
+
+    var span = hi - lo;
+    if (!(span > 1e-6)) span = 1;
+    var pad = Math.max(0.02, span * 0.06);
+    return { lo: lo - pad, hi: hi + pad };
+  }
+
+  /** 逻辑坐标 → 像素。t 固定 0..1，v 用取景窗口（lo..hi）。 */
+  function makeMap(rect, lo, hi) {
+    var vlo = lo === undefined ? 0 : lo;
+    var vhi = hi === undefined ? 1 : hi;
+    var span = Math.max(1e-6, vhi - vlo);
     return {
       rect: rect,
+      lo: vlo,
+      hi: vhi,
       X: function (u) { return rect.x + u * rect.w; },
       T: function (px) { return (px - rect.x) / Math.max(1, rect.w); },
-      Y: function (v) { return rect.y + (1 - v) * rect.h; },
-      V: function (py) { return 1 - (py - rect.y) / Math.max(1, rect.h); }
+      Y: function (v) { return rect.y + ((vhi - v) / span) * rect.h; },
+      V: function (py) { return vhi - ((py - rect.y) / Math.max(1, rect.h)) * span; }
     };
   }
 
@@ -365,8 +503,11 @@ var AEV_CurveUI = (function () {
 
     if (st.mode === "value") {
       var rect = unitSquare(v.w, v.h);
-      st.map = makeMap(rect);
-      drawTemplate(ctx, rect);
+      /* 拖拽中用按下那一刻的取景，松手后才重新按内容适配 */
+      var win = st.drag && st.drag.win ? st.drag.win : valueWindow();
+      st.map = makeMap(rect, win.lo, win.hi);
+      if (st.graphMode === "multi") drawGraphMode(ctx, rect, v.w, v.h);
+      else drawTemplate(ctx, rect);
       updateReadout();
       return;
     }
@@ -379,6 +520,7 @@ var AEV_CurveUI = (function () {
   /* ---------- 单位方块（值图，可编辑） ---------- */
 
   function drawTemplate(ctx, rect) {
+    var map = st.map;
     drawUnitGrid(ctx, rect);
 
     /* 灰色参考：上次应用读到的属性，各段现在的样子。
@@ -394,10 +536,102 @@ var AEV_CurveUI = (function () {
 
     strokeBezier(ctx, st.curve, "#cfe3e5", 2);
 
-    drawCorner(ctx, rect.x, rect.y + rect.h);
-    drawCorner(ctx, rect.x + rect.w, rect.y);
+    drawCorner(ctx, map.X(0), map.Y(0));
+    drawCorner(ctx, map.X(1), map.Y(1));
 
     drawHandles(ctx, rect);
+  }
+
+  /* ---------- 多点模式（值图，可编辑） ---------- */
+
+  /** 段内的归一化坐标 → 画布像素。段的 x/y 都是该段自己的 0..1。 */
+  function graphPoint(a, b, c, u) {
+    var pt = bezierPoint({ x1: c[0], y1: c[1], x2: c[2], y2: c[3] }, u);
+    var t = a.t + (b.t - a.t) * pt.x;
+    var v = a.v + (b.v - a.v) * pt.y;
+    return { x: st.map.X(t), y: st.map.Y(v) };
+  }
+
+  function drawGraphMode(ctx, rect, w, h) {
+    drawUnitGrid(ctx, rect);
+
+    var graph = st.graph;
+    if (!AEV_CurveGraph || !graph) {
+      drawEmpty(ctx, w, h, t("双击加点，或按「读取」取当前曲线",
+        "Double-click to add a node, or press Read"));
+      return;
+    }
+
+    /* 灰色参考与两点模式一致：上次应用读到的属性现值 */
+    var keysList = snapKeysList();
+    for (var i = 0; i < keysList.length; i++) {
+      var keys = keysList[i];
+      for (var j = 0; j + 1 < keys.length; j++) {
+        var gb = keysBezier(keys, j);
+        if (gb) strokeBezier(ctx, gb, "rgba(127,166,170,0.20)", 1.2);
+      }
+    }
+
+    /* 每段单独描边：段与段之间值可能反向，不能当成一条全局曲线画 */
+    var k;
+    for (k = 0; k + 1 < graph.nodes.length; k++) {
+      var c = AEV_CurveGraph.segmentCurve(graph, k);
+      if (!c) continue;
+      var a = graph.nodes[k];
+      var b = graph.nodes[k + 1];
+      ctx.beginPath();
+      for (var s = 0; s <= 36; s++) {
+        var pt = graphPoint(a, b, c, s / 36);
+        if (s === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.strokeStyle = "#cfe3e5";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    /* 把手先画（在节点下面），否则小节点会被把手线盖住 */
+    for (k = 0; k < graph.nodes.length; k++) {
+      var n = graph.nodes[k];
+      var nx = st.map.X(n.t);
+      var ny = st.map.Y(n.v);
+      if (n.outHandle) {
+        drawGraphHandle(ctx, nx, ny,
+          st.map.X(n.t + n.outHandle.dt), st.map.Y(n.v + n.outHandle.dv));
+      }
+      if (n.inHandle) {
+        drawGraphHandle(ctx, nx, ny,
+          st.map.X(n.t + n.inHandle.dt), st.map.Y(n.v + n.inHandle.dv));
+      }
+    }
+
+    for (k = 0; k < graph.nodes.length; k++) {
+      var node = graph.nodes[k];
+      var px = st.map.X(node.t);
+      var py = st.map.Y(node.v);
+      var selected = node.id === st.selectedNodeId;
+      ctx.beginPath();
+      ctx.arc(px, py, selected ? 5 : 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = selected ? "#eef7f7" : "#a8c6ca";
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = selected ? "#86aeb2" : "rgba(0,0,0,0.35)";
+      ctx.stroke();
+    }
+  }
+
+  function drawGraphHandle(ctx, baseX, baseY, tipX, tipY) {
+    ctx.beginPath();
+    ctx.moveTo(baseX, baseY);
+    ctx.lineTo(tipX, tipY);
+    ctx.strokeStyle = "rgba(168,198,202,0.55)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(tipX, tipY, 2.6, 0, Math.PI * 2);
+    ctx.fillStyle = "#8fb3b7";
+    ctx.fill();
   }
 
   function snapKeysList() {
@@ -427,37 +661,57 @@ var AEV_CurveUI = (function () {
   }
 
   function drawUnitGrid(ctx, rect) {
+    var map = st.map;
+    var i;
+
     ctx.fillStyle = "rgba(255,255,255,0.018)";
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.045)";
     ctx.lineWidth = 1;
-    for (var i = 1; i < 4; i++) {
-      var gx = Math.round(rect.x + (rect.w * i) / 4) + 0.5;
-      var gy = Math.round(rect.y + (rect.h * i) / 4) + 0.5;
+
+    /* 竖线：t 每 0.1 一条，第 5 条稍亮（与磁吸步长一致） */
+    for (i = 1; i < 10; i++) {
+      ctx.strokeStyle = i % 5 === 0 ? "rgba(255,255,255,0.085)" : "rgba(255,255,255,0.035)";
+      var gx = Math.round(map.X(i / 10)) + 0.5;
       ctx.beginPath();
       ctx.moveTo(gx, rect.y);
       ctx.lineTo(gx, rect.y + rect.h);
       ctx.stroke();
+    }
+
+    /* 横线：值每 0.1 一条，铺满当前取景窗口（可能超出 0..1，过冲要有格子可读） */
+    var lo = Math.floor(map.lo * 10) / 10;
+    var hi = Math.ceil(map.hi * 10) / 10;
+    for (var gv = lo; gv <= hi + 1e-9; gv += 0.1) {
+      var gy = Math.round(map.Y(gv)) + 0.5;
+      if (gy < rect.y - 1 || gy > rect.y + rect.h + 1) continue;
+      var whole = Math.abs(gv - Math.round(gv)) < 1e-9;
+      ctx.strokeStyle = whole ? "rgba(255,255,255,0.085)" : "rgba(255,255,255,0.035)";
       ctx.beginPath();
       ctx.moveTo(rect.x, gy);
       ctx.lineTo(rect.x + rect.w, gy);
       ctx.stroke();
     }
 
-    /* 线性参考（左下 → 右上）：曲线在它上方是「快起」，下方是「慢起」 */
+    /* 线性参考（0,0 → 1,1）：曲线在它上方是「快起」，下方是「慢起」 */
     ctx.save();
     ctx.setLineDash([3, 4]);
     ctx.strokeStyle = "rgba(255,255,255,0.10)";
     ctx.beginPath();
-    ctx.moveTo(rect.x, rect.y + rect.h);
-    ctx.lineTo(rect.x + rect.w, rect.y);
+    ctx.moveTo(map.X(0), map.Y(0));
+    ctx.lineTo(map.X(1), map.Y(1));
     ctx.stroke();
     ctx.restore();
 
-    ctx.strokeStyle = "rgba(160,190,195,0.28)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, Math.max(1, rect.w - 1), Math.max(1, rect.h - 1));
+    /* 0..1 的单位框：取景会随过冲扩张，它不再是画布边界，得单独画出来 */
+    ctx.strokeStyle = "rgba(160,190,195,0.30)";
+    ctx.beginPath();
+    ctx.rect(
+      map.X(0) + 0.5,
+      map.Y(1) + 0.5,
+      Math.max(1, rect.w - 1),
+      Math.max(1, map.Y(0) - map.Y(1) - 1)
+    );
+    ctx.stroke();
   }
 
   function drawCorner(ctx, x, y) {
@@ -473,8 +727,8 @@ var AEV_CurveUI = (function () {
   /** 两条把手：起点 → P1、终点 → P2 */
   function drawHandles(ctx, rect) {
     var map = st.map;
-    var origin = { x: rect.x, y: rect.y + rect.h };
-    var end = { x: rect.x + rect.w, y: rect.y };
+    var origin = { x: map.X(0), y: map.Y(0) };
+    var end = { x: map.X(1), y: map.Y(1) };
     drawHandlePair(ctx, origin, { x: map.X(st.curve.x1), y: map.Y(st.curve.y1) }, "out");
     drawHandlePair(ctx, end, { x: map.X(st.curve.x2), y: map.Y(st.curve.y2) }, "in");
   }
@@ -681,13 +935,107 @@ var AEV_CurveUI = (function () {
 
   function onMouseDown(event) {
     if (event.button !== 0) return;
+    if (st.busy) return;
     var pt = localPoint(event);
-    var hit = handleAt(pt.x, pt.y);
-    if (!hit) return;
-    st.drag = { side: hit.side, shift: event.shiftKey, curve: curveCopy(st.curve) };
+
+    /* 多点模式：先命中的是把手还是节点，决定拖的是什么。
+       没命中任何东西就当作「点空白」，取消选中，不新建点（新建走双击）。 */
+    if (st.graphMode === "multi") {
+      var hit = (AEV_CurveGraph && st.graph) ? AEV_CurveGraph.hitTest(st.graph, pt, st.map, 11) : null;
+      if (!hit) {
+        st.selectedNodeId = "";
+        st.drag = null;
+        draw();
+        return;
+      }
+      st.selectedNodeId = hit.kind === "node" ? hit.id : st.selectedNodeId;
+      st.drag = {
+        kind: hit.kind,
+        id: hit.id,
+        side: hit.side || "",
+        graph: AEV_CurveGraph.clone(st.graph),
+        /* 拖拽期间锁住取景：否则一边拖、一边视野跟着扩，鼠标在同一像素上
+           会得到不断变化的值 —— 正反馈会让把手抖起来。 */
+        win: valueWindow()
+      };
+      recordLocal();
+      event.preventDefault();
+      draw();
+      updateHint();
+      return;
+    }
+
+    var hit2 = handleAt(pt.x, pt.y);
+    if (!hit2) return;
+    st.drag = { side: hit2.side, shift: event.shiftKey, curve: curveCopy(st.curve), win: valueWindow() };
     event.preventDefault();
     draw();
     updateHint();
+  }
+
+  /** 双击加点：只在多点模式、值图、非忙碌时生效。 */
+  function onDoubleClick(event) {
+    if (st.mode !== "value" || st.graphMode !== "multi") return;
+    if (st.busy || !AEV_CurveGraph || !st.map) return;
+    var pt = localPoint(event);
+    var t = st.map.T(pt.x);
+    var v = st.map.V(pt.y);
+    if (t <= AEV_CurveGraph.EPS || t >= 1 - AEV_CurveGraph.EPS) return;
+
+    var snapped = AEV_CurveGraph.snapPoint(t, v, st.snapEnabled);
+    var base = st.graph || AEV_CurveGraph.fromBezier(st.curve, "numeric");
+    if (!base) return;
+    recordLocal();
+    var next = AEV_CurveGraph.insertNode(base, snapped.t, snapped.v, nextNodeId());
+    if (!next) {
+      setMessage(t("这个位置放不下新节点", "No room for a node here"), true);
+      return;
+    }
+    st.graph = next;
+    st.selectedNodeId = nearestNodeId(next, snapped.t, snapped.v);
+    draw();
+    updateHint();
+    setMessage(t("已加点，拖它调整；Delete / Backspace 删除选中点",
+      "Node added — drag it, or press Delete / Backspace to remove"), false);
+    event.preventDefault();
+  }
+
+  function nextNodeId() {
+    st.nodeSeq = (st.nodeSeq || 0) + 1;
+    return "node_" + st.nodeSeq;
+  }
+
+  function nearestNodeId(graph, t, v) {
+    var best = "";
+    var bestD = 1e9;
+    for (var i = 0; i < graph.nodes.length; i++) {
+      var n = graph.nodes[i];
+      var dt = n.t - t;
+      var dv = n.v - v;
+      var d = dt * dt + dv * dv;
+      if (d < bestD) {
+        bestD = d;
+        best = n.id;
+      }
+    }
+    return best;
+  }
+
+  function findNode(id) {
+    if (!st.graph) return null;
+    for (var i = 0; i < st.graph.nodes.length; i++) {
+      if (st.graph.nodes[i].id === id) return st.graph.nodes[i];
+    }
+    return null;
+  }
+
+  /** 本地编辑前记一笔：撤销只回溯图的形状，绝不回溯 AE */
+  function recordLocal() {
+    if (window.AEV_CurveToolbar && window.AEV_CurveToolbar.record) {
+      try {
+        window.AEV_CurveToolbar.record();
+      } catch (e) {}
+    }
   }
 
   function onMouseMove(event) {
@@ -708,11 +1056,26 @@ var AEV_CurveUI = (function () {
   function applyDrag(pt) {
     var drag = st.drag;
     var map = st.map;
-    if (!map) return;
+    if (!map || !drag) return;
+    if (st.busy) return;
+
+    /* 多点模式走图模型；两点模式保持原来的 st.curve 路径不变 */
+    if (st.graphMode === "multi") {
+      applyGraphDrag(pt);
+      return;
+    }
 
     var nx = M.clamp(map.T(pt.x), 0, 1);
     var ny = map.V(pt.y);
     if (drag.shift) ny = drag.side === "out" ? drag.curve.y1 : drag.curve.y2;
+
+    /* 两点模式也要能被磁吸住：以前只有多点模式接了，所以两点下开「吸附」没反应。
+       Shift 的锁定优先 —— 锁 Y 的时候不该再被网格拉走。 */
+    if (st.snapEnabled && AEV_CurveGraph) {
+      var snapped = AEV_CurveGraph.snapPoint(nx, ny, true);
+      nx = M.clamp(snapped.t, 0, 1);
+      if (!drag.shift) ny = snapped.v;
+    }
 
     if (drag.side === "out") {
       st.curve.x1 = nx;
@@ -733,17 +1096,72 @@ var AEV_CurveUI = (function () {
     updateHint();
   }
 
+  /** 多点拖拽：节点走 moveNode、把手走 moveHandle，全程只改本地状态 */
+  function applyGraphDrag(pt) {
+    var drag = st.drag;
+    if (!AEV_CurveGraph || !st.graph || !drag) return;
+    var raw = AEV_CurveGraph.snapPoint(st.map.T(pt.x), st.map.V(pt.y), st.snapEnabled);
+    var next = null;
+
+    if (drag.kind === "node") {
+      next = AEV_CurveGraph.moveNode(st.graph, drag.id, raw.t, raw.v);
+      st.selectedNodeId = drag.id;
+    } else if (drag.kind === "handle") {
+      var node = findNode(drag.id);
+      if (!node) return;
+      next = AEV_CurveGraph.moveHandle(st.graph, drag.id, drag.side, raw.t - node.t, raw.v - node.v);
+    }
+    if (next) st.graph = next;
+    draw();
+    updateHint();
+  }
+
   function onMouseUp() {
     if (!st.drag) return;
     st.drag = null;
     draw();
     updateHint();
+    if (window.AEV_CurveToolbar && window.AEV_CurveToolbar.render) {
+      try {
+        window.AEV_CurveToolbar.render();
+      } catch (e) {}
+    }
   }
 
   function onKeyDown(event) {
+    /* 焦点在输入框里时，Backspace 是在删字，不是删点 —— 让给输入框。
+       保存预设的命名框就在同一页面里，不挡住会一边打字一边把节点删了。 */
+    var target = event.target;
+    if (target && (target.nodeName === "INPUT" || target.nodeName === "TEXTAREA" ||
+      target.isContentEditable)) {
+      return;
+    }
+
+    /* Delete 与 Backspace 都删点：从 Mac 键位或小键盘过来的人习惯 Backspace */
+    var delKey = event.key === "Delete" || event.keyCode === 46 ||
+      event.key === "Backspace" || event.keyCode === 8;
+
+    /* 多点模式：只删选中的中间节点；端点删不掉，也不该删 */
+    if (delKey && st.graphMode === "multi" && st.selectedNodeId && !st.busy && AEV_CurveGraph && st.graph) {
+      recordLocal();
+      var killed = AEV_CurveGraph.deleteNode(st.graph, st.selectedNodeId);
+      if (killed && killed.nodes.length < st.graph.nodes.length) {
+        st.graph = killed;
+        st.selectedNodeId = "";
+        draw();
+        updateHint();
+        setMessage(t("已删除选中节点", "Node deleted"), false);
+      } else {
+        setMessage(t("端点不能删除", "Endpoints cannot be deleted"), true);
+      }
+      event.preventDefault();
+      return;
+    }
+
     if (event.key !== "Escape" && event.keyCode !== 27) return;
     if (st.drag) {
-      st.curve = curveCopy(st.drag.curve);
+      if (st.drag.graph && AEV_CurveGraph) st.graph = AEV_CurveGraph.clone(st.drag.graph);
+      else st.curve = curveCopy(st.drag.curve);
       st.drag = null;
       draw();
       updateHint();
@@ -794,6 +1212,42 @@ var AEV_CurveUI = (function () {
     return { text: lines.join("\n"), segs: segs };
   }
 
+  /**
+   * 多点模式的应用文本：每条属性一组 expect + graph 块。
+   *
+   * 与单曲线 buildText 的区别：单曲线是「把模板铺到每条属性的每一段」，
+   * 多点图是「这一条属性的一段换成这张图」，所以每条属性只发一个块。
+   */
+  function buildGraphText(props, graph) {
+    var lines = [];
+    var count = 0;
+    if (!AEV_CurveGraph || !graph) return { text: "", segs: 0 };
+    for (var i = 0; i < props.length; i++) {
+      var p = props[i];
+      if (!p || !p.loc) continue;
+      var graphLines = AEV_CurveGraph.encodeApplyLines(p.loc, p.sig || "", graph);
+      /* 编码器必须产出「expect 行 + 图块」，否则发过去 AE 那边会当成空块 */
+      if (!graphLines || graphLines.indexOf("expect") !== 0) continue;
+      lines.push(graphLines);
+      count++;
+    }
+    return { text: lines.join("\n"), segs: count };
+  }
+
+  /** 快捷工具的应用文本：同样一条属性一行，交给 AE 侧按名字执行 */
+  function buildToolText(props, tool) {
+    var lines = [];
+    var count = 0;
+    for (var i = 0; i < props.length; i++) {
+      var p = props[i];
+      if (!p || !p.loc) continue;
+      lines.push(["expect", p.loc, p.sig || ""].join("\t"));
+      lines.push(["tool", p.loc, tool].join("\t"));
+      count++;
+    }
+    return { text: lines.join("\n"), segs: count };
+  }
+
   function apply() {
     if (st.busy) return;
     setBusy(true);
@@ -831,11 +1285,16 @@ var AEV_CurveUI = (function () {
         return;
       }
 
-      var built = buildText(data.props, st.curve);
+      var built = st.graphMode === "multi"
+        ? buildGraphText(data.props, st.graph)
+        : buildText(data.props, st.curve);
       if (!built.segs) {
         setBusy(false);
         draw();
-        setMessage(t("选中的属性不足两把关键帧", "Selected properties need at least two keyframes"), true);
+        setMessage(st.graphMode === "multi"
+          ? t("多点图还没准备好：先双击加点或按「读取」",
+              "Graph not ready — add nodes or press Read first")
+          : t("选中的属性不足两把关键帧", "Selected properties need at least two keyframes"), true);
         return;
       }
 
@@ -881,8 +1340,8 @@ var AEV_CurveUI = (function () {
 
       /* 一条都没写进去：这不是成功，别让用户以为生效了 */
       if (!applied) {
-        setMessage(t("没有写入任何关键帧" + (note ? "：" + note : "（属性不支持缓动）") + detail,
-          "Nothing was written" + (note ? ": " + note : " (no temporal ease)") + detail), true);
+        setMessage(t("没有写入任何关键帧" + (note ? "：" + note : "（没有可写入的属性）") + detail,
+          "Nothing was written" + (note ? ": " + note : " (nothing writable)") + detail), true);
         return;
       }
 
@@ -922,6 +1381,40 @@ var AEV_CurveUI = (function () {
     if (counts.key_out_of_range) {
       parts.push(t(counts.key_out_of_range + " 处关键帧越界", counts.key_out_of_range + " out of range"));
     }
+    if (counts.selection_needs_two || counts.selection_unavailable) {
+      var selected = (counts.selection_needs_two || 0) + (counts.selection_unavailable || 0);
+      parts.push(t(selected + " 条属性没有选中两个关键帧",
+        selected + " without exactly two selected keys"));
+    }
+    if (counts.metadata_corrupt) {
+      parts.push(t(counts.metadata_corrupt + " 条属性的托管元数据已损坏",
+        counts.metadata_corrupt + " with corrupt managed metadata"));
+    }
+    if (counts.graph_invalid || counts.graph_block_invalid) {
+      var invalid = (counts.graph_invalid || 0) + (counts.graph_block_invalid || 0);
+      parts.push(t(invalid + " 条曲线数据无效",
+        invalid + " with invalid graph data"));
+    }
+    if (counts.key_create_failed || counts.ease_write_failed || counts.endpoint_missing) {
+      var writeFailed = (counts.key_create_failed || 0) +
+        (counts.ease_write_failed || 0) + (counts.endpoint_missing || 0);
+      parts.push(t(writeFailed + " 条属性在 AE 中写入失败",
+        writeFailed + " failed during AE write"));
+    }
+    if (counts.metadata_write_failed) {
+      parts.push(t(counts.metadata_write_failed + " 条属性的托管注释写入失败",
+        counts.metadata_write_failed + " failed to write managed metadata"));
+    }
+    if (counts.zero_duration) {
+      parts.push(t(counts.zero_duration + " 处关键帧区间长度为零",
+        counts.zero_duration + " with a zero-length key range"));
+    }
+    /* 这条以前没归类，导致整条属性被拒时界面退回「属性不支持缓动」——
+       真正原因是用户自己在那段里放了中间键，改文案会把人引到错误方向。 */
+    if (counts.native_intermediate) {
+      parts.push(t(counts.native_intermediate + " 条属性含你自己的中间键，未改写",
+        counts.native_intermediate + " with your own middle keys"));
+    }
     return parts.length
       ? t("（跳过 " + parts.join("、") + "）", " (" + parts.join(", ") + " skipped)")
       : "";
@@ -931,6 +1424,72 @@ var AEV_CurveUI = (function () {
     var n = st.snap && st.snap.props ? st.snap.props.length : 0;
     return t(n + " 条属性 / " + st.pendingSegs + " 段",
       n + " prop(s) / " + st.pendingSegs + " seg(s)");
+  }
+
+  /** 工具栏「读取」：把选中关键帧那一段的曲线读进多点图 */
+  function readCurrent() {
+    if (st.busy) return;
+    setBusy(true);
+    setMessage(t("正在读取选中关键帧的曲线…", "Reading the selected keyframes…"), false);
+    engine("AEV_Curve.readGraphJson()", function (text) {
+      var data = deps.parse ? deps.parse(text) : null;
+      if (!data || data.status !== "ok") {
+        setBusy(false);
+        var why = (data && data.reason) || String(text).slice(0, 120);
+        setMessage(t("读取失败：" + why, "Read failed: " + why), true);
+        return;
+      }
+      if (!data.props || !data.props.length) {
+        setBusy(false);
+        var skipped = (data.skipped || []).join("、");
+        setMessage(skipped.indexOf("selection_needs_two") >= 0
+          ? t("请正好选中两个关键帧（多点图改的是这一段）",
+              "Select exactly two keyframes — the graph edits that range")
+          : t("没有可读的曲线" + (skipped ? "：" + skipped : ""),
+              "No readable curve" + (skipped ? ": " + skipped : "")), true);
+        return;
+      }
+
+      var prop = data.props[0];
+      if (AEV_CurveGraph && prop.graph) st.graph = AEV_CurveGraph.normalize(prop.graph);
+      if (st.graphMode !== "multi") switchGraphMode("multi");
+
+      if (!prop.editable) {
+        setMessage(t("这段里有你自己的中间关键帧，只显示、不会写回",
+          "This range contains your own middle keys — read-only"), true);
+      } else {
+        setMessage(t("已读取（" + (prop.source === "metadata" ? "托管曲线" : "当前缓动") + "）",
+          "Loaded (" + (prop.source === "metadata" ? "managed curve" : "current ease") + ")"), false);
+      }
+      setBusy(false);
+      draw();
+      updateReadout();
+      updateHint();
+    });
+  }
+
+  /** 工具栏的换键 / 冻结：先读快照拿 loc 与指纹，再走同一条写回通道 */
+  function applyTool(tool) {
+    if (st.busy) return;
+    setBusy(true);
+    setMessage(t("正在读取 AE 选中态…", "Reading AE selection…"), false);
+    engine("AEV_Curve.snapshotJson()", function (text) {
+      var data = deps.parse ? deps.parse(text) : null;
+      if (!data || data.status !== "ok" || !data.props || !data.props.length) {
+        setBusy(false);
+        setMessage(t("先选中要处理的属性", "Select a property first"), true);
+        return;
+      }
+      st.snap = data;
+      var built = buildToolText(data.props, tool);
+      if (!built.segs) {
+        setBusy(false);
+        setMessage(t("没有可处理的属性", "Nothing to process"), true);
+        return;
+      }
+      st.pendingSegs = built.segs;
+      send(built.text);
+    });
   }
 
   function refreshSnap() {
@@ -993,25 +1552,62 @@ var AEV_CurveUI = (function () {
     if (!box) return;
     box.textContent = "";
     var items = allPresets();
-    for (var i = 0; i < items.length; i++) box.appendChild(makeChip(items[i]));
+    var lastGroup = "";
+    for (var i = 0; i < items.length; i++) {
+      var preset = items[i];
+      /* 分组标题：两点 / 多点 / 自定义。allPresets 已按这个顺序排好，
+         这里只在「换组」时插一条横贯整行的标题，滚动时也能一眼认出类别。 */
+      var group = preset.builtin === false ? "custom" : presetType(preset);
+      if (group !== lastGroup) {
+        box.appendChild(makePresetDivider(group));
+        lastGroup = group;
+      }
+      box.appendChild(makeChip(preset));
+    }
+  }
+
+  function makePresetDivider(group) {
+    var d = document.createElement("div");
+    d.className = "preset-divider";
+    d.setAttribute("data-group", group);
+    d.textContent = group === "multi"
+      ? t("多点图", "MULTI")
+      : (group === "custom" ? t("自定义", "CUSTOM") : t("两点曲线", "TWO-POINT"));
+    return d;
   }
 
   function makeChip(preset) {
     var chip = document.createElement("button");
     chip.type = "button";
-    chip.className = "preset-chip";
+    var multi = presetHasGraph(preset);
+    chip.className = "preset-chip" + (multi ? " is-multi" : "") +
+      (preset.id === st.preset ? " active" : "");
     chip.setAttribute("data-pid", preset.id);
-    chip.title = preset.builtin === false ? preset.name : t(preset.zh, preset.en);
-    if (preset.id === st.preset) chip.className += " active";
+    chip.setAttribute("data-ptype", multi ? "multi" : "two");
+    var label = presetLabel(preset);
+    var nodes = multi ? presetNodes(preset) : 0;
+    chip.title = multi
+      ? label + t("（多点 · " + nodes + " 点）", " (" + nodes + " nodes)")
+      : label;
 
     var cv = document.createElement("canvas");
     cv.width = 92;
     cv.height = 54;
     chip.appendChild(cv);
 
-    var label = document.createElement("span");
-    label.textContent = chip.title;
-    chip.appendChild(label);
+    var name = document.createElement("span");
+    name.className = "preset-name";
+    name.textContent = label;
+    chip.appendChild(name);
+
+    /* 多点预设的角标：写节点数，一眼能和两点预设分开 */
+    if (multi) {
+      var badge = document.createElement("span");
+      badge.className = "curve-preset-badge";
+      badge.textContent = String(nodes);
+      badge.title = t(nodes + " 个节点", nodes + " nodes");
+      chip.appendChild(badge);
+    }
 
     chip.addEventListener("pointerdown", function (event) {
       if (event.button !== undefined && event.button !== 0) return;
@@ -1028,7 +1624,7 @@ var AEV_CurveUI = (function () {
       }
       selectPreset(preset.id);
     });
-    drawChip(cv, preset.b);
+    drawChip(cv, preset);
     return chip;
   }
 
@@ -1047,16 +1643,37 @@ var AEV_CurveUI = (function () {
     st.holdTimer = null;
   }
 
-  /** 缩略图按 y 的实际范围取景，回弹族才不会画到框外 */
-  function drawChip(cv, b) {
+  /** 缩略图：两点预设按四元组画，多点预设按图采样画，取景都按 y 的实际范围 */
+  function drawChip(cv, preset) {
     var ctx = cv.getContext("2d");
     var w = cv.width;
     var h = cv.height;
     ctx.clearRect(0, 0, w, h);
 
-    var curve = { x1: b[0], y1: b[1], x2: b[2], y2: b[3] };
-    var lo = Math.min(0, curve.y1, curve.y2);
-    var hi = Math.max(1, curve.y1, curve.y2);
+    var pts = null;
+    if (presetHasGraph(preset) && AEV_CurveGraph) {
+      var g = AEV_CurveGraph.normalize(preset.g);
+      if (g) {
+        pts = [];
+        for (var k = 0; k <= 48; k++) {
+          var s = AEV_CurveGraph.sample(g, k / 48);
+          if (s) pts.push({ x: k / 48, y: s[0] });
+        }
+      }
+    }
+    if (!pts) {
+      var b = preset.b || [0, 0, 1, 1];
+      var curve = { x1: b[0], y1: b[1], x2: b[2], y2: b[3] };
+      pts = [];
+      for (var i = 0; i <= 28; i++) pts.push(bezierPoint(curve, i / 28));
+    }
+
+    var lo = 0;
+    var hi = 1;
+    for (var j = 0; j < pts.length; j++) {
+      if (pts[j].y < lo) lo = pts[j].y;
+      if (pts[j].y > hi) hi = pts[j].y;
+    }
     var pad = (hi - lo) * 0.12;
     lo -= pad;
     hi += pad;
@@ -1067,27 +1684,48 @@ var AEV_CurveUI = (function () {
     var hh = h - padY * 2;
 
     ctx.beginPath();
-    for (var i = 0; i <= 28; i++) {
-      var pt = bezierPoint(curve, i / 28);
-      var px = padX + pt.x * ww;
-      var py = padY + (1 - (pt.y - lo) / (hi - lo)) * hh;
-      if (i === 0) ctx.moveTo(px, py);
+    for (var m = 0; m < pts.length; m++) {
+      var px = padX + pts[m].x * ww;
+      var py = padY + (1 - (pts[m].y - lo) / (hi - lo)) * hh;
+      if (m === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     }
-    ctx.strokeStyle = "#a8c6ca";
+    ctx.strokeStyle = presetHasGraph(preset) ? "#cfe3e5" : "#a8c6ca";
     ctx.lineWidth = 1.6;
     ctx.stroke();
   }
 
+  /**
+   * 选中预设：两类预设各自会把编辑器切到对应模式。
+   * 顺序很关键 —— 多点要先装图再切模式，因为 switchGraphMode 在图为空时
+   * 会拿 st.curve 初始化；反过来就把刚载入的图覆盖掉了。
+   */
   function selectPreset(id) {
     var preset = findPreset(id);
     if (!preset) return;
-    var b = preset.b;
-    st.curve = { x1: b[0], y1: b[1], x2: b[2], y2: b[3] };
+
+    if (presetHasGraph(preset)) {
+      var g = AEV_CurveGraph ? AEV_CurveGraph.normalize(preset.g) : null;
+      if (!g) {
+        setMessage(t("这个预设的图读不出来", "This preset's graph cannot be read"), true);
+        return;
+      }
+      st.graph = g;
+      st.selectedNodeId = "";
+      if (st.graphMode !== "multi") switchGraphMode("multi");
+    } else {
+      var b = preset.b || [0, 0, 1, 1];
+      if (st.graphMode !== "two") switchGraphMode("two");
+      st.curve = clampCurve({ x1: b[0], y1: b[1], x2: b[2], y2: b[3] });
+    }
+
     st.preset = id;
     renderPresets();
     draw();
-    var name = preset.builtin === false ? preset.name : t(preset.zh, preset.en);
+    updateReadout();
+    updateHint();
+
+    var name = presetLabel(preset);
     setMessage(t("已选「" + name + "」，按「应用」写到 AE",
       "“" + name + "” selected — press Apply"), false);
   }
@@ -1109,16 +1747,19 @@ var AEV_CurveUI = (function () {
 
   function saveCurrentPreset() {
     var name = el.presetName ? String(el.presetName.value || "").replace(/^\s+|\s+$/g, "") : "";
-    if (!name) name = t("自定义曲线", "Custom curve");
+    var multi = st.graphMode === "multi" && !!st.graph;
+    if (!name) name = multi ? t("自定义多点曲线", "Custom graph") : t("自定义曲线", "Custom curve");
     name = name.substring(0, 24);
     var id = "custom-" + new Date().getTime().toString(36) + "-" +
       Math.floor(Math.random() * 1000000).toString(36);
-    st.customPresets.push({
-      id: id,
-      name: name,
-      builtin: false,
-      b: [st.curve.x1, st.curve.y1, st.curve.x2, st.curve.y2]
-    });
+    var entry = { id: id, name: name, builtin: false };
+    if (multi) {
+      /* 存快照而不是引用：后续编辑会把 st.graph 换成新对象 */
+      entry.g = JSON.parse(JSON.stringify(st.graph));
+    } else {
+      entry.b = [st.curve.x1, st.curve.y1, st.curve.x2, st.curve.y2];
+    }
+    st.customPresets.push(entry);
     saveCustomPresets();
     st.preset = id;
     closeSavePreset();
@@ -1131,7 +1772,7 @@ var AEV_CurveUI = (function () {
     var preset = findPreset(id);
     if (!preset || !el.deleteDialog) return;
     st.deletePresetId = id;
-    var name = preset.builtin === false ? preset.name : t(preset.zh, preset.en);
+    var name = presetLabel(preset);
     el.deleteText.textContent = t(
       "确定删除预设「" + name + "」？",
       "Delete preset “" + name + "”?");
@@ -1148,9 +1789,7 @@ var AEV_CurveUI = (function () {
     var id = st.deletePresetId;
     if (!id) return;
     var preset = findPreset(id);
-    var deletedName = preset
-      ? (preset.builtin === false ? preset.name : t(preset.zh, preset.en))
-      : id;
+    var deletedName = preset ? presetLabel(preset) : id;
     if (isBuiltinPreset(id)) {
       if (!isDeletedPreset(id)) st.deletedPresets.push(id);
       saveDeletedPresetIds();
@@ -1180,6 +1819,12 @@ var AEV_CurveUI = (function () {
       el.readout.textContent = t("只读检查视图", "read-only");
       return;
     }
+    if (st.graphMode === "multi") {
+      var count = st.graph ? st.graph.nodes.length : 0;
+      el.readout.textContent = t(count + " 点", count + " nodes") +
+        (st.selectedNodeId ? " · " + st.selectedNodeId : "");
+      return;
+    }
     el.readout.textContent =
       st.curve.x1.toFixed(2) + ", " + st.curve.y1.toFixed(2) + ", " +
       st.curve.x2.toFixed(2) + ", " + st.curve.y2.toFixed(2);
@@ -1197,7 +1842,12 @@ var AEV_CurveUI = (function () {
       setMessage(t("只读：改曲线请切回「值」", "Read-only — switch back to Value to edit"), false);
       return;
     }
-    setMessage(t("拖两端把手调曲线，或点下面的预设，然后按「应用」",
+    if (st.graphMode === "multi") {
+      setMessage(t("双击加点；拖节点或把手调整；Delete / Backspace 删点，Esc 取消",
+        "Double-click to add; drag nodes or handles; Delete or Backspace removes, Esc cancels"), false);
+      return;
+    }
+    setMessage(t("拖两端把手调曲线，或选一个预设，然后按「应用」",
       "Drag a handle or pick a preset, then Apply"), false);
   }
 
@@ -1240,11 +1890,74 @@ var AEV_CurveUI = (function () {
   }
 
   /* ============================================================
-   * 九、生命周期
+   * 九、两点 / 多点模式切换
+   *
+   * 两点模式下 st.curve 是唯一真相；切到多点时用它初始化图，
+   * 切回来时若图只剩两个节点就回写成四元组 —— 两边不会互相覆盖。
+   * ============================================================ */
+
+  /**
+   * 工具栏的模式按钮状态由它自己维护，切换由它的点击发起。
+   * 但曲线模块内部也会切模式（「读取」会自动转多点），这时必须回告它，
+   * 否则画布已经是多点、左上角还停在「两点」。
+   */
+  function syncToolbarMode(mode) {
+    var tb = window.AEV_CurveToolbar;
+    if (!tb || !tb.snapshot || !tb.setMode) return;
+    try {
+      var snap = tb.snapshot();
+      if (snap && snap.mode !== mode) tb.setMode(mode);
+    } catch (e) {}
+  }
+
+  function switchGraphMode(mode) {
+    var next = mode === "multi" ? "multi" : "two";
+    if (next === st.graphMode) return;
+    if (next === "multi") {
+      if (!st.graph && AEV_CurveGraph) st.graph = AEV_CurveGraph.fromBezier(st.curve, "numeric");
+      st.selectedNodeId = "";
+      if (!st.graph) {
+        setMessage(t("图模型未加载，无法进入多点模式", "Graph model missing"), true);
+        return;
+      }
+    } else if (st.graph && AEV_CurveGraph) {
+      var back = AEV_CurveGraph.toBezier(st.graph);
+      if (back) {
+        st.curve = { x1: back[0], y1: back[1], x2: back[2], y2: back[3] };
+        st.preset = "";
+      }
+      renderPresets();
+    }
+    st.graphMode = next;
+    syncToolbarMode(next);
+    draw();
+    updateReadout();
+    updateHint();
+  }
+
+  /** 外部（工具栏）整份替换图；接受 graph，也接受工具栏的 {graph, mode} */
+  function setGraphState(state) {
+    if (!AEV_CurveGraph) return;
+    var graph = state && state.graph ? state.graph : state;
+    var mode = state && state.mode ? state.mode : st.graphMode;
+    st.graph = graph ? AEV_CurveGraph.clone(graph) : null;
+    st.selectedNodeId = "";
+    if (mode && mode !== st.graphMode) {
+      st.graphMode = mode === "multi" ? "multi" : "two";
+      syncToolbarMode(st.graphMode);
+    }
+    draw();
+    updateReadout();
+  }
+
+
+  /* ============================================================
+   * 十、生命周期
    * ============================================================ */
 
   function init(options) {
     M = window.AEV_CurveMath;
+    AEV_CurveGraph = window.AEV_CurveGraph || null;
     if (!M) {
       var stage = byId("curveStage");
       if (stage) stage.textContent = "curve_math.js 未加载";
@@ -1306,9 +2019,59 @@ var AEV_CurveUI = (function () {
     });
 
     if (el.canvas) el.canvas.addEventListener("mousedown", onMouseDown);
+    if (el.canvas) el.canvas.addEventListener("dblclick", onDoubleClick);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("keydown", onKeyDown);
+
+    /* 分隔条：编辑区与预设区的比例，布局参考 XLFlow */
+    if (window.AEV_CurveSplit && window.AEV_CurveSplit.init) {
+      try {
+        window.AEV_CurveSplit.init();
+      } catch (eSplit) {}
+    }
+
+    /* 工具栏：本地操作（切模式/反向/撤销/重做/重置/磁吸）在这里接完；
+       会改 AE 的三个动作（读取/换键/冻左/冻右）由 Task 7 的桥接层补上。 */
+    if (window.AEV_CurveToolbar && window.AEV_CurveToolbar.init) {
+      try {
+        window.AEV_CurveToolbar.init({
+          mode: st.graphMode,
+          snapEnabled: st.snapEnabled,
+          getGraph: function () {
+            return st.graph || (AEV_CurveGraph ? AEV_CurveGraph.fromBezier(st.curve, "numeric") : null);
+          },
+          setGraph: setGraphState,
+          setMode: switchGraphMode,
+          setSnap: function (on) {
+            st.snapEnabled = !!on;
+            draw();
+          },
+          reverseLocal: function () {
+            if (!AEV_CurveGraph || !st.graph) return;
+            var next = AEV_CurveGraph.reverse(st.graph);
+            if (next) {
+              st.graph = next;
+              st.selectedNodeId = "";
+              draw();
+              setMessage(t("曲线已反向（只改本地）", "Curve reversed (local only)"), false);
+            }
+          },
+          resetGraph: function () {
+            if (!AEV_CurveGraph) return;
+            st.graph = AEV_CurveGraph.fromBezier(DEFAULT_CURVE, "numeric");
+            st.selectedNodeId = "";
+            draw();
+            setMessage(t("已恢复默认曲线", "Reset to the default curve"), false);
+          },
+          readCurrent: readCurrent,
+          swapKeys: function () { applyTool("swap"); },
+          freezeLeft: function () { applyTool("freeze_left"); },
+          freezeRight: function () { applyTool("freeze_right"); },
+          status: function (text) { setMessage(text, false); }
+        });
+      } catch (eTb) {}
+    }
 
     if (byId("curveConflictOverwrite")) {
       byId("curveConflictOverwrite").addEventListener("click", overwrite);
@@ -1359,6 +2122,18 @@ var AEV_CurveUI = (function () {
   /** 切进曲线视图时调用：不读 AE，只保证画布尺寸与预设网格是对的 */
   function enter() {
     renderPresets();
+    /* 页签切回来时布局才真正有宽度：分隔条按比例落位，工具栏重新算分页，
+       否则第一次进来会停在「按钮没翻页、画布没尺寸」的状态。 */
+    if (window.AEV_CurveSplit && window.AEV_CurveSplit.relayout) {
+      try {
+        window.AEV_CurveSplit.relayout();
+      } catch (e) {}
+    }
+    if (window.AEV_CurveToolbar && window.AEV_CurveToolbar.resetPage) {
+      try {
+        window.AEV_CurveToolbar.resetPage();
+      } catch (e2) {}
+    }
     draw();
   }
 
@@ -1390,6 +2165,10 @@ var AEV_CurveUI = (function () {
     }
     return {
       mode: st.mode,
+      graphMode: st.graphMode,
+      graph: (st.graph && AEV_CurveGraph) ? AEV_CurveGraph.clone(st.graph) : null,
+      selectedNodeId: st.selectedNodeId,
+      snapEnabled: st.snapEnabled,
       curve: curveCopy(st.curve),
       preset: st.preset,
       busy: st.busy,
@@ -1424,6 +2203,8 @@ var AEV_CurveUI = (function () {
     draw: draw,
     apply: apply,
     snapshot: snapshot,
+    setGraph: setGraphState,
+    setGraphMode: switchGraphMode,
     presetIds: function () {
       var out = [];
       var items = allPresets();

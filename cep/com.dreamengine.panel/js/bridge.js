@@ -149,6 +149,7 @@ var Bridge = (function () {
    */
   var ENGINE_FILES = [
     "engine/curve_math.js",
+    "engine/curve_graph.js",
     "engine/render_config.jsx",
     "engine/store.jsx",
     "engine/preset_categories.jsx",
@@ -210,6 +211,7 @@ var Bridge = (function () {
       "    else if (typeof AEV_Apply === 'undefined') missing = 'AEV_Apply';" +
       "    else if (typeof AEV_Presets === 'undefined') missing = 'AEV_Presets';" +
       "    else if (typeof AEV_Curve === 'undefined') missing = 'AEV_Curve';" +
+      "    else if (typeof AEV_CurveGraph === 'undefined') missing = 'AEV_CurveGraph';" +
       "    if (typeof AEV_EngineStamp === 'undefined') AEV_EngineStamp = '';" +
       "    if (stamp !== AEV_EngineStamp || missing !== '') {" +
       // 逐个 evalFile 并各自捕获：某一个模块加载失败时，
