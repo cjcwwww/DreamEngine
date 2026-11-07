@@ -227,7 +227,7 @@ var AEV_PreviewGen = (function () {
      * 某些 AE 版本会把 Render Queue 输出的 PNG 序列放进工程面板。
      * 这里只清 DreamEngine 约定命名的对象，不碰用户素材。
      */
-    function cleanupArtifacts() {
+    function cleanupArtifacts(dedicatedTemplate) {
         var removed = 0;
         var failed = 0;
         try {
@@ -255,7 +255,10 @@ var AEV_PreviewGen = (function () {
 
             var internal = false;
             var name = String(item.name || "");
-            if (item instanceof CompItem &&
+            if (dedicatedTemplate) {
+                // 专用模板工程里没有用户数据；只保留固定渲染目标合成。
+                internal = !(item instanceof CompItem && name === "DE_RENDER_TARGET");
+            } else if (item instanceof CompItem &&
                     /^DE_(asset|scene|cell|sheet|preset_cell)_/.test(name)) {
                 internal = true;
             } else if (item instanceof FootageItem) {
@@ -266,7 +269,7 @@ var AEV_PreviewGen = (function () {
                     var sourcePath = sourceFile
                         ? String(sourceFile.fsName || "").replace(/\\/g, "/").toLowerCase()
                         : "";
-                    internal = /^batch_\d{3}(?:_\d{4})?\.png$/i.test(sourceName) &&
+                    internal = /^batch_\d+(?:_\d{4})?\.png$/i.test(sourceName) &&
                         sourcePath.indexOf("/thumbs/") >= 0;
                 } catch (eSource) {}
             }
@@ -278,6 +281,23 @@ var AEV_PreviewGen = (function () {
                 failed++;
             }
         }
+        // 模板工程可能留下额外的 DE_RENDER_TARGET 队列副本。保留第 1 项
+        //（模板原件），删除后续 DreamEngine 内部队列项。
+        try {
+            var rq = app.project.renderQueue;
+            for (var q = rq.numItems; q >= 2; q--) {
+                var rqItem = rq.item(q);
+                var compName = "";
+                try { compName = String(rqItem.comp && rqItem.comp.name || ""); } catch (eComp) {}
+                if (!/^DE_(RENDER_TARGET|sheet|cell|preset_cell)/.test(compName)) continue;
+                try {
+                    rqItem.remove();
+                    removed++;
+                } catch (eRqRemove) {
+                    failed++;
+                }
+            }
+        } catch (eRq) {}
         return '{"removed":' + removed + ',"failed":' + failed + "}";
     }
 
@@ -551,7 +571,7 @@ var AEV_PreviewGen = (function () {
                 try { freshComps[f].remove(); } catch (eFresh) {}
             }
             // 单批/离线渲染立即清理；面板批量生成延迟到整轮结束。
-            if (!keepAssets) cleanupArtifacts();
+            if (!keepAssets) cleanupArtifacts(!!targetComp);
         }
     }
 
