@@ -414,6 +414,8 @@ var AEV_PresetPreview = (function () {
         var trash = { comps: [], items: [] };
         var comp = null;
         var queueItem = null;
+        var ownsComp = !opts.targetComp;
+        var ownsQueueItem = true;
         var rawFiles = [];
         var kept = [];
 
@@ -432,10 +434,21 @@ var AEV_PresetPreview = (function () {
         clearKeptFrames();
         try {
             // 时长先给足，后面按关键帧范围调整
-            comp = app.project.items.addComp(
-                "DE_preset_cell_" + pad(sheetIndex, 3),
-                size, size, 1, 2, FPS
-            );
+            if (opts.targetComp) {
+                comp = opts.targetComp;
+                while (comp.numLayers > 0) {
+                    try { comp.layer(1).remove(); } catch (eClearLayer) {}
+                }
+                comp.width = size;
+                comp.height = size;
+                comp.frameRate = FPS;
+                comp.duration = 2;
+            } else {
+                comp = app.project.items.addComp(
+                    "DE_preset_cell_" + pad(sheetIndex, 3),
+                    size, size, 1, 2, FPS
+                );
+            }
             comp.time = 0; // applyPreset 会把关键帧放在当前时间指示器上
 
             var backgroundInfo = addBackground(comp, background, size, trash);
@@ -487,10 +500,16 @@ var AEV_PresetPreview = (function () {
                 comp.duration = Math.max(1 / FPS, start + span + 1 / FPS);
             } catch (eDur) {}
 
-            queueItem = app.project.renderQueue.items.add(comp);
+            queueItem = opts.targetQueueItem
+                ? opts.targetQueueItem.duplicate()
+                : app.project.renderQueue.items.add(comp);
             var outputModule = queueItem.outputModule(1);
-            var template = applyPngTemplate(outputModule);
-            if (!template) return result("error", [["reason", "no_png_template"]]);
+            if (!opts.targetQueueItem) {
+                var template = applyPngTemplate(outputModule);
+                if (!template) return result("error", [["reason", "no_png_template"]]);
+            }
+            // 模板队列可能处于 DONE；必须先 requeue，DONE 状态禁止改 file。
+            queueItem.render = true;
             outputModule.file = new File(folder.fsName + "/" + rawBase + "_[####].png");
             queueItem.timeSpanStart = start;
             queueItem.timeSpanDuration = span;
@@ -537,8 +556,8 @@ var AEV_PresetPreview = (function () {
             ]);
         } finally {
             // 只清 raw 与临时对象；成品帧已在渲染前清过、本次刚生成，不能删
-            try { if (queueItem) queueItem.remove(); } catch (eQ) {}
-            try { if (comp) comp.remove(); } catch (eC) {}
+            try { if (queueItem && ownsQueueItem) queueItem.remove(); } catch (eQ) {}
+            try { if (comp && ownsComp) comp.remove(); } catch (eC) {}
             var i;
             for (i = 0; i < trash.comps.length; i++) {
                 try { trash.comps[i].remove(); } catch (eT1) {}

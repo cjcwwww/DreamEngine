@@ -340,6 +340,10 @@ var AEV_PreviewGen = (function () {
         var cellErrors = [];
         var grid = null;
         var queueItem = null;
+        var targetComp = options && options.targetComp;
+        var targetQueueItem = options && options.targetQueueItem;
+        var ownsGrid = !targetComp;
+        var ownsQueueItem = true;
         var started = new Date().getTime();
         // 面板整轮批量生成需要跨批次复用素材；结束时由 cleanupArtifacts 统一清理。
         var keepAssets = !!(options && options.keepAssets);
@@ -366,14 +370,24 @@ var AEV_PreviewGen = (function () {
         }
 
         try {
-            grid = app.project.items.addComp(
-                "DE_sheet_" + pad(sheetIndex, 3),
-                width, height, 1, durationSeconds, CELL_FPS
-            );
+            if (targetComp) {
+                grid = targetComp;
+                while (grid.numLayers > 0) {
+                    try { grid.layer(1).remove(); } catch (eClearLayer) {}
+                }
+                grid.width = width;
+                grid.height = height;
+                grid.duration = Math.max(durationSeconds, 1 / CELL_FPS);
+            } else {
+                grid = app.project.items.addComp(
+                    "DE_sheet_" + pad(sheetIndex, 3),
+                    width, height, 1, durationSeconds, CELL_FPS
+                );
+            }
 
             for (var i = 0; i < matchNames.length; i++) {
                 var cellIndex = cellOffset + i;
-                if (cellIndex >= columns * columns) break;
+                if (cellIndex >= columns * Math.max(1, Math.ceil(height / cellSize))) break;
                 var matchName = matchNames[i];
                 var cell = app.project.items.addComp(
                     "DE_cell_" + pad(sheetIndex, 3) + "_" + pad(cellIndex, 2),
@@ -456,12 +470,19 @@ var AEV_PreviewGen = (function () {
                 cellNames.push(matchName);
             }
 
-            queueItem = app.project.renderQueue.items.add(grid);
+            queueItem = targetQueueItem
+                ? targetQueueItem.duplicate()
+                : app.project.renderQueue.items.add(grid);
             var outputModule = queueItem.outputModule(1);
-            var template = applyPngTemplate(outputModule);
-            if (!template) {
-                throw new Error("no_png_template");
+            var template = "reuse_project";
+            if (!targetQueueItem) {
+                template = applyPngTemplate(outputModule);
+                if (!template) {
+                    throw new Error("no_png_template");
+                }
             }
+            // 模板队列可能处于 DONE；必须先 requeue，DONE 状态禁止改 file。
+            queueItem.render = true;
 
             var baseName = "batch_" + pad(sheetIndex, 3);
 
@@ -517,13 +538,13 @@ var AEV_PreviewGen = (function () {
             ]);
         } finally {
             try {
-                if (queueItem) queueItem.remove();
+                if (queueItem && ownsQueueItem) queueItem.remove();
             } catch (e1) {}
             for (var c = 0; c < cells.length; c++) {
                 try { cells[c].remove(); } catch (e2) {}
             }
             try {
-                if (grid) grid.remove();
+                if (grid && ownsGrid) grid.remove();
             } catch (e3) {}
             // fresh 素材是本次临时新建的，渲完必须删掉，否则工程里越堆越多
             for (var f = 0; f < freshComps.length; f++) {
