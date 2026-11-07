@@ -49,7 +49,7 @@ The installer is unsigned, so Windows SmartScreen may show an "Unknown publisher
 | --- | --- |
 | Effects | Search or filter; double-click to add an effect to the selected layer; hover to play animated previews |
 | Presets | Click a card to apply an `.ffx` preset; filter by category and favorites |
-| Curves | Shape a Bezier curve; apply it to selected keyframes; save custom presets |
+| Curves | Edit in two-point or multi-point mode; read, reverse, swap, freeze, apply, and save presets |
 | Media | Select one root folder; click to preview; double-click to import at the current composition time |
 
 ### DreamEngine Hub
@@ -114,10 +114,12 @@ Preset categories and preset favorites are shared between the panel and Hub.
 
 **Curves**
 
-- Value, speed, and spatial-path views.
-- Drag control handles to shape easing and apply it to selected keyframes.
-- Save custom curve presets; long-press to delete a preset, including built-ins.
-- Detect keyframe changes before writing to avoid overwriting concurrent edits.
+- Two-point and multi-point curve modes with value, speed, and spatial-path views.
+- Double-click to insert nodes, drag nodes and handles, and press Delete/Backspace to remove middle nodes.
+- The toolbar can read the current curve, reverse it, swap keyframes, freeze from either side, snap to a 0.1 grid, and undo or redo local graph edits.
+- Save custom single-point and multi-point curve presets, and long-press to delete existing presets.
+- Multi-keyframe application requires exactly two selected keys and writes only inside that range; user-created middle keys are never overwritten.
+- Keyframe signatures are checked before writing to avoid overwriting concurrent edits, and each batch can be undone in one AE undo step.
 
 **Media**
 
