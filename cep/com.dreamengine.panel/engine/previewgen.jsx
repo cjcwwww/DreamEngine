@@ -338,6 +338,9 @@ var AEV_PreviewGen = (function () {
         // 两者混用会把"6 帧"算成 0.5 秒 → 30fps 下实际渲出 15 帧（实测踩过）。
         var CELL_FPS = 30;
         var durationSeconds = frames / CELL_FPS;
+        var requestedStart = options && options.startTime !== undefined
+            ? Number(options.startTime) : 0;
+        if (!isFinite(requestedStart) || requestedStart < 0) requestedStart = 0;
         var cellOffset = singleCell ? 0 : ((options && options.cellOffset) || 0);
 
         if (typeof AEV_Store !== "undefined") {
@@ -398,13 +401,16 @@ var AEV_PreviewGen = (function () {
                 grid.width = width;
                 grid.height = height;
                 grid.frameRate = CELL_FPS;
-                grid.duration = Math.max(durationSeconds, 1 / CELL_FPS);
             } else {
                 grid = app.project.items.addComp(
                     "DE_sheet_" + pad(sheetIndex, 3),
                     width, height, 1, durationSeconds, CELL_FPS
                 );
             }
+            var displayStart = Number(grid.displayStartTime) || 0;
+            if (requestedStart < displayStart) requestedStart = displayStart;
+            var neededEnd = requestedStart + durationSeconds + 1 / CELL_FPS;
+            grid.duration = Math.max(Number(grid.duration) || 0, neededEnd, 1 / CELL_FPS);
 
             for (var i = 0; i < matchNames.length; i++) {
                 var cellIndex = cellOffset + i;
@@ -518,7 +524,11 @@ var AEV_PreviewGen = (function () {
 
             outputModule.file = new File(targetFolder.fsName + "/" + baseName + "_[####].png");
 
-            var requestedStart = options && options.startTime !== undefined ? options.startTime : 0;
+            var availableDuration = Math.max(
+                1 / CELL_FPS,
+                (Number(grid.displayStartTime) || 0) + Number(grid.duration) - requestedStart
+            );
+            durationSeconds = Math.min(durationSeconds, availableDuration);
             queueItem.timeSpanStart = requestedStart;
             queueItem.timeSpanDuration = durationSeconds;
 
