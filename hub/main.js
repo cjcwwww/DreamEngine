@@ -10,7 +10,7 @@
  *   · 不自己实现安装 —— 一律调用 tools/install_dreamengine.ps1
  * ============================================================ */
 
-const { app, BrowserWindow, ipcMain, dialog, shell, Menu, clipboard } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell, Menu, clipboard, nativeImage } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
 
@@ -21,6 +21,11 @@ const presetCategories = require("./core/preset_categories");
 const install = require("./core/install");
 const { RenderJob } = require("./core/render");
 const { PluginEffectJob } = require("./core/effect_render");
+const {
+  importImageAsPng,
+  normalizeBackgroundDirectory,
+  isPngFile,
+} = require("./core/backgrounds");
 
 let mainWindow = null;
 let paths = null;
@@ -173,10 +178,12 @@ function registerIpc() {
     ];
     const extra = [];
     try {
+      normalizeBackgroundDirectory({ dir: paths.backgrounds, nativeImage });
       for (const name of fs.readdirSync(paths.backgrounds)) {
-        if (!/\.(png|jpe?g|webp|bmp|tiff?)$/i.test(name)) continue;
+        const fullPath = path.join(paths.backgrounds, name);
+        if (!/\.png$/i.test(name) || !isPngFile(fullPath)) continue;
         extra.push({
-          id: path.join(paths.backgrounds, name),
+          id: fullPath,
           label: name.replace(/\.[^.]+$/, "") + "（自定义）",
         });
       }
@@ -197,20 +204,18 @@ function registerIpc() {
 
     fs.mkdirSync(paths.backgrounds, { recursive: true });
     const added = [];
+    const errors = [];
     for (const source of result.filePaths) {
       if (!/\.(png|jpe?g|webp|bmp|tiff?)$/i.test(source)) continue;
-      const ext = path.extname(source);
-      const base = path.basename(source, ext);
-      let target = path.join(paths.backgrounds, path.basename(source));
-      let n = 1;
-      while (fs.existsSync(target)) {
-        target = path.join(paths.backgrounds, `${base}_${n}${ext}`);
-        n++;
-      }
-      fs.copyFileSync(source, target);
-      added.push(target);
+      const imported = importImageAsPng({
+        source,
+        targetDir: paths.backgrounds,
+        nativeImage,
+      });
+      if (imported.ok) added.push(imported.path);
+      else errors.push({ source, reason: imported.reason || "convert_failed" });
     }
-    return { added };
+    return { added, errors };
   });
 
   ipcMain.handle("shell:reveal", (_event, target) => {

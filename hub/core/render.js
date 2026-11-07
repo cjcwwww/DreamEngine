@@ -57,7 +57,7 @@ class RenderJob {
   }
 
   /**
-   * @param {{background?: string, limit?: number, autoClose?: boolean, rounds?: number, onlyPreset?: string}} [options]
+   * @param {{ae?: string, background?: string, limit?: number, autoClose?: boolean, rounds?: number, onlyPreset?: string}} [options]
    */
   start(options = {}) {
     if (this.running) return { ok: false, reason: "already_running" };
@@ -66,6 +66,7 @@ class RenderJob {
     }
 
     const args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", this.script];
+    if (options.ae) args.push("-AE", String(options.ae));
     if (options.background) args.push("-Background", String(options.background));
     if (options.limit) args.push("-Limit", String(Number(options.limit) || 40));
     if (options.rounds) args.push("-Rounds", String(Number(options.rounds) || 40));

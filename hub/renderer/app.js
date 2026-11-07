@@ -6,6 +6,7 @@
  * ============================================================ */
 
 const $ = (id) => document.getElementById(id);
+const RENDER_AE_KEY = "dreamengine.renderAePath.v1";
 
 const state = {
   snapshot: null,
@@ -719,8 +720,42 @@ async function refreshAeState() {
   state.snapshot = snap;
   paintAe(snap.ae);
   paintPluginEffectAe(snap.ae);
+  syncAeVersionSelectors(snap);
   fillSettings(snap);
   return snap;
+}
+
+function syncAeVersionSelectors(snap) {
+  const installed = (snap && snap.ae && snap.ae.installed) || [];
+  let selected = localStorage.getItem(RENDER_AE_KEY) || "";
+  const available = new Set(installed.map((item) => item.exe));
+  if (selected && !available.has(selected)) {
+    selected = "";
+    localStorage.removeItem(RENDER_AE_KEY);
+  }
+  for (const select of document.querySelectorAll(".ae-version-select")) {
+    select.textContent = "";
+    const auto = document.createElement("option");
+    auto.value = "";
+    auto.textContent = installed.length ? "自动（最高版本）" : "未检测到 After Effects";
+    select.appendChild(auto);
+    for (const item of installed) {
+      const option = document.createElement("option");
+      option.value = item.exe;
+      option.textContent = `${item.name} (${item.version})`;
+      select.appendChild(option);
+    }
+    select.value = selected;
+  }
+}
+
+function selectRenderAe(value, source) {
+  const next = String(value || "");
+  if (next) localStorage.setItem(RENDER_AE_KEY, next);
+  else localStorage.removeItem(RENDER_AE_KEY);
+  for (const select of document.querySelectorAll(".ae-version-select")) {
+    if (select !== source) select.value = next;
+  }
 }
 
 async function pullLog() {
@@ -746,6 +781,7 @@ function stopPolling() {
 async function startRender(overrides) {
   const extra = overrides || {};
   const options = {
+    ae: $("renderAeVersion").value,
     background: $("background").value,
     limit: Number($("limit").value) || 40,
     rounds: Number($("rounds").value) || 40,
@@ -859,9 +895,9 @@ function stopPluginEffectPolling() {
 }
 
 async function startPluginEffects() {
-  if (!state.snapshot || !state.snapshot.ae.exe) return;
+  if (!state.snapshot || !state.snapshot.ae.installed.length) return;
   const options = {
-    ae: state.snapshot.ae.exe,
+    ae: $("pluginEffectAeVersion").value,
     background: $("pluginEffectBackground").value || "",
     limit: Number($("pluginEffectLimit").value) || 8,
     rounds: Number($("pluginEffectRounds").value) || 200,
@@ -1050,11 +1086,18 @@ function bind() {
     select.value = select.dataset.previous || "photo";
     const result = await window.hub.addBackground();
     const added = result.added || [];
-    if (!added.length) return;
+    const errors = result.errors || [];
+    if (!added.length) {
+      setStatus(errors.length ? "图片无法解码为 PNG，未添加背景" : "未添加背景", true);
+      return;
+    }
     await fillBackgrounds();
     select.value = added[0];
     select.dataset.previous = added[0];
-    setStatus(`已添加背景：${added[0].split(/[\\/]/).pop()}`);
+    setStatus(
+      `已转换为 PNG：${added[0].split(/[\\/]/).pop()}` +
+        (errors.length ? `；${errors.length} 个文件失败` : ""),
+    );
   });
 
   $("pluginEffectBackground").addEventListener("change", async (event) => {
@@ -1066,11 +1109,18 @@ function bind() {
     select.value = select.dataset.previous || "";
     const result = await window.hub.addBackground();
     const added = result.added || [];
-    if (!added.length) return;
+    const errors = result.errors || [];
+    if (!added.length) {
+      setStatus(errors.length ? "图片无法解码为 PNG，未添加背景" : "未添加背景", true);
+      return;
+    }
     await fillPluginEffectBackgrounds();
     select.value = added[0];
     select.dataset.previous = added[0];
-    setStatus(`已添加背景：${added[0].split(/[\\/]/).pop()}`);
+    setStatus(
+      `已转换为 PNG：${added[0].split(/[\\/]/).pop()}` +
+        (errors.length ? `；${errors.length} 个文件失败` : ""),
+    );
   });
 
   $("btnStart").addEventListener("click", startRender);
@@ -1083,6 +1133,12 @@ function bind() {
   $("btnPluginEffectLog").addEventListener("click", () => {
     if (state.snapshot) window.hub.reveal(state.snapshot.paths.probe);
   });
+
+  for (const select of document.querySelectorAll(".ae-version-select")) {
+    select.addEventListener("change", (event) => {
+      selectRenderAe(event.target.value, event.target);
+    });
+  }
 
   $("btnOpenExt").addEventListener("click", () => window.hub.reveal($("setExtDir").textContent));
   $("btnOpenPresets").addEventListener("click", () => window.hub.reveal($("setPresets").textContent));
