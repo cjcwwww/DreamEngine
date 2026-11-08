@@ -324,12 +324,6 @@
 
   <section class="materials-view" id="viewMaterials" hidden aria-label="素材库" data-i18n-aria="materials.aria">
     <aside class="materials-sidebar">
-      <h2 class="sidebar-title" data-i18n="materials.title">素材库</h2>
-      <div class="materials-actions">
-        <button class="action-button primary" id="btnMaterialRoot" type="button" data-i18n="materials.chooseRoot">选择素材目录</button>
-        <button class="action-button" id="btnMaterialRefresh" type="button" data-i18n="materials.refresh">刷新</button>
-      </div>
-      <p class="materials-root" id="materialRoot"></p>
       <ul class="category-list" id="materialCategories"></ul>
     </aside>
     <div class="sidebar-resizer" data-sidebar-resizer data-sidebar-kind="materials"
@@ -337,11 +331,31 @@
          aria-label="调整分类栏宽度" data-i18n-aria="sidebar.resize"></div>
     <main class="materials-main">
       <div class="materials-head">
-        <span class="materials-summary" id="materialSummary"></span>
+        <nav class="material-breadcrumb" id="materialBreadcrumb" aria-label="素材库"
+             data-i18n-aria="materials.aria"></nav>
+        <div class="materials-head-actions">
+          <button class="icon-button" id="btnMaterialChangeRoot" type="button"
+                  title="更换素材目录" aria-label="更换素材目录"
+                  data-i18n-title="materials.changeRoot" data-i18n-aria="materials.changeRoot">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            </svg>
+          </button>
+          <button class="icon-button" id="btnMaterialRefresh" type="button"
+                  title="刷新" aria-label="刷新"
+                  data-i18n-title="materials.refreshTitle" data-i18n-aria="materials.refreshTitle">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 12a8 8 0 0 1 13.7-5.7L20 8.5"/>
+              <path d="M20 4.5v4h-4"/>
+              <path d="M20 12a8 8 0 0 1-13.7 5.7L4 15.5"/>
+              <path d="M4 19.5v-4h4"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="grid materials-grid" id="materialGrid"></div>
       <div class="empty-state" id="materialEmpty" hidden>
-        <strong data-i18n="materials.empty">当前分类没有素材</strong>
+        <strong id="materialEmptyText" data-i18n="materials.empty">当前分类没有素材</strong>
       </div>
     </main>
   </section>

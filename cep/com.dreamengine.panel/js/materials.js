@@ -3,6 +3,13 @@
  *
  * CEP 只负责分类、卡片和媒体预览；目录扫描与 AE 导入全部走
  * engine/materials.jsx。
+ *
+ * 扫描层返回的是「递归扫描后的扁平 items」，每条带绝对 path。目录树完全
+ * 在 UI 层从 path 派生：以 root 为基准按 "/" 切分，去掉最后一段文件名，
+ * 剩下的就是各级文件夹。这样不需要扫描层额外返回目录节点，也不动 jsx。
+ *
+ * 语法：ES5（CEP 11 的老 CEF）：只用 var / function，不用箭头函数、
+ * 模板字符串、let/const、可选链。
  * ============================================================ */
 
 var AEV_MaterialsUI = (function () {
@@ -10,6 +17,7 @@ var AEV_MaterialsUI = (function () {
     lang: "zh",
     items: [],
     root: "",
+    dir: "",
     category: "all",
     favoritesOnly: false,
     query: "",
@@ -23,6 +31,112 @@ var AEV_MaterialsUI = (function () {
 
   function byId(id) { return document.getElementById(id); }
   function L(key, args) { return AEV_t(key, state.lang, args); }
+
+  /* ---------- 路径工具：ExtendScript 给的是 "/" 分隔的绝对路径 ---------- */
+
+  function normPath(path) {
+    return String(path || "").replace(/\\/g, "/").replace(/\/+$/, "");
+  }
+
+  function pathKey(path) { return normPath(path).toLowerCase(); }
+
+  function isUnder(path, dir) {
+    return pathKey(path).indexOf(pathKey(dir) + "/") === 0;
+  }
+
+  function baseName(path) {
+    var parts = normPath(path).split("/");
+    return parts[parts.length - 1] || normPath(path);
+  }
+
+  function joinPath(dir, name) { return normPath(dir) + "/" + name; }
+
+  /* ---------- 从扁平 items 派生目录树 ----------
+   * dirs        : 所有「有素材后代」的目录（含 root），刷新后用来校验当前目录
+   * folderCounts: 每个目录下（递归）的素材数
+   * direct      : 当前目录下的直接素材（不含子目录）
+   * folders     : 当前目录下的直接子文件夹（含递归素材数），空文件夹不会出现
+   */
+  function buildTree() {
+    var root = normPath(state.root);
+    var dir = normPath(state.dir) || root;
+    var dirKey = pathKey(dir);
+    var dirs = {};
+    var folderCounts = {};
+    var childMap = {};
+    var direct = [];
+    if (root) dirs[pathKey(root)] = true;
+
+    for (var i = 0; i < state.items.length; i++) {
+      var item = state.items[i];
+      var full = normPath(item.path);
+      if (!root || !isUnder(full, root)) continue;
+      var parts = full.substring(root.length + 1).split("/");
+      if (!parts.length) continue;
+      parts.pop();
+
+      var parent = root;
+      var k;
+      for (k = 0; k < parts.length; k++) {
+        parent = joinPath(parent, parts[k]);
+        dirs[pathKey(parent)] = true;
+        folderCounts[pathKey(parent)] = (folderCounts[pathKey(parent)] || 0) + 1;
+      }
+
+      if (pathKey(parent) === dirKey) {
+        direct.push(item);
+      } else if (isUnder(parent, dir)) {
+        var childName = parent.substring(dir.length + 1).split("/")[0];
+        if (!childName) continue;
+        var childPath = joinPath(dir, childName);
+        var childKey = pathKey(childPath);
+        if (!childMap[childKey]) childMap[childKey] = { name: childName, path: childPath };
+      }
+    }
+
+    var folders = [];
+    for (var key in childMap) {
+      if (childMap.hasOwnProperty(key)) {
+        folders.push({
+          name: childMap[key].name,
+          path: childMap[key].path,
+          count: folderCounts[key] || 0
+        });
+      }
+    }
+    folders.sort(function (a, b) {
+      return pathKey(a.path) < pathKey(b.path) ? -1 : 1;
+    });
+
+    return { dirs: dirs, direct: direct, folders: folders };
+  }
+
+  /** 刷新后保留当前目录；若已不存在，逐级回退到最近一个仍存在的上级，最后回根。 */
+  function resolveDir(dirs) {
+    var root = normPath(state.root);
+    if (!root) { state.dir = ""; return false; }
+    var rootKey = pathKey(root);
+    var candidate = normPath(state.dir) || root;
+    var before = pathKey(state.dir);
+
+    if (pathKey(candidate) !== rootKey &&
+        pathKey(candidate).indexOf(rootKey + "/") !== 0) {
+      state.dir = root;
+      return pathKey(state.dir) !== before;
+    }
+    while (true) {
+      if (dirs[pathKey(candidate)]) {
+        state.dir = candidate;
+        return pathKey(state.dir) !== before;
+      }
+      if (pathKey(candidate) === rootKey) break;
+      var at = candidate.lastIndexOf("/");
+      if (at < rootKey.length) break;
+      candidate = candidate.substring(0, at);
+    }
+    state.dir = root;
+    return pathKey(state.dir) !== before;
+  }
 
   function run(expr, callback) {
     if (!state.extensionPath) {
@@ -68,19 +182,19 @@ var AEV_MaterialsUI = (function () {
     return out;
   }
 
-  function categoryRows() {
+  function categoryRows(tree) {
     var counts = {
       favorites: 0,
-      all: state.items.length,
+      all: tree.direct.length,
       video: 0,
       image: 0,
       audio: 0,
       project: 0
     };
-    for (var i = 0; i < state.items.length; i++) {
-      var type = state.items[i].type;
+    for (var i = 0; i < tree.direct.length; i++) {
+      var type = tree.direct[i].type;
       if (counts[type] !== undefined) counts[type]++;
-      if (isFavorite(state.items[i].path)) counts.favorites++;
+      if (isFavorite(tree.direct[i].path)) counts.favorites++;
     }
     return [
       { id: "__favorites__", label: L("favorites.filter"), count: counts.favorites },
@@ -92,11 +206,11 @@ var AEV_MaterialsUI = (function () {
     ];
   }
 
-  function renderCategories() {
+  function renderCategories(tree) {
     var list = byId("materialCategories");
     if (!list) return;
     list.textContent = "";
-    var rows = categoryRows();
+    var rows = categoryRows(tree);
     for (var i = 0; i < rows.length; i++) {
       (function (row) {
         var li = document.createElement("li");
@@ -125,17 +239,18 @@ var AEV_MaterialsUI = (function () {
     return node;
   }
 
-  function visibleItems() {
+  /** 搜索只在当前目录的直接素材里做，不穿透子目录。 */
+  function visibleItems(tree) {
     var query = state.query.toLowerCase();
     var out = [];
-    for (var i = 0; i < state.items.length; i++) {
-      var item = state.items[i];
+    for (var i = 0; i < tree.direct.length; i++) {
+      var item = tree.direct[i];
       if (state.category !== "all" && item.type !== state.category) {
         continue;
       }
       if (state.favoritesOnly && !isFavorite(item.path)) continue;
       if (query) {
-        var haystack = String(item.name + " " + item.path + " " + item.type).toLowerCase();
+        var haystack = String(item.name + " " + item.type).toLowerCase();
         if (haystack.indexOf(query) < 0) continue;
       }
       out.push(item);
@@ -143,18 +258,146 @@ var AEV_MaterialsUI = (function () {
     return out;
   }
 
-  function renderCards() {
+  /* ---------- 面包屑 ---------- */
+  function renderBreadcrumb() {
+    var nav = byId("materialBreadcrumb");
+    if (!nav) return;
+    nav.textContent = "";
+    var root = normPath(state.root);
+    if (!root) {
+      var none = document.createElement("span");
+      none.className = "material-crumb current";
+      none.textContent = L("materials.noRoot");
+      nav.appendChild(none);
+      return;
+    }
+
+    /* 首段是根目录的文件夹名（不是完整路径），完整路径放在 title 里。 */
+    var segments = [{ label: baseName(root), path: root, title: root }];
+    var dir = normPath(state.dir) || root;
+    if (pathKey(dir) !== pathKey(root)) {
+      var parts = dir.substring(root.length + 1).split("/");
+      var acc = root;
+      for (var i = 0; i < parts.length; i++) {
+        acc = joinPath(acc, parts[i]);
+        segments.push({ label: parts[i], path: acc, title: acc });
+      }
+    }
+
+    /* 层级过多：中间折成 "…"，首段与末段始终可见。 */
+    var shown = segments;
+    if (segments.length > 4) {
+      shown = [segments[0], null, segments[segments.length - 1]];
+    }
+
+    for (var j = 0; j < shown.length; j++) {
+      if (j > 0) {
+        nav.appendChild(textNode("span", "material-crumb-sep", "›"));
+      }
+      var seg = shown[j];
+      if (seg === null) {
+        var hidden = [];
+        for (var h = 1; h < segments.length - 1; h++) hidden.push(segments[h].label);
+        var dots = textNode("span", "material-crumb-ellipsis", "…");
+        dots.title = hidden.join(" › ");
+        nav.appendChild(dots);
+        continue;
+      }
+      var isLast = j === shown.length - 1;
+      var node;
+      if (isLast) {
+        /* 当前层：纯文本，不是链接，也不可点。 */
+        node = document.createElement("span");
+        node.className = "material-crumb current";
+      } else {
+        node = document.createElement("button");
+        node.type = "button";
+        node.className = "material-crumb";
+        (function (target, button) {
+          button.addEventListener("click", function () {
+            state.dir = target;
+            state.selectedPath = "";
+            render();
+          });
+        })(seg.path, node);
+      }
+      node.textContent = seg.label;
+      if (seg.title) node.title = seg.title;
+      nav.appendChild(node);
+    }
+  }
+
+  function renderCards(tree) {
     var grid = byId("materialGrid");
     var empty = byId("materialEmpty");
     if (!grid) return;
     pauseAll();
     grid.textContent = "";
-    var items = visibleItems();
-    for (var i = 0; i < items.length; i++) {
+    var items = visibleItems(tree);
+    var searching = !!state.query;
+    var i;
+    if (!searching) {
+      for (i = 0; i < tree.folders.length; i++) {
+        grid.appendChild(makeFolderCard(tree.folders[i]));
+      }
+    }
+    for (i = 0; i < items.length; i++) {
       grid.appendChild(makeCard(items[i]));
     }
-    grid.hidden = items.length === 0;
-    if (empty) empty.hidden = items.length !== 0;
+    var total = grid.children.length;
+    grid.hidden = total === 0;
+    if (empty) {
+      empty.hidden = total !== 0;
+      if (total === 0) {
+        var strong = byId("materialEmptyText") || empty.querySelector("strong");
+        var folderIsEmpty = !searching &&
+          tree.folders.length === 0 && tree.direct.length === 0;
+        var key = folderIsEmpty ? "materials.emptyFolder" : "materials.empty";
+        if (strong) {
+          strong.setAttribute("data-i18n", key);
+          strong.textContent = L(key);
+        }
+      }
+    }
+  }
+
+  /** 文件夹卡片复用 .material-card 骨架，因此天然遵循 --view-size 与网格布局。 */
+  function makeFolderCard(folder) {
+    var card = document.createElement("article");
+    card.className = "material-card folder";
+    card.setAttribute("data-path", folder.path);
+    if (state.selectedPath && AEV_Prefs.pathKey(state.selectedPath) === AEV_Prefs.pathKey(folder.path)) {
+      card.className += " selected";
+    }
+    card.title = folder.path;
+
+    var preview = document.createElement("div");
+    preview.className = "material-preview";
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("class", "material-folder-icon");
+    svg.setAttribute("aria-hidden", "true");
+    var shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    shape.setAttribute("d", "M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2h9A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z");
+    svg.appendChild(shape);
+    preview.appendChild(svg);
+    card.appendChild(preview);
+
+    var body = document.createElement("div");
+    body.className = "material-card-body";
+    body.appendChild(textNode("div", "material-name", folder.name));
+    body.appendChild(textNode("div", "material-meta", L("materials.folderItems", [folder.count])));
+    card.appendChild(body);
+
+    card.addEventListener("click", function () {
+      selectCard(folder.path);
+    });
+    card.addEventListener("dblclick", function () {
+      state.dir = folder.path;
+      state.selectedPath = "";
+      render();
+    });
+    return card;
   }
 
   function makeCard(item) {
@@ -348,15 +591,11 @@ var AEV_MaterialsUI = (function () {
   }
 
   function render() {
-    renderCategories();
-    renderCards();
-    var root = byId("materialRoot");
-    if (root) root.textContent = state.root || L("materials.noRoot");
-    var summary = byId("materialSummary");
-    if (summary) {
-      if (!state.root) summary.textContent = L("materials.noRoot");
-      else summary.textContent = L("materials.summary", [state.items.length, visibleItems().length]);
-    }
+    var tree = buildTree();
+    if (resolveDir(tree.dirs)) tree = buildTree();
+    renderBreadcrumb();
+    renderCategories(tree);
+    renderCards(tree);
   }
 
   function pauseAll() {
@@ -380,7 +619,8 @@ var AEV_MaterialsUI = (function () {
       var data = parseResult(text);
       if (data && data.status !== "error" && data.items) {
         state.items = normalizeItems(data.items);
-        state.root = data.root || "";
+        state.root = normPath(data.root || "");
+        state.dir = state.root;
         state.loaded = true;
       } else if (data && data.status === "error") {
         setStatus(L("materials.readFailed", [data.reason || ""]), true);
@@ -389,6 +629,7 @@ var AEV_MaterialsUI = (function () {
     });
   }
 
+  /** 换目录：复用 pickRoot 的逻辑，调用 AEV_Materials.pickRootJson()。 */
   function pickRoot() {
     run("AEV_Materials.pickRootJson()", function (text) {
       var data = parseResult(text);
@@ -398,13 +639,16 @@ var AEV_MaterialsUI = (function () {
         return;
       }
       state.items = normalizeItems(data.items);
-      state.root = data.root || "";
+      state.root = normPath(data.root || "");
+      state.dir = state.root;
+      state.selectedPath = "";
       state.loaded = true;
       setStatus(L("materials.scanned", [state.items.length]), false);
       render();
     });
   }
 
+  /** 刷新：scanJson(root)；state.dir 不变，由 render() 里的 resolveDir 校验并回退。 */
   function refresh() {
     if (!state.root) {
       pickRoot();
@@ -431,9 +675,9 @@ var AEV_MaterialsUI = (function () {
   }
 
   function bind() {
-    var pick = byId("btnMaterialRoot");
+    var changeRoot = byId("btnMaterialChangeRoot");
     var refreshButton = byId("btnMaterialRefresh");
-    if (pick) pick.addEventListener("click", pickRoot);
+    if (changeRoot) changeRoot.addEventListener("click", pickRoot);
     if (refreshButton) refreshButton.addEventListener("click", refresh);
   }
 
@@ -459,7 +703,7 @@ var AEV_MaterialsUI = (function () {
     var next = String(value === undefined || value === null ? "" : value);
     if (next === state.query) return;
     state.query = next;
-    if (state.loaded) renderCards();
+    if (state.loaded) render();
   }
 
   function getQuery() {

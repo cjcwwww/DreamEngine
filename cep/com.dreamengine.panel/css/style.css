@@ -1905,26 +1905,6 @@ main {
   overflow-y: auto;
 }
 
-.materials-actions {
-  display: grid;
-  gap: 7px;
-  margin-bottom: 12px;
-}
-
-.materials-actions .action-button {
-  width: 100%;
-  justify-content: center;
-}
-
-.materials-root {
-  min-height: 28px;
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
 .materials-main {
   display: flex;
   min-width: 0;
@@ -1935,21 +1915,108 @@ main {
   overflow-y: auto;
 }
 
+/* 右栏顶部一行：左边面包屑，右边换目录 / 刷新两个小图标。 */
 .materials-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  min-height: 30px;
   margin-bottom: 12px;
 }
 
-.materials-summary {
-  color: var(--muted);
-  font-size: 11px;
+.materials-head-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+}
+
+.material-breadcrumb {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
   white-space: nowrap;
+}
+
+.material-crumb {
+  min-width: 0;
+  max-width: 150px;
+  padding: 2px 5px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.material-crumb:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.material-crumb-sep,
+.material-crumb-ellipsis {
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.material-crumb-ellipsis {
+  padding: 0 2px;
+  cursor: default;
+}
+
+.material-crumb.current {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.material-crumb.current:hover {
+  background: transparent;
 }
 
 .materials-grid {
   align-content: start;
+}
+
+/* 文件夹卡片复用 .material-card 骨架：与素材卡片同宽、同网格、同尺寸滑杆。
+   --view-size 由底栏滑块写到 documentElement，.grid 已经消费它。 */
+.material-card.folder {
+  cursor: pointer;
+}
+
+.material-card.folder .material-preview {
+  background: var(--surface-2);
+}
+
+.material-folder-icon {
+  width: 40%;
+  max-width: 48px;
+  height: auto;
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.material-card.folder:hover .material-folder-icon {
+  stroke: var(--text);
+}
+
+.material-card.folder .material-meta {
+  color: var(--accent);
 }
 
 .material-card {
@@ -1959,6 +2026,7 @@ main {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  transition: border-color 0.12s ease;
 }
 
 .material-preview {
@@ -1981,13 +2049,21 @@ main {
   transition: border-color 0.12s ease;
 }
 
-.material-card.selected .material-preview::after {
+/* 选中态：白框跟着整张卡片（含名称）走，半径与卡片自身边框一致。
+   不能只用 inset box-shadow：inset 阴影画在背景层，会被铺满卡片的缩略图盖住（实测“框被挡在后面”）。
+   用一个覆盖在子元素之上的伪元素画边框，z-index 低于收藏星标（5），pointer-events: none 不影响点击。 */
+.material-card.selected {
   border-color: rgba(255, 255, 255, 0.94);
 }
 
-.material-card.selected .material-preview {
-  outline: 1px solid rgba(255, 255, 255, 0.94);
-  outline-offset: -1px;
+.material-card.selected::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 .material-preview img,

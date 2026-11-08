@@ -104,6 +104,10 @@ var AEV_I18N = {
   "materials.addedToComp": ["已把「{0}」加到当前合成 {1} 秒", "Added “{0}” to the current comp at {1}s"],
   "materials.importFailed": ["导入失败：{0}", "Import failed: {0}"],
   "materials.noComp": ["素材已导入项目，但 AE 里没有打开的合成", "Imported into the project, but no composition is open"],
+  "materials.changeRoot": ["更换素材目录", "Change media folder"],
+  "materials.refreshTitle": ["刷新", "Refresh"],
+  "materials.folderItems": ["{0} 项", "{0} items"],
+  "materials.emptyFolder": ["这个文件夹里没有素材", "No materials in this folder"],
 
   /* ---------- 曲线视图 ---------- */
   "curve.aria": ["曲线编辑", "Curve editor"],
