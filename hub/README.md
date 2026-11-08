@@ -16,6 +16,16 @@ npm run test:package
 npm run test:release
 ```
 
+## 测试
+
+```powershell
+npm test          # Node 22+ 内置 test runner，无需 Electron / After Effects
+```
+
+测试只覆盖不依赖 GUI 的纯逻辑：路径与目录解析、插件目录 / 外部预设索引、效果库合并
+与取消渲染、渲染任务的 spawn 参数、AE 侧 `plugin_state.jsx` / `viewmodel.js` 的纯函数。
+全部使用临时目录，不读写真实用户数据。
+
 ## 离线预设渲染
 
 - 默认每个专用 AE 实例连续处理最多 40 条预设。

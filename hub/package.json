@@ -9,6 +9,7 @@
   "scripts": {
     "start": "electron .",
     "selftest": "electron . --selftest",
+    "test": "node --test \"test/*.test.js\"",
     "build:resources": "node ../tools/prepare_hub_bundle.mjs",
     "pack": "node ../tools/build_hub.mjs --dir",
     "dist": "node ../tools/build_hub.mjs --win nsis",
