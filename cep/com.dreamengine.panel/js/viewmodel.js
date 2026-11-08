@@ -117,24 +117,35 @@ var AEV_ViewModel = (function () {
   }
 
   /**
-   * 一个效果是否应当被整体排除。
+   * 判定一个效果被整体排除的原因键（空串 = 不排除）。
    *
    * 合并了三处判断（面板、离线清单生成、批量渲染共用这一份）：
-   *   · Pseudo/ 占位项
-   *   · 已过时（_Obsolete / 过时）
-   *   · AE 里没有分类的效果（分类字段为空）—— 它们在 AE 菜单里没有归属，
-   *     预览墙的左侧分类栏也放不下，只能落进「未分类」这一堆，没有意义
-   *   · 渲不出有意义结果的一批（3D 通道、弹框类、挂起类、CS 旧命名）
+   *   · "Pseudo/" 占位项                     -> "pseudo"
+   *   · 已过时（_Obsolete / 过时）            -> "obsolete"
+   *   · AE 里没有分类的效果（分类字段为空）   -> "no_category"
+   *     —— 它们在 AE 菜单里没有归属，预览墙的左侧分类栏也放不下，
+   *        只能落进「未分类」这一堆，没有意义
+   *   · 渲不出有意义结果的一批               -> "poor_preview"
+   *     （3D 通道、弹框类、挂起类、CS 旧命名）
+   *
+   * 原因键同时写进 AE 侧扫描出的 plugin_effect_catalog.tsv，Hub 用它给
+   * 不可选行显示原因，所以键名是接口的一部分，不要改。
    */
-  function isExcludable(effect) {
+  function excludeReason(effect) {
     var matchName = String((effect && effect.matchName) || "");
     var category = String((effect && effect.category) || "");
-    if (matchName.indexOf("Pseudo/") === 0) return true;
-    if (/Obsolete|过时/i.test(category)) return true;
+    if (matchName.indexOf("Pseudo/") === 0) return "pseudo";
+    if (/Obsolete|过时/i.test(category)) return "obsolete";
     // AE 对一批效果不返回分类（实测 97 个，多是 ADBE CM * 与 3D 通道族）。
     // 用户明确要求「未分类的效果不要」，这里直接排除。
-    if (!trimText(category)) return true;
-    return isPoorPreviewTarget(effect);
+    if (!trimText(category)) return "no_category";
+    if (isPoorPreviewTarget(effect)) return "poor_preview";
+    return "";
+  }
+
+  /** 一个效果是否应当被整体排除（保持旧行为：等价于 excludeReason 非空） */
+  function isExcludable(effect) {
+    return excludeReason(effect) !== "";
   }
 
   /** 生成优先级：数值越小越先渲 */
@@ -461,6 +472,7 @@ var AEV_ViewModel = (function () {
   return {
     isNoPreview: isNoPreview,
     isPoorPreviewTarget: isPoorPreviewTarget,
+    excludeReason: excludeReason,
     isExcludable: isExcludable,
     isBuiltinEffect: isBuiltinEffect,
     previewRank: previewRank,
