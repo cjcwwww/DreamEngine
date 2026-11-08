@@ -24,6 +24,49 @@ npm run test:release
 - 超时下限为 240 秒，并会按每条 30 秒自动放大，避免大批次被误判超时。
 - 动态预设按 6 fps 抽取，最多保留 36 帧；面板按真实源时长播放，不再压缩成 0.5 秒快放。
 
+## 选择性预览渲染
+
+- 插件效果目录扫描：`tools/generate_plugin_effects.ps1 -CatalogOnly`，产物是
+  `DreamEngineProbe/plugin_effect_catalog.tsv` + `.meta.json`，只读清单、不渲染。
+- AE 外部预设索引：Hub 读取所选 AE 的 `Support Files\Presets` 和
+  `文档\Adobe\After Effects <年份>\User Presets`，写
+  `DreamEngineProbe/preset_catalog.json`；只建索引、不复制 `.ffx`。
+  预设页的「同步 AE 预设」可手动刷新，左侧分类栏按来源文件夹分组；
+  勾选外部预设后通过 `-PresetList` 渲染。
+- 只渲染所选效果：Hub 写 `DreamEngineProbe/next_plugin_batch.tsv`（`matchName \t frames \t plugin`），
+  再调用 `-Todo <file>`；`-Force` 表示忽略已生成/黑名单并重渲所选。
+- 只渲染所选预设：Hub 写 `DreamEngineProbe/next_preset_selection.tsv`（每行一个绝对路径），
+  再调用 `generate_plugin_presets.ps1 -PresetList <file> [-Force]`。
+- 文本 / 变换 / 蒙版类 AE 预设不新增效果，「是否应用成功」不能只数效果：
+  引擎同时统计整树关键帧、Text Animator、蒙版数与图层数；落错层时先换合成里的
+  文本层，再退回「文字」素材重试一次（Text 分类 300 条曾全被误判为失败）。
+- `no_effect`（预设类型落不上）与 `render_error`（渲染报错）分开记入黑名单；
+  `-RetryFailed` 会同时清理这两种记录，避免逻辑问题把预设永久藏起来。
+- 离线渲染的中间帧固定在 `%TEMP%\DreamEnginePluginRunner\template_out\`，模板队列项
+  本身不参与渲染（只给 duplicate 继承输出设置），每轮开始先清残留；成品帧渲染前也会
+  清同名旧帧与 `_raw_` 中间帧，避免 AE 弹「文件已存在，是否覆盖」。
+- 选择模式不会写 `plugin_auto_catalog.enabled`，避免 JSX 重建清单覆盖用户选择。
+
+## 效果库
+
+- 效果库只读合并四份数据，不写任何索引文件：
+  - `data/manifest.json`：面板 L1 内置效果预览（8×8 拼图，含单帧静图条目）；
+  - `data/plugin_manifest.json`：Hub 离线生成的插件效果预览（1×N 单行拼图）；
+  - `DreamEngineProbe/plugin_effect_catalog.tsv`：AE 扫描到的第三方插件条目与分类；
+    其中可渲染（非 excluded / noPreview）但没有预览的条目以「待渲染」占位卡片出现；
+  - `data/names.json`：双语名称与 AE 分类（内置效果的分类来源）。
+- 顺序：内置按 `manifest.items` 顺序在前，插件按目录 TSV 行序在后；左侧按来源分组
+  （AE 内置 / BCC / Sapphire / Red Giant / RE:Vision / Video Copilot / 其它插件），
+  组头可展开折叠（状态存 `dreamengine.hub.effectGroupCollapsed.v1`），组内分类保持 AE 首次出现顺序。
+- 归类以名字表 + AE 分类为准：`names.json` 里 `pluginHint` 为「内置」的目录条目，以及
+  插件未知（其它插件）但落在 AE 内置分类（`沉浸式视频`、`生成` 等）里的条目，都归回
+  「AE 内置」分组 —— 扫描的 matchName 前缀启发式会漏判 Keylight、VISINF 颗粒、
+  Mettle VR 效果等 AE 自带/随附效果，不算第三方插件。
+- 分类栏只读（不支持新建/重命名）；「同步 AE 分类」复用
+  `generate_plugin_effects.ps1 -CatalogOnly`，只刷新 `plugin_effect_catalog.tsv`，不渲染。
+- 卡片用 CSS 背景百分比裁切精灵图（公式与面板 `js/viewmodel.js` 的 `spriteSlice` 一致），
+  内置条目取 8×8 整网的格子、插件条目取单行 8 格中的一格；有预览的动图悬停按 12 fps 播放帧序列。
+
 ## 持久构建缓存
 
 默认位置：
