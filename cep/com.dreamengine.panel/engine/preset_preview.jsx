@@ -13,6 +13,10 @@
 //   · 含第三方插件效果的预设在面板里**跳过**（面板与 AE 同进程），
 //     改由 tools/run_plugin_preset_preview.jsx 在专用 AE 实例里逐条隔离渲染；
 //     传 options.allowPlugins=true 即放行
+//   · 文本 / 变换 / 蒙版类预设不产生效果，靠 Text Animator 或属性关键帧表达；
+//     落在非文本层上 AE 会静默无效。先按 .ffx 内容识别纯文本预设直接落文本层；
+//     其余情况应用前后没变化时再换文本层、退回「文字」素材重试一次
+//     （2025 实测：Text 分类 300 条全被误判失败，360 度循环还会因蒙版误判成静态）
 //   · 索引写独立的 data/preset_manifest.json，不碰 L1 的 manifest.json
 //     （后者会被引擎 writeManifest 整份重写）
 //
@@ -199,31 +203,123 @@ var AEV_PresetPreview = (function () {
         }
     }
 
-    /** 统计效果数与含关键帧的属性数（判断预设有没有真的落上去） */
+    /**
+     * 预设落点快照：效果数 / 效果参数关键帧 / 整棵属性树关键帧 /
+     * 文本动画器组数 / 蒙版数 / 图层数。
+     *
+     * 为什么不能只数效果：AE 自带的文本、变换、蒙版类预设**不新增效果**，
+     * 而是新增 Text Animator 或直接给属性打关键帧；只数效果会把它们
+     * 误判成「没应用」。整树关键帧用 walkKeys 统计（只读 numKeys/keyTime）。
+     */
     function snapshot(comp) {
         var effects = 0, keyProps = 0;
+        var textAnimators = 0, masks = 0, layers = 0;
+        var keys = { min: 1e9, max: -1e9, keys: 0, count: 0 };
         walkLayerTree(comp, function (layer) {
+            layers++;
             var parade = null;
-            try { parade = layer.property("ADBE Effect Parade"); } catch (e3) { return; }
-            if (!parade) return;
-            var count = 0;
-            try { count = parade.numProperties; } catch (e4) { return; }
-            for (var e = 1; e <= count; e++) {
-                effects++;
-                var group = null;
-                try { group = parade.property(e); } catch (e5) { continue; }
-                if (!group) continue;
-                var sub = 0;
-                try { sub = group.numProperties; } catch (e6) { sub = 0; }
-                for (var p = 1; p <= sub; p++) {
-                    try {
-                        var prop = group.property(p);
-                        if (prop.numKeys && prop.numKeys > 0) keyProps++;
-                    } catch (e7) {}
+            try { parade = layer.property("ADBE Effect Parade"); } catch (e3) { parade = null; }
+            if (parade) {
+                var count = 0;
+                try { count = parade.numProperties; } catch (e4) { count = 0; }
+                for (var e = 1; e <= count; e++) {
+                    effects++;
+                    var group = null;
+                    try { group = parade.property(e); } catch (e5) { continue; }
+                    if (!group) continue;
+                    var sub = 0;
+                    try { sub = group.numProperties; } catch (e6) { sub = 0; }
+                    for (var p = 1; p <= sub; p++) {
+                        try {
+                            var prop = group.property(p);
+                            if (prop.numKeys && prop.numKeys > 0) keyProps++;
+                        } catch (e7) {}
+                    }
                 }
             }
+            // 文本动画器：文本预设的真正落点，不产生任何效果
+            try {
+                var textProps = layer.property("ADBE Text Properties");
+                if (textProps) {
+                    var animators = textProps.property("ADBE Text Animators");
+                    if (animators) textAnimators += Number(animators.numProperties) || 0;
+                }
+            } catch (e8) {}
+            // 蒙版：Paths / 形状类预设会加路径
+            try {
+                var maskParade = layer.property("ADBE Mask Parade");
+                if (maskParade) masks += Number(maskParade.numProperties) || 0;
+            } catch (e9) {}
+            // 整棵属性树的关键帧（含变换 / 文本 / 蒙版）
+            walkKeys(layer, 0, keys);
         });
-        return { effects: effects, keyProps: keyProps };
+        return {
+            effects: effects,
+            keyProps: keyProps,
+            allKeys: keys.keys,
+            textAnimators: textAnimators,
+            masks: masks,
+            layers: layers
+        };
+    }
+
+    /** 应用前后任意一项增加，就认为预设真的落上去了 */
+    function grew(before, after) {
+        return after.effects > before.effects ||
+            after.keyProps > before.keyProps ||
+            after.allKeys > before.allKeys ||
+            after.textAnimators > before.textAnimators ||
+            after.masks > before.masks ||
+            after.layers > before.layers;
+    }
+
+    /** 合成树里的全部文本层；返回时带上它真正的宿主合成 */
+    function textTargets(comp) {
+        var out = [];
+        walkLayerTree(comp, function (layer) {
+            var isText = false;
+            try { isText = (layer instanceof TextLayer); } catch (e) {}
+            if (!isText) return;
+            var owner = comp;
+            try { if (layer.containingComp) owner = layer.containingComp; } catch (e2) {}
+            out.push({ comp: owner, layer: layer });
+        });
+        return out;
+    }
+
+    /** 清空合成里的图层（换素材重试时用） */
+    function clearCompLayers(comp) {
+        var guard = 0;
+        try {
+            while (comp.numLayers > 0 && guard < 500) {
+                try { comp.layer(1).remove(); } catch (e) { break; }
+                guard++;
+            }
+        } catch (eOuter) {}
+    }
+
+    /**
+     * 从 .ffx（RIFX 二进制）判断预设类型。
+     *
+     * 只读 ASCII 片段、不解析 RIFX 结构；读不到文件时按「未知」处理，走旧的试探逻辑。
+     * textOnly = 有文本属性、没有效果参数组：这类预设不产生效果，落在合成层上
+     * 只会在蒙版上留下半套结果（实机：360 度循环 masks+1、keys 不变）。
+     */
+    function presetInfo(presetPath) {
+        var info = { textOnly: false, known: false };
+        try {
+            var file = new File(String(presetPath || ""));
+            file.encoding = "BINARY";
+            if (!file.open("r")) return info;
+            var data = file.read();
+            file.close();
+            if (!data) return info;
+            info.known = true;
+            var hasText = data.indexOf("ADBE Text Properties") >= 0;
+            var hasEffects = data.indexOf("ADBE Effect Parade") >= 0;
+            info.textOnly = hasText && !hasEffects;
+        } catch (e) {}
+        return info;
     }
 
     /**
@@ -346,6 +442,17 @@ var AEV_PresetPreview = (function () {
             } catch (e) {}
             if (!asset) return null;
             trash.comps.push(asset);
+            // 内置素材合成默认只有 1 秒；文本 / 动画类预设的关键帧常到 2~6 秒，
+            // 不延长的话嵌套层第 1 秒后整帧消失（实机：3D 向上翻转反射只剩前 6 帧）。
+            try {
+                var need = MAX_SPAN_SECONDS + 2;
+                if (Number(asset.duration) < need) {
+                    asset.duration = need;
+                    for (var ai = 1; ai <= asset.numLayers; ai++) {
+                        try { asset.layer(ai).outPoint = need; } catch (eOut) {}
+                    }
+                }
+            } catch (eDur) {}
             if (id === "text") {
                 var textBg = comp.layers.addSolid([0.07, 0.08, 0.09], "textBg", size, size, 1);
                 textBg.moveToEnd();
@@ -421,14 +528,18 @@ var AEV_PresetPreview = (function () {
         var rawFiles = [];
         var kept = [];
 
-        /** 清掉上一次的成品帧：帧数变少时残留高位帧会被面板误当有效帧 */
+        /** 清掉上一次的成品帧与残留中间帧：
+         *  帧数变少时残留高位帧会被面板误当有效帧；崩溃留下的 raw_####.png
+         *  会让下一次渲染弹「文件已存在，是否覆盖」。 */
         function clearKeptFrames() {
             var all = folder.getFiles();
             if (!all) return;
             var re = new RegExp("^" + baseName + "_\\d{4}\\.png$");
+            var reRaw = new RegExp("^" + baseName + "_raw_\\d{4}\\.png$");
             for (var i = 0; i < all.length; i++) {
                 if (!(all[i] instanceof File)) continue;
-                if (!re.test(String(all[i].name))) continue;
+                var pngName = String(all[i].name);
+                if (!re.test(pngName) && !reRaw.test(pngName)) continue;
                 try { all[i].remove(); } catch (e) {}
             }
         }
@@ -457,15 +568,75 @@ var AEV_PresetPreview = (function () {
             var bgLayer = backgroundInfo && backgroundInfo.layer;
             if (!bgLayer) return result("error", [["reason", "bad_background"]]);
 
-            var before = snapshot(comp);
-            try {
-                applyToTargets(backgroundInfo.targets, file);
-            } catch (eApply) {
-                return result("error", [["reason", "apply_failed"], ["detail", String(eApply)]]);
+            var effectiveBackground = background;
+            var attempts = [];
+            var lastError = "";
+
+            /** 在指定图层上应用一次，并对比应用前后的快照 */
+            function tryApply(targets, label) {
+                var before = snapshot(comp);
+                try {
+                    applyToTargets(targets, file);
+                } catch (eApply) {
+                    lastError = String(eApply);
+                    attempts.push(label + "|error|" + lastError);
+                    return false;
+                }
+                var after = snapshot(comp);
+                attempts.push(label +
+                    "|effects+" + (after.effects - before.effects) +
+                    "|keys+" + (after.allKeys - before.allKeys) +
+                    "|animators+" + (after.textAnimators - before.textAnimators) +
+                    "|masks+" + (after.masks - before.masks) +
+                    "|layers+" + (after.layers - before.layers));
+                return grew(before, after);
             }
-            var after = snapshot(comp);
-            if (after.effects <= before.effects && after.keyProps <= before.keyProps) {
-                return result("no_effect", [["reason", "preset_did_not_apply"]]);
+
+            var applied = false;
+
+            /**
+             * 凑到文本层上：场景里已有文本层就复用（保留用户选的背景），
+             * 没有就换「文字」专用素材。返回 true / false；null 表示没有可用的文本底。
+             */
+            function applyOnTextStage() {
+                var stageText = textTargets(comp);
+                if (stageText.length > 0) {
+                    return tryApply(stageText, "textLayers:" + effectiveBackground);
+                }
+                if (String(background) === "text" || effectiveBackground === "text") return null;
+                clearCompLayers(comp);
+                var textAsset = addBackground(comp, "text", size, trash);
+                if (!textAsset || !textAsset.targets || textAsset.targets.length === 0) return null;
+                effectiveBackground = "text";
+                return tryApply(textAsset.targets, "textAsset");
+            }
+
+            // 纯文本预设不产生效果，而且落在合成层上只会在蒙版上留半套结果
+            //（实机：360 度循环落到合成层后 masks+1、keys 不变，被误判成「已应用」，
+            //  最后只出一张静态图）。按 ffx 内容先把它直接落到文本层。
+            var preset = presetInfo(presetPath);
+            if (preset.textOnly) {
+                applied = applyOnTextStage() === true;
+            } else {
+                applied = tryApply(backgroundInfo.targets, "targets:" + effectiveBackground);
+                // 文本 / 变换 / 蒙版类预设不新增效果，落在错层上 AE 会静默无效
+                //（assets.jsx / presets.jsx 的实机结论）：再换文本层、文字素材重试一次。
+                if (!applied) {
+                    applied = applyOnTextStage() === true;
+                }
+            }
+            if (!applied) {
+                if (lastError) {
+                    return result("error", [
+                        ["reason", "apply_failed"],
+                        ["detail", lastError],
+                        ["attempts", attempts.join(" ;; ")]
+                    ]);
+                }
+                return result("no_effect", [
+                    ["reason", "preset_did_not_apply"],
+                    ["attempts", attempts.join(" ;; ")]
+                ]);
             }
 
             // 面板里默认不渲插件预设（面板和 AE 同进程，混渲会杀宿主）；
@@ -548,7 +719,7 @@ var AEV_PresetPreview = (function () {
                 ["duration", String(Math.round(span * 1000) / 1000)],
                 ["fps", String(FPS)],
                 ["truncated", truncated ? "true" : "false"],
-                ["background", background],
+                ["background", effectiveBackground],
                 ["plugins", plugins.join(",")],
                 ["files", kept.join(",")]
             ]);
