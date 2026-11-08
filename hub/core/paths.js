@@ -36,6 +36,8 @@ function createPaths(opts = {}) {
     presets: path.join(userRoot, "presets"),
     backgrounds: path.join(userRoot, "backgrounds"),
     presetCategories: path.join(userRoot, "preset_categories.json"),
+    /* 效果库收藏：按 matchName 持久化，升级安装同样不能清空 */
+    effectFavorites: path.join(userRoot, "effect_favorites.json"),
 
     /* 离线渲染的约定目录 */
     probe,
@@ -46,10 +48,23 @@ function createPaths(opts = {}) {
     pluginEffectState: path.join(probe, "plugin_effect_state.json"),
     pluginEffectLog: path.join(probe, "plugin_run.log"),
 
+    /* 选择性渲染：目录扫描与选择文件（与 tools/*.ps1、*.jsx 保持一致） */
+    pluginCatalog: path.join(probe, "plugin_effect_catalog.tsv"),
+    pluginCatalogMeta: path.join(probe, "plugin_effect_catalog.meta.json"),
+    presetCatalog: path.join(probe, "preset_catalog.json"),
+    pluginSelection: path.join(probe, "next_plugin_batch.tsv"),
+    presetSelection: path.join(probe, "next_preset_selection.tsv"),
+    pluginSelectionMarker: path.join(probe, "plugin_selection.enabled"),
+    pluginForceMarker: path.join(probe, "plugin_force.enabled"),
+    pluginCatalogOnlyMarker: path.join(probe, "plugin_catalog_only.enabled"),
+
     /* 面板读的三份索引 */
     presetManifest: path.join(dataDir, "preset_manifest.json"),
     presetPluginManifest: path.join(dataDir, "preset_plugin_manifest.json"),
     pluginManifest: path.join(dataDir, "plugin_manifest.json"),
+
+    /* 效果库的内置预览索引：面板写入的 L1 manifest.json（8×8 拼图） */
+    builtinManifest: path.join(dataDir, "manifest.json"),
     manifestXml: path.join(extDir, "CSXS", "manifest.xml"),
   };
 }

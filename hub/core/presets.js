@@ -10,6 +10,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const presetSources = require("./preset_sources");
 
 /** 统一成小写正斜杠路径做比较：Windows 下大小写与分隔符都会变 */
 function norm(p) {
@@ -46,38 +47,33 @@ function loadPreviewIndex(paths) {
 }
 
 /**
- * 列出预设库。
+ * 列出预设库（递归：与 tools/generate_plugin_presets.ps1 的 -Recurse 保持一致）。
  * @param {ReturnType<import("./paths").createPaths>} paths
  */
 function list(paths) {
   const index = loadPreviewIndex(paths);
-  let names = [];
+  let rootExists = false;
   try {
-    names = fs.readdirSync(paths.presets);
+    rootExists = fs.statSync(paths.presets).isDirectory();
   } catch {
-    return { folder: paths.presets, exists: false, items: [] };
+    rootExists = false;
   }
 
   const items = [];
-  for (const name of names) {
-    if (!/\.ffx$/i.test(name)) continue;
-    const full = path.join(paths.presets, name);
-    let stat;
-    try {
-      stat = fs.statSync(full);
-    } catch {
-      continue;
-    }
-    if (!stat.isFile()) continue;
-
-    const hit = index.get(norm(full));
+  const seen = new Set();
+  const addItem = (full, stat, extra) => {
+    const key = norm(full);
+    if (seen.has(key)) return;
+    seen.add(key);
+    const hit = index.get(key);
     const frameSrc = hit
       ? hit.frameSrc || String(hit.src || "").replace(/_0000\.png$/i, "_%04d.png")
       : "";
+    const fileName = path.basename(full);
     items.push({
       path: full,
-      fileName: name,
-      name: name.replace(/\.ffx$/i, ""),
+      fileName,
+      name: fileName.replace(/\.ffx$/i, ""),
       size: stat.size,
       mtime: stat.mtimeMs,
       rendered: !!hit,
@@ -88,11 +84,112 @@ function list(paths) {
       offline: hit ? !!hit.plugin : false,
       thumb: hit && hit.src ? path.join(paths.dataDir, hit.src) : "",
       framePattern: frameSrc ? path.join(paths.dataDir, frameSrc) : "",
+      external: false,
+      source: "",
+      sourceKind: "library",
+      ...extra,
     });
+  };
+
+  if (rootExists) {
+    const files = [];
+    walkPresetFiles(paths.presets, files, 0);
+    for (const full of files) {
+      let stat;
+      try {
+        stat = fs.statSync(full);
+      } catch {
+        continue;
+      }
+      if (!stat.isFile()) continue;
+      addItem(full, stat);
+    }
+  }
+
+  // AE 外部预设（只索引，不复制）：路径来自 preset_catalog.json
+  const catalog = presetSources.readCatalog(paths);
+  if (catalog) {
+    for (const item of catalog.items || []) {
+      if (!item || !item.path) continue;
+      let stat;
+      try {
+        stat = fs.statSync(item.path);
+      } catch {
+        continue;
+      }
+      if (!stat.isFile()) continue;
+      addItem(item.path, stat, {
+        external: true,
+        source: item.source || "",
+        sourceKind: item.sourceKind || "install",
+      });
+    }
   }
 
   items.sort((a, b) => a.name.localeCompare(b.name, "zh"));
-  return { folder: paths.presets, exists: true, items };
+  return {
+    folder: paths.presets,
+    exists: rootExists || items.length > 0,
+    externalCount: items.filter((item) => item.external).length,
+    items,
+  };
+}
+
+function walkPresetFiles(dir, output, depth) {
+  if ((depth || 0) > 6) return;
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walkPresetFiles(full, output, (depth || 0) + 1);
+    } else if (entry.isFile() && /\.ffx$/i.test(entry.name)) {
+      output.push(full);
+    }
+  }
+}
+
+/** 目标是否在预设库根目录内（不含根目录本身；Windows 路径不区分大小写） */
+function isInsideLibrary(paths, target) {
+  const full = path.resolve(String(target || ""));
+  const root = path.resolve(paths.presets);
+  const prefix = root.toLowerCase() + path.sep;
+  return full !== root && full.toLowerCase().startsWith(prefix);
+}
+
+/**
+ * 过滤用户在 Hub 勾选的预设：必须在预设库内、是真实 .ffx 文件、去重。
+ * @param {ReturnType<import("./paths").createPaths>} paths
+ * @param {string[]} list
+ */
+function resolveSelection(paths, list) {
+  const output = [];
+  const seen = new Set();
+  const catalog = presetSources.readCatalog(paths);
+  const external = new Set(
+    ((catalog && catalog.items) || []).map((item) => norm(item.path)),
+  );
+  for (const raw of Array.isArray(list) ? list : []) {
+    const full = path.resolve(String(raw || ""));
+    if (!/\.ffx$/i.test(full)) continue;
+    const key = norm(full);
+    if (!isInsideLibrary(paths, full) && !external.has(key)) continue;
+    let stat;
+    try {
+      stat = fs.statSync(full);
+    } catch {
+      continue;
+    }
+    if (!stat.isFile()) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    output.push(full);
+  }
+  return output;
 }
 
 /** 重名时按 base_1、base_2 递增 */
@@ -153,9 +250,8 @@ function importFiles(files, paths) {
 /** 删除预设库内的单个 .ffx，拒绝库目录之外的路径 */
 function removePreset(target, paths) {
   const full = path.resolve(String(target || ""));
-  const root = path.resolve(paths.presets);
   if (!/\.ffx$/i.test(full)) return { ok: false, reason: "not_ffx" };
-  if (path.dirname(full) !== root) return { ok: false, reason: "outside_library" };
+  if (!isInsideLibrary(paths, full)) return { ok: false, reason: "outside_library" };
   let stat;
   try {
     stat = fs.statSync(full);
@@ -182,12 +278,11 @@ function validBaseName(value) {
 /** 重命名预设库内的 .ffx，不改预览图片文件本身 */
 function renamePreset(target, name, paths) {
   const from = path.resolve(String(target || ""));
-  const root = path.resolve(paths.presets);
   if (!/\.ffx$/i.test(from)) return { ok: false, reason: "not_ffx" };
-  if (path.dirname(from) !== root) return { ok: false, reason: "outside_library" };
+  if (!isInsideLibrary(paths, from)) return { ok: false, reason: "outside_library" };
   const base = validBaseName(name);
   if (!base) return { ok: false, reason: "invalid_name" };
-  const to = path.join(root, base + ".ffx");
+  const to = path.join(path.dirname(from), base + ".ffx");
   if (norm(from) === norm(to)) return { ok: true, unchanged: true, path: from, name: base };
   if (fs.existsSync(to)) return { ok: false, reason: "name_exists" };
   try {
@@ -326,9 +421,11 @@ function removeBlacklistJson(file, targetKey) {
 /** 清空一条预设的预览结果，让它重新回到待渲染队列 */
 function clearPreview(target, paths) {
   const full = path.resolve(String(target || ""));
-  const root = path.resolve(paths.presets);
   if (!/\.ffx$/i.test(full)) return { ok: false, reason: "not_ffx" };
-  if (path.dirname(full) !== root) return { ok: false, reason: "outside_library" };
+  const external = presetSources.isExternalPreset(paths, full);
+  if (!isInsideLibrary(paths, full) && !external) {
+    return { ok: false, reason: "outside_library" };
+  }
   const key = norm(full);
   const removedItems = [
     ...removeIndexEntry(paths.presetManifest, key),
@@ -360,5 +457,7 @@ module.exports = {
   clearPreview,
   loadPreviewIndex,
   uniqueTarget,
+  isInsideLibrary,
+  resolveSelection,
   norm,
 };

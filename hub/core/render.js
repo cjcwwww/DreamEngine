@@ -73,6 +73,8 @@ class RenderJob {
     if (options.autoClose) args.push("-AutoClose");
     if (options.retryFailed) args.push("-RetryFailed");
     if (options.onlyPreset) args.push("-OnlyPreset", String(options.onlyPreset));
+    if (options.presetList) args.push("-PresetList", String(options.presetList));
+    if (options.force) args.push("-Force");
 
     try {
       this.proc = spawn(this.powershell, args, {
