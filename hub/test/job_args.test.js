@@ -9,6 +9,7 @@ const { EventEmitter } = require("node:events");
 const cp = require("node:child_process");
 const originalSpawn = cp.spawn;
 let captured = null;
+const tempRoots = [];
 
 cp.spawn = (command, args, options) => {
   captured = { command, args, options };
@@ -23,6 +24,7 @@ const { RenderJob } = require("../../hub/core/render");
 
 function makePaths() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "de-job-"));
+  tempRoots.push(root);
   const probe = path.join(root, "probe");
   fs.mkdirSync(probe, { recursive: true });
   return {
@@ -38,6 +40,14 @@ function makePaths() {
   };
 }
 
+function makeScript(paths, fileName) {
+  const dir = path.join(paths.root, "tools");
+  fs.mkdirSync(dir, { recursive: true });
+  const script = path.join(dir, fileName);
+  fs.writeFileSync(script, "# test fixture\r\n", "utf8");
+  return script;
+}
+
 function hasArg(args, name, value) {
   const index = args.indexOf(name);
   if (index < 0) return false;
@@ -48,7 +58,7 @@ test("PluginEffectJob: catalogOnly 传 -CatalogOnly，不传 -Todo", () => {
   const paths = makePaths();
   const job = new PluginEffectJob({
     paths,
-    script: path.join(__dirname, "..", "..", "tools", "generate_plugin_effects.ps1"),
+    script: makeScript(paths, "generate_plugin_effects.ps1"),
   });
   const result = job.start({ ae: "C:/AE/AfterFX.exe", catalogOnly: true, limit: 3, rounds: 4 });
   assert.equal(result.ok, true);
@@ -64,7 +74,7 @@ test("PluginEffectJob: 选择模式传 -Todo/-Force，mode=selection", () => {
   const paths = makePaths();
   const job = new PluginEffectJob({
     paths,
-    script: path.join(__dirname, "..", "..", "tools", "generate_plugin_effects.ps1"),
+    script: makeScript(paths, "generate_plugin_effects.ps1"),
   });
   job.start({ todoPath: "C:/probe/next_plugin_batch.tsv", force: true });
   assert.equal(job.getMode(), "selection");
@@ -77,7 +87,7 @@ test("PluginEffectJob: 空 ae/background 不传参数（避免 PowerShell 吞空
   const paths = makePaths();
   const job = new PluginEffectJob({
     paths,
-    script: path.join(__dirname, "..", "..", "tools", "generate_plugin_effects.ps1"),
+    script: makeScript(paths, "generate_plugin_effects.ps1"),
   });
   job.start({ ae: "", background: "", catalogOnly: true });
   assert.ok(!captured.args.includes("-Ae"));
@@ -91,7 +101,7 @@ test("RenderJob: 预设选择传 -PresetList/-Force", () => {
   const paths = makePaths();
   const job = new RenderJob({
     paths,
-    script: path.join(__dirname, "..", "..", "tools", "generate_plugin_presets.ps1"),
+    script: makeScript(paths, "generate_plugin_presets.ps1"),
   });
   const result = job.start({ presetList: "C:/probe/next_preset_selection.tsv", force: true, limit: 2 });
   assert.equal(result.ok, true);
@@ -103,4 +113,7 @@ test("RenderJob: 预设选择传 -PresetList/-Force", () => {
 
 test.after(() => {
   cp.spawn = originalSpawn;
+  for (const root of tempRoots) {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
