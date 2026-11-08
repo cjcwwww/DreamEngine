@@ -17,10 +17,14 @@ const fs = require("node:fs");
 const { createPaths } = require("./core/paths");
 const { findAfterFX, bestAfterFX, isAERunning } = require("./core/ae");
 const presets = require("./core/presets");
+const presetSources = require("./core/preset_sources");
 const presetCategories = require("./core/preset_categories");
 const install = require("./core/install");
 const { RenderJob } = require("./core/render");
 const { PluginEffectJob } = require("./core/effect_render");
+const catalog = require("./core/catalog");
+const effects = require("./core/effects");
+const effectFavorites = require("./core/effect_favorites");
 const {
   importImageAsPng,
   normalizeBackgroundDirectory,
@@ -83,9 +87,25 @@ function snapshot() {
     },
     render: job ? { running: job.isRunning(), state: job.snapshot() } : { running: false, state: null },
     pluginEffects: pluginJob
-      ? { running: pluginJob.isRunning(), state: pluginJob.snapshot() }
-      : { running: false, state: null },
+      ? { running: pluginJob.isRunning(), mode: pluginJob.getMode(), state: pluginJob.snapshot() }
+      : { running: false, mode: "", state: null },
   };
+}
+
+/** 上一轮任务异常退出后可能留下选择/扫描标记，启动新任务前统一清掉。 */
+function cleanupJobMarkers(paths) {
+  for (const key of ["pluginSelectionMarker", "pluginForceMarker", "pluginCatalogOnlyMarker"]) {
+    try {
+      fs.rmSync(paths[key], { force: true });
+    } catch {
+      /* 标记清理失败不影响任务 */
+    }
+  }
+}
+
+/** 过滤用户在 Hub 勾选的预设（实现放在 core/presets.js，便于单测） */
+function selectedPresetPaths(list) {
+  return presets.resolveSelection(paths, list);
 }
 
 function createWindow() {
@@ -132,6 +152,21 @@ function registerIpc() {
   });
 
   ipcMain.handle("presets:list", () => presets.list(paths));
+
+  // 扫描所选 AE 的安装 Presets + User Presets，只写外部索引，不复制文件
+  ipcMain.handle("presets:sync", (_event, options) => {
+    const opts = options || {};
+    const aeExe = String(opts.ae || "").trim() || bestAfterFX();
+    if (!aeExe) return { ok: false, reason: "no_ae" };
+    const result = presetSources.scanAePresets(paths, {
+      aeExe,
+      force: !!opts.force,
+    });
+    if (!result.ok) return result;
+    // items 由 presets:list 从 preset_catalog.json 读取，IPC 只回摘要
+    const { items, ...summary } = result;
+    return summary;
+  });
 
   ipcMain.handle("presets:pick", async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
@@ -231,6 +266,30 @@ function registerIpc() {
   ipcMain.handle("render:start", (_event, options) => {
     if (!job) return { ok: false, reason: "no_job" };
     if (pluginJob && pluginJob.isRunning()) return { ok: false, reason: "plugin_effects_running" };
+    let opts = options || {};
+    let selectedPaths = null;
+    if (Array.isArray(opts.presetPaths)) {
+      selectedPaths = selectedPresetPaths(opts.presetPaths);
+      if (selectedPaths.length === 0) return { ok: false, reason: "nothing_to_render" };
+      try {
+        fs.mkdirSync(paths.probe, { recursive: true });
+        fs.writeFileSync(paths.presetSelection, selectedPaths.join("\r\n") + "\r\n", "utf8");
+      } catch (error) {
+        return { ok: false, reason: "write_failed", detail: String(error.message || error) };
+      }
+      opts = {
+        ...opts,
+        presetList: paths.presetSelection,
+        force: !!opts.force,
+        limit: Math.max(selectedPaths.length, 1),
+      };
+    }
+    // 外部 AE 预设需要靠 -AE 推导允许的 Presets 根目录；没选版本时用
+    // 最近一次外部索引里的 AE，避免 ps1 把外部路径当成非法路径。
+    if (!opts.ae && (opts.presetList || opts.onlyPreset)) {
+      const externalCatalog = presetSources.readCatalog(paths);
+      if (externalCatalog && externalCatalog.aeExe) opts.ae = externalCatalog.aeExe;
+    }
     const statePath = paths.hubState;
     // 上一轮残留的 done/failed 状态会让 UI 一上来就显示「已完成」，先清掉
     try {
@@ -238,7 +297,11 @@ function registerIpc() {
     } catch {
       /* 无所谓 */
     }
-    return job.start(options || {});
+    const result = job.start(opts);
+    if (result.ok && selectedPaths) {
+      return { ...result, selectedCount: selectedPaths.length };
+    }
+    return result;
   });
 
   ipcMain.handle("render:stop", () => (job ? job.stop() : { ok: false }));
@@ -248,8 +311,63 @@ function registerIpc() {
   ipcMain.handle("plugin-effects:start", (_event, options) => {
     if (!pluginJob) return { ok: false, reason: "no_job" };
     if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
-    return pluginJob.start(options || {});
+    if (pluginJob.isRunning()) return { ok: false, reason: "already_running" };
+
+    const opts = options || {};
+    const matchNames = Array.isArray(opts.matchNames) ? opts.matchNames : [];
+    cleanupJobMarkers(paths);
+
+    if (matchNames.length > 0) {
+      const cat = catalog.readCatalog(paths);
+      if (!cat.ok) return { ok: false, reason: "no_catalog" };
+      const { selected, skipped } = catalog.filterSelection(cat, matchNames, !!opts.force);
+      if (selected.length === 0) {
+        return { ok: false, reason: "nothing_to_render", skipped };
+      }
+      try {
+        catalog.writeSelection(paths, selected);
+      } catch (error) {
+        return { ok: false, reason: "write_failed", detail: String(error.message || error) };
+      }
+      const result = pluginJob.start({
+        ...opts,
+        todoPath: paths.pluginSelection,
+        force: !!opts.force,
+      });
+      if (!result.ok) return result;
+      return {
+        ...result,
+        selectedCount: selected.length,
+        skippedCount: skipped.length,
+        skipped,
+      };
+    }
+
+    return pluginJob.start(opts);
   });
+
+  ipcMain.handle("plugin-effects:scan", (_event, options) => {
+    if (!pluginJob) return { ok: false, reason: "no_job" };
+    if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
+    if (pluginJob.isRunning()) return { ok: false, reason: "already_running" };
+    cleanupJobMarkers(paths);
+    return pluginJob.start({
+      catalogOnly: true,
+      ae: (options && options.ae) || "",
+    });
+  });
+
+  ipcMain.handle("plugin-effects:catalog", () => catalog.readCatalog(paths));
+
+  /* 效果库：内置 + 插件的合并只读视图（数据层在 core/effects.js） */
+  ipcMain.handle("effects:list", () => effects.list(paths));
+  ipcMain.handle("effects:toggleFavorite", (_event, matchName) =>
+    effectFavorites.toggle(paths, matchName),
+  );
+  ipcMain.handle("effects:clearPreview", (_event, matchName) =>
+    effects.clearPreview(paths, matchName),
+  );
+
   ipcMain.handle("plugin-effects:stop", () =>
     pluginJob ? pluginJob.stop() : { ok: false, reason: "no_job" },
   );
@@ -305,6 +423,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     paths = buildPaths();
     rememberHubPath(paths);
+    cleanupJobMarkers(paths);
 
     job = new RenderJob({
       paths,
@@ -332,6 +451,10 @@ if (!gotLock) {
       onExit: (info) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send("plugin-effects:exit", info);
+          // 扫描任务结束后把新目录直接推给 UI，避免 UI 再等一次 IPC 往返
+          if (pluginJob && pluginJob.getMode() === "catalog") {
+            mainWindow.webContents.send("plugin-effects:catalog", catalog.readCatalog(paths));
+          }
         }
       },
     });

@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld("hub", {
 
   /* 预设库 */
   listPresets: () => ipcRenderer.invoke("presets:list"),
+  syncAePresets: (options) => ipcRenderer.invoke("presets:sync", options),
   pickPresets: () => ipcRenderer.invoke("presets:pick"),
   importPaths: (files) => ipcRenderer.invoke("presets:importPaths", files),
   deletePreset: (target) => ipcRenderer.invoke("presets:delete", target),
@@ -32,6 +33,11 @@ contextBridge.exposeInMainWorld("hub", {
   listBackgrounds: () => ipcRenderer.invoke("backgrounds:list"),
   addBackground: () => ipcRenderer.invoke("backgrounds:add"),
 
+  /* 效果库（内置 + 插件的合并视图，见 core/effects.js） */
+  listEffects: () => ipcRenderer.invoke("effects:list"),
+  toggleEffectFavorite: (matchName) => ipcRenderer.invoke("effects:toggleFavorite", matchName),
+  clearEffectRender: (matchName) => ipcRenderer.invoke("effects:clearPreview", matchName),
+
   /* 渲染 */
   startRender: (options) => ipcRenderer.invoke("render:start", options),
   stopRender: () => ipcRenderer.invoke("render:stop"),
@@ -43,6 +49,9 @@ contextBridge.exposeInMainWorld("hub", {
   stopPluginEffects: () => ipcRenderer.invoke("plugin-effects:stop"),
   pluginEffectsSnapshot: () => ipcRenderer.invoke("plugin-effects:snapshot"),
   logPluginEffectsTail: (lines) => ipcRenderer.invoke("plugin-effects:logTail", lines),
+  /* 插件效果目录（选择性渲染） */
+  pluginEffectsCatalog: () => ipcRenderer.invoke("plugin-effects:catalog"),
+  scanPluginEffects: (options) => ipcRenderer.invoke("plugin-effects:scan", options),
 
   /* 主进程推送 */
   onRenderState: (callback) => {
@@ -56,5 +65,8 @@ contextBridge.exposeInMainWorld("hub", {
   },
   onPluginEffectsExit: (callback) => {
     ipcRenderer.on("plugin-effects:exit", (_event, info) => callback(info));
+  },
+  onPluginEffectsCatalog: (callback) => {
+    ipcRenderer.on("plugin-effects:catalog", (_event, doc) => callback(doc));
   },
 });

@@ -59,6 +59,7 @@ Hub is a standalone manager that runs outside the active AE process:
 - Add, rename, favorite, categorize, and long-press to delete `.ffx` presets.
 - Render offline previews and animated frame sequences for plugin presets.
 - Render third-party effect previews one by one in isolated AE instances using the current AE plugin catalog.
+- Browse built-in and third-party plugin effects by AE category in the Effects Library; entries without a preview show as pending.
 - Clear one preset's previous preview or force a fresh single-preset render.
 - Add custom preview backgrounds.
 - Inspect panel installation, AE versions, directories, and render logs.
@@ -72,16 +73,28 @@ Preset categories and preset favorites are shared between the panel and Hub.
 **Preset library**
 
 - Import `.ffx` files through the file picker or drag and drop.
-- Create, rename, and delete categories in the left sidebar.
+- Create, rename, and delete categories in the left sidebar. Drag the divider to resize the sidebar; double-click it or click "«" to collapse, then use "分类 »" in the toolbar to expand.
 - Favorites are an independent filter and can be combined with categories.
 - Animated presets play while hovered; static previews show an orange dot in the upper-right corner.
 - The context menu provides rename, favorite, skip-render, render-only, delete, and move-to-category actions.
 - "Skip render" removes that preset's index and frame files, returns it to the unrendered state, and includes it in the next batch render again.
 - Long-press a card or use the context menu to delete its `.ffx` file from the preset library.
+- Hub can automatically index `.ffx` files from the selected AE's installed Presets and User Presets folders (index only, no copying) and filter them by source. External AE presets can be selected or rendered individually, but rename/delete only apply to DreamEngine's own preset library. The left sidebar groups external presets by AE source folder (for example Text or Trapcode Tao).
+
+**Effects library**
+
+- Same layout as the preset library: a resizable/collapsible category sidebar, a preview grid with search and source filter, and hover playback.
+- Lists built-in effects and the third-party effects from the Plugin Effects catalog together: entries with a preview play on hover, entries without one show a pending placeholder.
+- The sidebar groups entries by source (AE Built-in / BCC / Sapphire / Red Giant / RE:Vision / Video Copilot / Other); each group can be expanded or collapsed and the collapsed state is remembered. Categories and groups come from the current AE scan.
+- Categories follow the current AE: built-in effects use the localized AE categories from the bilingual name table, plugin effects use the categories from the plugin catalog scan.
+- "Sync AE categories" re-scans the plugin effect catalog (scan only, no rendering) and refreshes the categories.
 
 **Offline preview rendering**
 
 - The Plugin Effects page reads the current AE plugin catalog and renders entries in isolated instances with cancellation, resume, and crash blacklisting.
+- On the Plugin Effects page you can scan the plugin catalog and select specific effects by plugin, category, or name; only the selected entries are rendered. Enable "force rerender" to render entries that already have previews or were skipped.
+- The preset page supports multi-selection and renders only the chosen presets; one click can select all unrendered presets in the current filter.
+- Text and animation AE presets (such as AE's built-in Text, Behaviors, and Transitions categories) add no effects. Their previews are applied to a text layer in the composition, or rendered on the built-in Text substrate when no text layer exists, instead of being reported as "failed to apply".
 - Plugin presets render in dedicated AE instances to avoid destabilizing the active AE session.
 - Each dedicated AE instance handles up to 40 presets by default to reduce repeated launches.
 - Save and close AE before rendering. Hub can reopen AE when the job finishes.

@@ -98,6 +98,22 @@ var AEV_PluginState = (function () {
         return out;
     }
 
+    /**
+     * 从黑名单里移除若干 matchName，返回新对象（不修改入参）。
+     * force 渲染成功后离线脚本用它把已渲好的条目移出黑名单。
+     */
+    function removeBlacklist(map, names) {
+        var drop = {};
+        for (var i = 0; i < names.length; i++) {
+            if (names[i]) drop[names[i]] = true;
+        }
+        var out = {};
+        for (var key in map) {
+            if (map.hasOwnProperty(key) && !drop[key]) out[key] = map[key];
+        }
+        return out;
+    }
+
     function blacklistTsv(map) {
         var lines = [BLACKLIST_HEADER];
         for (var key in map) {
@@ -180,8 +196,17 @@ var AEV_PluginState = (function () {
         return out;
     }
 
-    /** 本次要渲的名单：跳过已有预览、黑名单，并限流 */
-    function planRun(todo, entries, blacklist, limit) {
+    /**
+     * 本次要渲的名单：跳过已有预览、黑名单，并限流。
+     *
+     * options（可选，旧调用不传时行为完全不变）：
+     *   · force: true  —— 强制重渲：忽略 entries / blacklist，只跳过 skip
+     *   · skip: {}     —— 本轮已处理过的 matchName（无论成功失败），避免无限重试
+     */
+    function planRun(todo, entries, blacklist, limit, options) {
+        var opts = options || {};
+        var force = !!(opts.force);
+        var skip = opts.skip || {};
         var done = {};
         for (var i = 0; i < entries.length; i++) done[entries[i].matchName] = true;
         var out = [];
@@ -189,8 +214,11 @@ var AEV_PluginState = (function () {
         for (var t = 0; t < todo.length && out.length < max; t++) {
             var item = todo[t];
             if (!item || !item.matchName) continue;
-            if (done[item.matchName]) continue;
-            if (blacklist && blacklist[item.matchName]) continue;
+            if (skip[item.matchName]) continue;
+            if (!force) {
+                if (done[item.matchName]) continue;
+                if (blacklist && blacklist[item.matchName]) continue;
+            }
             out.push({
                 matchName: item.matchName,
                 frames: item.frames || 6,
@@ -200,8 +228,32 @@ var AEV_PluginState = (function () {
         return out;
     }
 
-    /** 当前插件清单相对已有索引/黑名单的总体进度 */
-    function planStats(todo, entries, blacklist) {
+    /**
+     * 当前插件清单相对已有索引/黑名单的总体进度。
+     *
+     * options.force 为 true 时改用「本轮强制渲染」的语义：
+     * 忽略 entries / blacklist，total = todo.length，
+     * done = skip 中属于 todo 的数量，pending = total - done。
+     */
+    function planStats(todo, entries, blacklist, options) {
+        var opts = options || {};
+        if (opts.force) {
+            var skip = opts.skip || {};
+            var forceTotal = 0;
+            var forceDone = 0;
+            for (var ft = 0; ft < todo.length; ft++) {
+                var forceItem = todo[ft];
+                var forceName = forceItem && forceItem.matchName ? forceItem.matchName : "";
+                forceTotal++;
+                if (forceName && skip[forceName]) forceDone++;
+            }
+            return {
+                total: forceTotal,
+                done: forceDone,
+                blacklisted: 0,
+                pending: Math.max(0, forceTotal - forceDone)
+            };
+        }
         var done = {};
         var blocked = blacklist || {};
         var total = 0;
@@ -281,6 +333,7 @@ var AEV_PluginState = (function () {
         parseLog: parseLog,
         readBlacklist: readBlacklist,
         mergeBlacklist: mergeBlacklist,
+        removeBlacklist: removeBlacklist,
         blacklistTsv: blacklistTsv,
         blacklistJson: blacklistJson,
         readEntries: readEntries,
