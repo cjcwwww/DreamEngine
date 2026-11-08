@@ -26,6 +26,7 @@
 
 <nav class="tabs" id="tabs">
   <button class="tab active" data-view="presets">预设库<span class="tab-count" id="tabPresetCount">0</span></button>
+  <button class="tab" data-view="effects">效果库<span class="tab-count" id="tabEffectCount">0</span></button>
   <button class="tab" data-view="render">渲染</button>
   <button class="tab" data-view="settings">设置</button>
 </nav>
@@ -34,11 +35,15 @@
 
   <!-- ========== 预设库 ========== -->
   <section class="view" id="viewPresets">
-    <div class="preset-layout">
-      <aside class="preset-sidebar">
+    <div class="preset-layout" id="presetLayout">
+      <aside class="preset-sidebar" id="presetSidebar">
         <div class="sidebar-heading">
           <h2>分类</h2>
-          <button class="icon-btn" id="btnCategoryAdd" type="button" title="新建分类">+</button>
+          <div class="sidebar-heading-actions">
+            <button class="icon-btn" id="btnCategoryAdd" type="button" title="新建分类">+</button>
+            <button class="icon-btn sidebar-collapse" id="btnCollapseSidebar" type="button"
+                    title="收起分类栏" aria-label="收起分类栏">«</button>
+          </div>
         </div>
         <ul class="category-list" id="categoryList"></ul>
         <form class="category-editor" id="categoryEditor" hidden>
@@ -47,10 +52,25 @@
           <button id="categoryCancel" type="button" title="取消">×</button>
         </form>
       </aside>
+      <div class="sidebar-resizer" id="presetSidebarResizer" role="separator"
+           aria-orientation="vertical" aria-valuemin="150" aria-valuemax="420" aria-valuenow="200"
+           tabindex="0" title="拖动调整宽度，双击收起分类栏"></div>
       <div class="preset-main">
         <div class="toolbar">
+          <button class="btn ghost" id="btnExpandSidebar" type="button" title="展开分类栏" hidden>分类 »</button>
           <button class="btn primary" id="btnImport" title="选择一个或多个 .ffx 预设">添加预设</button>
           <button class="btn" id="btnRefresh">刷新</button>
+          <button class="btn" id="btnSyncAePresets" title="扫描当前 AE 的安装 Presets 与 User Presets（只建索引，不复制文件）">同步 AE 预设</button>
+          <button class="btn" id="btnPresetFavoritesOnly" type="button"
+                  aria-pressed="false" title="只看已收藏的预设">仅显示已收藏预设</button>
+          <select class="input preset-source" id="presetSourceFilter" aria-label="预设来源">
+            <option value="all">全部来源</option>
+            <option value="mine">我的预设</option>
+            <option value="external">AE 预设</option>
+          </select>
+          <button class="btn" id="btnSelectUnrendered" title="选择当前筛选下所有未生成预览的预设">选择未渲染</button>
+          <button class="btn ghost" id="btnClearSelection" disabled>清空选择</button>
+          <button class="btn" id="btnRenderSelected" disabled title="只渲染已勾选的预设">渲染所选 (0)</button>
           <input class="search" id="search" type="search" placeholder="搜索预设…" spellcheck="false">
           <span class="spacer"></span>
           <span class="hint" id="presetHint"></span>
@@ -61,6 +81,48 @@
           <p class="empty-sub">把 <code>.ffx</code> 拖到这里，或者点上面的「添加预设」。</p>
           <p class="empty-sub">导入后，AE 里打开着的 DreamEngine 面板会自动刷新，不用关掉重开。</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 效果库 ========== -->
+  <section class="view" id="viewEffects" hidden>
+    <div class="preset-layout" id="effectLayout">
+      <aside class="preset-sidebar" id="effectSidebar">
+        <div class="sidebar-heading">
+          <h2>分类</h2>
+          <div class="sidebar-heading-actions">
+            <button class="icon-btn sidebar-collapse" id="btnEffectCollapseSidebar" type="button"
+                    title="收起分类栏" aria-label="收起分类栏">«</button>
+          </div>
+        </div>
+        <ul class="category-list" id="effectCategoryList"></ul>
+      </aside>
+      <div class="sidebar-resizer" id="effectSidebarResizer" role="separator"
+           aria-orientation="vertical" aria-valuemin="150" aria-valuemax="420" aria-valuenow="200"
+           tabindex="0" title="拖动调整宽度，双击收起分类栏"></div>
+      <div class="preset-main">
+        <div class="toolbar">
+          <button class="btn ghost" id="btnEffectExpandSidebar" type="button" title="展开分类栏" hidden>分类 »</button>
+          <button class="btn" id="btnEffectRefresh" type="button">刷新</button>
+          <button class="btn" id="btnEffectSyncCategories" type="button"
+                  title="扫描当前 AE 的插件效果分类（只建索引，不渲染）">同步 AE 分类</button>
+          <button class="btn" id="btnEffectSelectUnrendered" type="button"
+                  title="选择当前筛选下所有待渲染的插件效果">选择未渲染</button>
+          <button class="btn ghost" id="btnEffectClearSelection" type="button" disabled>清空选择</button>
+          <button class="btn" id="btnEffectRenderSelected" type="button" disabled
+                  title="只渲染已勾选的插件效果">渲染所选 (0)</button>
+          <button class="btn" id="btnEffectFavoritesOnly" type="button"
+                  aria-pressed="false" title="只看已收藏的效果">仅显示已收藏效果</button>
+          <select class="input preset-source" id="effectPluginFilter" aria-label="效果来源">
+            <option value="all">全部来源</option>
+          </select>
+          <input class="search" id="effectSearch" type="search" placeholder="搜索效果…" spellcheck="false">
+          <span class="spacer"></span>
+          <span class="hint" id="effectHint"></span>
+        </div>
+        <div class="grid" id="effectGrid"></div>
+        <div class="empty" id="emptyEffects" hidden></div>
       </div>
     </div>
   </section>
@@ -119,6 +181,19 @@
     <div class="render-mode" id="pluginRenderMode" hidden>
       <div class="notice" id="pluginEffectAeNotice">
         <div class="notice-title">正在检测 After Effects…</div>
+      </div>
+
+      <div class="panel plugin-catalog-panel">
+        <div class="panel-title">插件目录</div>
+        <div class="plugin-catalog-row">
+          <div class="plugin-catalog-info">
+            <div class="plugin-catalog-summary" id="pluginCatalogSummary">未扫描插件目录</div>
+            <div class="plugin-catalog-status" id="pluginCatalogStatus" hidden></div>
+          </div>
+          <span class="spacer"></span>
+          <button class="btn" id="btnScanPluginCatalog" type="button">扫描插件目录</button>
+          <button class="btn primary" id="btnPickPluginEffects" type="button" disabled>选择效果…</button>
+        </div>
       </div>
 
       <div class="panel">
@@ -224,6 +299,50 @@
       <button class="btn primary" type="submit">保存</button>
     </div>
   </form>
+</div>
+
+<div class="modal-mask" id="pluginEffectPicker" hidden>
+  <section class="modal-card effect-picker" role="dialog" aria-modal="true" aria-labelledby="effectPickerTitle">
+    <header class="effect-picker-head">
+      <div class="effect-picker-heading">
+        <h3 id="effectPickerTitle">选择效果</h3>
+        <span class="effect-picker-sub" id="effectPickerSub">—</span>
+      </div>
+      <button class="icon-btn effect-picker-close" id="effectPickerClose" type="button"
+              aria-label="关闭" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="effect-picker-toolbar">
+      <input class="search effect-picker-search" id="effectPickerSearch" type="search"
+             placeholder="搜索效果 / 插件 / 分类…" spellcheck="false">
+      <select class="input" id="effectPickerPluginFilter" aria-label="按插件筛选"></select>
+      <label class="check">
+        <input id="effectHideRendered" type="checkbox" checked>
+        <span>隐藏已生成</span>
+      </label>
+      <label class="check">
+        <input id="effectForce" type="checkbox">
+        <span>强制重渲</span>
+      </label>
+    </div>
+
+    <div class="effect-picker-note">勾选强制重渲后，已生成或已跳过的条目会被重新渲染。</div>
+    <div class="effect-picker-list" id="effectPickerList"></div>
+
+    <footer class="effect-picker-actions">
+      <button class="btn ghost" id="effectSelectAll" type="button">全选当前筛选</button>
+      <button class="btn ghost" id="effectClearAll" type="button">清空</button>
+      <span class="effect-picker-count" id="effectSelectedCount">已选 0 项</span>
+      <span class="spacer"></span>
+      <span class="effect-picker-status" id="effectPickerStatus"></span>
+      <button class="btn" id="effectPickerCancel" type="button">取消</button>
+      <button class="btn primary" id="effectRenderSelected" type="button" disabled>渲染所选</button>
+    </footer>
+  </section>
 </div>
 
 <div class="modal-mask" id="renderLogDialog" hidden>

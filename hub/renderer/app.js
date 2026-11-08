@@ -7,6 +7,13 @@
 
 const $ = (id) => document.getElementById(id);
 const RENDER_AE_KEY = "dreamengine.renderAePath.v1";
+const PRESET_SIDEBAR_WIDTH_KEY = "dreamengine.hub.presetSidebarWidth.v1";
+const PRESET_SIDEBAR_COLLAPSED_KEY = "dreamengine.hub.presetSidebarCollapsed.v1";
+const EFFECT_SIDEBAR_WIDTH_KEY = "dreamengine.hub.effectSidebarWidth.v1";
+const EFFECT_SIDEBAR_COLLAPSED_KEY = "dreamengine.hub.effectSidebarCollapsed.v1";
+const EFFECT_GROUP_COLLAPSED_KEY = "dreamengine.hub.effectGroupCollapsed.v1";
+const SIDEBAR_MIN = 150;
+const SIDEBAR_MAX = 420;
 
 const state = {
   snapshot: null,
@@ -19,6 +26,21 @@ const state = {
   stopRequested: false,
   pluginEffectRendering: false,
   pluginEffectStopRequested: false,
+  pluginCatalog: null,
+  pluginCatalogScanning: false,
+  pluginEffectSelection: new Map(),
+  effectPicker: { query: "", plugin: "", hideRendered: true, force: false },
+  effects: [],
+  effectData: null,
+  effectQuery: "",
+  effectCategory: "all",
+  effectPlugin: "all",
+  effectFavorites: new Set(),
+  effectFavoritesOnly: false,
+  effectSelection: new Map(),
+  effectGroupCollapsed: {},
+  effectHoverStop: null,
+  presetSelection: new Map(),
   pollTimer: null,
   pluginEffectPollTimer: null,
   logTimer: null,
@@ -28,6 +50,9 @@ const state = {
   presetDeleteName: "",
   presetRenamePath: "",
   presetOrganizer: { categories: [], assignments: {}, favorites: {} },
+  presetCatalog: null,
+  presetSourceFilter: "all",
+  presetSyncing: false,
   presetCategory: "all",
   presetFavoritesOnly: false,
   categoryEditorMode: "create",
@@ -59,6 +84,150 @@ function pathKey(value) {
   return String(value || "").replace(/\\/g, "/").toLowerCase();
 }
 
+/* ---------- 分类栏：拖动宽度 / 收起展开（预设库、效果库共用） ---------- */
+
+function createSidebarController(config) {
+  const ids = config || {};
+  let width = 200;
+  let collapsed = false;
+
+  function clampWidth(value) {
+    const number = Number(value) || 200;
+    return Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, Math.round(number)));
+  }
+
+  function readPrefs() {
+    try {
+      const storedWidth = parseInt(localStorage.getItem(ids.widthKey), 10);
+      if (storedWidth) width = clampWidth(storedWidth);
+      collapsed = localStorage.getItem(ids.collapsedKey) === "1";
+    } catch {
+      /* localStorage 不可用时使用默认值 */
+    }
+  }
+
+  function apply() {
+    const layout = $(ids.layoutId);
+    const sidebar = $(ids.sidebarId);
+    const handle = $(ids.resizerId);
+    const expand = $(ids.expandId);
+    if (!layout || !sidebar || !handle || !expand) return;
+    layout.classList.toggle("sidebar-collapsed", collapsed);
+    sidebar.style.width = collapsed ? "0px" : width + "px";
+    handle.setAttribute("aria-valuenow", collapsed ? "0" : String(width));
+    handle.tabIndex = collapsed ? -1 : 0;
+    expand.hidden = !collapsed;
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(ids.widthKey, String(width));
+      localStorage.setItem(ids.collapsedKey, collapsed ? "1" : "0");
+    } catch {
+      /* 持久化失败不影响本次使用 */
+    }
+  }
+
+  function setCollapsed(next) {
+    collapsed = !!next;
+    apply();
+    persist();
+  }
+
+  function init() {
+    readPrefs();
+    apply();
+
+    const handle = $(ids.resizerId);
+    const collapse = $(ids.collapseId);
+    const expand = $(ids.expandId);
+    if (collapse) collapse.addEventListener("click", () => setCollapsed(true));
+    if (expand) expand.addEventListener("click", () => setCollapsed(false));
+    if (!handle) return;
+
+    let drag = null;
+    const finishDrag = () => {
+      if (!drag) return;
+      drag = null;
+      document.body.classList.remove("sidebar-resizing");
+      persist();
+    };
+    handle.addEventListener("pointerdown", (event) => {
+      if (collapsed || (event.button !== undefined && event.button !== 0)) return;
+      drag = { startX: event.clientX, startWidth: width };
+      document.body.classList.add("sidebar-resizing");
+      try {
+        handle.setPointerCapture(event.pointerId);
+      } catch {
+        /* 某些环境不支持 pointer capture */
+      }
+      event.preventDefault();
+    });
+    handle.addEventListener("pointermove", (event) => {
+      if (!drag) return;
+      width = clampWidth(drag.startWidth + (event.clientX - drag.startX));
+      apply();
+    });
+    handle.addEventListener("pointerup", finishDrag);
+    handle.addEventListener("pointercancel", finishDrag);
+    handle.addEventListener("lostpointercapture", finishDrag);
+    handle.addEventListener("dblclick", () => setCollapsed(!collapsed));
+    handle.addEventListener("keydown", (event) => {
+      if (collapsed) return;
+      const step = event.shiftKey ? 32 : 8;
+      if (event.key === "ArrowLeft") {
+        width = clampWidth(width - step);
+      } else if (event.key === "ArrowRight") {
+        width = clampWidth(width + step);
+      } else if (event.key === "Home") {
+        width = SIDEBAR_MIN;
+      } else if (event.key === "End") {
+        width = SIDEBAR_MAX;
+      } else if (event.key === "Enter" || event.key === " ") {
+        setCollapsed(true);
+        return;
+      } else {
+        return;
+      }
+      event.preventDefault();
+      apply();
+      persist();
+    });
+  }
+
+  return { init, apply, setCollapsed };
+}
+
+/* 预设库沿用原来的 localStorage 键，效果库用自己的一组键 */
+const presetSidebar = createSidebarController({
+  layoutId: "presetLayout",
+  sidebarId: "presetSidebar",
+  resizerId: "presetSidebarResizer",
+  collapseId: "btnCollapseSidebar",
+  expandId: "btnExpandSidebar",
+  widthKey: PRESET_SIDEBAR_WIDTH_KEY,
+  collapsedKey: PRESET_SIDEBAR_COLLAPSED_KEY,
+});
+
+const effectSidebar = createSidebarController({
+  layoutId: "effectLayout",
+  sidebarId: "effectSidebar",
+  resizerId: "effectSidebarResizer",
+  collapseId: "btnEffectCollapseSidebar",
+  expandId: "btnEffectExpandSidebar",
+  widthKey: EFFECT_SIDEBAR_WIDTH_KEY,
+  collapsedKey: EFFECT_SIDEBAR_COLLAPSED_KEY,
+});
+
+/* 预设渲染、插件效果渲染、插件目录扫描共用同一套 AE 独占资源 */
+function anyJobBusy() {
+  return state.rendering || state.pluginEffectRendering || state.pluginCatalogScanning;
+}
+
+function hubHas(name) {
+  return !!(window.hub && typeof window.hub[name] === "function");
+}
+
 /* ---------- 页签 ---------- */
 
 function setView(name) {
@@ -69,8 +238,12 @@ function setView(name) {
     tab.classList.toggle("active", tab.dataset.view === target);
   }
   $("viewPresets").hidden = target !== "presets";
+  $("viewEffects").hidden = target !== "effects";
   $("viewRender").hidden = target !== "render";
   $("viewSettings").hidden = target !== "settings";
+
+  if (target === "effects") loadEffects();
+  else if (state.effectHoverStop) state.effectHoverStop();
 
   if (pluginAlias) setRenderMode("plugin");
   if (target === "render") {
@@ -90,10 +263,11 @@ function setView(name) {
   if (target !== "presets") closePresetRename();
   if (target !== "presets") hideCategoryMenu();
   if (target !== "presets" && state.presetHoverStop) state.presetHoverStop();
+  if (!(target === "render" && state.renderMode === "plugin")) closeEffectPicker();
 }
 
 function setRenderMode(mode) {
-  if (state.rendering || state.pluginEffectRendering) return;
+  if (anyJobBusy()) return;
   state.renderMode = mode === "plugin" ? "plugin" : "preset";
   $("presetRenderMode").hidden = state.renderMode !== "preset";
   $("pluginRenderMode").hidden = state.renderMode !== "plugin";
@@ -102,13 +276,19 @@ function setRenderMode(mode) {
     button.classList.toggle("active", active);
     button.setAttribute("aria-selected", active ? "true" : "false");
   }
+  if (state.renderMode === "plugin") {
+    refreshPluginCatalog();
+  } else {
+    closeEffectPicker();
+  }
 }
 
 function updateRenderModeButtons() {
-  const busy = state.rendering || state.pluginEffectRendering;
+  const busy = anyJobBusy();
   for (const button of document.querySelectorAll(".render-mode-button")) {
     button.disabled = busy;
   }
+  updatePresetSelectionUI();
 }
 
 /* ---------- 预设库 ---------- */
@@ -135,16 +315,25 @@ function renderCategories() {
   const list = $("categoryList");
   if (!list) return;
   const counts = { favorite: 0, all: state.presets.length, uncategorized: 0 };
+  const aeCounts = {};
   for (const item of state.presets) {
     if (isPresetFavorite(item.path)) counts.favorite++;
+    if (item.external) {
+      const source = item.source || "AE 内置";
+      aeCounts[source] = (aeCounts[source] || 0) + 1;
+      continue;
+    }
     const id = categoryFor(item.path);
     if (!id) counts.uncategorized++;
     else counts[id] = (counts[id] || 0) + 1;
   }
   list.textContent = "";
-  list.appendChild(categoryRow("__favorites__", "收藏", counts.favorite, true));
+  list.appendChild(categoryRow("__favorites__", "收藏", counts.favorite));
   list.appendChild(categoryRow("all", "全部预设", counts.all));
   list.appendChild(categoryRow("__uncategorized__", "未分类", counts.uncategorized));
+  if (categories().length) {
+    list.appendChild(sidebarGroupTitle("我的分类"));
+  }
   for (const category of categories()) {
     const row = categoryRow(category.id, category.name, counts[category.id] || 0);
     row.querySelector("button").addEventListener("contextmenu", (event) => {
@@ -153,15 +342,43 @@ function renderCategories() {
     });
     list.appendChild(row);
   }
+  const aeSources = Object.keys(aeCounts).sort(
+    (a, b) => aeCounts[b] - aeCounts[a] || a.localeCompare(b, "zh"),
+  );
+  if (aeSources.length) {
+    list.appendChild(sidebarGroupTitle("AE 预设分类"));
+    for (const source of aeSources) {
+      list.appendChild(categoryRow("ae:" + source, source, aeCounts[source]));
+    }
+  }
 }
 
-function categoryRow(id, label, count, favoriteRow) {
+function sidebarGroupTitle(label) {
+  const li = document.createElement("li");
+  li.className = "sidebar-group-title";
+  li.textContent = label;
+  return li;
+}
+
+function syncPresetSourceFilter() {
+  const select = $("presetSourceFilter");
+  if (select) select.value = state.presetSourceFilter;
+}
+
+/* 工具栏的「仅显示已收藏预设」是独立开关（与侧栏收藏分类选择分开） */
+function syncPresetFavoritesOnlyButton() {
+  const button = $("btnPresetFavoritesOnly");
+  if (!button) return;
+  button.setAttribute("aria-pressed", state.presetFavoritesOnly ? "true" : "false");
+}
+
+function categoryRow(id, label, count) {
   const li = document.createElement("li");
   const button = document.createElement("button");
   button.type = "button";
-  const active = favoriteRow ? state.presetFavoritesOnly : state.presetCategory === id;
+  const active = state.presetCategory === id;
   button.className =
-    "category-item" + (favoriteRow ? " favorite-category" : "") + (active ? " active" : "");
+    "category-item" + (id === "__favorites__" ? " favorite-category" : "") + (active ? " active" : "");
   const text = document.createElement("span");
   text.className = "category-label";
   text.textContent = label;
@@ -171,8 +388,21 @@ function categoryRow(id, label, count, favoriteRow) {
   button.appendChild(text);
   button.appendChild(badge);
   button.addEventListener("click", () => {
-    if (favoriteRow) state.presetFavoritesOnly = !state.presetFavoritesOnly;
-    else state.presetCategory = id;
+    state.presetCategory = id;
+    if (id === "__favorites__") {
+      /* 收藏是「分类选择」：显示全部收藏，清掉搜索并重置来源 */
+      state.presetSourceFilter = "all";
+      state.query = "";
+      const search = $("search");
+      if (search) search.value = "";
+    } else if (id.startsWith("ae:")) {
+      state.presetSourceFilter = "external";
+    } else if (id === "all") {
+      state.presetSourceFilter = "all";
+    } else {
+      state.presetSourceFilter = "mine";
+    }
+    syncPresetSourceFilter();
     renderPresets();
   });
   li.appendChild(button);
@@ -315,7 +545,9 @@ function openPresetMenu(item, x, y) {
   menu.textContent = "";
   menu.appendChild(menuTitle(item.name));
   const favorite = isPresetFavorite(item.path);
-  menu.appendChild(menuButton("重命名", false, false, () => openPresetRename(item)));
+  if (!item.external) {
+    menu.appendChild(menuButton("重命名", false, false, () => openPresetRename(item)));
+  }
   menu.appendChild(menuButton(favorite ? "取消收藏" : "收藏", false, false, () =>
     togglePresetFavorite(item),
   ));
@@ -323,18 +555,24 @@ function openPresetMenu(item, x, y) {
     menu.appendChild(menuButton("取消渲染", false, false, () => clearPresetRender(item)));
   }
   menu.appendChild(menuButton("单独渲染", false, false, () => renderSinglePreset(item)));
-  menu.appendChild(menuButton("删除预设", false, true, () => openPresetDelete(item)));
+  if (item.external) {
+    menu.appendChild(
+      menuButton("打开所在文件夹", false, false, () => window.hub.reveal(item.path)),
+    );
+  } else {
+    menu.appendChild(menuButton("删除预设", false, true, () => openPresetDelete(item)));
 
-  const separator = document.createElement("div");
-  separator.className = "preset-category-menu-separator";
-  menu.appendChild(separator);
-  menu.appendChild(menuTitle("移动到分类"));
-  const current = categoryFor(item.path);
-  menu.appendChild(menuButton("未分类", !current, false, () => assignCategory(item, "")));
-  for (const category of categories()) {
-    menu.appendChild(menuButton(category.name, current === category.id, false, () =>
-      assignCategory(item, category.id),
-    ));
+    const separator = document.createElement("div");
+    separator.className = "preset-category-menu-separator";
+    menu.appendChild(separator);
+    menu.appendChild(menuTitle("移动到分类"));
+    const current = categoryFor(item.path);
+    menu.appendChild(menuButton("未分类", !current, false, () => assignCategory(item, "")));
+    for (const category of categories()) {
+      menu.appendChild(menuButton(category.name, current === category.id, false, () =>
+        assignCategory(item, category.id),
+      ));
+    }
   }
   showCategoryMenu(x, y);
 }
@@ -456,21 +694,44 @@ async function savePresetRename(event) {
   setStatus(`已重命名为「${result.name}」`);
 }
 
+function visiblePresets() {
+  const query = state.query.trim().toLowerCase();
+  return state.presets.filter((item) => {
+    if (state.presetSourceFilter === "mine" && item.external) return false;
+    if (state.presetSourceFilter === "external" && !item.external) return false;
+    if (query) {
+      const haystack = [item.name, item.fileName, item.source, item.path]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
+    if (state.presetFavoritesOnly && !isPresetFavorite(item.path)) return false;
+    const cat = categoryFor(item.path);
+    if (state.presetCategory === "__favorites__") {
+      return isPresetFavorite(item.path);
+    }
+    if (state.presetCategory === "__uncategorized__") {
+      return !item.external && !cat;
+    }
+    if (state.presetCategory.startsWith("ae:")) {
+      return item.external && (item.source || "AE 内置") === state.presetCategory.slice(3);
+    }
+    if (state.presetCategory !== "all") {
+      return !item.external && cat === state.presetCategory;
+    }
+    return true;
+  });
+}
+
 function renderPresets() {
   const grid = $("grid");
   if (state.presetHoverStop) state.presetHoverStop();
-  const query = state.query.trim().toLowerCase();
-  const items = state.presets.filter((item) => {
-    if (query && !item.name.toLowerCase().includes(query)) return false;
-    if (state.presetFavoritesOnly && !isPresetFavorite(item.path)) return false;
-    const cat = categoryFor(item.path);
-    if (state.presetCategory === "__uncategorized__") return !cat;
-    if (state.presetCategory !== "all") return cat === state.presetCategory;
-    return true;
-  });
+  const items = visiblePresets();
 
   grid.textContent = "";
   renderCategories();
+  syncPresetFavoritesOnlyButton();
 
   const empty = $("emptyPresets");
   empty.hidden = items.length > 0;
@@ -478,7 +739,9 @@ function renderPresets() {
 
   for (const item of items) {
     const card = document.createElement("div");
-    card.className = "card";
+    card.className =
+      "card" + (item.external ? " external" : "") + (isPresetSelected(item.path) ? " selected" : "");
+    card.dataset.path = item.path;
 
     const thumb = document.createElement("div");
     thumb.className = "card-thumb";
@@ -499,11 +762,12 @@ function renderPresets() {
     } else {
       const ph = document.createElement("div");
       ph.className = "placeholder";
-      ph.textContent = "待渲染";
+      ph.textContent = item.external ? "AE 预设 · 待渲染" : "待渲染";
       thumb.appendChild(ph);
     }
+    bindPresetSelectCheckbox(thumb, item);
     bindFavoriteButton(thumb, item);
-    bindCategoryButton(thumb, item);
+    if (!item.external) bindCategoryButton(thumb, item);
 
     const body = document.createElement("div");
     body.className = "card-body";
@@ -521,7 +785,9 @@ function renderPresets() {
 
     const category = document.createElement("div");
     category.className = "card-category";
-    category.textContent = categoryLabel(item.path) || "未分类";
+    category.textContent = item.external
+      ? `AE ${state.presetCatalog && state.presetCatalog.aeMajor ? state.presetCatalog.aeMajor : ""} · ${item.source || "外部预设"}`
+      : categoryLabel(item.path) || "未分类";
 
     titleRow.appendChild(name);
     titleRow.appendChild(size);
@@ -529,7 +795,7 @@ function renderPresets() {
     body.appendChild(category);
     card.appendChild(thumb);
     card.appendChild(body);
-    bindPresetLongPress(card, item);
+    if (!item.external) bindPresetLongPress(card, item);
     card.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       openPresetMenu(item, event.clientX, event.clientY);
@@ -537,21 +803,182 @@ function renderPresets() {
     grid.appendChild(card);
   }
 
-  const rendered = state.presets.filter((p) => p.rendered).length;
   $("tabPresetCount").textContent = String(state.presets.length);
-  $("presetHint").textContent =
-    state.presets.length === 0
-      ? ""
-      : `${state.presets.length} 个预设 · 已生成 ${rendered} 个预览`;
+  updatePresetSelectionUI();
 }
 
-async function loadPresets() {
+function isPresetSelected(target) {
+  return state.presetSelection.has(pathKey(target));
+}
+
+function setPresetSelected(item, selected) {
+  const key = pathKey(item.path);
+  if (selected) state.presetSelection.set(key, item.path);
+  else state.presetSelection.delete(key);
+  updatePresetSelectionUI();
+  setStatus(
+    state.presetSelection.size
+      ? `已选择 ${state.presetSelection.size} 个预设`
+      : "已清空预设选择",
+  );
+}
+
+function bindPresetSelectCheckbox(thumb, item) {
+  const label = document.createElement("label");
+  label.className = "card-select";
+  label.title = "选择这个预设用于渲染";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = isPresetSelected(item.path);
+  box.setAttribute("aria-label", "选择 " + item.name);
+  label.appendChild(box);
+
+  const swallow = (event) => {
+    event.stopPropagation();
+    cancelPresetHold();
+  };
+  label.addEventListener("pointerdown", swallow);
+  label.addEventListener("click", swallow);
+  label.addEventListener("dblclick", (event) => event.stopPropagation());
+  box.addEventListener("change", () => setPresetSelected(item, box.checked));
+  thumb.appendChild(label);
+}
+
+function updatePresetSelectionUI() {
+  const count = state.presetSelection.size;
+  const renderBtn = $("btnRenderSelected");
+  renderBtn.textContent = `渲染所选 (${count})`;
+  renderBtn.disabled = count === 0 || anyJobBusy();
+  $("btnClearSelection").disabled = count === 0;
+
+  for (const card of document.querySelectorAll("#grid .card")) {
+    const selected = state.presetSelection.has(pathKey(card.dataset.path || ""));
+    card.classList.toggle("selected", selected);
+    const box = card.querySelector(".card-select input");
+    if (box && box.checked !== selected) box.checked = selected;
+  }
+
+  const rendered = state.presets.filter((p) => p.rendered).length;
+  const mine = state.presets.filter((p) => !p.external).length;
+  const external = state.presets.length - mine;
+  const parts = [];
+  if (state.presets.length) {
+    parts.push(`${mine} 个我的预设`);
+    if (external) parts.push(`${external} 个 AE 预设`);
+    parts.push(`已生成 ${rendered} 个预览`);
+  }
+  if (count) parts.push(`已选 ${count} 个`);
+  $("presetHint").textContent = parts.join(" · ");
+}
+
+function selectUnrenderedPresets() {
+  const candidates = visiblePresets().filter((item) => !item.rendered);
+  if (!candidates.length) {
+    setStatus("当前筛选下没有未渲染的预设", true);
+    return;
+  }
+  for (const item of candidates) {
+    state.presetSelection.set(pathKey(item.path), item.path);
+  }
+  updatePresetSelectionUI();
+  setStatus(`已选择 ${candidates.length} 个未渲染预设`);
+}
+
+function clearPresetSelection() {
+  if (!state.presetSelection.size) return;
+  state.presetSelection.clear();
+  updatePresetSelectionUI();
+  setStatus("已清空预设选择");
+}
+
+function prunePresetSelection() {
+  const alive = new Set(state.presets.map((item) => pathKey(item.path)));
+  for (const key of [...state.presetSelection.keys()]) {
+    if (!alive.has(key)) state.presetSelection.delete(key);
+  }
+}
+
+async function renderSelectedPresets() {
+  const paths = [...state.presetSelection.values()];
+  if (!paths.length) return;
+  if (anyJobBusy()) {
+    setStatus("已有渲染任务在运行，请先等待结束或停止", true);
+    return;
+  }
+  if (paths.length > 50) {
+    const ok = window.confirm(
+      `将渲染 ${paths.length} 个预设，可能需要很长时间。确定继续吗？`,
+    );
+    if (!ok) return;
+  }
+  setRenderMode("preset");
+  const started = await startRender({
+    presetPaths: paths,
+    force: true,
+    limit: paths.length,
+  });
+  if (started) setView("render");
+}
+
+async function loadPresets(options = {}) {
+  if (!options.skipSync && hubHas("syncAePresets")) {
+    const ae = $("renderAeVersion") ? $("renderAeVersion").value : "";
+    try {
+      const synced = await window.hub.syncAePresets({ ae, force: !!options.force });
+      if (synced && synced.ok) state.presetCatalog = synced;
+    } catch {
+      /* 同步失败不阻塞预设库读取 */
+    }
+  }
   const data = await window.hub.listPresets();
   state.presets = data.items || [];
+  prunePresetSelection();
   renderPresets();
+  updatePresetSourceOptions();
+}
+
+function updatePresetSourceOptions() {
+  const select = $("presetSourceFilter");
+  if (!select) return;
+  const external = state.presets.filter((item) => item.external).length;
+  for (const option of select.options) {
+    if (option.value === "external") {
+      option.textContent = external ? `AE 预设 (${external})` : "AE 预设";
+    }
+  }
+}
+
+async function syncAePresets(force) {
+  if (state.presetSyncing) return;
+  if (!hubHas("syncAePresets")) {
+    setStatus("主进程尚未提供 AE 预设同步接口", true);
+    return;
+  }
+  state.presetSyncing = true;
+  $("btnSyncAePresets").disabled = true;
+  setStatus("正在同步 AE 预设（只建索引，不复制文件）…");
+  try {
+    const ae = $("renderAeVersion").value || "";
+    const result = await window.hub.syncAePresets({ ae, force: !!force });
+    if (!result || !result.ok) {
+      const reason = (result && result.reason) || "";
+      setStatus(
+        reason === "no_ae" ? "没有找到可用的 After Effects" : "同步 AE 预设失败：" + reason,
+        true,
+      );
+      return;
+    }
+    await loadPresets({ skipSync: true });
+    const suffix = result.cached ? "（缓存）" : "";
+    setStatus(`已同步 ${result.count} 个 AE ${result.aeMajor || ""} 预设${suffix}`);
+  } finally {
+    state.presetSyncing = false;
+    $("btnSyncAePresets").disabled = false;
+  }
 }
 
 function bindPresetLongPress(card, item) {
+  if (item.external) return;
   card.addEventListener("pointerdown", (event) => {
     if (event.button !== undefined && event.button !== 0) return;
     cancelPresetHold();
@@ -572,6 +999,10 @@ function cancelPresetHold() {
 }
 
 function openPresetDelete(item) {
+  if (item.external) {
+    setStatus("AE 外部预设不能从预设库删除，请到 AE 预设目录中管理", true);
+    return;
+  }
   state.presetDeletePath = item.path;
   state.presetDeleteName = item.name;
   $("presetDeleteText").textContent =
@@ -637,6 +1068,824 @@ async function addDroppedPresets(files) {
   await finishAddPresets(await window.hub.importPaths(paths));
 }
 
+/* ---------- 效果库 ---------- */
+
+/* 效果库只读展示 AE 扫描结果：分类栏按插件分组（内置统一显示为「AE 内置」），
+ * 不支持新建/重命名/右键菜单，分类会跟着「同步 AE 分类」自动更新。 */
+const EFFECT_GROUP_BUILTIN = "AE 内置";
+const EFFECT_GROUP_FALLBACK = "其它插件";
+
+function effectGroupLabel(item) {
+  if (!item || item.source === "builtin") return EFFECT_GROUP_BUILTIN;
+  return String(item.plugin || EFFECT_GROUP_FALLBACK);
+}
+
+function effectGroupFromKey(key) {
+  return String(key || "").split("\u0000")[0];
+}
+
+function effectCategoryKey(item) {
+  return String((item && item.category) || "");
+}
+
+function effectCategoryLabel(item) {
+  return effectCategoryKey(item) || "未分类";
+}
+
+/* hasPreview 由数据层给出；老数据没有该字段时退回看 framePattern */
+function effectHasPreview(item) {
+  if (item && typeof item.hasPreview === "boolean") return item.hasPreview;
+  return !!(item && item.framePattern);
+}
+
+function effectStatusLabel(item) {
+  if (item && item.status === "pending") return "待渲染";
+  if (item && item.status === "blacklisted") return "已跳过";
+  return "暂无预览";
+}
+
+/* ---------- 效果库：收藏 / 选择 ---------- */
+
+function effectIsFavorite(matchName) {
+  return state.effectFavorites.has(String(matchName || ""));
+}
+
+function applyEffectFavorites(list) {
+  state.effectFavorites = new Set();
+  for (const name of list || []) {
+    const key = String(name || "");
+    if (key) state.effectFavorites.add(key);
+  }
+}
+
+/* 就地更新星标状态，避免收藏一次就重建 1000+ 张卡片 */
+function updateEffectFavoriteButtons() {
+  const grid = $("effectGrid");
+  if (!grid) return;
+  for (const card of grid.children) {
+    const matchName = String((card.dataset && card.dataset.matchName) || "");
+    const active = effectIsFavorite(matchName);
+    const thumb = card.children[0];
+    if (!thumb) continue;
+    for (const child of thumb.children) {
+      if (!String(child.className || "").includes("card-favorite-toggle")) continue;
+      child.classList.toggle("active", active);
+      child.setAttribute("aria-pressed", active ? "true" : "false");
+      child.title = active ? "取消收藏" : "收藏";
+    }
+  }
+}
+
+function effectIsSelected(matchName) {
+  return state.effectSelection.has(String(matchName || ""));
+}
+
+function effectSelectionBox(card) {
+  const thumb = card && card.children && card.children[0];
+  if (!thumb) return null;
+  for (const child of thumb.children) {
+    if (!String(child.className || "").includes("card-select")) continue;
+    const box = child.children[0];
+    if (box && box.type === "checkbox") return box;
+  }
+  return null;
+}
+
+function updateEffectSelectionUI() {
+  const count = state.effectSelection.size;
+  const renderBtn = $("btnEffectRenderSelected");
+  if (renderBtn) {
+    renderBtn.textContent = `渲染所选 (${count})`;
+    renderBtn.disabled = count === 0 || anyJobBusy();
+  }
+  const clearBtn = $("btnEffectClearSelection");
+  if (clearBtn) clearBtn.disabled = count === 0;
+
+  const grid = $("effectGrid");
+  if (!grid) return;
+  for (const card of grid.children) {
+    const matchName = String((card.dataset && card.dataset.matchName) || "");
+    const selected = effectIsSelected(matchName);
+    card.classList.toggle("selected", selected);
+    const box = effectSelectionBox(card);
+    if (box && box.checked !== selected) box.checked = selected;
+  }
+}
+
+/* 数据刷新后丢掉已经不存在的选择项，并换成最新的条目对象 */
+function pruneEffectSelection() {
+  const alive = new Map();
+  for (const item of state.effects) {
+    if (item.renderable) alive.set(String(item.matchName || ""), item);
+  }
+  for (const key of [...state.effectSelection.keys()]) {
+    if (!alive.has(key)) state.effectSelection.delete(key);
+    else state.effectSelection.set(key, alive.get(key));
+  }
+}
+
+/* 来源分组顺序：AE 内置第一，其它插件按名称排，「其它插件」最后 */
+function compareEffectGroupLabels(a, b) {
+  if (a === EFFECT_GROUP_BUILTIN) return -1;
+  if (b === EFFECT_GROUP_BUILTIN) return 1;
+  if (a === EFFECT_GROUP_FALLBACK) return 1;
+  if (b === EFFECT_GROUP_FALLBACK) return -1;
+  return a.localeCompare(b, "zh-CN");
+}
+
+/* 按 items 原顺序分组：组内分类按首次出现顺序，组间顺序再按来源排序 */
+function effectGroups() {
+  const groups = [];
+  const byLabel = new Map();
+  for (const item of state.effects) {
+    const label = effectGroupLabel(item);
+    let group = byLabel.get(label);
+    if (!group) {
+      group = { label, items: [], categories: [], categoryMap: new Map() };
+      byLabel.set(label, group);
+      groups.push(group);
+    }
+    group.items.push(item);
+    const category = effectCategoryKey(item);
+    if (!category) continue;
+    let row = group.categoryMap.get(category);
+    if (!row) {
+      row = { category, count: 0 };
+      group.categoryMap.set(category, row);
+      group.categories.push(row);
+    }
+    row.count++;
+  }
+  groups.sort((a, b) => compareEffectGroupLabels(a.label, b.label));
+  return groups;
+}
+
+function visibleEffects() {
+  const query = state.effectQuery.trim().toLowerCase();
+  return state.effects.filter((item) => {
+    if (state.effectFavoritesOnly && !effectIsFavorite(item.matchName)) return false;
+    if (state.effectPlugin !== "all" && effectGroupLabel(item) !== state.effectPlugin) return false;
+    if (state.effectCategory !== "all") {
+      const category = effectCategoryKey(item);
+      if (state.effectCategory === "__favorites__") {
+        if (!effectIsFavorite(item.matchName)) return false;
+      } else if (state.effectCategory === "__uncategorized__") {
+        if (category) return false;
+      } else if (effectGroupLabel(item) + "\u0000" + category !== state.effectCategory) {
+        return false;
+      }
+    }
+    if (!query) return true;
+    const haystack = [
+      item.name,
+      item.nameZh,
+      item.nameEn,
+      item.matchName,
+      item.displayName,
+      item.category,
+      item.categoryZh,
+      item.categoryEn,
+      item.plugin,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(query);
+  });
+}
+
+function effectCategoryRow(id, label, count) {
+  const li = document.createElement("li");
+  const button = document.createElement("button");
+  button.type = "button";
+  const active = state.effectCategory === id;
+  button.className =
+    "category-item" + (id === "__favorites__" ? " favorite-category" : "") + (active ? " active" : "");
+  const text = document.createElement("span");
+  text.className = "category-label";
+  text.textContent = label;
+  const badge = document.createElement("span");
+  badge.className = "category-count";
+  badge.textContent = String(count);
+  button.appendChild(text);
+  button.appendChild(badge);
+  button.addEventListener("click", () => {
+    state.effectCategory = id;
+    if (id === "__favorites__") {
+      /* 收藏是「分类选择」：显示全部收藏，清掉搜索并重置来源 */
+      state.effectPlugin = "all";
+      state.effectQuery = "";
+      const search = $("effectSearch");
+      if (search) search.value = "";
+    } else if (id === "all" || id === "__uncategorized__") {
+      state.effectPlugin = "all";
+    } else {
+      state.effectPlugin = effectGroupFromKey(id);
+    }
+    paintEffectsLibrary();
+  });
+  li.appendChild(button);
+  return li;
+}
+
+function renderEffectCategories(groups) {
+  const list = $("effectCategoryList");
+  if (!list) return;
+  const available = new Set(["all", "__uncategorized__", "__favorites__"]);
+  for (const group of groups) {
+    for (const row of group.categories) {
+      available.add(group.label + "\u0000" + row.category);
+    }
+  }
+  if (!available.has(state.effectCategory)) state.effectCategory = "all";
+
+  list.textContent = "";
+  list.appendChild(
+    effectCategoryRow(
+      "__favorites__",
+      "收藏",
+      state.effects.filter((item) => effectIsFavorite(item.matchName)).length,
+    ),
+  );
+  list.appendChild(effectCategoryRow("all", "全部效果", state.effects.length));
+  const uncategorized = state.effects.filter((item) => !effectCategoryKey(item)).length;
+  if (uncategorized) {
+    list.appendChild(effectCategoryRow("__uncategorized__", "未分类", uncategorized));
+  }
+  for (const group of groups) {
+    const collapsed = !!state.effectGroupCollapsed[group.label];
+    list.appendChild(effectGroupHeaderRow(group, collapsed));
+    if (collapsed) continue;
+    for (const row of group.categories) {
+      list.appendChild(
+        effectCategoryRow(group.label + "\u0000" + row.category, row.category, row.count),
+      );
+    }
+  }
+}
+
+/* 来源分组头：可点击折叠，箭头 ▾（展开）/ ▸（收起），状态持久化在 localStorage */
+function effectGroupHeaderRow(group, collapsed) {
+  const li = document.createElement("li");
+  li.className = "effect-group-toggle";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "category-item category-group-head" + (collapsed ? " collapsed" : "");
+  button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  const rendered = group.items.filter((item) => effectHasPreview(item)).length;
+  button.title =
+    `共 ${group.items.length} 条` + (rendered ? `，已生成 ${rendered} 条` : "");
+  const arrow = document.createElement("span");
+  arrow.className = "group-arrow";
+  arrow.setAttribute("aria-hidden", "true");
+  arrow.textContent = "▾";
+  const label = document.createElement("span");
+  label.className = "category-label";
+  label.textContent = group.label;
+  const count = document.createElement("span");
+  count.className = "category-count";
+  count.textContent = String(group.items.length);
+  button.appendChild(arrow);
+  button.appendChild(label);
+  button.appendChild(count);
+  button.addEventListener("click", () => toggleEffectGroupCollapsed(group.label));
+  li.appendChild(button);
+  return li;
+}
+
+function readEffectCollapsedGroups() {
+  try {
+    const raw = localStorage.getItem(EFFECT_GROUP_COLLAPSED_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return;
+    for (const [label, value] of Object.entries(parsed)) {
+      if (value) state.effectGroupCollapsed[label] = true;
+    }
+  } catch {
+    /* 本地状态损坏时按全部展开处理 */
+  }
+}
+
+function saveEffectCollapsedGroups() {
+  try {
+    const doc = {};
+    for (const [label, value] of Object.entries(state.effectGroupCollapsed)) {
+      if (value) doc[label] = true;
+    }
+    localStorage.setItem(EFFECT_GROUP_COLLAPSED_KEY, JSON.stringify(doc));
+  } catch {
+    /* 持久化失败不影响本次使用 */
+  }
+}
+
+function toggleEffectGroupCollapsed(label) {
+  if (state.effectGroupCollapsed[label]) delete state.effectGroupCollapsed[label];
+  else state.effectGroupCollapsed[label] = true;
+  saveEffectCollapsedGroups();
+  /* 只重绘分类栏：折叠不影响网格，避免 1000+ 张卡片跟着重建 */
+  renderEffectCategories(effectGroups());
+}
+
+function fillEffectPluginSelect(groups) {
+  const select = $("effectPluginFilter");
+  if (!select) return;
+  const labels = groups.map((group) => group.label);
+  if (state.effectPlugin !== "all" && !labels.includes(state.effectPlugin)) {
+    state.effectPlugin = "all";
+  }
+  select.textContent = "";
+  const all = document.createElement("option");
+  all.value = "all";
+  all.textContent = "全部来源";
+  select.appendChild(all);
+  for (const label of labels) {
+    const option = document.createElement("option");
+    option.value = label;
+    option.textContent = label;
+    select.appendChild(option);
+  }
+  select.value = state.effectPlugin;
+}
+
+function effectSpritePosition(item) {
+  const cellSize = Math.max(1, Number(item.cellSize) || 128);
+  const columns = Math.max(1, Number(item.columns) || 1);
+  const rows = Math.max(1, Number(item.rows) || 1);
+  const x = Number(item.x) || 0;
+  const y = Number(item.y) || 0;
+  const posX = columns > 1 ? (x / cellSize / (columns - 1)) * 100 : 0;
+  const posY = rows > 1 ? (y / cellSize / (rows - 1)) * 100 : 0;
+  return {
+    size: `${columns * 100}% ${rows * 100}%`,
+    position: `${posX.toFixed(4)}% ${posY.toFixed(4)}%`,
+  };
+}
+
+/* 内置是 8×8 整网、插件是单行 8 格：用背景百分比裁切，格子永远精确等于缩略框 */
+function applyEffectPreview(preview, item, frameIndex) {
+  if (!preview) return;
+  const slice = effectSpritePosition(item);
+  preview.style.backgroundSize = slice.size;
+  preview.style.backgroundPosition = slice.position;
+  const url = frameUrl(item, frameIndex);
+  if (url) preview.style.backgroundImage = `url("${url}")`;
+}
+
+function bindEffectHoverPreview(card, preview, item) {
+  if (!item.animated || Number(item.frames) <= 1 || !item.framePattern) return;
+  const frames = Math.max(1, Number(item.frames) || 1);
+  const fps = Math.max(1, Number(item.fps) || 12);
+  const delay = Math.max(40, Math.round(1000 / fps));
+  const stillFrame = Math.min(frames - 1, Math.max(0, Number(item.stillFrame) || 0));
+  const frameNodes = [];
+  let preloaded = false;
+  let timer = null;
+
+  function preload() {
+    if (preloaded) return;
+    preloaded = true;
+    for (let i = 0; i < frames; i++) {
+      const node = new Image();
+      node.src = frameUrl(item, i);
+      frameNodes.push(node);
+    }
+  }
+
+  function stop() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    applyEffectPreview(preview, item, stillFrame);
+    if (state.effectHoverStop === stop) state.effectHoverStop = null;
+  }
+
+  card.addEventListener("mouseenter", () => {
+    if (state.effectHoverStop && state.effectHoverStop !== stop) state.effectHoverStop();
+    state.effectHoverStop = stop;
+    preload();
+    if (timer) clearInterval(timer);
+    let index = 0;
+    applyEffectPreview(preview, item, index);
+    timer = setInterval(() => {
+      index = (index + 1) % frames;
+      applyEffectPreview(preview, item, index);
+    }, delay);
+  });
+  card.addEventListener("mouseleave", stop);
+}
+
+function bindEffectFavoriteButton(thumb, item) {
+  const active = effectIsFavorite(item.matchName);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "card-favorite-toggle" + (active ? " active" : "");
+  button.dataset.matchName = String(item.matchName || "");
+  button.setAttribute("aria-pressed", active ? "true" : "false");
+  button.title = active ? "取消收藏" : "收藏";
+  button.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z"/></svg>';
+  button.addEventListener("pointerdown", (event) => event.stopPropagation());
+  button.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    await toggleEffectFavorite(item);
+  });
+  button.addEventListener("dblclick", (event) => event.stopPropagation());
+  thumb.appendChild(button);
+}
+
+function bindEffectSelectCheckbox(thumb, item) {
+  if (!item.renderable) return;
+  const label = document.createElement("label");
+  label.className = "card-select";
+  label.title = "选择这个效果用于渲染";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = effectIsSelected(item.matchName);
+  box.setAttribute("aria-label", "选择 " + effectDisplayName(item));
+  label.appendChild(box);
+  const swallow = (event) => event.stopPropagation();
+  label.addEventListener("pointerdown", swallow);
+  label.addEventListener("click", swallow);
+  label.addEventListener("dblclick", swallow);
+  box.addEventListener("change", () => {
+    const matchName = String(item.matchName || "");
+    if (box.checked) state.effectSelection.set(matchName, item);
+    else state.effectSelection.delete(matchName);
+    updateEffectSelectionUI();
+    paintEffectHint(visibleEffects().length);
+    setStatus(
+      state.effectSelection.size
+        ? `已选择 ${state.effectSelection.size} 个效果`
+        : "已清空效果选择",
+    );
+  });
+  thumb.appendChild(label);
+}
+
+async function toggleEffectFavorite(item) {
+  const matchName = String((item && item.matchName) || "");
+  if (!matchName) return;
+  if (!hubHas("toggleEffectFavorite")) {
+    setStatus("主进程尚未提供效果收藏接口", true);
+    return;
+  }
+  let result = null;
+  try {
+    result = await window.hub.toggleEffectFavorite(matchName);
+  } catch {
+    result = null;
+  }
+  if (!result || !result.ok) {
+    setStatus("收藏失败：" + ((result && result.reason) || "未知原因"), true);
+    return;
+  }
+  applyEffectFavorites(result.items);
+  if (state.effectFavoritesOnly || state.effectCategory === "__favorites__") {
+    paintEffectsLibrary();
+  } else {
+    updateEffectFavoriteButtons();
+    renderEffectCategories(effectGroups());
+    paintEffectHint(visibleEffects().length);
+  }
+  setStatus(
+    result.favorite
+      ? `已收藏「${effectDisplayName(item)}」`
+      : `已取消收藏「${effectDisplayName(item)}」`,
+  );
+}
+
+function selectUnrenderedEffects() {
+  const candidates = visibleEffects().filter(
+    (item) => item.renderable && !item.hasPreview && item.status === "pending",
+  );
+  if (!candidates.length) {
+    setStatus("当前筛选下没有待渲染的插件效果", true);
+    return;
+  }
+  for (const item of candidates) {
+    state.effectSelection.set(String(item.matchName || ""), item);
+  }
+  updateEffectSelectionUI();
+  paintEffectHint(visibleEffects().length);
+  setStatus(`已选择 ${candidates.length} 个待渲染效果`);
+}
+
+function clearEffectLibrarySelection() {
+  if (!state.effectSelection.size) return;
+  state.effectSelection.clear();
+  updateEffectSelectionUI();
+  paintEffectHint(visibleEffects().length);
+  setStatus("已清空效果选择");
+}
+
+/* 与渲染页「选择效果」共用同一个 startPluginEffects 接口 */
+async function startEffectRender(matchNames, force, progressMessage) {
+  const names = (matchNames || []).map((name) => String(name || "")).filter(Boolean);
+  if (!names.length) return false;
+  if (anyJobBusy()) {
+    setStatus("已有渲染任务在运行，请先等待结束或停止", true);
+    return false;
+  }
+  if (!hubHas("startPluginEffects")) {
+    setStatus("主进程尚未提供插件效果渲染接口", true);
+    return false;
+  }
+  setRenderMode("plugin");
+  let result = null;
+  try {
+    result = await window.hub.startPluginEffects({
+      matchNames: names,
+      force: !!force,
+      ae: $("pluginEffectAeVersion").value,
+      background: $("pluginEffectBackground").value || "",
+      limit: Math.max(8, names.length),
+      rounds: Math.max(20, names.length * 2),
+    });
+  } catch {
+    result = null;
+  }
+  if (!result || !result.ok) {
+    const reason = (result && result.reason) || "";
+    const messages = {
+      nothing_to_render: "所选条目均已生成或已跳过；勾选强制重渲后再试",
+      no_catalog: "还没有插件目录，请先扫描插件目录",
+      already_running: "已有渲染任务在运行，请稍后再试",
+      preset_render_running: "预设渲染进行中，结束后才能生成插件效果",
+      write_failed: "写入效果选择文件失败，请重试",
+    };
+    setStatus(messages[reason] || "启动失败：" + (reason || "未知原因"), true);
+    return false;
+  }
+  const selected = Number(result.selectedCount) || names.length;
+  const skipped = Number(result.skippedCount) || 0;
+  beginPluginEffectRun(
+    skipped
+      ? `已开始渲染所选 ${selected} 条插件效果（跳过 ${skipped} 条）`
+      : `已开始渲染所选 ${selected} 条插件效果`,
+    progressMessage || `正在渲染所选 ${selected} 条插件效果…`,
+  );
+  setView("render");
+  return true;
+}
+
+async function renderSelectedEffects() {
+  const items = [...state.effectSelection.values()];
+  if (!items.length) return;
+  const force = items.some((item) => item.hasPreview || item.status === "blacklisted");
+  await startEffectRender(items.map((item) => item.matchName), force);
+}
+
+async function renderSingleEffect(item) {
+  if (!item || !item.renderable) {
+    setStatus("这个效果不能单独渲染", true);
+    return;
+  }
+  await startEffectRender([item.matchName], true, `正在单独渲染「${effectDisplayName(item)}」…`);
+}
+
+async function clearEffectRender(item) {
+  if (!item || !item.generated) return;
+  if (!hubHas("clearEffectRender")) {
+    setStatus("主进程尚未提供取消渲染接口", true);
+    return;
+  }
+  let result = null;
+  try {
+    result = await window.hub.clearEffectRender(item.matchName);
+  } catch {
+    result = null;
+  }
+  if (!result || !result.ok) {
+    setStatus("取消渲染失败：" + ((result && result.reason) || "未知原因"), true);
+    return;
+  }
+  await loadEffects();
+  const deleted = Number(result.deleted) || 0;
+  setStatus(
+    `已取消「${effectDisplayName(item)}」的预览渲染` + (deleted ? `，清理 ${deleted} 个文件` : ""),
+  );
+}
+
+/* 效果库右键菜单：复用预设库的 #categoryMenu 容器与 menuButton 帮助函数 */
+function openEffectMenu(item, x, y) {
+  const menu = $("categoryMenu");
+  if (!menu) return;
+  menu.textContent = "";
+  menu.appendChild(menuTitle(effectDisplayName(item)));
+  const favorite = effectIsFavorite(item.matchName);
+  menu.appendChild(menuButton(favorite ? "取消收藏" : "收藏", favorite, false, () =>
+    toggleEffectFavorite(item),
+  ));
+  if (item.renderable) {
+    menu.appendChild(menuButton("单独渲染", false, false, () => renderSingleEffect(item)));
+  }
+  if (item.generated) {
+    menu.appendChild(menuButton("取消渲染", false, true, () => clearEffectRender(item)));
+  }
+  showCategoryMenu(x, y);
+}
+
+function effectCardNode(item) {
+  const card = document.createElement("div");
+  card.className = "card" + (effectIsSelected(item.matchName) ? " selected" : "");
+  card.dataset.matchName = String(item.matchName || "");
+
+  const name = effectDisplayName(item);
+  const category = effectCategoryLabel(item);
+  const hasPreview = effectHasPreview(item);
+  const frames = Math.max(1, Number(item.frames) || 1);
+  const stillFrame = Math.min(frames - 1, Math.max(0, Number(item.stillFrame) || 0));
+
+  const thumb = document.createElement("div");
+  thumb.className = "card-thumb";
+  let preview = null;
+  if (hasPreview && item.framePattern) {
+    preview = document.createElement("div");
+    preview.className = "effect-preview";
+    applyEffectPreview(preview, item, stillFrame);
+    thumb.appendChild(preview);
+  } else {
+    const placeholder = document.createElement("div");
+    placeholder.className = "placeholder";
+    placeholder.textContent = effectStatusLabel(item);
+    thumb.appendChild(placeholder);
+  }
+  if (hasPreview && !item.animated) {
+    const dot = document.createElement("span");
+    dot.className = "card-static-dot";
+    dot.title = "静止帧";
+    thumb.appendChild(dot);
+  }
+  if (preview) bindEffectHoverPreview(card, preview, item);
+  bindEffectSelectCheckbox(thumb, item);
+  bindEffectFavoriteButton(thumb, item);
+
+  const body = document.createElement("div");
+  body.className = "card-body";
+  const nameNode = document.createElement("div");
+  nameNode.className = "card-name";
+  nameNode.textContent = name;
+  const categoryNode = document.createElement("div");
+  categoryNode.className = "card-category";
+  categoryNode.textContent = category;
+  body.appendChild(nameNode);
+  body.appendChild(categoryNode);
+
+  const statusLabel = hasPreview ? "" : effectStatusLabel(item);
+  card.title = [name, String(item.matchName || ""), category, statusLabel]
+    .filter(Boolean)
+    .join("\n");
+  card.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    openEffectMenu(item, event.clientX, event.clientY);
+  });
+  card.appendChild(thumb);
+  card.appendChild(body);
+  return card;
+}
+
+function paintEffectEmpty(hasData) {
+  const empty = $("emptyEffects");
+  if (!empty) return;
+  const title = document.createElement("p");
+  title.className = "empty-title";
+  const subs = [];
+  if (hasData) {
+    title.textContent = "没有符合筛选的效果";
+    subs.push("试试清空搜索、切换来源，或者点左侧的「全部效果」。");
+  } else {
+    title.textContent = "效果库还是空的";
+    subs.push("插件效果要先到「渲染」页生成预览，生成后会自动出现在这里。");
+    subs.push("内置效果预览随 DreamEngine 面板安装，装好后重启 Hub 就能看到。");
+    subs.push("分类会跟随 After Effects 自动同步，不用手动新建。");
+  }
+  empty.textContent = "";
+  empty.appendChild(title);
+  for (const text of subs) {
+    const sub = document.createElement("p");
+    sub.className = "empty-sub";
+    sub.textContent = text;
+    empty.appendChild(sub);
+  }
+}
+
+function effectCounts() {
+  const counts = (state.effectData && state.effectData.counts) || {};
+  const total = Number(counts.total) || state.effects.length;
+  const builtin =
+    Number(counts.builtin) || state.effects.filter((item) => item.source === "builtin").length;
+  const plugin = Number(counts.plugin) || Math.max(0, total - builtin);
+  const rendered =
+    Number(counts.rendered) || state.effects.filter((item) => effectHasPreview(item)).length;
+  const categories =
+    Number(counts.categories) ||
+    new Set(state.effects.map((item) => effectCategoryKey(item)).filter(Boolean)).size;
+  return { total, builtin, plugin, rendered, categories };
+}
+
+function paintEffectHint(shown) {
+  const hint = $("effectHint");
+  if (!hint) return;
+  const counts = effectCounts();
+  if (!counts.total) {
+    hint.textContent = "";
+    return;
+  }
+  const parts = [
+    `共 ${counts.total} 个效果`,
+    `内置 ${counts.builtin}`,
+    `插件 ${counts.plugin}`,
+    `已生成预览 ${counts.rendered}`,
+    `${counts.categories} 个分类`,
+  ];
+  if (state.effectSelection.size) parts.push(`已选 ${state.effectSelection.size}`);
+  const filtering =
+    !!state.effectQuery.trim() ||
+    state.effectCategory !== "all" ||
+    state.effectPlugin !== "all" ||
+    state.effectFavoritesOnly;
+  if (filtering) parts.push(`当前显示 ${shown} 个`);
+  hint.textContent = parts.join(" · ");
+}
+
+/* 工具栏的「仅显示已收藏效果」是独立开关（与侧栏收藏分类选择分开） */
+function syncEffectFavoritesOnlyButton() {
+  const button = $("btnEffectFavoritesOnly");
+  if (!button) return;
+  button.setAttribute("aria-pressed", state.effectFavoritesOnly ? "true" : "false");
+}
+
+function paintEffectSyncButton() {
+  const button = $("btnEffectSyncCategories");
+  if (!button) return;
+  const scanning = !!state.pluginCatalogScanning;
+  button.disabled = scanning || anyJobBusy() || !hubHas("scanPluginEffects");
+  button.textContent = scanning ? "正在同步…" : "同步 AE 分类";
+}
+
+function paintEffectsLibrary() {
+  const grid = $("effectGrid");
+  if (!grid) return;
+  if (state.effectHoverStop) state.effectHoverStop();
+  const groups = effectGroups();
+  renderEffectCategories(groups);
+  fillEffectPluginSelect(groups);
+  const items = visibleEffects();
+
+  grid.textContent = "";
+  grid.hidden = items.length === 0;
+  const empty = $("emptyEffects");
+  if (empty) empty.hidden = items.length > 0;
+  if (!items.length) paintEffectEmpty(state.effects.length > 0);
+  for (const item of items) grid.appendChild(effectCardNode(item));
+
+  $("tabEffectCount").textContent = String(effectCounts().total);
+  updateEffectSelectionUI();
+  syncEffectFavoritesOnlyButton();
+  paintEffectHint(items.length);
+  paintEffectSyncButton();
+}
+
+async function loadEffects() {
+  let data = null;
+  if (hubHas("listEffects")) {
+    try {
+      data = await window.hub.listEffects();
+    } catch {
+      data = null;
+    }
+  }
+  state.effectData = data && data.ok ? data : null;
+  state.effects = data && data.ok && Array.isArray(data.items) ? data.items : [];
+  const favorites =
+    data && data.ok && Array.isArray(data.favorites)
+      ? data.favorites
+      : data && data.ok
+        ? state.effects.filter((item) => item.favorite).map((item) => item.matchName)
+        : [];
+  applyEffectFavorites(favorites);
+  pruneEffectSelection();
+  paintEffectsLibrary();
+}
+
+async function refreshEffects() {
+  await loadEffects();
+  setStatus("已刷新");
+}
+
+async function syncEffectCategories() {
+  if (state.pluginCatalogScanning) return;
+  if (!hubHas("scanPluginEffects")) {
+    setStatus("主进程尚未提供扫描插件目录接口", true);
+    return;
+  }
+  setStatus("正在同步 AE 分类…");
+  await scanPluginCatalog();
+  paintEffectsLibrary();
+}
+
 /* ---------- 渲染页 ---------- */
 
 function paintAe(ae) {
@@ -673,7 +1922,7 @@ function paintAe(ae) {
   }
 
   $("btnStart").disabled =
-    state.rendering || state.pluginEffectRendering || !ae.exe;
+    anyJobBusy() || !ae.exe;
 }
 
 function paintPluginEffectAe(ae) {
@@ -704,7 +1953,7 @@ function paintPluginEffectAe(ae) {
   }
 
   $("btnPluginEffectStart").disabled =
-    state.pluginEffectRendering || state.rendering || ae.running || !ae.exe || !extReady;
+    anyJobBusy() || ae.running || !ae.exe || !extReady;
 }
 
 function paintProgress(renderState) {
@@ -830,10 +2079,19 @@ async function startRender(overrides) {
     retryFailed: !extra.onlyPreset,
     ...extra,
   };
+  const selectedPaths = Array.isArray(extra.presetPaths) ? extra.presetPaths : null;
   const result = await window.hub.startRender(options);
-  if (!result.ok) {
-    setStatus("启动失败：" + (result.reason || ""), true);
-    return;
+  if (!result || !result.ok) {
+    const reason = (result && result.reason) || "";
+    const messages = {
+      nothing_to_render: "所选预设没有需要渲染的条目",
+      no_catalog: "还没有插件目录，请先扫描插件目录",
+      already_running: "已有渲染任务在运行",
+      preset_render_running: "已有渲染任务在运行",
+      write_failed: "写入预设选择文件失败",
+    };
+    setStatus("启动失败：" + (messages[reason] || reason || "未知原因"), true);
+    return false;
   }
 
   state.rendering = true;
@@ -842,7 +2100,16 @@ async function startRender(overrides) {
   $("btnStart").disabled = true;
   $("btnPluginEffectStart").disabled = true;
   $("btnStop").disabled = false;
-  setStatus(options.onlyPreset ? "已开始单独渲染" : "渲染已启动");
+  const selectedCount = selectedPaths
+    ? Number(result.selectedCount) || selectedPaths.length
+    : 0;
+  setStatus(
+    selectedCount
+      ? `已开始渲染所选 ${selectedCount} 个预设`
+      : options.onlyPreset
+        ? "已开始单独渲染"
+        : "渲染已启动",
+  );
   startPolling();
 
   // AE 还在跑时 ps1 会进入等待，这里先把话说清楚，别让人以为卡住了
@@ -853,9 +2120,12 @@ async function startRender(overrides) {
   $("renderMessage").textContent =
     state.snapshot && state.snapshot.ae.running
       ? "等待你关闭 After Effects…"
-      : options.onlyPreset
-        ? "正在单独渲染所选预设（约 25 秒启动 AE）…"
-        : "正在启动专用 AE 实例（约 25 秒）…";
+      : selectedCount
+        ? `正在渲染所选 ${selectedCount} 个预设（约 25 秒启动 AE）…`
+        : options.onlyPreset
+          ? "正在单独渲染所选预设（约 25 秒启动 AE）…"
+          : "正在启动专用 AE 实例（约 25 秒）…";
+  return true;
 }
 
 async function renderSinglePreset(item) {
@@ -902,6 +2172,7 @@ function paintPluginEffectProgress(renderState) {
   const percent = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
   const labels = {
     starting: "准备中",
+    scanning: "扫描中",
     rendering: "生成中",
     done: "已完成",
     paused: "可继续",
@@ -940,6 +2211,30 @@ function stopPluginEffectPolling() {
   }
 }
 
+function repaintPluginEffectAe() {
+  if (state.snapshot) paintPluginEffectAe(state.snapshot.ae);
+}
+
+function beginPluginEffectRun(statusText, startMessage) {
+  state.pluginEffectRendering = true;
+  state.pluginEffectStopRequested = false;
+  updateRenderModeButtons();
+  repaintPluginEffectAe();
+  paintPluginCatalog();
+  $("btnPluginEffectStart").disabled = true;
+  $("btnStart").disabled = true;
+  $("btnPluginEffectStop").disabled = false;
+  paintPluginEffectProgress({
+    phase: "starting",
+    total: 0,
+    current: 0,
+    remaining: 0,
+    message: startMessage || "正在读取当前 After Effects 的插件效果清单…",
+  });
+  startPluginEffectPolling();
+  setStatus(statusText || "插件效果预览生成已启动");
+}
+
 async function startPluginEffects() {
   if (!state.snapshot || !state.snapshot.ae.installed.length) return;
   const options = {
@@ -949,39 +2244,448 @@ async function startPluginEffects() {
     rounds: Number($("pluginEffectRounds").value) || 200,
   };
   const result = await window.hub.startPluginEffects(options);
-  if (!result.ok) {
-    setStatus("插件效果生成启动失败：" + (result.reason || ""), true);
+  if (!result || !result.ok) {
+    const messages = {
+      already_running: "已有插件效果任务在运行，请先停止",
+      preset_render_running: "预设渲染进行中，结束后才能生成插件效果",
+      write_failed: "写入选择文件失败，请重试",
+    };
+    setStatus(
+      "插件效果生成启动失败：" + (messages[result && result.reason] || (result && result.reason) || ""),
+      true,
+    );
     return;
   }
-
-  state.pluginEffectRendering = true;
-  state.pluginEffectStopRequested = false;
-  updateRenderModeButtons();
-  $("btnPluginEffectStart").disabled = true;
-  $("btnStart").disabled = true;
-  $("btnPluginEffectStop").disabled = false;
-  setStatus("插件效果预览生成已启动");
-  paintPluginEffectProgress({
-    phase: "starting",
-    total: 0,
-    current: 0,
-    remaining: 0,
-    message: "正在读取当前 After Effects 的插件效果清单…",
-  });
-  startPluginEffectPolling();
+  beginPluginEffectRun("插件效果预览生成已启动", "正在读取当前 After Effects 的插件效果清单…");
 }
 
 async function stopPluginEffects() {
   state.pluginEffectStopRequested = true;
+  const wasScan = state.pluginCatalogScanning;
   const result = await window.hub.stopPluginEffects();
   if (!result || !result.ok) state.pluginEffectStopRequested = false;
   state.pluginEffectRendering = false;
+  state.pluginCatalogScanning = false;
   updateRenderModeButtons();
   $("btnPluginEffectStart").disabled = false;
   $("btnPluginEffectStop").disabled = true;
   stopPluginEffectPolling();
-  setStatus("已停止插件效果生成");
-  $("pluginEffectMessage").textContent = "已手动停止，下次开始会从断点继续。";
+  paintPluginCatalog();
+  setStatus(wasScan ? "已停止扫描插件目录" : "已停止插件效果生成");
+  $("pluginEffectMessage").textContent = wasScan
+    ? "已停止扫描插件目录。"
+    : "已手动停止，下次开始会从断点继续。";
+}
+
+/* ---------- 插件目录 / 选择效果 ---------- */
+
+const EFFECT_STATUS = {
+  pending: { label: "待渲染", className: "pending" },
+  rendered: { label: "已生成", className: "rendered" },
+  blacklisted: { label: "已跳过", className: "skipped" },
+  excluded: { label: "不可渲染", className: "blocked" },
+  no_preview: { label: "不可渲染", className: "blocked" },
+};
+
+const EFFECT_REASONS = {
+  pseudo: "伪效果",
+  obsolete: "已过时",
+  no_category: "没有分类",
+  poor_preview: "预览效果差",
+  crash: "渲染崩溃",
+  render_error: "渲染报错",
+  render_timeout: "渲染超时",
+  ae_dialog: "AE 报错",
+};
+
+function effectDisplayName(item) {
+  return item.displayName || item.nameZh || item.nameEn || item.matchName || "(未命名效果)";
+}
+
+function effectReasonLabel(item) {
+  if (!item || !item.reason) return "";
+  return EFFECT_REASONS[item.reason] || String(item.reason);
+}
+
+function catalogItems() {
+  return (state.pluginCatalog && state.pluginCatalog.items) || [];
+}
+
+async function refreshPluginCatalog() {
+  let catalog = null;
+  if (hubHas("pluginEffectsCatalog")) {
+    try {
+      catalog = await window.hub.pluginEffectsCatalog();
+    } catch {
+      catalog = null;
+    }
+  }
+  state.pluginCatalog = catalog && catalog.ok ? catalog : null;
+  prunePluginEffectSelection();
+  paintPluginCatalog();
+}
+
+function prunePluginEffectSelection() {
+  const names = new Set(catalogItems().map((item) => item.matchName));
+  for (const key of [...state.pluginEffectSelection.keys()]) {
+    if (!names.has(key)) state.pluginEffectSelection.delete(key);
+  }
+}
+
+function paintPluginCatalog() {
+  const summary = $("pluginCatalogSummary");
+  const status = $("pluginCatalogStatus");
+  const scanBtn = $("btnScanPluginCatalog");
+  const pickBtn = $("btnPickPluginEffects");
+  if (!summary) return;
+
+  const catalog = state.pluginCatalog;
+  const items = catalogItems();
+  const scanning = state.pluginCatalogScanning;
+  const busy = anyJobBusy();
+
+  scanBtn.disabled = busy || !hubHas("scanPluginEffects");
+  scanBtn.textContent = scanning ? "正在扫描…" : "扫描插件目录";
+  pickBtn.disabled = scanning || !!state.pluginEffectRendering || !items.length;
+
+  if (scanning) {
+    summary.textContent = "正在扫描插件目录…";
+    status.hidden = false;
+    status.textContent = "会启动专用 After Effects 读取效果清单，结束后自动刷新。";
+    return;
+  }
+
+  if (!items.length) {
+    summary.textContent = "未扫描插件目录";
+    status.hidden = false;
+    status.textContent = "先扫描一次，才能按效果勾选渲染。";
+    return;
+  }
+
+  const counts = catalog.counts || {};
+  const total = Number(counts.total) || items.length;
+  const pending = Number(counts.pending) || 0;
+  const rendered = Number(counts.rendered) || 0;
+  const skipped =
+    (Number(counts.blacklisted) || 0) +
+    (Number(counts.excluded) || 0) +
+    (Number(counts.noPreview) || 0);
+  const aeLabel = catalog.aeMajor ? "AE " + catalog.aeMajor : "After Effects";
+  summary.textContent =
+    `已扫描：${aeLabel}，${total} 条（待渲染 ${pending} / 已生成 ${rendered} / 已跳过 ${skipped}）`;
+  summary.title = catalog.scannedAt ? "扫描时间：" + catalog.scannedAt : "";
+  status.hidden = true;
+  status.textContent = "";
+}
+
+async function scanPluginCatalog() {
+  if (state.pluginCatalogScanning) return;
+  if (!hubHas("scanPluginEffects")) {
+    setStatus("主进程尚未提供扫描插件目录接口", true);
+    return;
+  }
+  const result = await window.hub.scanPluginEffects({
+    ae: $("pluginEffectAeVersion").value,
+  });
+  if (!result || !result.ok) {
+    const reason = (result && result.reason) || "";
+    const messages = {
+      already_running: "已有插件效果任务在运行，请先停止后再扫描",
+      preset_render_running: "预设渲染进行中，结束后才能扫描插件目录",
+    };
+    setStatus(messages[reason] || "扫描启动失败：" + (reason || "未知原因"), true);
+    return;
+  }
+  beginCatalogScan();
+}
+
+function beginCatalogScan() {
+  state.pluginCatalogScanning = true;
+  state.pluginEffectStopRequested = false;
+  paintPluginCatalog();
+  updateRenderModeButtons();
+  repaintPluginEffectAe();
+  $("btnPluginEffectStart").disabled = true;
+  $("btnPluginEffectStop").disabled = false;
+  paintPluginEffectProgress({
+    phase: "starting",
+    mode: "catalog",
+    total: 0,
+    current: 0,
+    remaining: 0,
+    message: "正在启动专用 After Effects 扫描插件目录…",
+  });
+  startPluginEffectPolling();
+  setStatus("正在扫描插件目录…");
+}
+
+function comparePluginNames(a, b) {
+  if (a === "其它插件") return 1;
+  if (b === "其它插件") return -1;
+  return a.localeCompare(b, "zh-CN");
+}
+
+function effectPickerVisibleItems() {
+  const filters = state.effectPicker;
+  const query = filters.query.trim().toLowerCase();
+  return catalogItems().filter((item) => {
+    const plugin = item.plugin || "其它插件";
+    if (filters.plugin && plugin !== filters.plugin) return false;
+    if (filters.hideRendered && item.status === "rendered") return false;
+    if (!query) return true;
+    const haystack = [
+      effectDisplayName(item),
+      item.nameZh,
+      item.nameEn,
+      item.matchName,
+      item.category,
+      item.categoryZh,
+      item.plugin,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(query);
+  });
+}
+
+function effectRowNode(item) {
+  const meta = EFFECT_STATUS[item.status] || {
+    label: item.status || "未知",
+    className: "",
+  };
+  const reason = effectReasonLabel(item);
+  const row = document.createElement("label");
+  row.className = "effect-row";
+
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = !!state.pluginEffectSelection.has(item.matchName);
+  if (!item.selectable) {
+    row.classList.add("disabled");
+    box.disabled = true;
+    box.checked = false;
+  }
+
+  const main = document.createElement("span");
+  main.className = "effect-main";
+  const name = document.createElement("span");
+  name.className = "effect-name";
+  name.textContent = effectDisplayName(item);
+  const metaText = [item.category || item.categoryZh || "未分类"];
+  if (reason) metaText.push("原因：" + reason);
+  else if (item.status === "no_preview") metaText.push("该分类不生成预览");
+  else if (item.status === "blacklisted" && item.reason) {
+    metaText.push(effectReasonLabel(item) || String(item.reason));
+  }
+  const metaNode = document.createElement("span");
+  metaNode.className = "effect-meta";
+  metaNode.textContent = metaText.join(" · ");
+  main.appendChild(name);
+  main.appendChild(metaNode);
+
+  const badge = document.createElement("span");
+  badge.className = "effect-badge " + meta.className;
+  badge.textContent = meta.label;
+
+  row.title = [effectDisplayName(item), item.matchName, reason ? "原因：" + reason : ""]
+    .filter(Boolean)
+    .join("\n");
+  box.addEventListener("change", () => {
+    if (box.checked) state.pluginEffectSelection.set(item.matchName, item);
+    else state.pluginEffectSelection.delete(item.matchName);
+    updateEffectPickerSelection();
+  });
+  row.appendChild(box);
+  row.appendChild(main);
+  row.appendChild(badge);
+  return row;
+}
+
+function renderEffectPickerList() {
+  const list = $("effectPickerList");
+  if (!list) return;
+  const items = effectPickerVisibleItems();
+  list.textContent = "";
+  $("effectPickerSub").textContent =
+    `目录共 ${catalogItems().length} 条，当前显示 ${items.length} 条`;
+
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "effect-picker-empty";
+    empty.textContent = "没有符合筛选条件的效果。";
+    list.appendChild(empty);
+    updateEffectPickerSelection();
+    return;
+  }
+
+  const groups = new Map();
+  for (const item of items) {
+    const plugin = item.plugin || "其它插件";
+    if (!groups.has(plugin)) groups.set(plugin, []);
+    groups.get(plugin).push(item);
+  }
+  const pluginNames = [...groups.keys()].sort(comparePluginNames);
+  for (const plugin of pluginNames) {
+    const group = groups
+      .get(plugin)
+      .slice()
+      .sort((a, b) => effectDisplayName(a).localeCompare(effectDisplayName(b), "zh-CN"));
+    const section = document.createElement("div");
+    section.className = "effect-group";
+    section.dataset.plugin = plugin;
+    const head = document.createElement("div");
+    head.className = "effect-group-head";
+    const title = document.createElement("span");
+    title.className = "effect-group-title";
+    title.textContent = plugin;
+    const count = document.createElement("span");
+    count.className = "effect-group-count";
+    head.appendChild(title);
+    head.appendChild(count);
+    section.appendChild(head);
+    for (const item of group) section.appendChild(effectRowNode(item));
+    list.appendChild(section);
+  }
+  updateEffectPickerSelection();
+}
+
+function updateEffectPickerSelection() {
+  const count = state.pluginEffectSelection.size;
+  $("effectSelectedCount").textContent = `已选 ${count} 项`;
+  $("effectRenderSelected").disabled = count === 0 || !!state.pluginCatalogScanning;
+  $("effectClearAll").disabled = count === 0;
+
+  for (const section of document.querySelectorAll("#effectPickerList .effect-group")) {
+    const plugin = section.dataset.plugin || "";
+    const groupItems = effectPickerVisibleItems().filter(
+      (item) => (item.plugin || "其它插件") === plugin,
+    );
+    const selected = groupItems.filter((item) =>
+      state.pluginEffectSelection.has(item.matchName),
+    ).length;
+    const countNode = section.querySelector(".effect-group-count");
+    if (countNode) {
+      countNode.textContent =
+        `${groupItems.length} 条` + (selected ? ` · 已选 ${selected}` : "");
+    }
+  }
+}
+
+function fillEffectPluginFilter() {
+  const select = $("effectPickerPluginFilter");
+  const plugins = [
+    ...new Set(catalogItems().map((item) => item.plugin || "其它插件")),
+  ].sort(comparePluginNames);
+  select.textContent = "";
+  const all = document.createElement("option");
+  all.value = "";
+  all.textContent = "全部插件";
+  select.appendChild(all);
+  for (const plugin of plugins) {
+    const option = document.createElement("option");
+    option.value = plugin;
+    option.textContent = plugin;
+    select.appendChild(option);
+  }
+  select.value = plugins.includes(state.effectPicker.plugin)
+    ? state.effectPicker.plugin
+    : "";
+  state.effectPicker.plugin = select.value;
+}
+
+function setEffectPickerStatus(text, isError) {
+  const node = $("effectPickerStatus");
+  node.textContent = text || "";
+  node.classList.toggle("danger", !!isError);
+}
+
+function openEffectPicker() {
+  if (!catalogItems().length) {
+    setStatus("插件目录为空，先点「扫描插件目录」", true);
+    return;
+  }
+  state.effectPicker = { query: "", plugin: "", hideRendered: true, force: false };
+  $("effectPickerSearch").value = "";
+  $("effectHideRendered").checked = true;
+  $("effectForce").checked = false;
+  setEffectPickerStatus("");
+  fillEffectPluginFilter();
+  renderEffectPickerList();
+  $("pluginEffectPicker").hidden = false;
+  $("effectPickerSearch").focus();
+}
+
+function closeEffectPicker() {
+  const dialog = $("pluginEffectPicker");
+  if (!dialog || dialog.hidden) return;
+  dialog.hidden = true;
+  setEffectPickerStatus("");
+}
+
+function selectAllFilteredEffects() {
+  const candidates = effectPickerVisibleItems().filter((item) => item.selectable);
+  if (!candidates.length) {
+    setEffectPickerStatus("当前筛选没有可渲染的效果", true);
+    return;
+  }
+  for (const item of candidates) {
+    state.pluginEffectSelection.set(item.matchName, item);
+  }
+  renderEffectPickerList();
+}
+
+function clearEffectSelection() {
+  state.pluginEffectSelection.clear();
+  renderEffectPickerList();
+}
+
+async function renderSelectedPluginEffects() {
+  const matchNames = [...state.pluginEffectSelection.keys()];
+  if (!matchNames.length) return;
+  if (state.pluginCatalogScanning || state.pluginEffectRendering) {
+    setEffectPickerStatus("已有插件效果任务在运行，请先停止或等待结束", true);
+    return;
+  }
+  const force = $("effectForce").checked;
+  const options = {
+    matchNames,
+    force,
+    ae: $("pluginEffectAeVersion").value,
+    background: $("pluginEffectBackground").value || "",
+    limit: Number($("pluginEffectLimit").value) || 8,
+    rounds: Number($("pluginEffectRounds").value) || 200,
+  };
+  const result = await window.hub.startPluginEffects(options);
+  if (!result || !result.ok) {
+    const reason = (result && result.reason) || "";
+    if (reason === "nothing_to_render") {
+      const text = "所选条目均已生成或已跳过；勾选强制重渲后再试";
+      setEffectPickerStatus(text, true);
+      setStatus(text, true);
+    } else if (reason === "no_catalog") {
+      const text = "还没有插件目录，请先扫描插件目录";
+      setEffectPickerStatus(text, true);
+      setStatus(text, true);
+    } else if (reason === "already_running" || reason === "preset_render_running") {
+      setEffectPickerStatus("已有渲染任务在运行，请稍后再试", true);
+    } else if (reason === "write_failed") {
+      setEffectPickerStatus("写入效果选择文件失败，请重试", true);
+    } else {
+      setEffectPickerStatus("启动失败：" + (reason || "未知原因"), true);
+    }
+    return;
+  }
+
+  const selected = Number(result.selectedCount) || matchNames.length;
+  const skipped = Number(result.skippedCount) || 0;
+  closeEffectPicker();
+  beginPluginEffectRun(
+    skipped
+      ? `已开始渲染所选 ${selected} 条插件效果（跳过 ${skipped} 条）`
+      : `已开始渲染所选 ${selected} 条插件效果`,
+    `正在渲染所选 ${selected} 条插件效果…`,
+  );
 }
 
 /* ---------- 设置页 ---------- */
@@ -1062,6 +2766,9 @@ async function fillPluginEffectBackgrounds() {
 /* ---------- 绑定 ---------- */
 
 function bind() {
+  presetSidebar.init();
+  effectSidebar.init();
+  readEffectCollapsedGroups();
   document.getElementById("tabs").addEventListener("click", (event) => {
     const tab = event.target.closest(".tab");
     if (tab) setView(tab.dataset.view);
@@ -1120,9 +2827,59 @@ function bind() {
     setStatus("已刷新");
   });
 
+  $("btnSelectUnrendered").addEventListener("click", selectUnrenderedPresets);
+  $("btnClearSelection").addEventListener("click", clearPresetSelection);
+  $("btnRenderSelected").addEventListener("click", renderSelectedPresets);
+  $("btnSyncAePresets").addEventListener("click", () => syncAePresets(true));
+  $("btnPresetFavoritesOnly").addEventListener("click", () => {
+    state.presetFavoritesOnly = !state.presetFavoritesOnly;
+    renderPresets();
+  });
+  $("presetSourceFilter").addEventListener("change", (event) => {
+    state.presetSourceFilter = event.target.value;
+    if (state.presetSourceFilter === "mine" && state.presetCategory.startsWith("ae:")) {
+      state.presetCategory = "all";
+    } else if (
+      state.presetSourceFilter === "external" &&
+      state.presetCategory !== "all" &&
+      !state.presetCategory.startsWith("ae:") &&
+      state.presetCategory !== "__favorites__"
+    ) {
+      state.presetCategory = "all";
+    }
+    renderPresets();
+  });
+
   $("search").addEventListener("input", (event) => {
     state.query = event.target.value;
     renderPresets();
+  });
+
+  $("btnEffectRefresh").addEventListener("click", refreshEffects);
+  $("btnEffectSyncCategories").addEventListener("click", syncEffectCategories);
+  $("btnEffectSelectUnrendered").addEventListener("click", selectUnrenderedEffects);
+  $("btnEffectClearSelection").addEventListener("click", clearEffectLibrarySelection);
+  $("btnEffectRenderSelected").addEventListener("click", renderSelectedEffects);
+  $("btnEffectFavoritesOnly").addEventListener("click", () => {
+    state.effectFavoritesOnly = !state.effectFavoritesOnly;
+    paintEffectsLibrary();
+  });
+  $("effectSearch").addEventListener("input", (event) => {
+    state.effectQuery = event.target.value;
+    paintEffectsLibrary();
+  });
+  $("effectPluginFilter").addEventListener("change", (event) => {
+    state.effectPlugin = event.target.value;
+    if (
+      state.effectPlugin !== "all" &&
+      state.effectCategory !== "all" &&
+      state.effectCategory !== "__uncategorized__" &&
+      state.effectCategory !== "__favorites__" &&
+      effectGroupFromKey(state.effectCategory) !== state.effectPlugin
+    ) {
+      state.effectCategory = "all";
+    }
+    paintEffectsLibrary();
   });
 
   $("background").addEventListener("change", async (event) => {
@@ -1177,6 +2934,33 @@ function bind() {
   $("btnPluginEffectStart").addEventListener("click", startPluginEffects);
   $("btnPluginEffectStop").addEventListener("click", stopPluginEffects);
   $("btnPluginEffectLog").addEventListener("click", () => openRenderLog("plugin"));
+
+  /* 插件目录 + 选择效果 */
+  $("btnScanPluginCatalog").addEventListener("click", scanPluginCatalog);
+  $("btnPickPluginEffects").addEventListener("click", openEffectPicker);
+  $("effectPickerClose").addEventListener("click", closeEffectPicker);
+  $("effectPickerCancel").addEventListener("click", closeEffectPicker);
+  $("pluginEffectPicker").addEventListener("mousedown", (event) => {
+    if (event.target === $("pluginEffectPicker")) closeEffectPicker();
+  });
+  $("effectPickerSearch").addEventListener("input", (event) => {
+    state.effectPicker.query = event.target.value;
+    renderEffectPickerList();
+  });
+  $("effectPickerPluginFilter").addEventListener("change", (event) => {
+    state.effectPicker.plugin = event.target.value;
+    renderEffectPickerList();
+  });
+  $("effectHideRendered").addEventListener("change", (event) => {
+    state.effectPicker.hideRendered = event.target.checked;
+    renderEffectPickerList();
+  });
+  $("effectForce").addEventListener("change", (event) => {
+    state.effectPicker.force = event.target.checked;
+  });
+  $("effectSelectAll").addEventListener("click", selectAllFilteredEffects);
+  $("effectClearAll").addEventListener("click", clearEffectSelection);
+  $("effectRenderSelected").addEventListener("click", renderSelectedPluginEffects);
   $("renderLogClose").addEventListener("click", closeRenderLog);
   $("renderLogCloseBottom").addEventListener("click", closeRenderLog);
   $("renderLogOpenFolder").addEventListener("click", () => {
@@ -1189,6 +2973,10 @@ function bind() {
     if (event.key === "Escape" && !$("renderLogDialog").hidden) {
       event.preventDefault();
       closeRenderLog();
+    }
+    if (event.key === "Escape" && !$("pluginEffectPicker").hidden) {
+      event.preventDefault();
+      closeEffectPicker();
     }
   });
 
@@ -1204,8 +2992,9 @@ function bind() {
   });
 
   for (const select of document.querySelectorAll(".ae-version-select")) {
-    select.addEventListener("change", (event) => {
+    select.addEventListener("change", async (event) => {
       selectRenderAe(event.target.value, event.target);
+      await loadPresets({ force: true });
     });
   }
 
@@ -1255,18 +3044,37 @@ function bind() {
   });
 
   window.hub.onPluginEffectsExit(async (info) => {
-    state.pluginEffectRendering = false;
-    updateRenderModeButtons();
+    const finalState = info.state || {};
+    const wasScan =
+      state.pluginCatalogScanning || finalState.mode === "catalog";
     const wasStopped = state.pluginEffectStopRequested;
+
+    state.pluginEffectRendering = false;
+    state.pluginCatalogScanning = false;
     state.pluginEffectStopRequested = false;
+    updateRenderModeButtons();
     $("btnPluginEffectStart").disabled = false;
     $("btnPluginEffectStop").disabled = true;
     stopPluginEffectPolling();
     if (info.state) paintPluginEffectProgress(info.state);
+    await refreshPluginCatalog();
     await pullPluginEffectLog();
     await refreshAeState();
 
-    const finalState = info.state || {};
+    if (wasScan) {
+      await loadEffects();
+      if (wasStopped) {
+        setStatus("已停止扫描插件目录");
+      } else if (finalState.phase === "done") {
+        setStatus(`插件目录已更新（${catalogItems().length} 条）`);
+      } else {
+        setStatus(finalState.message || "插件目录扫描未完成", true);
+      }
+      return;
+    }
+
+    /* 渲染结束刷新效果库，让新生成的预览立即出现 */
+    await loadEffects();
     const remaining = Number(finalState.remaining) || 0;
     if (finalState.phase === "done" && remaining === 0) {
       setStatus("插件效果预览生成完成");
@@ -1282,6 +3090,14 @@ function bind() {
       );
     }
   });
+
+  if (hubHas("onPluginEffectsCatalog")) {
+    window.hub.onPluginEffectsCatalog((catalog) => {
+      state.pluginCatalog = catalog && catalog.ok ? catalog : null;
+      prunePluginEffectSelection();
+      paintPluginCatalog();
+    });
+  }
 }
 
 async function boot() {
@@ -1291,7 +3107,9 @@ async function boot() {
   await fillPluginEffectBackgrounds();
   await loadPresetCategories();
   await loadPresets();
+  await loadEffects();
   await pullLog();
+  await refreshPluginCatalog();
 
   const last = await window.hub.renderSnapshot();
   if (last) paintProgress(last);
@@ -1301,7 +3119,13 @@ async function boot() {
   else paintPluginEffectProgress(null);
   if (snap.pluginEffects && snap.pluginEffects.running) {
     setRenderMode("plugin");
-    state.pluginEffectRendering = true;
+    if (snap.pluginEffects.mode === "catalog") {
+      state.pluginCatalogScanning = true;
+      paintPluginCatalog();
+      paintPluginEffectProgress(snap.pluginEffects.state || null);
+    } else {
+      state.pluginEffectRendering = true;
+    }
     updateRenderModeButtons();
     $("btnPluginEffectStart").disabled = true;
     $("btnPluginEffectStop").disabled = false;
