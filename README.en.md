@@ -26,9 +26,9 @@
 
 ## Download and install
 
-Current release: **DreamEngine 0.2.0 / v0.2.0-beta.5**
+Current release: **DreamEngine 0.2.0 / v0.2.0-beta.6**
 
-Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.5):
+Download from [GitHub Releases](https://github.com/yoanx/DreamEngine/releases/tag/v0.2.0-beta.6):
 
 - `DreamEngine-Hub-Setup-0.2.0.exe`
 - `SHA256SUMS.txt`
@@ -50,7 +50,7 @@ The installer is unsigned, so Windows SmartScreen may show an "Unknown publisher
 | Effects | Search or filter; double-click to add an effect to the selected layer; hover to play animated previews |
 | Presets | Click a card to apply an `.ffx` preset; filter by category and favorites |
 | Curves | Edit in two-point or multi-point mode; read, reverse, swap, freeze, apply, and save presets |
-| Media | Select one root folder; click to preview; double-click to import at the current composition time |
+| Media | Pick a root folder, then browse into subfolders; click a breadcrumb segment to go back; click to preview, double-click to import at the current composition time |
 
 ### DreamEngine Hub
 
@@ -137,6 +137,9 @@ Preset categories and preset favorites are shared between the panel and Hub.
 **Media**
 
 - Register one media root without copying, moving, or modifying source files.
+- Browse by folder: open subfolders and step back through the breadcrumb at the top; folder cards show how many materials they contain.
+- Category counts and search cover only the folder you are in; empty folders are hidden.
+- Refresh and change-root sit in the top-right corner; refreshing keeps your current folder, and if it was deleted the view falls back to the nearest existing parent.
 - Automatically classify video, images, audio, and `.aep` projects.
 - Click video to preview up to two seconds.
 - Audio displays a waveform and can be played or stopped with a click.
