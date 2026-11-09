@@ -39,6 +39,10 @@ function createPaths(opts = {}) {
     /* 效果库收藏：按 matchName 持久化，升级安装同样不能清空 */
     effectFavorites: path.join(userRoot, "effect_favorites.json"),
 
+    /* 效果手动调参：用户覆盖表与 .ffx 兜底预设（升级安装不得清空） */
+    effectOverrides: path.join(userRoot, "effect_overrides.tsv"),
+    effectPresets: path.join(userRoot, "effect_presets"),
+
     /* 离线渲染的约定目录 */
     probe,
     hubState: path.join(probe, "hub_state.json"),

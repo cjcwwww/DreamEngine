@@ -368,6 +368,59 @@
   </section>
 </div>
 
+<div class="modal-mask" id="manualDialog" hidden>
+  <section class="manual-dialog" role="dialog" aria-modal="true" aria-labelledby="manualTitle">
+    <header class="manual-head">
+      <div class="manual-heading">
+        <h3 id="manualTitle">手动调参</h3>
+        <span id="manualSubtitle">—</span>
+      </div>
+      <button class="icon-btn" id="manualClose" type="button" aria-label="关闭手动调参" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+
+    <div class="manual-toolbar">
+      <button class="btn primary" id="manualDump" type="button">读取参数</button>
+      <button class="btn" id="manualBaseline" type="button" title="关闭 AE 后渲染一张不带覆盖的基线">渲染基线</button>
+      <button class="btn" id="manualVerify" type="button" title="应用勾选参数并渲染一帧">验证写入</button>
+      <button class="btn" id="manualPickPreset" type="button">选择 .ffx</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="manualStop" type="button" hidden>停止</button>
+      <button class="btn primary" id="manualSave" type="button" disabled>保存并重渲</button>
+    </div>
+
+    <div class="manual-status" id="manualStatus">先点「读取参数」；每次操作都会启动一个独立 AE，请先关闭正在使用的 AE。</div>
+    <div class="manual-warning" id="manualWarning" hidden></div>
+
+    <div class="manual-body">
+      <div class="manual-param-wrap">
+        <div class="manual-param-head">
+          <span class="manual-col-check"></span>
+          <span>参数</span>
+          <span>类型</span>
+          <span>当前值</span>
+          <span>写入值</span>
+          <span>范围</span>
+        </div>
+        <div class="manual-param-list" id="manualParamList"></div>
+      </div>
+      <aside class="manual-side">
+        <div class="manual-side-title">验证预览</div>
+        <div class="manual-preview" id="manualPreview">尚未验证</div>
+        <div class="manual-diff" id="manualDiff">对比结果会显示在这里</div>
+        <div class="manual-preset" id="manualPreset">未选择 .ffx 兜底预设</div>
+      </aside>
+    </div>
+
+    <footer class="manual-foot">
+      <span class="hint">只勾选要覆盖的参数；数值写入后可用「验证写入」确认像素是否变化。</span>
+      <span class="spacer"></span>
+      <button class="btn" id="manualCloseBottom" type="button">关闭</button>
+    </footer>
+  </section>
+</div>
+
 <div class="modal-mask about-mask" id="aboutDialog" hidden>
   <section class="about-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <header class="about-head">
