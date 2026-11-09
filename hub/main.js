@@ -24,6 +24,7 @@ const { RenderJob } = require("./core/render");
 const { PluginEffectJob } = require("./core/effect_render");
 const { ManualEffectRunner } = require("./core/manual_effect");
 const { EffectDumpJob } = require("./core/effect_dump");
+const { AeGuardJob } = require("./core/ae_guard");
 const previewResults = require("./core/preview_results");
 const effectOverrides = require("./core/effect_overrides");
 const catalog = require("./core/catalog");
@@ -41,6 +42,8 @@ let job = null;
 let pluginJob = null;
 let manualRunner = null;
 let dumpJob = null;
+// AE 崩溃修复对话框看守：Hub 调起 AE 时启动，任务结束/退出时停掉
+let guardJob = null;
 // 本次属性获取的 AE 版本，合并缓存时写进每组 meta
 let dumpContext = { ae: "", aeVersion: "", aeMajor: 0 };
 // 属性缓存模块由数据面提交引入；未安装时 UI 会收到 not_wired，不崩
@@ -126,7 +129,48 @@ function snapshot() {
     pluginEffects: pluginJob
       ? { running: pluginJob.isRunning(), mode: pluginJob.getMode(), state: pluginJob.snapshot() }
       : { running: false, mode: "", state: null },
+    aeGuard: guardJob ? guardJob.snapshot() : { running: false },
   };
+}
+
+/* ---------------------------------------------------------------
+ * AE 崩溃修复对话框看守
+ *
+ * AE 上次异常退出后，下次启动有概率停在「崩溃修复选项」对话框上，把脚本化启动卡死。
+ * 只要 Hub 要调起 AE（渲染 / 取参 / 扫目录）就启动看守脚本，任务结束再停。
+ * 检测与按键逻辑全在 tools/ae_crash_guard.ps1，主进程不重复实现。
+ * --------------------------------------------------------------- */
+
+function aeJobBusy() {
+  return !!(
+    (job && job.isRunning()) ||
+    (pluginJob && pluginJob.isRunning()) ||
+    (dumpJob && dumpJob.isRunning())
+  );
+}
+
+function startAeGuard(reason, enabled) {
+  if (enabled === false) {
+    console.log("[ae-guard] disabled by user, skip for " + reason);
+    return { ok: false, reason: "disabled" };
+  }
+  if (!guardJob) return { ok: false, reason: "no_job" };
+  const result = guardJob.start({ timeoutSec: 7200, intervalSec: 1.2 });
+  if (result.ok && !result.alreadyRunning) {
+    console.log("[ae-guard] started for " + reason + " pid=" + result.pid);
+  }
+  return result;
+}
+
+/** 任务收尾统一走这里：还有别的 AE 任务在跑就留着看守，全空了才停 */
+function stopAeGuard(reason) {
+  if (!guardJob) return { ok: false, reason: "no_job" };
+  if (guardJob.isRunning() && !aeJobBusy()) {
+    const result = guardJob.stop();
+    console.log("[ae-guard] stopped after " + reason);
+    return result;
+  }
+  return { ok: true, kept: guardJob.isRunning() };
 }
 
 /** 上一轮任务异常退出后可能留下选择/扫描标记，启动新任务前统一清掉。 */
@@ -362,13 +406,19 @@ function registerIpc() {
       skips: Array.isArray(opts.skips) ? opts.skips : [],
     });
     const result = job.start(opts);
+    if (result.ok) startAeGuard("preset render", opts.aeGuard !== false);
     if (result.ok && selectedPaths) {
       return { ...result, selectedCount: selectedPaths.length };
     }
     return result;
   });
 
-  ipcMain.handle("render:stop", () => (job ? job.stop() : { ok: false }));
+  ipcMain.handle("render:stop", () => {
+    if (!job) return { ok: false };
+    const result = job.stop();
+    stopAeGuard("render stop");
+    return result;
+  });
 
   ipcMain.handle("render:snapshot", () => (job ? job.snapshot() : null));
 
@@ -416,6 +466,7 @@ function registerIpc() {
         force: !!opts.force,
       });
       if (!result.ok) return result;
+      startAeGuard("plugin effects", opts.aeGuard !== false);
       return {
         ...result,
         selectedCount: selected.length,
@@ -425,7 +476,9 @@ function registerIpc() {
     }
 
     previewResults.beginRun(paths, { kind: "effect" });
-    return pluginJob.start(opts);
+    const started = pluginJob.start(opts);
+    if (started.ok) startAeGuard("plugin effects (all)", opts.aeGuard !== false);
+    return started;
   });
 
 
@@ -434,10 +487,12 @@ function registerIpc() {
     if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
     if (pluginJob.isRunning()) return { ok: false, reason: "already_running" };
     cleanupJobMarkers(paths);
-    return pluginJob.start({
+    const scanned = pluginJob.start({
       catalogOnly: true,
       ae: (options && options.ae) || preferredAe(),
     });
+    if (scanned.ok) startAeGuard("catalog scan", !options || options.aeGuard !== false);
+    return scanned;
   });
 
   ipcMain.handle("plugin-effects:catalog", () => catalog.readCatalog(paths));
@@ -476,10 +531,16 @@ function registerIpc() {
       force: !!opts.force,
     });
     if (!result.ok) return result;
+    startAeGuard("param dump", opts.aeGuard !== false);
     return { ...result, count: written.count };
   });
 
-  ipcMain.handle("dump:stop", () => (dumpJob ? dumpJob.stop() : { ok: false, reason: "no_job" }));
+  ipcMain.handle("dump:stop", () => {
+    if (!dumpJob) return { ok: false, reason: "no_job" };
+    const result = dumpJob.stop();
+    stopAeGuard("dump stop");
+    return result;
+  });
   ipcMain.handle("dump:snapshot", () => (dumpJob ? dumpJob.snapshot() : null));
   ipcMain.handle("dump:logTail", (_event, lines = 40) => {
     const n = lines === undefined ? 40 : Math.floor(Number(lines));
@@ -555,9 +616,12 @@ function registerIpc() {
     effects.clearPreview(paths, matchName),
   );
 
-  ipcMain.handle("plugin-effects:stop", () =>
-    pluginJob ? pluginJob.stop() : { ok: false, reason: "no_job" },
-  );
+  ipcMain.handle("plugin-effects:stop", () => {
+    if (!pluginJob) return { ok: false, reason: "no_job" };
+    const result = pluginJob.stop();
+    stopAeGuard("plugin effects stop");
+    return result;
+  });
   ipcMain.handle("plugin-effects:snapshot", () =>
     pluginJob ? pluginJob.snapshot() : null,
   );
@@ -810,6 +874,7 @@ if (!gotLock) {
         }
       },
       onExit: (info) => {
+        stopAeGuard("render exit");
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send("render:exit", info);
         }
@@ -825,6 +890,7 @@ if (!gotLock) {
         }
       },
       onExit: (info) => {
+        stopAeGuard("plugin effects exit");
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send("plugin-effects:exit", info);
           // 扫描任务结束后把新目录直接推给 UI，避免 UI 再等一次 IPC 往返
@@ -865,6 +931,7 @@ if (!gotLock) {
         }
       },
       onExit: (info) => {
+        stopAeGuard("param dump exit");
         const cache = paramCache();
         if (cache && cache.mergeRound) {
           try {
@@ -880,6 +947,12 @@ if (!gotLock) {
           mainWindow.webContents.send("dump:exit", info);
         }
       },
+    });
+
+    guardJob = new AeGuardJob({
+      paths,
+      script: path.join(toolsDir(), "ae_crash_guard.ps1"),
+      logPath: paths.aeGuardLog,
     });
 
     Menu.setApplicationMenu(null);
@@ -935,13 +1008,16 @@ if (!gotLock) {
 
   app.on("window-all-closed", () => {
     // 渲染中途关窗口：把专用 AE 实例一起收掉，别留孤儿进程
+    if (guardJob && guardJob.isRunning()) guardJob.stop();
     if (job && job.isRunning()) job.stop();
     if (pluginJob && pluginJob.isRunning()) pluginJob.stop();
     if (process.platform !== "darwin") app.quit();
   });
 
   app.on("before-quit", () => {
+    if (guardJob && guardJob.isRunning()) guardJob.stop();
     if (job && job.isRunning()) job.stop();
     if (pluginJob && pluginJob.isRunning()) pluginJob.stop();
+    if (dumpJob && dumpJob.isRunning()) dumpJob.stop();
   });
 }

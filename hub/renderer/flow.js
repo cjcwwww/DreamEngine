@@ -133,6 +133,31 @@
   function busyHint(kind) {
     return kind === "effect" ? "插件效果" : "预设";
   }
+
+  /* AE 崩溃修复看守：全局开关（设置页 / 确认页 / 获取页共用一份偏好） */
+  const AE_GUARD_KEY = "dreamengine.aeGuard.v1";
+  function aeGuardEnabled() {
+    try {
+      const raw = localStorage.getItem(AE_GUARD_KEY);
+      if (raw === null) return true; // 默认打开
+      return raw !== "0";
+    } catch (_error) {
+      return true;
+    }
+  }
+  function setAeGuardEnabled(value) {
+    try {
+      localStorage.setItem(AE_GUARD_KEY, value ? "1" : "0");
+    } catch (_error) {
+      /* 忽略存储失败 */
+    }
+    const confirmBox = el("flowAeGuard");
+    if (confirmBox) confirmBox.checked = !!value;
+    const acquireBox = el("flowAcquireGuard");
+    if (acquireBox) acquireBox.checked = !!value;
+    const settingsBox = el("setAeGuard");
+    if (settingsBox) settingsBox.checked = !!value;
+  }
   function statusText(item) {
     if (!item) return "";
     if (item.status === "rendered") return "已生成";
@@ -268,7 +293,8 @@
     flow.plan.config.rounds = kind === "effect" ? 200 : 40;
     resetTuningDone();
     saveConfig();
-    go("select");
+    /* 进入第 2 步属于前进，必须放行（有向回退只拦跳过步骤） */
+    go("select", { force: true });
   }
 
   /* ---------------- ② 选择渲染目标 ---------------- */
@@ -568,20 +594,24 @@
   async function fillBackgroundSelect() {
     const node = el("flowBackground");
     if (!node) return;
+    let list = [];
     try {
+      /* 主进程 backgrounds:list 直接返回数组；这里兼容 {items:[...]} 两种形状 */
       const data = await window.hub.listBackgrounds();
-      const list = data && Array.isArray(data.items) ? data.items : [];
-      fillSelect(
-        node,
-        list.map((item) => ({
-          value: String(item.value != null ? item.value : item.id || ""),
-          label: String(item.label || item.name || item.value || ""),
-        })),
-        flow.plan.config.background,
-      );
+      list = Array.isArray(data) ? data : data && Array.isArray(data.items) ? data.items : [];
     } catch (_error) {
-      /* 背景列表失败就让用户用默认 */
+      list = [];
     }
+    const entries = list
+      .map((item) => ({
+        value: String(item.id != null ? item.id : item.value || ""),
+        label: String(item.label || item.name || item.id || ""),
+      }))
+      .filter((entry) => entry.value && entry.value !== "__custom__");
+    if (!entries.length) entries.push({ value: "photo", label: "标准素材" });
+    entries.push({ value: "__custom__", label: "自己添加…" });
+    fillSelect(node, entries, flow.plan.config.background);
+    flow.plan.config.background = node.value === "__custom__" ? "" : node.value;
   }
 
   function paintConfirm() {
@@ -645,12 +675,15 @@
     fillBackgroundSelect();
     const bg = el("flowBackground");
     if (bg && config.background) bg.value = config.background;
+    if (!config.background) config.background = "photo";
     const limit = el("flowLimit");
     if (limit) limit.value = config.limit;
     const rounds = el("flowRounds");
     if (rounds) rounds.value = config.rounds;
     const force = el("flowForce");
     if (force) force.checked = !!config.force;
+    const guardBox = el("flowAeGuard");
+    if (guardBox) guardBox.checked = aeGuardEnabled();
     setText("flowLimitLabel", kind === "effect" ? "每批条数" : "每实例最多");
 
     const tuningItems = items.filter((item) => item.manualTuning);
@@ -722,7 +755,9 @@
     const rounds = el("flowRounds");
     const force = el("flowForce");
     if (ae) config.ae = ae.value;
-    if (background) config.background = background.value;
+    if (background && background.value && background.value !== "__custom__") {
+      config.background = background.value;
+    }
     if (limit) config.limit = Math.max(1, Math.min(64, Number(limit.value) || config.limit || 8));
     if (rounds) config.rounds = Math.max(1, Math.min(200, Number(rounds.value) || config.rounds || 40));
     if (force) config.force = !!force.checked;
@@ -837,6 +872,7 @@
     const config = readConfirmConfig();
     const split = runPlanSplit(itemsOverride);
     const force = split.force || split.targets.some((item) => item.status === "blacklisted");
+    const aeGuard = aeGuardEnabled();
     if (flow.kind === "preset") {
       return {
         ae: config.ae,
@@ -845,6 +881,7 @@
         rounds: Math.max(1, Math.min(200, Number(config.rounds) || 40)),
         retryFailed: !force,
         force: force,
+        aeGuard: aeGuard,
         presetPaths: split.targets.map((item) => item.presetPath || item.key).filter(Boolean),
         skips: split.skips,
       };
@@ -855,6 +892,7 @@
       limit: Math.max(1, Math.min(64, Number(config.limit) || 8)),
       rounds: Math.max(1, Math.min(200, Number(config.rounds) || 200)),
       force: force,
+      aeGuard: aeGuard,
       matchNames: split.targets.map((item) => item.matchName || item.key).filter(Boolean),
       skips: split.skips,
     };
@@ -1206,6 +1244,8 @@
         : "（当前版本还没有接线属性获取服务）",
     );
     if (rounds) rounds.disabled = !flow.tuning.api;
+    const guardBox = el("flowAcquireGuard");
+    if (guardBox) guardBox.checked = aeGuardEnabled();
     paintAcquireList(todo, cached, failed);
     const start = el("flowAcquireStart");
     if (start) {
@@ -1255,7 +1295,7 @@
         category: item.category || "",
       }));
     if (!missing.length) {
-      go("tuning");
+      go("tuning", { force: true });
       return;
     }
     const limit = el("flowAcquireLimit");
@@ -1269,6 +1309,7 @@
         ae: flow.plan.config.ae,
         limit: limit ? Number(limit.value) || 20 : 20,
         rounds: rounds ? Number(rounds.value) || 50 : 50,
+        aeGuard: aeGuardEnabled(),
       });
     } catch (error) {
       setText("flowAcquirePhase", "启动失败：" + String((error && error.message) || error));
@@ -1779,7 +1820,7 @@
         await refreshParamIndex();
         const hit = flow.tuning.index[flow.plan.items[0].key];
         flow.tuning.current = flow.plan.items[0].key;
-        go(hit ? "tuning" : "acquire");
+        go(hit ? "tuning" : "acquire", { force: true });
       })();
       return;
     }
@@ -1853,12 +1894,37 @@
     on("flowSelectBack", "click", () => go("type"));
     on("flowSelectNext", "click", () => {
       if (!flow.plan.items.length) return;
-      go("confirm");
+      go("confirm", { force: true });
     });
 
     on("flowConfirmBack", "click", () => go("select"));
     on("flowConfirmNext", "click", startFromConfirm);
     on("flowConfirmRetune", "click", reopenTuning);
+    on("flowBackground", "change", async (event) => {
+      const select = event.target;
+      if (select.value !== "__custom__") {
+        flow.plan.config.background = select.value;
+        return;
+      }
+      select.value = flow.plan.config.background || "photo";
+      const result = await window.hub.addBackground();
+      const added = (result && result.added) || [];
+      const errors = (result && result.errors) || [];
+      if (!added.length) {
+        setStatus(errors.length ? "图片无法解码为 PNG，未添加背景" : "未添加背景", true);
+        return;
+      }
+      flow.plan.config.background = added[0];
+      await fillBackgroundSelect();
+      select.value = added[0];
+      setStatus(
+        "已转换为 PNG：" +
+          String(added[0]).split(/[\\/]/).pop() +
+          (errors.length ? "；" + errors.length + " 个文件失败" : ""),
+      );
+    });
+    on("flowAeGuard", "change", (event) => setAeGuardEnabled(!!event.target.checked));
+    on("flowAcquireGuard", "change", (event) => setAeGuardEnabled(!!event.target.checked));
 
     on("flowAcquireStart", "click", startAcquire);
     on("flowAcquireStop", "click", () => {
@@ -1984,6 +2050,8 @@
     },
     current: () => ({ step: flow.step, kind: flow.kind, plan: flow.plan, reached: Array.from(flow.reached) }),
     isBusy: isAnyRunning,
+    aeGuardEnabled,
+    setAeGuardEnabled,
   };
 
   if (document.readyState === "loading") {

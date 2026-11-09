@@ -65,6 +65,9 @@ function createPaths(opts = {}) {
     effectDumpBlacklist: path.join(probe, "effect_dump_blacklist.tsv"),
     effectParamsRaw: path.join(probe, "effect_params_raw"),
 
+    /* AE 崩溃修复对话框看守日志（Hub 调起 AE 时由 tools/ae_crash_guard.ps1 追加写） */
+    aeGuardLog: path.join(probe, "ae_guard.log"),
+
     /* 选择性渲染：目录扫描与选择文件（与 tools/*.ps1、*.jsx 保持一致） */
     pluginCatalog: path.join(probe, "plugin_effect_catalog.tsv"),
     pluginCatalogMeta: path.join(probe, "plugin_effect_catalog.meta.json"),

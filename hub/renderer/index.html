@@ -235,6 +235,9 @@
                   <label class="check" id="flowForceWrap">
                     <input type="checkbox" id="flowForce"> 强制重渲（忽略已生成与黑名单）
                   </label>
+                  <label class="check" id="flowGuardWrap">
+                    <input type="checkbox" id="flowAeGuard"> 自动处理 AE 崩溃修复提示
+                  </label>
                 </div>
                 <div class="flow-tune-note" id="flowTuneNote" hidden></div>
                 <div class="flow-confirm-actions">
@@ -266,6 +269,7 @@
                   <span class="field-label">重启上限</span>
                   <input id="flowAcquireRounds" class="input" type="number" min="1" max="200" value="50">
                 </label>
+                <label class="check"><input type="checkbox" id="flowAcquireGuard"> 自动处理崩溃提示</label>
               </div>
               <div class="flow-acquire-tabs" id="flowAcquireTabs">
                 <button class="seg active" type="button" data-acq-tab="todo">待获取 <span id="flowAcquireTodoCount">0</span></button>
@@ -431,6 +435,16 @@
       <p class="footnote">
         属性缓存是启动 After Effects 读取插件参数树后的结果（只读记录，不含你写入的覆盖值）。
         删掉某个文件后，下次做人工调参时该效果会被重新读取。
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">自动化</div>
+      <label class="check"><input type="checkbox" id="setAeGuard"> 自动处理 AE 崩溃修复提示</label>
+      <p class="footnote">
+        After Effects 上次异常退出后，下次启动有概率弹出「崩溃修复选项」对话框，把渲染或取参卡住。
+        打开后，Hub 在调起 AE 期间会启动看守：识别到该对话框就替你按「继续」——
+        不会点其它按钮，也不会改 AE 的首选项或脚本权限。
       </p>
     </div>
 

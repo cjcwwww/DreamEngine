@@ -2002,6 +2002,13 @@ function fillSettings(snap) {
   $("setProbe").textContent = snap.paths.probe;
   const cacheNode = $("setParamsCache");
   if (cacheNode) cacheNode.textContent = snap.paths.effectParams || "—";
+  const guardNode = $("setAeGuard");
+  if (guardNode) {
+    guardNode.checked =
+      window.PreviewFlow && window.PreviewFlow.aeGuardEnabled
+        ? window.PreviewFlow.aeGuardEnabled()
+        : true;
+  }
 }
 
 /* ---------- 绑定 ---------- */
@@ -2199,6 +2206,11 @@ function bind() {
     }
     const ok = await window.hub.openEffectParamsDir();
     if (!ok) setStatus("打开属性缓存目录失败", true);
+  });
+  $("setAeGuard").addEventListener("change", (event) => {
+    if (!(window.PreviewFlow && window.PreviewFlow.setAeGuardEnabled)) return;
+    window.PreviewFlow.setAeGuardEnabled(!!event.target.checked);
+    setStatus(event.target.checked ? "已开启 AE 崩溃修复自动处理" : "已关闭 AE 崩溃修复自动处理");
   });
 
 }
