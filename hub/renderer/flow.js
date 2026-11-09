@@ -968,7 +968,7 @@
       const percent = total > 0 ? Math.max(0, Math.min(100, Math.round((current / total) * 100))) : 0;
       bar.style.width = percent + "%";
     }
-    if (stateData.message) setText("flowRunMessage", stateData.message);
+    if (stateData.message && !stateData.currentName) setText("flowRunCurrent", String(stateData.message));
     if (phase === "done" || phase === "failed" || phase === "cancelled") {
       finishRun(phase);
     }
@@ -1796,24 +1796,24 @@
   /* ---------------- 恢复运行中的渲染 ---------------- */
 
   async function restoreRunningJob() {
-    let presetSnap = null;
-    let effectSnap = null;
+    /* renderSnapshot / pluginEffectsSnapshot 只返回状态文件内容，
+       进程是否在跑要问主进程的 snapshot（render.running / pluginEffects.running）。 */
+    let host = null;
     try {
-      presetSnap = await window.hub.renderSnapshot();
+      host = await window.hub.snapshot();
     } catch (_error) {
-      presetSnap = null;
+      host = null;
     }
-    try {
-      effectSnap = await window.hub.pluginEffectsSnapshot();
-    } catch (_error) {
-      effectSnap = null;
-    }
-    const presetRunning = !!(presetSnap && presetSnap.running);
-    const effectRunning = !!(effectSnap && effectSnap.running);
+    if (!host) return false;
+    const presetRunning = !!(host.render && host.render.running);
+    const effectJob = host.pluginEffects || {};
+    const effectRunning = !!effectJob.running && effectJob.mode !== "catalog";
     if (!presetRunning && !effectRunning) return false;
     flow.kind = effectRunning ? "effect" : "preset";
     flow.reached = new Set(["type", "select", "confirm", "run"]);
     go("run", { force: true });
+    const lastState = effectRunning ? effectJob.state : host.render.state;
+    applyRunState(lastState);
     startRunPolling();
     return true;
   }
