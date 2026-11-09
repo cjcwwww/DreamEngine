@@ -459,7 +459,7 @@ function registerIpc() {
     const matchName = validMatchName(options && options.matchName);
     if (!matchName) return { ok: false, reason: "bad_match_name" };
     const ae = (options && options.ae) || bestAfterFX();
-    return manualRunner.run({ matchName, mode: "dump", ae });
+    return manualRunner.run({ matchName, mode: "fastdump", ae });
   });
 
   ipcMain.handle("manual:baseline", async (_event, options) => {
