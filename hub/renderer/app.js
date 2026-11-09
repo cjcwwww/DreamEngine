@@ -1681,10 +1681,480 @@ function openEffectMenu(item, x, y) {
   if (item.renderable) {
     menu.appendChild(menuButton("单独渲染", false, false, () => renderSingleEffect(item)));
   }
+  if (item.source === "plugin" || item.manual) {
+    menu.appendChild(menuButton("手动调参…", false, false, () => openManualDialog(item)));
+  }
   if (item.generated) {
     menu.appendChild(menuButton("取消渲染", false, true, () => clearEffectRender(item)));
   }
   showCategoryMenu(x, y);
+}
+
+/* ---------- 手动调参：dump / 基线 / 验证 / 保存 ---------- */
+
+let manualContext = null;
+let manualBusyFlag = false;
+
+function manualEl(id) {
+  return $(id);
+}
+
+function manualDeriveBaseline(item) {
+  if (!item || !item.framePattern) return "";
+  return String(item.framePattern).replace("%04d", "0000");
+}
+
+function manualSetStatus(text, kind) {
+  const node = manualEl("manualStatus");
+  if (!node) return;
+  node.textContent = text;
+  node.className = "manual-status" + (kind ? " " + kind : "");
+}
+
+function manualSetBusy(busy, text) {
+  manualBusyFlag = !!busy;
+  for (const id of ["manualDump", "manualBaseline", "manualVerify", "manualPickPreset", "manualSave"]) {
+    const button = manualEl(id);
+    if (button) button.disabled = !!busy;
+  }
+  const stop = manualEl("manualStop");
+  if (stop) stop.hidden = !busy;
+  if (text) manualSetStatus(text, busy ? "busy" : "");
+  if (!busy) manualRefreshActions();
+}
+
+function manualRefreshActions() {
+  if (!manualContext) return;
+  const checked = document.querySelectorAll(".manual-row-check:checked").length;
+  const save = manualEl("manualSave");
+  if (save) save.disabled = manualBusyFlag || (checked === 0 && !manualContext.preset);
+}
+
+function manualExistingFor(indexPath) {
+  if (!manualContext) return null;
+  return (manualContext.existing || []).find((item) => String(item.paramIndex) === String(indexPath)) || null;
+}
+
+function manualValueText(value, valueType) {
+  if (value === null || value === undefined) return "";
+  if (valueType === "boolean") return value ? "true" : "false";
+  if (valueType === "array") return JSON.stringify(value);
+  return String(value);
+}
+
+function manualEditable(params) {
+  if (!params) return false;
+  if (params.type === "OneD") return true;
+  if (params.type === "Checkbox") return true;
+  if (params.valueType === "array") return true;
+  return false;
+}
+
+function manualRenderRows() {
+  const list = manualEl("manualParamList");
+  if (!list) return;
+  list.textContent = "";
+  if (!manualContext) return;
+  const params = manualContext.params || [];
+  manualRefreshActions();
+  if (!params.length) {
+    const empty = document.createElement("div");
+    empty.className = "manual-param-empty";
+    empty.textContent = manualContext.existing && manualContext.existing.length
+      ? "已有覆盖表，但还没有参数列表；点「读取参数」获取完整参数。"
+      : "还没有参数列表；点「读取参数」启动一次 AE 并读取参数树。";
+    list.appendChild(empty);
+    return;
+  }
+
+  for (const param of params) {
+    const existing = manualExistingFor(param.indexPath);
+    const editable = manualEditable(param);
+    const row = document.createElement("div");
+    row.className = "manual-param-row" + (editable ? "" : " disabled");
+    row.dataset.index = param.indexPath;
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.className = "manual-row-check";
+    check.disabled = !editable;
+    check.checked = !!existing && editable;
+    check.title = editable ? "勾选后写入此参数" : "当前类型暂不支持脚本写入";
+
+    const name = document.createElement("div");
+    name.className = "manual-param-name";
+    name.textContent = param.name || param.path || "未命名参数";
+    const pathNode = document.createElement("small");
+    pathNode.textContent = param.path || param.indexPath;
+    name.appendChild(pathNode);
+
+    const type = document.createElement("span");
+    type.className = "manual-type";
+    type.textContent = param.type || "—";
+
+    const current = document.createElement("span");
+    current.className = "manual-readonly";
+    current.textContent = manualValueText(param.value, param.valueType);
+
+    let input;
+    if (param.type === "Checkbox") {
+      input = document.createElement("input");
+      input.type = "checkbox";
+      input.className = "manual-value";
+      input.checked = existing ? existing.value === true : param.value === true;
+    } else if (param.valueType === "array") {
+      input = document.createElement("input");
+      input.type = "text";
+      input.className = "manual-value";
+      input.value = manualValueText(
+        existing && existing.value !== null && existing.value !== undefined ? existing.value : param.value,
+        "array",
+      );
+      input.title = "JSON 数组，例如 [1,0,0,1]";
+    } else {
+      input = document.createElement("input");
+      input.type = "number";
+      input.step = "any";
+      input.className = "manual-value";
+      input.value = existing && existing.value !== null && existing.value !== undefined
+        ? String(existing.value)
+        : String(param.value);
+    }
+    input.disabled = !check.checked;
+    input.dataset.valueType = param.valueType;
+    input.addEventListener("input", manualRefreshActions);
+    check.addEventListener("change", () => {
+      input.disabled = !check.checked;
+      manualRefreshActions();
+    });
+
+    const range = document.createElement("span");
+    range.className = "manual-readonly";
+    if (param.type === "OneD") {
+      const min = param.hasMin ? param.min : "?";
+      const max = param.hasMax ? param.max : "?";
+      range.textContent = min + " … " + max;
+    } else {
+      range.textContent = param.canAnimate ? "可关键帧" : "—";
+    }
+
+    row.appendChild(check);
+    row.appendChild(name);
+    row.appendChild(type);
+    row.appendChild(current);
+    row.appendChild(input);
+    row.appendChild(range);
+    if (existing && existing.verified === false) {
+      row.title = "上次验证：写入后像素无变化";
+    }
+    list.appendChild(row);
+  }
+}
+
+function manualCollectParams() {
+  const result = [];
+  const rows = document.querySelectorAll(".manual-param-row");
+  for (const row of rows) {
+    const check = row.querySelector(".manual-row-check");
+    if (!check || !check.checked) continue;
+    const param = (manualContext.params || []).find((item) => String(item.indexPath) === row.dataset.index);
+    if (!param) continue;
+    const input = row.querySelector(".manual-value");
+    if (!input) continue;
+    let value;
+    let valueType = param.valueType;
+    if (param.type === "Checkbox") {
+      value = !!input.checked;
+      valueType = "boolean";
+    } else if (valueType === "array") {
+      try {
+        value = JSON.parse(String(input.value || "").trim());
+      } catch {
+        throw new Error("参数「" + (param.name || param.path) + "」不是合法 JSON 数组");
+      }
+      if (!Array.isArray(value) || !value.length || value.some((n) => typeof n !== "number" || !Number.isFinite(n))) {
+        throw new Error("参数「" + (param.name || param.path) + "」必须是数字数组");
+      }
+    } else {
+      const number = Number(String(input.value || "").trim());
+      if (!Number.isFinite(number)) {
+        throw new Error("参数「" + (param.name || param.path) + "」不是有效数字");
+      }
+      value = number;
+      valueType = "number";
+    }
+    result.push({
+      matchName: manualContext.item.matchName,
+      paramIndex: param.indexPath,
+      paramPath: param.path || param.name || "",
+      value,
+      valueType,
+      enabled: true,
+      verified: param._verified === true ? true : param._verified === false ? false : null,
+    });
+  }
+  return result;
+}
+
+function manualMarkVerified(verified) {
+  for (const row of document.querySelectorAll(".manual-param-row")) {
+    const check = row.querySelector(".manual-row-check");
+    if (!check || !check.checked) continue;
+    const param = (manualContext.params || []).find((item) => String(item.indexPath) === row.dataset.index);
+    if (param) param._verified = verified;
+  }
+}
+
+async function manualReadOverrides() {
+  if (!manualContext) return;
+  try {
+    const doc = await window.hub.readEffectOverrides(manualContext.item.matchName);
+    manualContext.existing = (doc && doc.items) || [];
+    const presetRow = manualContext.existing.find((item) => item.preset);
+    if (presetRow && !manualContext.preset) manualContext.preset = presetRow.preset;
+    if (manualContext.preset) {
+      manualEl("manualPreset").textContent = "兜底预设：" + manualContext.preset;
+    }
+  } catch {
+    manualContext.existing = [];
+  }
+}
+
+async function manualDump() {
+  if (!manualContext || manualBusyFlag) return;
+  if (!hubHas("dumpEffectParams")) {
+    manualSetStatus("主进程尚未提供手动调参接口", "error");
+    return;
+  }
+  manualSetBusy(true, "正在启动独立 AE 读取参数…（关闭正在使用的 AE 后再试）");
+  try {
+    const result = await window.hub.dumpEffectParams({
+      matchName: manualContext.item.matchName,
+      ae: "",
+    });
+    if (!result || !result.ok) {
+      const reason = result && result.reason;
+      manualSetStatus(
+        "读取失败：" + (reason === "ae_running" ? "请先关闭 After Effects" : (reason || "未知原因")),
+        "error",
+      );
+      return;
+    }
+    manualContext.params = Array.isArray(result.params) ? result.params : [];
+    const warning = manualEl("manualWarning");
+    warning.hidden = true;
+    if (manualContext.params.length === 0) {
+      manualSetStatus("参数树为空；该效果可能没有可读参数。", "error");
+    } else {
+      manualSetStatus(
+        "已读取 " + manualContext.params.length + " 个参数；勾选要覆盖的行并填写写入值。",
+      );
+    }
+    manualRenderRows();
+  } catch (error) {
+    manualSetStatus("读取失败：" + String((error && error.message) || error), "error");
+  } finally {
+    manualSetBusy(false);
+  }
+}
+
+async function manualBaseline() {
+  if (!manualContext || manualBusyFlag) return;
+  if (!hubHas("baselineEffectParams")) {
+    manualSetStatus("主进程尚未提供基线接口", "error");
+    return;
+  }
+  manualSetBusy(true, "正在启动独立 AE 渲染基线…（关闭正在使用的 AE 后再试）");
+  try {
+    const result = await window.hub.baselineEffectParams({
+      matchName: manualContext.item.matchName,
+      ae: "",
+    });
+    if (!result || !result.ok || !result.png) {
+      manualSetStatus("基线渲染失败：" + ((result && result.status) || (result && result.reason) || "未知原因"), "error");
+      return;
+    }
+    manualContext.baselinePath = result.png;
+    const preview = manualEl("manualPreview");
+    preview.textContent = "";
+    const img = document.createElement("img");
+    img.src = "file:///" + String(result.png).replace(/\\/g, "/");
+    img.alt = "基线预览";
+    preview.appendChild(img);
+    manualSetStatus("基线已生成，可用于验证对比。");
+  } catch (error) {
+    manualSetStatus("基线渲染失败：" + String((error && error.message) || error), "error");
+  } finally {
+    manualSetBusy(false);
+  }
+}
+
+async function manualVerify() {
+  if (!manualContext || manualBusyFlag) return;
+  if (!hubHas("verifyEffectParams")) {
+    manualSetStatus("主进程尚未提供验证接口", "error");
+    return;
+  }
+  let params;
+  try {
+    params = manualCollectParams();
+  } catch (error) {
+    manualSetStatus(String(error.message || error), "error");
+    return;
+  }
+  if (!params.length) {
+    manualSetStatus("先勾选至少一个要验证的参数。", "error");
+    return;
+  }
+  const baselinePath = manualContext.baselinePath || manualDeriveBaseline(manualContext.item);
+  if (!baselinePath) {
+    manualSetStatus("没有基线图；请先单独渲染该效果或点「渲染基线」。", "error");
+    return;
+  }
+  manualSetBusy(true, "正在启动独立 AE 验证写入…");
+  try {
+    const result = await window.hub.verifyEffectParams({
+      matchName: manualContext.item.matchName,
+      params,
+      baselinePath,
+      ae: "",
+    });
+    if (!result || !result.ok) {
+      manualSetStatus("验证失败：" + ((result && result.status) || (result && result.reason) || "未知原因"), "error");
+      return;
+    }
+    const compare = result.compare;
+    if (!compare || !compare.ok) {
+      manualSetStatus("验证完成，但图像对比失败：" + ((compare && compare.reason) || "未知"), "error");
+      return;
+    }
+    const preview = manualEl("manualPreview");
+    preview.textContent = "";
+    const img = document.createElement("img");
+    img.src = compare.verifyDataUrl;
+    img.alt = "验证结果";
+    preview.appendChild(img);
+    const ratio = compare.totalPixels ? compare.diffPixels / compare.totalPixels : 0;
+    const diff = manualEl("manualDiff");
+    if (compare.identical) {
+      diff.textContent = "像素完全一致：写入可能没有生效，或该参数在当前画面不可见。";
+      manualMarkVerified(false);
+      manualSetStatus("验证完成：像素无变化（参数可能未生效）。", "error");
+    } else {
+      diff.textContent =
+        "差异 " + compare.diffPixels + "/" + compare.totalPixels +
+        "（" + (ratio * 100).toFixed(2) + "%），最大通道差 " + compare.maxChannelDiff + "。";
+      manualMarkVerified(true);
+      manualSetStatus("验证完成：写入已产生可见变化。");
+    }
+    manualContext.verified = !compare.identical;
+    manualRefreshActions();
+  } catch (error) {
+    manualSetStatus("验证失败：" + String((error && error.message) || error), "error");
+  } finally {
+    manualSetBusy(false);
+  }
+}
+
+async function manualPickPreset() {
+  if (!manualContext || manualBusyFlag) return;
+  if (!hubHas("pickEffectPreset")) return;
+  try {
+    const result = await window.hub.pickEffectPreset();
+    if (!result || !result.ok) {
+      if (result && result.reason !== "cancelled") {
+        manualSetStatus("导入 .ffx 失败：" + (result.reason || "未知原因"), "error");
+      }
+      return;
+    }
+    manualContext.preset = result.preset;
+    manualEl("manualPreset").textContent = "兜底预设：" + result.preset + "（" + result.path + "）";
+    manualSetStatus("已导入 .ffx 兜底预设。");
+    manualRefreshActions();
+  } catch (error) {
+    manualSetStatus("导入 .ffx 失败：" + String((error && error.message) || error), "error");
+  }
+}
+
+async function manualSave() {
+  if (!manualContext || manualBusyFlag) return;
+  if (!hubHas("saveEffectOverrides")) return;
+  let params;
+  try {
+    params = manualCollectParams();
+  } catch (error) {
+    manualSetStatus(String(error.message || error), "error");
+    return;
+  }
+  if (!params.length && !manualContext.preset) {
+    manualSetStatus("没有可保存的覆盖：勾选参数或选择 .ffx。", "error");
+    return;
+  }
+  manualSetBusy(true, "正在保存覆盖表…");
+  try {
+    const saved = await window.hub.saveEffectOverrides({
+      matchName: manualContext.item.matchName,
+      params,
+      preset: manualContext.preset || "",
+    });
+    if (!saved || !saved.ok) {
+      manualSetStatus("保存失败：" + ((saved && saved.reason) || "未知原因"), "error");
+      return;
+    }
+    manualSetStatus("覆盖表已保存，正在清理旧预览并强制重渲…");
+    const render = await window.hub.startPluginEffects({
+      matchNames: [manualContext.item.matchName],
+      force: true,
+    });
+    if (!render || !render.ok) {
+      manualSetStatus("覆盖已保存，但启动重渲失败：" + ((render && render.reason) || "未知原因"), "error");
+      return;
+    }
+    manualSetStatus("覆盖已保存，已启动强制重渲；完成后回到效果库查看新预览。");
+    await loadEffects();
+  } catch (error) {
+    manualSetStatus("保存失败：" + String((error && error.message) || error), "error");
+  } finally {
+    manualSetBusy(false);
+  }
+}
+
+async function openManualDialog(item) {
+  if (!hubHas("dumpEffectParams")) {
+    setStatus("主进程尚未提供手动调参接口", true);
+    return;
+  }
+  manualContext = {
+    item,
+    params: [],
+    existing: [],
+    preset: item.manualPreset || "",
+    baselinePath: manualDeriveBaseline(item),
+    verified: false,
+  };
+  manualEl("manualTitle").textContent = "手动调参 · " + effectDisplayName(item);
+  manualEl("manualSubtitle").textContent = item.matchName + " · " + (item.plugin || "插件");
+  manualEl("manualParamList").textContent = "";
+  manualEl("manualPreview").textContent = "尚未验证";
+  manualEl("manualDiff").textContent = "对比结果会显示在这里";
+  manualEl("manualPreset").textContent = manualContext.preset
+    ? "兜底预设：" + manualContext.preset
+    : "未选择 .ffx 兜底预设";
+  manualEl("manualWarning").hidden = true;
+  manualSetStatus("先点「读取参数」；每次操作都会启动一个独立 AE，请先关闭正在使用的 AE。");
+  manualSetBusy(false);
+  manualEl("manualDialog").hidden = false;
+  await manualReadOverrides();
+  manualRenderRows();
+  if (manualContext.existing.length) {
+    manualSetStatus("已读取现有覆盖 " + manualContext.existing.length + " 条；点「读取参数」获取完整参数列表。");
+  }
+}
+
+function closeManualDialog() {
+  const dialog = manualEl("manualDialog");
+  if (dialog) dialog.hidden = true;
+  manualContext = null;
 }
 
 function effectCardNode(item) {
@@ -1732,6 +2202,17 @@ function effectCardNode(item) {
   categoryNode.textContent = category;
   body.appendChild(nameNode);
   body.appendChild(categoryNode);
+  if (item.manual) {
+    const manualBadge = document.createElement("span");
+    manualBadge.className = "card-manual-badge" + (item.manualUnverified ? " warning" : "");
+    manualBadge.textContent = item.manualUnverified ? "手动⚠" : "手动";
+    manualBadge.title = item.manualVerified
+      ? "手动覆盖已通过写入验证"
+      : item.manualUnverified
+        ? "手动覆盖中有参数写入后像素无变化"
+        : "使用手动覆盖表，尚未验证写入";
+    body.appendChild(manualBadge);
+  }
 
   const statusLabel = hasPreview ? "" : effectStatusLabel(item);
   card.title = [name, String(item.matchName || ""), category, statusLabel]
@@ -2961,6 +3442,29 @@ function bind() {
   $("effectSelectAll").addEventListener("click", selectAllFilteredEffects);
   $("effectClearAll").addEventListener("click", clearEffectSelection);
   $("effectRenderSelected").addEventListener("click", renderSelectedPluginEffects);
+  /* 手动调参 */
+  $("manualDump").addEventListener("click", manualDump);
+  $("manualBaseline").addEventListener("click", manualBaseline);
+  $("manualVerify").addEventListener("click", manualVerify);
+  $("manualPickPreset").addEventListener("click", manualPickPreset);
+  $("manualSave").addEventListener("click", manualSave);
+  $("manualStop").addEventListener("click", async () => {
+    if (!hubHas("stopManualEffect")) return;
+    await window.hub.stopManualEffect();
+    manualSetStatus("已请求停止手动调参任务。");
+  });
+  $("manualClose").addEventListener("click", closeManualDialog);
+  $("manualCloseBottom").addEventListener("click", closeManualDialog);
+  $("manualDialog").addEventListener("mousedown", (event) => {
+    if (event.target === $("manualDialog")) closeManualDialog();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !$("manualDialog").hidden) {
+      event.preventDefault();
+      closeManualDialog();
+    }
+  });
+
   $("renderLogClose").addEventListener("click", closeRenderLog);
   $("renderLogCloseBottom").addEventListener("click", closeRenderLog);
   $("renderLogOpenFolder").addEventListener("click", () => {

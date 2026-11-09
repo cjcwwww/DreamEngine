@@ -38,6 +38,15 @@ contextBridge.exposeInMainWorld("hub", {
   toggleEffectFavorite: (matchName) => ipcRenderer.invoke("effects:toggleFavorite", matchName),
   clearEffectRender: (matchName) => ipcRenderer.invoke("effects:clearPreview", matchName),
 
+  /* 手动调参：dump / 基线 / 验证 / 保存覆盖表 / 选择 .ffx */
+  readEffectOverrides: (matchName) => ipcRenderer.invoke("manual:overrides", matchName),
+  dumpEffectParams: (options) => ipcRenderer.invoke("manual:dump", options),
+  baselineEffectParams: (options) => ipcRenderer.invoke("manual:baseline", options),
+  verifyEffectParams: (options) => ipcRenderer.invoke("manual:verify", options),
+  saveEffectOverrides: (options) => ipcRenderer.invoke("manual:save", options),
+  pickEffectPreset: () => ipcRenderer.invoke("manual:pickPreset"),
+  stopManualEffect: () => ipcRenderer.invoke("manual:stop"),
+
   /* 渲染 */
   startRender: (options) => ipcRenderer.invoke("render:start", options),
   stopRender: () => ipcRenderer.invoke("render:stop"),

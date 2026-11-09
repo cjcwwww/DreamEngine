@@ -22,6 +22,8 @@ const presetCategories = require("./core/preset_categories");
 const install = require("./core/install");
 const { RenderJob } = require("./core/render");
 const { PluginEffectJob } = require("./core/effect_render");
+const { ManualEffectRunner } = require("./core/manual_effect");
+const effectOverrides = require("./core/effect_overrides");
 const catalog = require("./core/catalog");
 const effects = require("./core/effects");
 const effectFavorites = require("./core/effect_favorites");
@@ -35,6 +37,7 @@ let mainWindow = null;
 let paths = null;
 let job = null;
 let pluginJob = null;
+let manualRunner = null;
 
 /** 开发态用仓库里的 tools/；打包后随包走 resources/tools/ */
 function toolsDir() {
@@ -398,6 +401,194 @@ function registerIpc() {
       return "";
     }
   });
+
+  /* ---------- 手动调参：dump / baseline / verify / save ---------- */
+
+  function manualBusy() {
+    if (!manualRunner) return { busy: true, reason: "no_runner" };
+    if (pluginJob && pluginJob.isRunning()) return { busy: true, reason: "plugin_effects_running" };
+    if (manualRunner.isRunning()) return { busy: true, reason: "manual_running" };
+    return null;
+  }
+
+  function validMatchName(value) {
+    const name = String(value === null || value === undefined ? "" : value).trim();
+    return name && !/[\t\r\n]/.test(name) ? name : "";
+  }
+
+  function comparePngFiles(baselineFile, verifyFile) {
+    const baseline = nativeImage.createFromPath(baselineFile);
+    const verify = nativeImage.createFromPath(verifyFile);
+    if (baseline.isEmpty() || verify.isEmpty()) {
+      return { ok: false, reason: "image_read_failed" };
+    }
+    const sizeA = baseline.getSize();
+    const sizeB = verify.getSize();
+    if (sizeA.width !== sizeB.width || sizeA.height !== sizeB.height) {
+      return { ok: false, reason: "size_mismatch", sizeA, sizeB };
+    }
+    const a = baseline.getBitmap();
+    const b = verify.getBitmap();
+    const totalPixels = sizeA.width * sizeA.height;
+    let diffPixels = 0;
+    let maxChannelDiff = 0;
+    for (let i = 0; i < totalPixels; i++) {
+      const off = i * 4;
+      const dr = Math.abs(a[off] - b[off]);
+      const dg = Math.abs(a[off + 1] - b[off + 1]);
+      const db = Math.abs(a[off + 2] - b[off + 2]);
+      const da = Math.abs(a[off + 3] - b[off + 3]);
+      const diff = Math.max(dr, dg, db, da);
+      if (diff > 0) diffPixels++;
+      if (diff > maxChannelDiff) maxChannelDiff = diff;
+    }
+    return {
+      ok: true,
+      identical: diffPixels === 0,
+      diffPixels,
+      totalPixels,
+      maxChannelDiff,
+      baselineDataUrl: baseline.toDataURL(),
+      verifyDataUrl: verify.toDataURL(),
+    };
+  }
+
+  ipcMain.handle("manual:dump", async (_event, options) => {
+    const busy = manualBusy();
+    if (busy) return { ok: false, reason: busy.reason };
+    const matchName = validMatchName(options && options.matchName);
+    if (!matchName) return { ok: false, reason: "bad_match_name" };
+    const ae = (options && options.ae) || bestAfterFX();
+    return manualRunner.run({ matchName, mode: "dump", ae });
+  });
+
+  ipcMain.handle("manual:baseline", async (_event, options) => {
+    const busy = manualBusy();
+    if (busy) return { ok: false, reason: busy.reason };
+    const matchName = validMatchName(options && options.matchName);
+    if (!matchName) return { ok: false, reason: "bad_match_name" };
+    const ae = (options && options.ae) || bestAfterFX();
+    /* 基线必须不带手动覆盖；临时移走覆盖表，结束后恢复。 */
+    const file = effectOverrides.overridesPath(paths);
+    const backup = file + ".manual-baseline-backup";
+    let moved = false;
+    try {
+      if (fs.existsSync(file)) {
+        fs.renameSync(file, backup);
+        moved = true;
+      }
+      return await manualRunner.run({ matchName, mode: "baseline", ae });
+    } finally {
+      if (moved) {
+        try { fs.renameSync(backup, file); } catch { /* 恢复失败时保留备份 */ }
+      }
+    }
+  });
+
+  ipcMain.handle("manual:overrides", (_event, matchName) => {
+    const name = validMatchName(matchName);
+    if (!name) return { ok: false, reason: "bad_match_name", items: [] };
+    const doc = effectOverrides.read(paths);
+    return { ok: doc.ok, items: effectOverrides.forMatchName(doc.items, name), errors: doc.errors };
+  });
+
+  ipcMain.handle("manual:verify", async (_event, options) => {
+    const busy = manualBusy();
+    if (busy) return { ok: false, reason: busy.reason };
+    const matchName = validMatchName(options && options.matchName);
+    if (!matchName) return { ok: false, reason: "bad_match_name" };
+    const rows = Array.isArray(options && options.params) ? options.params : [];
+    const baselinePath = String((options && options.baselinePath) || "");
+    if (!baselinePath || !fs.existsSync(baselinePath)) {
+      return { ok: false, reason: "baseline_missing" };
+    }
+    if (rows.length === 0) return { ok: false, reason: "no_params" };
+
+    const base = effectOverrides.read(paths);
+    const kept = (base.items || []).filter((item) => item && item.matchName !== matchName);
+    const candidate = rows
+      .filter((row) => row && row.paramIndex && row.enabled !== false)
+      .map((row) => ({
+        ...row,
+        matchName,
+        enabled: true,
+        verified: row.verified === true ? true : null,
+      }));
+    if (candidate.length === 0) return { ok: false, reason: "no_params" };
+
+    const wrote = effectOverrides.write(paths, kept.concat(candidate));
+    if (!wrote.ok) return wrote;
+    try {
+      const run = await manualRunner.run({
+        matchName,
+        mode: "verify",
+        ae: (options && options.ae) || bestAfterFX(),
+      });
+      if (!run.ok || !run.png) return { ...run, compare: null };
+      const compare = comparePngFiles(baselinePath, run.png);
+      return { ...run, compare };
+    } finally {
+      /* 验证只是临时写表；恢复用户原有覆盖（可能是缺失表）。 */
+      if (base.missing) {
+        try { fs.rmSync(effectOverrides.overridesPath(paths), { force: true }); } catch { /* ignore */ }
+      } else {
+        effectOverrides.write(paths, base.items || []);
+      }
+    }
+  });
+
+  ipcMain.handle("manual:save", (_event, options) => {
+    const matchName = validMatchName(options && options.matchName);
+    if (!matchName) return { ok: false, reason: "bad_match_name" };
+    const rows = Array.isArray(options && options.params) ? options.params : [];
+    const preset = String((options && options.preset) || "").trim();
+    const base = effectOverrides.read(paths);
+    const kept = (base.items || []).filter((item) => item && item.matchName !== matchName);
+    const candidate = rows
+      .filter((row) => row && row.paramIndex && row.enabled !== false)
+      .map((row) => ({
+        ...row,
+        matchName,
+        enabled: true,
+        verified: row.verified === true ? true : row.verified === false ? false : null,
+      }));
+    /* .ffx 只在没有逐参数覆盖时作为兜底；两者同时存在时参数优先。 */
+    if (preset && candidate.length === 0) {
+      candidate.push({
+        matchName,
+        preset,
+        scene: "",
+        enabled: true,
+        paramIndex: "",
+        paramPath: "",
+        value: null,
+        valueType: "",
+        verified: null,
+        note: "",
+      });
+    }
+    if (candidate.length === 0) return { ok: false, reason: "no_params" };
+    const wrote = effectOverrides.write(paths, kept.concat(candidate));
+    if (!wrote.ok) return wrote;
+    /* 旧预览可能还带着旧参数；先清掉，UI 随后启动强制重渲。 */
+    effects.clearPreview(paths, matchName);
+    return wrote;
+  });
+
+  ipcMain.handle("manual:pickPreset", async () => {
+    if (!mainWindow) return { ok: false, reason: "no_window" };
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: "选择 .ffx 兜底预设",
+      properties: ["openFile"],
+      filters: [{ name: "After Effects 预设", extensions: ["ffx"] }],
+    });
+    if (result.canceled || !result.filePaths.length) return { ok: false, reason: "cancelled" };
+    return effectOverrides.importPreset(paths, result.filePaths[0]);
+  });
+
+  ipcMain.handle("manual:stop", () =>
+    manualRunner ? manualRunner.stop() : { ok: false, reason: "no_runner" },
+  );
 }
 
 /* ---------- 无头自检：验证路径解析、AE 检测、索引读取是否正常 ---------- */
@@ -457,6 +648,14 @@ if (!gotLock) {
           }
         }
       },
+    });
+
+    manualRunner = new ManualEffectRunner({
+      paths,
+      script: path.join(toolsDir(), "manual_probe.ps1"),
+      jsx: path.join(toolsDir(), "manual_probe.jsx"),
+      template: path.join(toolsDir(), "DreamEnginePNG.aep"),
+      timeoutMs: 300000,
     });
 
     Menu.setApplicationMenu(null);
