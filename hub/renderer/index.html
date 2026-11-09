@@ -531,6 +531,18 @@
       </div>
     </div>
 
+    <div class="panel">
+      <div class="panel-title">人工调参</div>
+      <div class="kv"><span>属性缓存</span><code id="setParamsCache">—</code></div>
+      <div class="panel-row actions">
+        <button class="btn ghost" id="btnOpenParamsCache">打开属性缓存目录</button>
+      </div>
+      <p class="footnote">
+        属性缓存是启动 After Effects 读取插件参数树后的结果（只读记录，不含你写入的覆盖值）。
+        删掉某个文件后，下次做人工调参时该效果会被重新读取。
+      </p>
+    </div>
+
     <p class="footnote">
       安装与升级由安装包里的 <code>install_dreamengine.ps1</code> 负责：它只覆盖程序文件，
       不会动你已经生成的预览图和预设库。

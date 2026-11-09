@@ -120,6 +120,7 @@ function snapshot() {
       extDir: paths.extDir,
       probe: paths.probe,
       docs: paths.docsDir,
+      effectParams: paths.effectParamsRoot,
     },
     render: job ? { running: job.isRunning(), state: job.snapshot() } : { running: false, state: null },
     pluginEffects: pluginJob
@@ -305,6 +306,17 @@ function registerIpc() {
       : path.dirname(target);
     if (!fs.existsSync(dir)) return false;
     shell.openPath(dir);
+    return true;
+  });
+
+  /* 属性缓存目录：第一次打开时还没有任何缓存，直接建出来免得用户看到「路径不存在」 */
+  ipcMain.handle("settings:openEffectParams", () => {
+    try {
+      fs.mkdirSync(paths.effectParamsRoot, { recursive: true });
+    } catch {
+      return false;
+    }
+    shell.openPath(paths.effectParamsRoot);
     return true;
   });
 

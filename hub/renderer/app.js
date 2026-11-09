@@ -3241,6 +3241,8 @@ function fillSettings(snap) {
   $("setPresets").textContent = snap.paths.presets;
   $("setBg").textContent = snap.paths.backgrounds;
   $("setProbe").textContent = snap.paths.probe;
+  const cacheNode = $("setParamsCache");
+  if (cacheNode) cacheNode.textContent = snap.paths.effectParams || "—";
 }
 
 async function fillBackgrounds() {
@@ -3608,6 +3610,14 @@ function bind() {
   $("btnOpenExt").addEventListener("click", () => window.hub.reveal($("setExtDir").textContent));
   $("btnOpenPresets").addEventListener("click", () => window.hub.reveal($("setPresets").textContent));
   $("btnOpenProbe").addEventListener("click", () => window.hub.reveal($("setProbe").textContent));
+  $("btnOpenParamsCache").addEventListener("click", async () => {
+    if (!hubHas("openEffectParamsDir")) {
+      setStatus("主进程尚未提供属性缓存目录接口", true);
+      return;
+    }
+    const ok = await window.hub.openEffectParamsDir();
+    if (!ok) setStatus("打开属性缓存目录失败", true);
+  });
 
   window.hub.onRenderState((renderState) => {
     paintProgress(renderState);
