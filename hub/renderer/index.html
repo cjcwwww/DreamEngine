@@ -169,6 +169,7 @@
                 <div class="flow-kind-meta" id="flowKindEffectMeta">读取中…</div>
               </button>
             </div>
+            <p class="flow-hint">一次预览渲染只处理一类目标（预设或效果）；第 2 步可以多选，选错的条目可以随时移除。</p>
           </section>
 
           <!-- ② 选择渲染目标 -->
@@ -239,6 +240,7 @@
                 <div class="flow-confirm-actions">
                   <button class="btn ghost" id="flowConfirmBack" type="button">上一步</button>
                   <span class="spacer"></span>
+                  <button class="btn ghost" id="flowConfirmRetune" type="button" hidden>继续调参</button>
                   <button class="btn primary" id="flowConfirmNext" type="button">开始渲染</button>
                 </div>
               </aside>
@@ -320,6 +322,7 @@
                   <button class="btn ghost" id="flowTuneExpandAll" type="button">展开全部</button>
                   <button class="btn ghost" id="flowTuneResetEffect" type="button">重置本条</button>
                 </div>
+                <p class="flow-hint">改动会立即写入覆盖表并自动保存（右下角显示保存时间），不需要手动保存。</p>
                 <div class="flow-tune-params" id="flowTuneParams"></div>
                 <div class="flow-tune-foot">
                   <button class="btn ghost" id="flowTuneVerify" type="button">验证写入</button>
@@ -340,6 +343,7 @@
           <section class="flow-step" data-flow-step="run">
             <div class="flow-pane">
               <div class="flow-run-summary" id="flowRunSummary"></div>
+              <p class="flow-hint">渲染会在后台启动 After Effects，期间不要手动操作 AE 窗口；可以切到别的页签，渲染会继续。</p>
               <div class="flow-run-progress">
                 <div class="flow-run-phase" id="flowRunPhase">准备中…</div>
                 <div class="flow-run-current" id="flowRunCurrent"></div>
@@ -371,6 +375,7 @@
           <section class="flow-step" data-flow-step="result">
             <div class="flow-pane">
               <div class="flow-result-counts" id="flowResultCounts"></div>
+              <p class="flow-hint">「跳过」是本次没有真正渲染的条目（已经生成过、或不可渲染），不计入成功或失败。</p>
               <div class="flow-result-table" id="flowResultTable"></div>
               <div class="flow-pane-foot">
                 <button class="btn ghost" id="flowResultExit" type="button">返回库</button>

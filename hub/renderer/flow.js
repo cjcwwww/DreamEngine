@@ -45,6 +45,9 @@
       refetch: new Set(),
       polling: false,
       api: false,
+      /* 本次运行计划是否已经走过一轮人工调参（用户点过「完成调参」） */
+      done: false,
+      doneAt: "",
     },
     selection: {
       query: "",
@@ -250,6 +253,11 @@
     );
   }
 
+  function resetTuningDone() {
+    flow.tuning.done = false;
+    flow.tuning.doneAt = "";
+  }
+
   function chooseKind(kind) {
     if (kind !== "preset" && kind !== "effect") return;
     const conflict = flow.plan.items.length > 0 && flow.kind && flow.kind !== kind;
@@ -258,6 +266,7 @@
     flow.kind = kind;
     flow.plan.config.limit = kind === "effect" ? 8 : 40;
     flow.plan.config.rounds = kind === "effect" ? 200 : 40;
+    resetTuningDone();
     saveConfig();
     go("select");
   }
@@ -299,8 +308,11 @@
         manualTuning: false,
         presetPath: kind === "preset" ? String(item.path || "") : "",
         matchName: kind === "effect" ? String(item.matchName || "") : "",
+        plugin: kind === "effect" ? String(item.plugin || "") : "",
+        category: kind === "effect" ? String(item.category || "") : "",
       });
     }
+    resetTuningDone();
     paintSelection();
   }
 
@@ -524,8 +536,11 @@
         manualTuning: false,
         presetPath: kind === "preset" ? String(item.path || "") : "",
         matchName: kind === "effect" ? String(item.matchName || "") : "",
+        plugin: kind === "effect" ? String(item.plugin || "") : "",
+        category: kind === "effect" ? String(item.category || "") : "",
       });
     }
+    resetTuningDone();
     paintSelection();
   }
 
@@ -609,6 +624,8 @@
           box.checked = !!item.manualTuning;
           box.addEventListener("change", () => {
             item.manualTuning = box.checked;
+            /* 计划里的人参条目变了，之前那轮「完成调参」就不再作数 */
+            resetTuningDone();
             paintConfirm();
           });
           toggle.appendChild(box);
@@ -638,12 +655,22 @@
 
     const tuningItems = items.filter((item) => item.manualTuning);
     const blacklisted = items.filter((item) => item.status === "blacklisted");
+    const tuningDone = flow.tuning.done && tuningItems.length > 0;
     const noteLines = [];
-    if (tuningItems.length) {
+    if (tuningItems.length && !tuningDone) {
       noteLines.push(
         "已为 " +
           tuningItems.length +
           " 个效果开启人工调参：下一步会先获取缺少的属性，再进入调参界面。",
+      );
+    }
+    if (tuningDone) {
+      noteLines.push(
+        "已完成人工调参：已改动 " +
+          changedTuningCount() +
+          " 条，改动已保存。" +
+          (flow.tuning.doneAt ? "（最后 " + flow.tuning.doneAt + "）" : "") +
+          "可以直接开始渲染；要再修改点下方的「继续调参」。",
       );
     }
     if (blacklisted.length) {
@@ -653,16 +680,30 @@
           " 个已跳过的效果；本次会强制重渲它们（失败后会被重新记回黑名单）。",
       );
     }
+    if (!tuningItems.length && !blacklisted.length) {
+      noteLines.push(
+        items.length
+          ? "确认配置后开始渲染；已经生成过或不可渲染的条目会被跳过，并记进第 5 步结果。"
+          : "返回第 2 步挑选要渲染的条目。",
+      );
+    }
     const note = el("flowTuneNote");
     if (note) {
       note.hidden = noteLines.length === 0;
       note.textContent = noteLines.join(" ");
     }
+    const retune = el("flowConfirmRetune");
+    if (retune) retune.hidden = !tuningDone;
     const next = el("flowConfirmNext");
     if (next) {
-      next.textContent = tuningItems.length ? "下一步：人工调参" : "开始渲染";
+      next.textContent = tuningItems.length && !tuningDone ? "下一步：人工调参" : "开始渲染";
       next.disabled = items.length === 0;
     }
+  }
+
+  /* 已改动参数条数：用于确认页「已调参 N 条」提示 */
+  function changedTuningCount() {
+    return tuningTargets().reduce((sum, item) => sum + overrideCount(item.key), 0);
   }
 
   function findSourceItem(kind, planItem) {
@@ -692,12 +733,23 @@
   async function startFromConfirm() {
     const config = readConfirmConfig();
     const tuning = flow.plan.items.filter((item) => item.manualTuning);
-    if (tuning.length) {
+    /* 还没走过调参：先进入调参子流程；走过之后直接渲染，想改再点「继续调参」 */
+    if (tuning.length && !flow.tuning.done) {
       flow.tuning.active = true;
-      go("acquire");
+      go("acquire", { force: true });
       return;
     }
     await startRun();
+  }
+
+  /* 重新进入调参：全部有缓存就直接到调参页，否则先走获取页 */
+  function reopenTuning() {
+    const targets = flow.plan.items.filter((item) => item.manualTuning);
+    flow.tuning.active = true;
+    flow.tuning.done = false;
+    flow.tuning.doneAt = "";
+    const allCached = targets.every((item) => !!(flow.tuning.index && flow.tuning.index[item.key]));
+    go(allCached ? "tuning" : "acquire", { force: true });
   }
 
   /* ---------------- ④ 渲染 ---------------- */
@@ -753,7 +805,11 @@
     const stop = el("flowRunStop");
     if (stop) stop.disabled = !flow.run.polling;
     const hint = el("flowRunHint");
-    if (hint) hint.textContent = flow.run.polling ? "" : "刚才的运行已结束。";
+    if (hint) {
+      hint.textContent = flow.run.polling
+        ? "渲染进行中：完成后会自动进入结果页，期间不要手动操作 AE 窗口。"
+        : "刚才的运行已结束，可以在第 5 步查看结果。";
+    }
   }
 
   /* 运行计划拆成「真的要渲的」和「本次跳过的」；跳过项由 Hub 写进结果表 */
@@ -945,6 +1001,18 @@
   }
 
   let finishing = false;
+
+  /* 渲染结束后刷新预设库/效果库与 AE 状态（旧推送订阅已删除，改由流程主动刷新） */
+  async function refreshLibrary() {
+    try {
+      if (typeof loadPresets === "function") await loadPresets();
+      if (typeof loadEffects === "function") await loadEffects();
+      if (typeof refreshAeState === "function") await refreshAeState();
+    } catch (_error) {
+      /* 忽略 */
+    }
+  }
+
   async function finishRun(phase) {
     if (finishing) return;
     finishing = true;
@@ -954,6 +1022,7 @@
     } catch (_error) {
       /* 忽略 */
     }
+    await refreshLibrary();
     if (phase === "cancelled") {
       setText("flowRunPhase", "已停止");
       setText("flowRunHint", "已手动停止，下次开始会从断点继续。");
@@ -1699,6 +1768,7 @@
     }
     flow.entry = data.entry || { view: flow.kind === "effect" ? "effects" : "presets" };
     flow.reached = new Set(["type", "select", "confirm"]);
+    resetTuningDone();
     if (typeof setView === "function") setView("render");
     if (data.manualTuning && flow.plan.items.length === 1 && flow.kind === "effect") {
       flow.tuning.active = true;
@@ -1788,6 +1858,7 @@
 
     on("flowConfirmBack", "click", () => go("select"));
     on("flowConfirmNext", "click", startFromConfirm);
+    on("flowConfirmRetune", "click", reopenTuning);
 
     on("flowAcquireStart", "click", startAcquire);
     on("flowAcquireStop", "click", () => {
@@ -1798,8 +1869,8 @@
       }
     });
     on("flowAcquireLog", "click", openDumpLog);
-    on("flowAcquireContinue", "click", () => go("tuning"));
-    on("flowAcquireSkip", "click", () => go("tuning"));
+    on("flowAcquireContinue", "click", () => go("tuning", { force: true }));
+    on("flowAcquireSkip", "click", () => go("tuning", { force: true }));
     const tabs = document.querySelectorAll("#flowAcquireTabs .seg");
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
@@ -1838,6 +1909,8 @@
     on("flowTuneMore", "click", resetEffectOverrides);
     on("flowTuneDone", "click", () => {
       flow.tuning.active = false;
+      flow.tuning.done = true;
+      flow.tuning.doneAt = nowClock();
       go("confirm");
     });
 
