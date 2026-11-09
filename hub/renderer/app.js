@@ -247,6 +247,9 @@ function setView(name) {
 
   if (pluginAlias) setRenderMode("plugin");
   if (target === "render") {
+    if (window.PreviewFlow && typeof window.PreviewFlow.show === "function") {
+      window.PreviewFlow.show();
+    }
     refreshAeState();
     if (state.renderMode === "plugin") {
       pullPluginEffectLog();
@@ -554,7 +557,7 @@ function openPresetMenu(item, x, y) {
   if (item.rendered) {
     menu.appendChild(menuButton("取消渲染", false, false, () => clearPresetRender(item)));
   }
-  menu.appendChild(menuButton("单独渲染", false, false, () => renderSinglePreset(item)));
+  menu.appendChild(menuButton("预览渲染此条", false, false, () => renderSinglePreset(item)));
   if (item.external) {
     menu.appendChild(
       menuButton("打开所在文件夹", false, false, () => window.hub.reveal(item.path)),
@@ -847,7 +850,7 @@ function bindPresetSelectCheckbox(thumb, item) {
 function updatePresetSelectionUI() {
   const count = state.presetSelection.size;
   const renderBtn = $("btnRenderSelected");
-  renderBtn.textContent = `渲染所选 (${count})`;
+  renderBtn.textContent = `预览渲染 (${count})`;
   renderBtn.disabled = count === 0 || anyJobBusy();
   $("btnClearSelection").disabled = count === 0;
 
@@ -898,26 +901,60 @@ function prunePresetSelection() {
   }
 }
 
+/* ---------- 预览渲染：库 → 流程的交接 ---------- */
+
+/*
+ * 把库里的选择「种入」运行计划，然后跳到流程的第 3 步（确认渲染配置）。
+ * 库里的勾选不动（Q2：种入是拷贝，不是搬走）。
+ */
+function handoffToPreview(kind, payload) {
+  if (anyJobBusy()) {
+    setStatus("已有渲染任务在运行，请先等待结束或停止", true);
+    return false;
+  }
+  if (!window.PreviewFlow || typeof window.PreviewFlow.enterFromLibrary !== "function") {
+    setStatus("预览渲染流程尚未加载（renderer/flow.js）", true);
+    return false;
+  }
+  window.PreviewFlow.enterFromLibrary(kind, payload || {});
+  return true;
+}
+
+/* 效果库条目 → 运行计划条目 */
+function effectPlanItem(item) {
+  let status = "excluded";
+  if (item.status === "blacklisted") status = "blacklisted";
+  else if (item.generated) status = "rendered";
+  else if (item.renderable) status = "pending";
+  const reason =
+    item.status === "blacklisted" ? String(item.reason || "黑名单") : String(item.reason || "");
+  return {
+    key: String(item.matchName || ""),
+    name: effectDisplayName(item),
+    meta: [item.plugin || "", item.category || ""].filter(Boolean).join(" · "),
+    status,
+    reason,
+    matchName: String(item.matchName || ""),
+    plugin: String(item.plugin || ""),
+    category: String(item.category || ""),
+  };
+}
+
 async function renderSelectedPresets() {
   const paths = [...state.presetSelection.values()];
   if (!paths.length) return;
-  if (anyJobBusy()) {
-    setStatus("已有渲染任务在运行，请先等待结束或停止", true);
-    return;
-  }
-  if (paths.length > 50) {
-    const ok = window.confirm(
-      `将渲染 ${paths.length} 个预设，可能需要很长时间。确定继续吗？`,
-    );
-    if (!ok) return;
-  }
-  setRenderMode("preset");
-  const started = await startRender({
-    presetPaths: paths,
-    force: true,
-    limit: paths.length,
+  const byKey = new Map(state.presets.map((item) => [pathKey(item.path), item]));
+  const items = paths.map((presetPath) => {
+    const item = byKey.get(pathKey(presetPath)) || { path: presetPath };
+    return {
+      key: presetPath,
+      name: item.name || presetPath.split(/[\\/]/).pop() || presetPath,
+      meta: [item.external ? "AE 预设" : "我的预设", item.rendered ? "已生成" : "未生成"].join(" · "),
+      status: item.rendered ? "rendered" : "pending",
+      presetPath,
+    };
   });
-  if (started) setView("render");
+  handoffToPreview("preset", { items, entry: { view: "presets" } });
 }
 
 async function loadPresets(options = {}) {
@@ -1155,7 +1192,7 @@ function updateEffectSelectionUI() {
   const count = state.effectSelection.size;
   const renderBtn = $("btnEffectRenderSelected");
   if (renderBtn) {
-    renderBtn.textContent = `渲染所选 (${count})`;
+    renderBtn.textContent = `预览渲染 (${count})`;
     renderBtn.disabled = count === 0 || anyJobBusy();
   }
   const clearBtn = $("btnEffectClearSelection");
@@ -1633,16 +1670,31 @@ async function startEffectRender(matchNames, force, progressMessage) {
 async function renderSelectedEffects() {
   const items = [...state.effectSelection.values()];
   if (!items.length) return;
-  const force = items.some((item) => item.hasPreview || item.status === "blacklisted");
-  await startEffectRender(items.map((item) => item.matchName), force);
+  handoffToPreview("effect", {
+    items: items.map(effectPlanItem),
+    entry: { view: "effects" },
+  });
 }
 
 async function renderSingleEffect(item) {
   if (!item || !item.renderable) {
-    setStatus("这个效果不能单独渲染", true);
+    setStatus("这个效果不能预览渲染", true);
     return;
   }
-  await startEffectRender([item.matchName], true, `正在单独渲染「${effectDisplayName(item)}」…`);
+  handoffToPreview("effect", {
+    items: [effectPlanItem(item)],
+    entry: { view: "effects" },
+  });
+}
+
+/* 右键「手动调参…」：种入这一条并直接展开调参 */
+function openEffectTuning(item) {
+  if (!item) return;
+  handoffToPreview("effect", {
+    items: [effectPlanItem(item)],
+    entry: { view: "effects" },
+    manualTuning: true,
+  });
 }
 
 async function clearEffectRender(item) {
@@ -1679,10 +1731,10 @@ function openEffectMenu(item, x, y) {
     toggleEffectFavorite(item),
   ));
   if (item.renderable) {
-    menu.appendChild(menuButton("单独渲染", false, false, () => renderSingleEffect(item)));
+    menu.appendChild(menuButton("预览渲染此条", false, false, () => renderSingleEffect(item)));
   }
   if (item.source === "plugin" || item.manual) {
-    menu.appendChild(menuButton("手动调参…", false, false, () => openManualDialog(item)));
+    menu.appendChild(menuButton("手动调参…", false, false, () => openEffectTuning(item)));
   }
   if (item.generated) {
     menu.appendChild(menuButton("取消渲染", false, true, () => clearEffectRender(item)));
@@ -2495,11 +2547,16 @@ function syncAeVersionSelectors(snap) {
     selected = "";
     localStorage.removeItem(RENDER_AE_KEY);
   }
+  // 没存过选择时跟随插件目录扫描的那一版 AE（目录/预览缓存都是它扫出来的）
+  if (!selected && snap && snap.catalogMeta && snap.catalogMeta.aeExe) {
+    const catalogExe = String(snap.catalogMeta.aeExe);
+    if (available.has(catalogExe)) selected = catalogExe;
+  }
   for (const select of document.querySelectorAll(".ae-version-select")) {
     select.textContent = "";
     const auto = document.createElement("option");
     auto.value = "";
-    auto.textContent = installed.length ? "自动（最高版本）" : "未检测到 After Effects";
+    auto.textContent = installed.length ? "默认（跟随插件目录版本）" : "未检测到 After Effects";
     select.appendChild(auto);
     for (const item of installed) {
       const option = document.createElement("option");
@@ -2617,12 +2674,18 @@ async function startRender(overrides) {
 }
 
 async function renderSinglePreset(item) {
-  setView("render");
-  setRenderMode("preset");
-  await startRender({
-    onlyPreset: item.path,
-    limit: 1,
-    rounds: 1,
+  if (!item || !item.path) return;
+  handoffToPreview("preset", {
+    items: [
+      {
+        key: item.path,
+        name: item.name || item.path.split(/[\\/]/).pop() || item.path,
+        meta: [item.external ? "AE 预设" : "我的预设", item.rendered ? "已生成" : "未生成"].join(" · "),
+        status: item.rendered ? "rendered" : "pending",
+        presetPath: item.path,
+      },
+    ],
+    entry: { view: "presets" },
   });
 }
 
@@ -3129,51 +3192,31 @@ function clearEffectSelection() {
 }
 
 async function renderSelectedPluginEffects() {
-  const matchNames = [...state.pluginEffectSelection.keys()];
-  if (!matchNames.length) return;
+  const items = [...state.pluginEffectSelection.values()];
+  if (!items.length) return;
   if (state.pluginCatalogScanning || state.pluginEffectRendering) {
     setEffectPickerStatus("已有插件效果任务在运行，请先停止或等待结束", true);
     return;
   }
-  const force = $("effectForce").checked;
-  const options = {
-    matchNames,
-    force,
-    ae: $("pluginEffectAeVersion").value,
-    background: $("pluginEffectBackground").value || "",
-    limit: Number($("pluginEffectLimit").value) || 8,
-    rounds: Number($("pluginEffectRounds").value) || 200,
-  };
-  const result = await window.hub.startPluginEffects(options);
-  if (!result || !result.ok) {
-    const reason = (result && result.reason) || "";
-    if (reason === "nothing_to_render") {
-      const text = "所选条目均已生成或已跳过；勾选强制重渲后再试";
-      setEffectPickerStatus(text, true);
-      setStatus(text, true);
-    } else if (reason === "no_catalog") {
-      const text = "还没有插件目录，请先扫描插件目录";
-      setEffectPickerStatus(text, true);
-      setStatus(text, true);
-    } else if (reason === "already_running" || reason === "preset_render_running") {
-      setEffectPickerStatus("已有渲染任务在运行，请稍后再试", true);
-    } else if (reason === "write_failed") {
-      setEffectPickerStatus("写入效果选择文件失败，请重试", true);
-    } else {
-      setEffectPickerStatus("启动失败：" + (reason || "未知原因"), true);
-    }
-    return;
-  }
-
-  const selected = Number(result.selectedCount) || matchNames.length;
-  const skipped = Number(result.skippedCount) || 0;
+  const planItems = items.map((item) => ({
+    key: String(item.matchName || ""),
+    name: item.displayName || item.nameEn || item.matchName || "",
+    meta: [item.plugin || "", item.categoryZh || item.category || ""].filter(Boolean).join(" · "),
+    status:
+      item.status === "rendered"
+        ? "rendered"
+        : item.status === "pending"
+          ? "pending"
+          : item.status === "blacklisted"
+            ? "blacklisted"
+            : "excluded",
+    reason: String(item.reason || ""),
+    matchName: String(item.matchName || ""),
+    plugin: String(item.plugin || ""),
+    category: String(item.categoryZh || item.category || ""),
+  }));
+  if (!handoffToPreview("effect", { items: planItems, entry: { view: "effects" } })) return;
   closeEffectPicker();
-  beginPluginEffectRun(
-    skipped
-      ? `已开始渲染所选 ${selected} 条插件效果（跳过 ${skipped} 条）`
-      : `已开始渲染所选 ${selected} 条插件效果`,
-    `正在渲染所选 ${selected} 条插件效果…`,
-  );
 }
 
 /* ---------- 设置页 ---------- */
