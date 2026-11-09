@@ -133,7 +133,7 @@ class ManualEffectRunner {
     const matchName = String(opts.matchName || "").trim();
     const mode = String(opts.mode || "dump");
     if (!matchName) return Promise.resolve({ ok: false, reason: "missing_match_name" });
-    if (!["dump", "baseline", "verify"].includes(mode)) {
+    if (!["dump", "fastdump", "baseline", "verify"].includes(mode)) {
       return Promise.resolve({ ok: false, reason: "bad_mode" });
     }
     if (!this.script || !fs.existsSync(this.script)) {
