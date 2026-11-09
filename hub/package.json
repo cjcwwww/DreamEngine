@@ -7,8 +7,8 @@
   "author": "DreamEngine",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "selftest": "electron . --selftest",
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start.ps1",
+    "selftest": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start.ps1 --selftest",
     "test": "node --test \"test/*.test.js\"",
     "build:resources": "node ../tools/prepare_hub_bundle.mjs",
     "pack": "node ../tools/build_hub.mjs --dir",
@@ -52,6 +52,7 @@
     ],
     "win": {
       "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
       "target": [
         {
           "target": "nsis",
