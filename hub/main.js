@@ -23,6 +23,8 @@ const install = require("./core/install");
 const { RenderJob } = require("./core/render");
 const { PluginEffectJob } = require("./core/effect_render");
 const { ManualEffectRunner } = require("./core/manual_effect");
+const { EffectDumpJob } = require("./core/effect_dump");
+const previewResults = require("./core/preview_results");
 const effectOverrides = require("./core/effect_overrides");
 const catalog = require("./core/catalog");
 const effects = require("./core/effects");
@@ -38,6 +40,20 @@ let paths = null;
 let job = null;
 let pluginJob = null;
 let manualRunner = null;
+let dumpJob = null;
+// 本次属性获取的 AE 版本，合并缓存时写进每组 meta
+let dumpContext = { ae: "", aeVersion: "", aeMajor: 0 };
+// 属性缓存模块由数据面提交引入；未安装时 UI 会收到 not_wired，不崩
+let paramCacheModule;
+function paramCache() {
+  if (paramCacheModule !== undefined) return paramCacheModule;
+  try {
+    paramCacheModule = require("./core/effect_param_cache");
+  } catch {
+    paramCacheModule = null;
+  }
+  return paramCacheModule;
+}
 
 /** 开发态用仓库里的 tools/；打包后随包走 resources/tools/ */
 function toolsDir() {
@@ -72,6 +88,22 @@ function rememberHubPath(currentPaths) {
   }
 }
 
+/** 插件目录扫描时记录的 AE；目录/属性缓存都是这一版扫出来的，默认就用它。 */
+function readCatalogMetaSafe() {
+  try {
+    return catalog.readCatalogMeta(paths) || {};
+  } catch {
+    return {};
+  }
+}
+
+function preferredAe() {
+  const meta = readCatalogMetaSafe();
+  const exe = String(meta.aeExe || "");
+  if (exe && fs.existsSync(exe)) return exe;
+  return bestAfterFX();
+}
+
 function snapshot() {
   const versions = findAfterFX();
   return {
@@ -80,6 +112,7 @@ function snapshot() {
       installed: versions.map((v) => ({ name: v.name, version: v.version, exe: v.exe })),
       exe: bestAfterFX(),
     },
+    catalogMeta: readCatalogMetaSafe(),
     ext: install.status(paths),
     paths: {
       presets: paths.presets,
@@ -130,6 +163,15 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => mainWindow.show());
+  // 开发排查用：`electron . --console` 把渲染进程的 console / 报错打到终端
+  if (process.argv.includes("--console")) {
+    mainWindow.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+      console.log(`[renderer:${level}] ${sourceId}:${line} ${message}`);
+    });
+    mainWindow.webContents.on("render-process-gone", (_event, details) => {
+      console.error("[renderer gone] " + JSON.stringify(details));
+    });
+  }
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -293,6 +335,7 @@ function registerIpc() {
       const externalCatalog = presetSources.readCatalog(paths);
       if (externalCatalog && externalCatalog.aeExe) opts.ae = externalCatalog.aeExe;
     }
+    if (!opts.ae) opts.ae = preferredAe();
     const statePath = paths.hubState;
     // 上一轮残留的 done/failed 状态会让 UI 一上来就显示「已完成」，先清掉
     try {
@@ -300,6 +343,12 @@ function registerIpc() {
     } catch {
       /* 无所谓 */
     }
+    // 逐条结果账本：本次运行开始时清空，Hub 侧过滤掉的条目先记成 skip，
+    // 之后脚本会按条追加 ok / fail（见 core/preview_results.js）。
+    previewResults.beginRun(paths, {
+      kind: "preset",
+      skips: Array.isArray(opts.skips) ? opts.skips : [],
+    });
     const result = job.start(opts);
     if (result.ok && selectedPaths) {
       return { ...result, selectedCount: selectedPaths.length };
@@ -317,6 +366,7 @@ function registerIpc() {
     if (pluginJob.isRunning()) return { ok: false, reason: "already_running" };
 
     const opts = options || {};
+    if (!opts.ae) opts.ae = preferredAe();
     const matchNames = Array.isArray(opts.matchNames) ? opts.matchNames : [];
     cleanupJobMarkers(paths);
 
@@ -332,6 +382,22 @@ function registerIpc() {
       } catch (error) {
         return { ok: false, reason: "write_failed", detail: String(error.message || error) };
       }
+      // 跳过项来自两处：目录里已经不可渲的，以及运行计划里本次不渲的
+      const skipRows = previewResults.skipsFromCatalog("effect", skipped);
+      const knownSkips = new Set(skipRows.map((row) => row.key));
+      for (const row of Array.isArray(opts.skips) ? opts.skips : []) {
+        const key = String((row && row.key) || "");
+        if (!key || knownSkips.has(key)) continue;
+        knownSkips.add(key);
+        skipRows.push({
+          kind: "effect",
+          key,
+          name: String((row && row.name) || key),
+          status: "skip",
+          reason: String((row && row.reason) || ""),
+        });
+      }
+      previewResults.beginRun(paths, { kind: "effect", skips: skipRows });
       const result = pluginJob.start({
         ...opts,
         todoPath: paths.pluginSelection,
@@ -346,8 +412,10 @@ function registerIpc() {
       };
     }
 
+    previewResults.beginRun(paths, { kind: "effect" });
     return pluginJob.start(opts);
   });
+
 
   ipcMain.handle("plugin-effects:scan", (_event, options) => {
     if (!pluginJob) return { ok: false, reason: "no_job" };
@@ -356,11 +424,115 @@ function registerIpc() {
     cleanupJobMarkers(paths);
     return pluginJob.start({
       catalogOnly: true,
-      ae: (options && options.ae) || "",
+      ae: (options && options.ae) || preferredAe(),
     });
   });
 
   ipcMain.handle("plugin-effects:catalog", () => catalog.readCatalog(paths));
+
+  /* 预览渲染的逐条结果账本（第 5 步统计的唯一数据源） */
+  ipcMain.handle("preview:results", () => previewResults.read(paths));
+  ipcMain.handle("preview:clearResults", () => previewResults.clear(paths));
+
+  /* 人工调参 · 属性获取：批量脚本只负责跑 AE 和写原始 dump */
+  ipcMain.handle("dump:start", (_event, options) => {
+    if (!dumpJob) return { ok: false, reason: "no_job" };
+    if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
+    if (pluginJob && pluginJob.isRunning()) return { ok: false, reason: "render_running" };
+    if (dumpJob.isRunning()) return { ok: false, reason: "already_running" };
+
+    const opts = options || {};
+    const targets = Array.isArray(opts.targets)
+      ? opts.targets
+      : Array.isArray(opts.matchNames)
+        ? opts.matchNames
+        : [];
+    if (!targets.length) return { ok: false, reason: "nothing_to_dump" };
+
+    const meta = catalog.readCatalogMeta(paths) || {};
+    dumpContext = {
+      ae: String(opts.ae || preferredAe()),
+      aeVersion: String(meta.aeVersion || ""),
+      aeMajor: Number(meta.aeMajor) || 0,
+    };
+    const written = dumpJob.writeTargets(targets);
+    if (!written.ok || !written.count) return { ok: false, reason: "write_failed" };
+    const result = dumpJob.start({
+      ae: opts.ae || preferredAe(),
+      limit: opts.limit,
+      rounds: opts.rounds,
+      force: !!opts.force,
+    });
+    if (!result.ok) return result;
+    return { ...result, count: written.count };
+  });
+
+  ipcMain.handle("dump:stop", () => (dumpJob ? dumpJob.stop() : { ok: false, reason: "no_job" }));
+  ipcMain.handle("dump:snapshot", () => (dumpJob ? dumpJob.snapshot() : null));
+  ipcMain.handle("dump:logTail", (_event, lines = 40) => {
+    const n = lines === undefined ? 40 : Math.floor(Number(lines));
+    if (!Number.isFinite(n) || n <= 0) return "";
+    try {
+      return fs
+        .readFileSync(paths.effectDumpLog, "utf8")
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .slice(-n)
+        .join("\n");
+    } catch {
+      return "";
+    }
+  });
+
+  /* 人工调参 · 属性缓存（只读） */
+  ipcMain.handle("params:index", () => {
+    const cache = paramCache();
+    if (!cache) return { ok: false, reason: "not_wired" };
+    return cache.readIndex(paths);
+  });
+
+  ipcMain.handle("params:effect", (_event, matchName) => {
+    const cache = paramCache();
+    if (!cache) return { ok: false, reason: "not_wired" };
+    return cache.readEffect(paths, String(matchName || "").trim());
+  });
+
+  /* 人工调参 · 覆盖表增量写：只替换该 matchName 的行，其余原样保留 */
+  ipcMain.handle("overrides:write", (_event, payload) => {
+    const data = payload || {};
+    const matchName = String(data.matchName || "").trim();
+    if (!matchName) return { ok: false, reason: "missing_match_name" };
+    const entries = Array.isArray(data.entries) ? data.entries : [];
+    const current = effectOverrides.read(paths);
+    if (!current.ok) return { ok: false, reason: current.reason || "read_failed" };
+
+    const items = (current.items || []).filter((item) => item.matchName !== matchName);
+    let added = 0;
+    for (const entry of entries) {
+      const record = entry || {};
+      const rawValue = record.value;
+      if (rawValue === null || rawValue === undefined) continue;
+      if (typeof rawValue === "string" && !rawValue.trim()) continue;
+      const paramIndex = String(record.indexPath || record.paramIndex || "").trim();
+      if (!paramIndex) continue;
+      items.push({
+        matchName,
+        preset: "",
+        scene: "",
+        enabled: true,
+        paramIndex,
+        paramPath: String(record.path || record.paramPath || ""),
+        value: rawValue,
+        valueType: String(record.valueType || ""),
+        verified: !!record.verified,
+        note: String(record.note || "manual-tune"),
+      });
+      added += 1;
+    }
+    const result = effectOverrides.write(paths, items);
+    if (!result.ok) return result;
+    return { ...result, matchName, count: added, total: items.length };
+  });
 
   /* 效果库：内置 + 插件的合并只读视图（数据层在 core/effects.js） */
   ipcMain.handle("effects:list", () => effects.list(paths));
@@ -597,6 +769,7 @@ function registerIpc() {
 const isSelftest = process.argv.includes("--selftest");
 const screenshotArg = process.argv.find((arg) => arg.startsWith("--screenshot="));
 const viewArg = (process.argv.find((arg) => arg.startsWith("--view=")) || "").split("=")[1];
+const evalFileArg = process.argv.find((arg) => arg.startsWith("--eval-file="));
 
 /* ---------- 生命周期 ---------- */
 
@@ -658,6 +831,45 @@ if (!gotLock) {
       timeoutMs: 300000,
     });
 
+    dumpJob = new EffectDumpJob({
+      paths,
+      script: path.join(toolsDir(), "dump_plugin_effect_params.ps1"),
+      rawDir: paths.effectParamsRaw,
+      onRound: () => {
+        const cache = paramCache();
+        if (!cache || !cache.mergeRound) return;
+        try {
+          cache.mergeRound(paths, {
+            aeVersion: dumpContext.aeVersion,
+            aeMajor: dumpContext.aeMajor,
+          });
+        } catch {
+          /* 合并失败不打断获取 */
+        }
+      },
+      onState: (state) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send("dump:state", state);
+        }
+      },
+      onExit: (info) => {
+        const cache = paramCache();
+        if (cache && cache.mergeRound) {
+          try {
+            cache.mergeRound(paths, {
+              aeVersion: dumpContext.aeVersion,
+              aeMajor: dumpContext.aeMajor,
+            });
+          } catch {
+            /* ignore */
+          }
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send("dump:exit", info);
+        }
+      },
+    });
+
     Menu.setApplicationMenu(null);
     registerIpc();
 
@@ -683,6 +895,14 @@ if (!gotLock) {
                   `document.querySelector('.render-mode-button[data-render-mode="plugin"]').click()`,
                 );
               }
+              await new Promise((r) => setTimeout(r, 1200));
+            }
+            // 开发排查用：--eval-file=<js> 在截图前把一段脚本注入渲染进程
+            if (evalFileArg) {
+              const file = evalFileArg.slice("--eval-file=".length);
+              const code = fs.readFileSync(file, "utf8");
+              const result = await mainWindow.webContents.executeJavaScript(code, true);
+              console.log("eval result: " + JSON.stringify(result));
               await new Promise((r) => setTimeout(r, 1200));
             }
             const image = await mainWindow.webContents.capturePage();

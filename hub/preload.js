@@ -62,6 +62,23 @@ contextBridge.exposeInMainWorld("hub", {
   pluginEffectsCatalog: () => ipcRenderer.invoke("plugin-effects:catalog"),
   scanPluginEffects: (options) => ipcRenderer.invoke("plugin-effects:scan", options),
 
+  /* 预览渲染的逐条结果（第 5 步统计与「重试失败项」的唯一数据源） */
+  getPreviewResults: () => ipcRenderer.invoke("preview:results"),
+  clearPreviewResults: () => ipcRenderer.invoke("preview:clearResults"),
+
+  /* 人工调参 · 属性获取（批量脚本 + 状态轮询，见 core/effect_dump.js） */
+  startEffectDump: (options) => ipcRenderer.invoke("dump:start", options),
+  stopEffectDump: () => ipcRenderer.invoke("dump:stop"),
+  dumpSnapshot: () => ipcRenderer.invoke("dump:snapshot"),
+  logDumpTail: (lines) => ipcRenderer.invoke("dump:logTail", lines),
+
+  /* 人工调参 · 属性缓存（只读；写入只在批量获取时由脚本产生） */
+  getParamIndex: () => ipcRenderer.invoke("params:index"),
+  getEffectParams: (matchName) => ipcRenderer.invoke("params:effect", matchName),
+
+  /* 人工调参 · 覆盖表增量写（只替换该效果的行） */
+  writeEffectOverrides: (payload) => ipcRenderer.invoke("overrides:write", payload),
+
   /* 主进程推送 */
   onRenderState: (callback) => {
     ipcRenderer.on("render:state", (_event, state) => callback(state));
@@ -77,5 +94,11 @@ contextBridge.exposeInMainWorld("hub", {
   },
   onPluginEffectsCatalog: (callback) => {
     ipcRenderer.on("plugin-effects:catalog", (_event, doc) => callback(doc));
+  },
+  onEffectDumpState: (callback) => {
+    ipcRenderer.on("dump:state", (_event, state) => callback(state));
+  },
+  onEffectDumpExit: (callback) => {
+    ipcRenderer.on("dump:exit", (_event, info) => callback(info));
   },
 });

@@ -101,6 +101,22 @@ function countStatuses(items) {
 }
 
 /**
+ * 只读扫描元信息（AE 版本 / 扫描时间 / 条数），供属性获取等旁路流程使用。
+ * @param {ReturnType<import("./paths").createPaths>} paths
+ */
+function readCatalogMeta(paths) {
+  const meta = readJson(paths.pluginCatalogMeta) || {};
+  return {
+    ok: Object.keys(meta).length > 0,
+    aeExe: String(meta.aeExe || ""),
+    aeVersion: String(meta.aeVersion || ""),
+    aeMajor: Number(meta.aeMajor) || 0,
+    scannedAt: String(meta.scannedAt || ""),
+    count: Number(meta.count) || 0,
+  };
+}
+
+/**
  * 只读 catalog TSV 的原始行（保持文件行序）与扫描元信息。
  * readCatalog 与效果库共用这一份解析，避免两处各写一遍、顺序悄悄漂移。
  * @param {ReturnType<import("./paths").createPaths>} paths
@@ -282,6 +298,7 @@ module.exports = {
   CATALOG_HEADER,
   readCatalog,
   readCatalogRows,
+  readCatalogMeta,
   filterSelection,
   writeSelection,
   readNames,
