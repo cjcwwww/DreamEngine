@@ -56,8 +56,15 @@ button {
   color: inherit;
 }
 
-button:focus-visible,
-[role="button"]:focus-visible {
+/* CEP 的 CEF 不支持 :focus-visible，鼠标点按钮后会残留系统白框。
+   默认去掉焦点框，只在用 Tab 键导航（html.keyboard-nav）时显示强调色焦点环。 */
+button:focus,
+[role="button"]:focus {
+  outline: none;
+}
+
+html.keyboard-nav button:focus,
+html.keyboard-nav [role="button"]:focus {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
 }
@@ -69,40 +76,69 @@ button:focus-visible,
   flex: 0 0 auto;
   min-width: 0;
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 6px;
   margin-left: 4px;
 }
 
 .view-tab {
   position: relative;
-  height: 44px;
-  padding: 0;
+  height: 34px;
+  padding: 0 18px;
   border: 0;
+  border-radius: 7px;
   background: transparent;
   color: var(--muted);
   font-size: 12px;
   white-space: nowrap;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
 }
 
-.view-tab:hover {
-  color: var(--text);
-}
+.view-tab:hover { color: var(--text); }
 
 .view-tab.active {
-  color: var(--text);
+  color: #fff;
   font-weight: 600;
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
+/* 白色发光条：贴在按钮正下方，两端渐隐 */
 .view-tab.active::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--accent);
+  left: 5%;
+  right: 5%;
+  bottom: -5px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #fff 18%, #fff 82%, transparent);
+  box-shadow:
+    0 0 5px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.view-tab.active::before {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: -7px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  filter: blur(5px);
+  pointer-events: none;
 }
 
 /* 预设视图：与效果墙同级的整块区域 */
@@ -1099,7 +1135,7 @@ body.is-resizing-sidebar * {
 
 .category-list {
   margin: 0;
-  padding: 0;
+  padding: 0 6px;
   list-style: none;
 }
 
@@ -1112,25 +1148,30 @@ body.is-resizing-sidebar * {
   height: 28px;
   padding: 0 8px 0 10px;
   border: 0;
-  border-left: 2px solid transparent;
-  border-radius: 0 5px 5px 0;
+  border-radius: 6px;
   background: transparent;
   color: var(--muted);
   font: inherit;
   font-size: 12px;
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 0.3s ease-out,
+    color 0.3s ease-out,
+    transform 0.3s ease-out;
 }
 
 .category-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text);
+  background: #111a4d;
+  color: #fff;
+  transform: translate(1px, -1px);
 }
 
+.category-item:active { transform: scale(0.99); }
+
 .category-item.active {
-  border-left-color: var(--accent);
-  background: linear-gradient(90deg, var(--accent-soft), transparent);
-  color: var(--text);
+  background: #111a4d;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -1147,8 +1188,9 @@ body.is-resizing-sidebar * {
   font-variant-numeric: tabular-nums;
 }
 
+.category-item:hover .category-count,
 .category-item.active .category-count {
-  color: var(--accent);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* 细滚动条：所有内容滚动区共用，不露出系统默认的宽滚动条。
@@ -1267,7 +1309,6 @@ main {
 
 .effect-card {
   min-width: 0;
-  overflow: hidden;
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -2771,5 +2812,132 @@ main {
 
   .curve-save-open {
     height: 32px;
+  }
+}
+
+/* ============================================================
+ * 卡片：白色描边 + 3D 聚焦
+ *
+ * 缩略图外圈是一条细白框，悬停时白框发光，整张卡片放大一点
+ * 并朝指针方向倾斜。白框用 mask 只保留 1px，不碰缩略图本身的
+ * background-image。
+ * ============================================================ */
+
+@keyframes card-stars {
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.12) translate(-2%, -2%); }
+}
+
+.effect-card,
+.preset-card,
+.material-card {
+  --card-scale: 1;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+
+  transform-style: preserve-3d;
+  transition:
+    transform 150ms ease-out,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+  z-index: 1;
+}
+
+.effect-card:hover,
+.preset-card:hover,
+.material-card:hover {
+  --card-scale: 1.05;
+  z-index: 10;
+  transform:
+    perspective(900px)
+    rotateX(var(--tilt-x))
+    rotateY(var(--tilt-y))
+    scale(var(--card-scale));
+}
+
+/* 白框：只显示 1px 环，其余用 mask 挖空 */
+.effect-card .thumb::before,
+.preset-card .preset-thumb::before,
+.material-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 1px;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+/* 素材卡保留常驻细白框 */
+.material-card::before {
+  opacity: 0.34;
+}
+
+.effect-card:hover .thumb::before,
+.preset-card:hover .preset-thumb::before,
+.material-card:hover::before {
+  opacity: 0.95;
+}
+
+/* 悬停外发光 */
+.effect-card:hover .thumb,
+.preset-card:hover .preset-thumb {
+  filter: brightness(1.08);
+  box-shadow:
+    0 0 20px -4px rgba(255, 255, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.material-card:hover {
+  box-shadow:
+    0 0 20px -4px rgba(255, 255, 255, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0.55rem 1.5rem -0.5rem rgba(0, 0, 0, 0.55);
+}
+
+/* 星点：效果卡（非过期）和预设卡的缩略图上 */
+.effect-card:not(.stale) .thumb::after,
+.preset-card .preset-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.9) 1px, transparent 1.6px),
+    radial-gradient(circle at 74% 32%, rgba(255, 255, 255, 0.7) 1px, transparent 1.6px),
+    radial-gradient(circle at 42% 76%, rgba(255, 255, 255, 0.55) 0.8px, transparent 1.4px),
+    radial-gradient(circle at 86% 82%, rgba(255, 255, 255, 0.7) 0.9px, transparent 1.5px);
+  background-size: 120% 120%;
+  opacity: 0.16;
+  transition: opacity 240ms ease;
+}
+
+.effect-card:hover:not(.stale) .thumb::after,
+.preset-card:hover .preset-thumb::after {
+  opacity: 0.5;
+  animation: card-stars 5s linear infinite alternate;
+}
+
+/* 星点层会盖到「+」按钮上，抬高按钮 */
+.card-plus { z-index: 6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-card,
+  .preset-card,
+  .material-card {
+    transition: none;
+  }
+  .effect-card:hover .thumb::after,
+  .preset-card:hover .preset-thumb::after {
+    animation: none;
   }
 }

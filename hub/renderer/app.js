@@ -3253,7 +3253,58 @@ async function fillPluginEffectBackgrounds() {
 
 /* ---------- 绑定 ---------- */
 
+/* 卡片 3D 聚焦：指针在卡片上移动时轻微倾斜并跟随高光，离开后回正。
+   用事件委托绑在网格上，卡片重建后无需重新绑定。 */
+function bindCardTilt(grid) {
+  if (!grid) return;
+  let active = null;
+  let frame = 0;
+
+  const reset = (card) => {
+    if (!card) return;
+    card.style.removeProperty("--tilt-x");
+    card.style.removeProperty("--tilt-y");
+  };
+
+  grid.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const target = event.target instanceof Element ? event.target : null;
+    const card = target && target.closest(".card");
+    if (!card || card.parentElement !== grid) return;
+    if (active && active !== card) reset(active);
+    active = card;
+    const rect = card.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const px = (event.clientX - rect.left) / rect.width - 0.5;
+    const py = (event.clientY - rect.top) / rect.height - 0.5;
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      card.style.setProperty("--tilt-x", `${(-py * 8).toFixed(2)}deg`);
+      card.style.setProperty("--tilt-y", `${(px * 10).toFixed(2)}deg`);
+      card.style.setProperty("--glare-x", `${((px + 0.5) * 100).toFixed(1)}%`);
+      card.style.setProperty("--glare-y", `${((py + 0.5) * 100).toFixed(1)}%`);
+    });
+  });
+
+  grid.addEventListener("pointerout", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const card = target && target.closest(".card");
+    if (!card || card.parentElement !== grid) return;
+    if (card.contains(event.relatedTarget)) return;
+    reset(card);
+    if (active === card) active = null;
+  });
+
+  grid.addEventListener("pointerleave", () => {
+    reset(active);
+    active = null;
+  });
+}
+
 function bind() {
+  bindCardTilt($("grid"));
+  bindCardTilt($("effectGrid"));
   presetSidebar.init();
   effectSidebar.init();
   readEffectCollapsedGroups();
