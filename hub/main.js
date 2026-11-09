@@ -25,6 +25,7 @@ const { PluginEffectJob } = require("./core/effect_render");
 const { ManualEffectRunner } = require("./core/manual_effect");
 const { EffectDumpJob } = require("./core/effect_dump");
 const { AeGuardJob } = require("./core/ae_guard");
+const { runningReason: aeRunningReason } = require("./core/ae_jobs");
 const previewResults = require("./core/preview_results");
 const effectOverrides = require("./core/effect_overrides");
 const catalog = require("./core/catalog");
@@ -142,11 +143,16 @@ function snapshot() {
  * --------------------------------------------------------------- */
 
 function aeJobBusy() {
-  return !!(
-    (job && job.isRunning()) ||
-    (pluginJob && pluginJob.isRunning()) ||
-    (dumpJob && dumpJob.isRunning())
-  );
+  return !!aeBusyReason();
+}
+
+function aeBusyReason() {
+  return aeRunningReason({
+    preset: job,
+    effects: pluginJob,
+    dump: dumpJob,
+    manual: manualRunner,
+  });
 }
 
 function startAeGuard(reason, enabled) {
@@ -366,7 +372,8 @@ function registerIpc() {
 
   ipcMain.handle("render:start", (_event, options) => {
     if (!job) return { ok: false, reason: "no_job" };
-    if (pluginJob && pluginJob.isRunning()) return { ok: false, reason: "plugin_effects_running" };
+    const busy = aeBusyReason();
+    if (busy) return { ok: false, reason: busy };
     let opts = options || {};
     let selectedPaths = null;
     if (Array.isArray(opts.presetPaths)) {
@@ -424,18 +431,18 @@ function registerIpc() {
 
   ipcMain.handle("plugin-effects:start", (_event, options) => {
     if (!pluginJob) return { ok: false, reason: "no_job" };
-    if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
-    if (pluginJob.isRunning()) return { ok: false, reason: "already_running" };
+    const busy = aeBusyReason();
+    if (busy) return { ok: false, reason: busy };
 
     const opts = options || {};
     if (!opts.ae) opts.ae = preferredAe();
-    const matchNames = Array.isArray(opts.matchNames) ? opts.matchNames : [];
     cleanupJobMarkers(paths);
 
-    if (matchNames.length > 0) {
-      const cat = catalog.readCatalog(paths);
-      if (!cat.ok) return { ok: false, reason: "no_catalog" };
-      const { selected, skipped } = catalog.filterSelection(cat, matchNames, !!opts.force);
+    const cat = Array.isArray(opts.matchNames) ? catalog.readCatalog(paths) : null;
+    if (cat && !cat.ok) return { ok: false, reason: "no_catalog" };
+    const plan = cat ? catalog.planSelection(cat, opts.matchNames, !!opts.force) : null;
+    if (plan && plan.mode === "selection") {
+      const { selected, skipped } = plan;
       if (selected.length === 0) {
         return { ok: false, reason: "nothing_to_render", skipped };
       }
@@ -484,8 +491,8 @@ function registerIpc() {
 
   ipcMain.handle("plugin-effects:scan", (_event, options) => {
     if (!pluginJob) return { ok: false, reason: "no_job" };
-    if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
-    if (pluginJob.isRunning()) return { ok: false, reason: "already_running" };
+    const busy = aeBusyReason();
+    if (busy) return { ok: false, reason: busy };
     cleanupJobMarkers(paths);
     const scanned = pluginJob.start({
       catalogOnly: true,
@@ -504,9 +511,8 @@ function registerIpc() {
   /* 人工调参 · 属性获取：批量脚本只负责跑 AE 和写原始 dump */
   ipcMain.handle("dump:start", (_event, options) => {
     if (!dumpJob) return { ok: false, reason: "no_job" };
-    if (job && job.isRunning()) return { ok: false, reason: "preset_render_running" };
-    if (pluginJob && pluginJob.isRunning()) return { ok: false, reason: "render_running" };
-    if (dumpJob.isRunning()) return { ok: false, reason: "already_running" };
+    const busy = aeBusyReason();
+    if (busy) return { ok: false, reason: busy };
 
     const opts = options || {};
     const targets = Array.isArray(opts.targets)
@@ -582,24 +588,9 @@ function registerIpc() {
     const items = (current.items || []).filter((item) => item.matchName !== matchName);
     let added = 0;
     for (const entry of entries) {
-      const record = entry || {};
-      const rawValue = record.value;
-      if (rawValue === null || rawValue === undefined) continue;
-      if (typeof rawValue === "string" && !rawValue.trim()) continue;
-      const paramIndex = String(record.indexPath || record.paramIndex || "").trim();
-      if (!paramIndex) continue;
-      items.push({
-        matchName,
-        preset: "",
-        scene: "",
-        enabled: true,
-        paramIndex,
-        paramPath: String(record.path || record.paramPath || ""),
-        value: rawValue,
-        valueType: String(record.valueType || ""),
-        verified: !!record.verified,
-        note: String(record.note || "manual-tune"),
-      });
+      const item = effectOverrides.manualEntry(matchName, entry);
+      if (!item) continue;
+      items.push(item);
       added += 1;
     }
     const result = effectOverrides.write(paths, items);
@@ -654,8 +645,8 @@ function registerIpc() {
 
   function manualBusy() {
     if (!manualRunner) return { busy: true, reason: "no_runner" };
-    if (pluginJob && pluginJob.isRunning()) return { busy: true, reason: "plugin_effects_running" };
-    if (manualRunner.isRunning()) return { busy: true, reason: "manual_running" };
+    const reason = aeBusyReason();
+    if (reason) return { busy: true, reason };
     return null;
   }
 
@@ -701,21 +692,16 @@ function registerIpc() {
     };
   }
 
-  ipcMain.handle("manual:dump", async (_event, options) => {
-    const busy = manualBusy();
-    if (busy) return { ok: false, reason: busy.reason };
-    const matchName = validMatchName(options && options.matchName);
-    if (!matchName) return { ok: false, reason: "bad_match_name" };
-    const ae = (options && options.ae) || bestAfterFX();
-    return manualRunner.run({ matchName, mode: "fastdump", ae });
-  });
+  async function withManualAe(reason, aeGuard, task) {
+    startAeGuard(reason, aeGuard);
+    try {
+      return await task();
+    } finally {
+      stopAeGuard(reason + " exit");
+    }
+  }
 
-  ipcMain.handle("manual:baseline", async (_event, options) => {
-    const busy = manualBusy();
-    if (busy) return { ok: false, reason: busy.reason };
-    const matchName = validMatchName(options && options.matchName);
-    if (!matchName) return { ok: false, reason: "bad_match_name" };
-    const ae = (options && options.ae) || bestAfterFX();
+  async function runManualBaseline(matchName, ae) {
     /* 基线必须不带手动覆盖；临时移走覆盖表，结束后恢复。 */
     const file = effectOverrides.overridesPath(paths);
     const backup = file + ".manual-baseline-backup";
@@ -731,13 +717,36 @@ function registerIpc() {
         try { fs.renameSync(backup, file); } catch { /* 恢复失败时保留备份 */ }
       }
     }
+  }
+
+  ipcMain.handle("manual:dump", async (_event, options) => {
+    const busy = manualBusy();
+    if (busy) return { ok: false, reason: busy.reason };
+    const matchName = validMatchName(options && options.matchName);
+    if (!matchName) return { ok: false, reason: "bad_match_name" };
+    const ae = (options && options.ae) || bestAfterFX();
+    return withManualAe("manual dump", options && options.aeGuard, () =>
+      manualRunner.run({ matchName, mode: "fastdump", ae }),
+    );
+  });
+
+  ipcMain.handle("manual:baseline", async (_event, options) => {
+    const busy = manualBusy();
+    if (busy) return { ok: false, reason: busy.reason };
+    const matchName = validMatchName(options && options.matchName);
+    if (!matchName) return { ok: false, reason: "bad_match_name" };
+    const ae = (options && options.ae) || bestAfterFX();
+    return withManualAe("manual baseline", options && options.aeGuard, () =>
+      runManualBaseline(matchName, ae),
+    );
   });
 
   ipcMain.handle("manual:overrides", (_event, matchName) => {
     const name = validMatchName(matchName);
     if (!name) return { ok: false, reason: "bad_match_name", items: [] };
     const doc = effectOverrides.read(paths);
-    return { ok: doc.ok, items: effectOverrides.forMatchName(doc.items, name), errors: doc.errors };
+    const items = effectOverrides.forMatchName(doc.items, name).map(effectOverrides.manualRow);
+    return { ok: doc.ok, items, errors: doc.errors };
   });
 
   ipcMain.handle("manual:verify", async (_event, options) => {
@@ -747,42 +756,40 @@ function registerIpc() {
     if (!matchName) return { ok: false, reason: "bad_match_name" };
     const rows = Array.isArray(options && options.params) ? options.params : [];
     const baselinePath = String((options && options.baselinePath) || "");
-    if (!baselinePath || !fs.existsSync(baselinePath)) {
-      return { ok: false, reason: "baseline_missing" };
-    }
-    if (rows.length === 0) return { ok: false, reason: "no_params" };
-
-    const base = effectOverrides.read(paths);
-    const kept = (base.items || []).filter((item) => item && item.matchName !== matchName);
     const candidate = rows
-      .filter((row) => row && row.paramIndex && row.enabled !== false)
-      .map((row) => ({
-        ...row,
-        matchName,
-        enabled: true,
-        verified: row.verified === true ? true : null,
-      }));
+      .filter((row) => row && row.enabled !== false)
+      .map((row) => effectOverrides.manualEntry(matchName, row))
+      .filter(Boolean)
+      .map((row) => ({ ...row, verified: null }));
     if (candidate.length === 0) return { ok: false, reason: "no_params" };
 
-    const wrote = effectOverrides.write(paths, kept.concat(candidate));
-    if (!wrote.ok) return wrote;
-    try {
-      const run = await manualRunner.run({
-        matchName,
-        mode: "verify",
-        ae: (options && options.ae) || bestAfterFX(),
-      });
-      if (!run.ok || !run.png) return { ...run, compare: null };
-      const compare = comparePngFiles(baselinePath, run.png);
-      return { ...run, compare };
-    } finally {
-      /* 验证只是临时写表；恢复用户原有覆盖（可能是缺失表）。 */
-      if (base.missing) {
-        try { fs.rmSync(effectOverrides.overridesPath(paths), { force: true }); } catch { /* ignore */ }
-      } else {
-        effectOverrides.write(paths, base.items || []);
+    const ae = (options && options.ae) || bestAfterFX();
+    return withManualAe("manual verify", options && options.aeGuard, async () => {
+      let baselineFile = baselinePath;
+      if (!baselineFile || !fs.existsSync(baselineFile)) {
+        const baseline = await runManualBaseline(matchName, ae);
+        if (!baseline.ok || !baseline.png) return { ...baseline, compare: null };
+        baselineFile = baseline.png;
       }
-    }
+
+      const base = effectOverrides.read(paths);
+      const kept = (base.items || []).filter((item) => item && item.matchName !== matchName);
+      const wrote = effectOverrides.write(paths, kept.concat(candidate));
+      if (!wrote.ok) return wrote;
+      try {
+        const run = await manualRunner.run({ matchName, mode: "verify", ae });
+        if (!run.ok || !run.png) return { ...run, compare: null, baselinePath: baselineFile };
+        const compare = comparePngFiles(baselineFile, run.png);
+        return { ...run, compare, baselinePath: baselineFile };
+      } finally {
+        /* 验证只是临时写表；恢复用户原有覆盖（可能是缺失表）。 */
+        if (base.missing) {
+          try { fs.rmSync(effectOverrides.overridesPath(paths), { force: true }); } catch { /* ignore */ }
+        } else {
+          effectOverrides.write(paths, base.items || []);
+        }
+      }
+    });
   });
 
   ipcMain.handle("manual:save", (_event, options) => {
@@ -793,13 +800,9 @@ function registerIpc() {
     const base = effectOverrides.read(paths);
     const kept = (base.items || []).filter((item) => item && item.matchName !== matchName);
     const candidate = rows
-      .filter((row) => row && row.paramIndex && row.enabled !== false)
-      .map((row) => ({
-        ...row,
-        matchName,
-        enabled: true,
-        verified: row.verified === true ? true : row.verified === false ? false : null,
-      }));
+      .filter((row) => row && row.enabled !== false)
+      .map((row) => effectOverrides.manualEntry(matchName, row))
+      .filter(Boolean);
     /* .ffx 只在没有逐参数覆盖时作为兜底；两者同时存在时参数优先。 */
     if (preset && candidate.length === 0) {
       candidate.push({
@@ -834,9 +837,12 @@ function registerIpc() {
     return effectOverrides.importPreset(paths, result.filePaths[0]);
   });
 
-  ipcMain.handle("manual:stop", () =>
-    manualRunner ? manualRunner.stop() : { ok: false, reason: "no_runner" },
-  );
+  ipcMain.handle("manual:stop", () => {
+    if (!manualRunner) return { ok: false, reason: "no_runner" };
+    const result = manualRunner.stop();
+    stopAeGuard("manual stop");
+    return result;
+  });
 }
 
 /* ---------- 无头自检：验证路径解析、AE 检测、索引读取是否正常 ---------- */
@@ -1011,6 +1017,8 @@ if (!gotLock) {
     if (guardJob && guardJob.isRunning()) guardJob.stop();
     if (job && job.isRunning()) job.stop();
     if (pluginJob && pluginJob.isRunning()) pluginJob.stop();
+    if (dumpJob && dumpJob.isRunning()) dumpJob.stop();
+    if (manualRunner && manualRunner.isRunning()) manualRunner.stop();
     if (process.platform !== "darwin") app.quit();
   });
 
@@ -1019,5 +1027,6 @@ if (!gotLock) {
     if (job && job.isRunning()) job.stop();
     if (pluginJob && pluginJob.isRunning()) pluginJob.stop();
     if (dumpJob && dumpJob.isRunning()) dumpJob.stop();
+    if (manualRunner && manualRunner.isRunning()) manualRunner.stop();
   });
 }

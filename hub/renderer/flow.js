@@ -937,6 +937,8 @@
       already_running: "已经有一个任务在运行了",
       preset_render_running: "预设渲染正在进行",
       effect_render_running: "效果渲染正在进行",
+      param_dump_running: "属性获取正在进行",
+      manual_running: "人工调参正在进行",
       nothing_to_render: "没有需要渲染的条目",
       no_catalog: "插件目录还没扫描",
       write_failed: "写入批次文件失败",
@@ -1444,7 +1446,13 @@
     } catch (_error) {
       rows = [];
     }
-    const list = Array.isArray(rows) ? rows : rows && Array.isArray(rows.rows) ? rows.rows : [];
+    const list = Array.isArray(rows)
+      ? rows
+      : rows && Array.isArray(rows.items)
+        ? rows.items
+        : rows && Array.isArray(rows.rows)
+          ? rows.rows
+          : [];
     flow.tuning.cache.set(matchName, list);
     return list;
   }
@@ -1637,13 +1645,15 @@
     if (clean === "") {
       if (index >= 0) rows.splice(index, 1);
     } else if (index >= 0) {
-      rows[index] = Object.assign({}, rows[index], { value: clean });
+      rows[index] = Object.assign({}, rows[index], { value: clean, verified: null });
     } else {
       rows.push({
         indexPath: indexPath,
         path: String(param.path || ""),
         name: String(param.name || ""),
         value: clean,
+        valueType: String(param.valueType || ""),
+        verified: null,
       });
     }
     flow.tuning.cache.set(matchName, rows);
@@ -1671,29 +1681,36 @@
   async function verifyTuning() {
     const matchName = flow.tuning.current;
     if (!matchName) return;
+    const rows = flow.tuning.cache.get(matchName) || [];
     setText("flowTuneSaved", "正在启动 AE 验证…");
     try {
       const result = await window.hub.verifyEffectParams({
         matchName,
+        params: rows,
         ae: flow.plan.config.ae,
-        outDir: "",
-        template: "",
+        aeGuard: aeGuardEnabled(),
       });
       const diff = el("flowTuneDiff");
-      if (result && result.ok && diff) {
+      const compare = result && result.compare ? result.compare : result;
+      if (result && result.ok && compare && compare.ok && diff) {
         diff.hidden = false;
         const base = el("flowTuneBaseImg");
         const verify = el("flowTuneVerifyImg");
-        if (base && result.baselineDataUrl) base.src = result.baselineDataUrl;
-        if (verify && result.verifyDataUrl) verify.src = result.verifyDataUrl;
+        if (base && compare.baselineDataUrl) base.src = compare.baselineDataUrl;
+        if (verify && compare.verifyDataUrl) verify.src = compare.verifyDataUrl;
         setText(
           "flowTuneDiffText",
-          result.identical
-            ? "与基线一致"
-            : "差异 " + result.diffPixels + " 像素（最大通道差 " + result.maxChannelDiff + "）",
+          compare.identical
+            ? "与基线一致（参数写入后画面未变化，已标记为未生效）"
+            : "写入已改变画面：差异 " + compare.diffPixels + " 像素（最大通道差 " + compare.maxChannelDiff + "）",
         );
+        const verified = !compare.identical;
+        for (const row of rows) row.verified = verified;
+        flow.tuning.cache.set(matchName, rows);
+        await window.hub.writeEffectOverrides({ matchName, entries: rows });
+        setText("flowTuneSaved", verified ? "验证通过并已保存" : "已记录为未生效");
       } else {
-        setText("flowTuneDiffText", (result && result.message) || "验证失败");
+        setText("flowTuneDiffText", (result && (result.message || result.reason)) || "验证失败");
         if (diff) diff.hidden = false;
       }
     } catch (error) {
@@ -2060,4 +2077,3 @@
     boot();
   }
 })();
-

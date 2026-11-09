@@ -302,3 +302,44 @@ test("note / paramPath 的 tab 与换行会被清洗", () => {
   assert.equal(read.items[0].note, "line1 line2 line3");
   assert.equal(read.items[0].paramPath, "a b");
 });
+
+test("manualEntry: 未提供 verified 时保持三态中的 null", () => {
+  const row = overrides.manualEntry("S_Glow", {
+    indexPath: "12",
+    path: "颜色 / 强度",
+    value: "25",
+  });
+
+  assert.equal(row.matchName, "S_Glow");
+  assert.equal(row.paramIndex, "12");
+  assert.equal(row.paramPath, "颜色 / 强度");
+  assert.equal(row.verified, null);
+  assert.equal(
+    overrides.manualEntry("S_Glow", { indexPath: "12", value: "25", verified: false }).verified,
+    false,
+  );
+});
+
+test("manualRow: 覆盖表 item 转成渲染层调参行", () => {
+  const row = overrides.manualRow({
+    matchName: "S_Glow",
+    preset: "",
+    scene: "",
+    enabled: true,
+    paramIndex: "12.3",
+    paramPath: "颜色 / 强度",
+    value: 25,
+    valueType: "number",
+    verified: false,
+    note: "keep me",
+  });
+
+  assert.deepEqual(row, {
+    indexPath: "12.3",
+    path: "颜色 / 强度",
+    value: 25,
+    valueType: "number",
+    verified: false,
+    note: "keep me",
+  });
+});

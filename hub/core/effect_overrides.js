@@ -578,6 +578,41 @@ function forMatchName(items, matchName) {
   return (Array.isArray(items) ? items : []).filter((item) => item && item.matchName === name);
 }
 
+/** Hub 人工调参行 → 覆盖表 item；未提供的 verified 保持 null。 */
+function manualEntry(matchName, record) {
+  const row = record || {};
+  const rawValue = row.value;
+  if (rawValue === null || rawValue === undefined) return null;
+  if (typeof rawValue === "string" && !rawValue.trim()) return null;
+  const paramIndex = String(row.indexPath || row.paramIndex || "").trim();
+  if (!paramIndex) return null;
+  return {
+    matchName,
+    preset: "",
+    scene: "",
+    enabled: true,
+    paramIndex,
+    paramPath: String(row.path || row.paramPath || ""),
+    value: rawValue,
+    valueType: String(row.valueType || ""),
+    verified: row.verified === true ? true : row.verified === false ? false : null,
+    note: String(row.note || "manual-tune"),
+  };
+}
+
+/** 覆盖表 item → Hub 调参行；字段名转换只发生在 IPC 数据边界。 */
+function manualRow(item) {
+  const source = item || {};
+  return {
+    indexPath: String(source.paramIndex || ""),
+    path: String(source.paramPath || ""),
+    value: source.value,
+    valueType: String(source.valueType || ""),
+    verified: source.verified === true ? true : source.verified === false ? false : null,
+    note: String(source.note || ""),
+  };
+}
+
 module.exports = {
   VERSION,
   HEADER,
@@ -592,4 +627,6 @@ module.exports = {
   importPreset,
   signature,
   forMatchName,
+  manualEntry,
+  manualRow,
 };
