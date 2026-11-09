@@ -291,18 +291,18 @@ code { font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace; fo
 .tabs {
   flex: none;
   display: flex;
-  gap: 4px;
-  padding: 8px 16px 0;
+  gap: 6px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
 }
 
 .tab {
-  height: 32px;
-  padding: 0 14px;
-  border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: 7px 7px 0 0;
+  position: relative;
+  height: 36px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 7px;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
@@ -310,10 +310,52 @@ code { font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace; fo
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
 }
 
 .tab:hover { color: var(--text); }
-.tab.active { background: var(--surface); border-color: var(--border); color: var(--text); }
+
+.tab.active {
+  color: #fff;
+  font-weight: 600;
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* 白色发光条：贴在按钮正下方，两端渐隐 */
+.tab.active::after {
+  content: "";
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: -7px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #fff 18%, #fff 82%, transparent);
+  box-shadow:
+    0 0 5px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.tab.active::before {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: -9px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  filter: blur(5px);
+  pointer-events: none;
+}
 
 /* 鼠标点击不要留焦点框（截图里那个白框），键盘导航仍然要有可见焦点 */
 .tab:focus, .btn:focus, .input:focus-visible, .search:focus { outline: none; }
@@ -329,6 +371,13 @@ code { font-family: Consolas, "Cascadia Mono", "DreamEngine Sans", monospace; fo
   background: var(--surface-2);
   color: var(--muted);
 }
+
+.tab.active .tab-count {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.tab:hover .tab-count { color: var(--text); }
 
 /* ---------- 工作区 ---------- */
 
@@ -455,7 +504,7 @@ body.sidebar-resizing {
 
 .category-list {
   margin: 0;
-  padding: 0;
+  padding: 0 6px;
   list-style: none;
 }
 
@@ -468,24 +517,44 @@ body.sidebar-resizing {
   gap: 8px;
   padding: 0 8px 0 10px;
   border: 0;
-  border-left: 2px solid transparent;
-  border-radius: 0 5px 5px 0;
+  border-radius: 6px;
   background: transparent;
   color: var(--muted);
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 0.3s ease-out,
+    color 0.3s ease-out,
+    transform 0.3s ease-out;
 }
 
-.category-item:hover { background: rgba(255, 255, 255, 0.04); color: var(--text); }
+.category-item:hover {
+  background: #111a4d;
+  color: #fff;
+  transform: translate(1px, -1px);
+}
+
+.category-item:active { transform: scale(0.99); }
+
 .category-item.active {
-  border-left-color: var(--accent);
-  background: linear-gradient(90deg, var(--accent-soft), transparent);
-  color: var(--text);
+  background: #111a4d;
+  color: #fff;
   font-weight: 600;
 }
+
 .category-item.favorite-category { margin-bottom: 4px; }
 .category-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .category-count { flex: 0 0 auto; color: var(--faint); font-size: 10px; }
+
+.category-item:hover .category-count,
+.category-item.active .category-count {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.effect-group-toggle .category-group-head:hover .group-arrow,
+.effect-group-toggle .category-group-head.active .group-arrow {
+  color: #fff;
+}
 
 .category-editor {
   display: grid;
