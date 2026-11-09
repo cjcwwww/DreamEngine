@@ -385,6 +385,11 @@
       <button class="btn" id="manualBaseline" type="button" title="关闭 AE 后渲染一张不带覆盖的基线">渲染基线</button>
       <button class="btn" id="manualVerify" type="button" title="应用勾选参数并渲染一帧">验证写入</button>
       <button class="btn" id="manualPickPreset" type="button">选择 .ffx</button>
+      <label class="manual-ae-field" title="手动调参启动的独立 AE 版本；与「渲染」页共用一个选择">
+        <span class="manual-ae-label">AE 版本</span>
+        <select class="input ae-version-select manual-ae-version" id="manualAeVersion"
+                aria-label="手动调参使用的 After Effects 版本"></select>
+      </label>
       <span class="spacer"></span>
       <button class="btn ghost" id="manualStop" type="button" hidden>停止</button>
       <button class="btn primary" id="manualSave" type="button" disabled>保存并重渲</button>

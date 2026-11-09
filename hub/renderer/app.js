@@ -1699,6 +1699,12 @@ function manualEl(id) {
   return $(id);
 }
 
+/** 手动调参启动的独立 AE 版本；下拉与「渲染」页共用 .ae-version-select，切换时全局同步。 */
+function manualAeExe() {
+  const select = manualEl("manualAeVersion");
+  return select ? select.value || "" : "";
+}
+
 function manualDeriveBaseline(item) {
   if (!item || !item.framePattern) return "";
   return String(item.framePattern).replace("%04d", "0000");
@@ -1930,7 +1936,7 @@ async function manualDump() {
   try {
     const result = await window.hub.dumpEffectParams({
       matchName: manualContext.item.matchName,
-      ae: "",
+      ae: manualAeExe(),
     });
     if (!result || !result.ok) {
       const reason = result && result.reason;
@@ -1968,7 +1974,7 @@ async function manualBaseline() {
   try {
     const result = await window.hub.baselineEffectParams({
       matchName: manualContext.item.matchName,
-      ae: "",
+      ae: manualAeExe(),
     });
     if (!result || !result.ok || !result.png) {
       manualSetStatus("基线渲染失败：" + ((result && result.status) || (result && result.reason) || "未知原因"), "error");
@@ -2017,7 +2023,7 @@ async function manualVerify() {
       matchName: manualContext.item.matchName,
       params,
       baselinePath,
-      ae: "",
+      ae: manualAeExe(),
     });
     if (!result || !result.ok) {
       manualSetStatus("验证失败：" + ((result && result.status) || (result && result.reason) || "未知原因"), "error");
@@ -2105,6 +2111,7 @@ async function manualSave() {
     const render = await window.hub.startPluginEffects({
       matchNames: [manualContext.item.matchName],
       force: true,
+      ae: manualAeExe(),
     });
     if (!render || !render.ok) {
       manualSetStatus("覆盖已保存，但启动重渲失败：" + ((render && render.reason) || "未知原因"), "error");
@@ -3498,6 +3505,8 @@ function bind() {
   for (const select of document.querySelectorAll(".ae-version-select")) {
     select.addEventListener("change", async (event) => {
       selectRenderAe(event.target.value, event.target);
+      /* 手动调参里换版本只影响后续启动的独立 AE，不必重扫 AE 预设库 */
+      if (event.target.id === "manualAeVersion") return;
       await loadPresets({ force: true });
     });
   }

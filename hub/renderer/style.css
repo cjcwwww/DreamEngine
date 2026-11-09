@@ -1419,13 +1419,13 @@ body.sidebar-resizing {
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ---------- 手动调参 ---------- */
+/* ---------- 鎵嬪姩璋冨弬 ---------- */
 .manual-dialog {
   width: min(1120px, 94vw);
   max-height: 88vh;
   display: flex;
   flex-direction: column;
-  background: var(--panel);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
@@ -1450,6 +1450,15 @@ body.sidebar-resizing {
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
+.manual-ae-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.manual-ae-label { white-space: nowrap; }
+.manual-ae-version { width: 200px; max-width: 46vw; }
 .manual-status {
   margin: 10px 18px 0;
   padding: 8px 10px;
@@ -1470,8 +1479,8 @@ body.sidebar-resizing {
   color: #f0b450;
   font-size: 12px;
 }
-.manual-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 0; min-height: 300px; flex: 1; overflow: hidden; }
-.manual-param-wrap { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--border); }
+.manual-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: minmax(0, 1fr); gap: 0; min-height: 0; flex: 1; overflow: hidden; }
+.manual-param-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border-right: 1px solid var(--border); }
 .manual-param-head,
 .manual-param-row {
   display: grid;
@@ -1487,7 +1496,7 @@ body.sidebar-resizing {
   border-bottom: 1px solid var(--border);
   font-weight: 600;
 }
-.manual-param-list { overflow: auto; flex: 1; }
+.manual-param-list { overflow: auto; flex: 1; min-height: 0; }
 .manual-param-row { min-height: 34px; border-bottom: 1px solid rgba(255, 255, 255, 0.035); }
 .manual-param-row:hover { background: rgba(255, 255, 255, 0.025); }
 .manual-param-row.disabled { opacity: 0.55; }
