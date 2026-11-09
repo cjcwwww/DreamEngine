@@ -14,13 +14,6 @@ const { app, BrowserWindow, ipcMain, dialog, shell, Menu, clipboard, nativeImage
 const path = require("node:path");
 const fs = require("node:fs");
 
-// Windows 上 Electron 的 GPU 进程在当前环境会以 error_code=18 退出；
-// 软件渲染是唯一能稳定启动的模式。必须在 app ready 之前设置。
-app.disableHardwareAcceleration();
-app.commandLine.appendSwitch("disable-gpu");
-app.commandLine.appendSwitch("disable-gpu-compositing");
-app.commandLine.appendSwitch("no-sandbox");
-
 const { createPaths } = require("./core/paths");
 const { findAfterFX, bestAfterFX, isAERunning } = require("./core/ae");
 const presets = require("./core/presets");
